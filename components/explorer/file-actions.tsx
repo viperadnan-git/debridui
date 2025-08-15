@@ -74,12 +74,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
     
     const playMutation = useMutation({
         mutationFn: async () => {
-            const links = await fetchAllLinks();
-            // Play first video link
-            if (links.length > 0) {
-                window.open(playUrl(links[0].link, "vlc"), "_self");
-            }
-            return links;
+            toast.info("Not implemented");
         },
         onSuccess: () => {
             toast.success("Opening media player");
