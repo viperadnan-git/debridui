@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Plus, User, Check, Trash2, LogOut } from "lucide-react";
+import {
+    ChevronsUpDown,
+    Plus,
+    User,
+    Check,
+    Trash2,
+    LogOut,
+} from "lucide-react";
 
 import {
     DropdownMenu,
@@ -34,7 +41,8 @@ import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 export function AccountSwitcher() {
-    const { users, currentUser, switchAccount, removeAccount, logout } = useAuth();
+    const { users, currentUser, switchAccount, removeAccount, logout } =
+        useAuth();
     const { isMobile } = useSidebar();
     const router = useRouter();
     const [isAddAccountOpen, setIsAddAccountOpen] = React.useState(false);
@@ -71,8 +79,12 @@ export function AccountSwitcher() {
                                     <User className="size-4" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-medium">{currentUser.username}</span>
-                                    <span className="truncate text-xs">{formatAccountType(currentUser.type)}</span>
+                                    <span className="truncate font-medium">
+                                        {currentUser.username}
+                                    </span>
+                                    <span className="truncate text-xs">
+                                        {formatAccountType(currentUser.type)}
+                                    </span>
                                 </div>
                                 <ChevronsUpDown className="ml-auto" />
                             </SidebarMenuButton>
@@ -97,7 +109,9 @@ export function AccountSwitcher() {
                                             <User className="size-3.5 shrink-0" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-sm">{user.username}</span>
+                                            <span className="text-sm">
+                                                {user.username}
+                                            </span>
                                             <span className="text-xs text-muted-foreground">
                                                 {formatAccountType(user.type)}
                                             </span>
@@ -132,9 +146,11 @@ export function AccountSwitcher() {
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                     <Plus className="size-4" />
                                 </div>
-                                <div className="text-muted-foreground font-medium">Add account</div>
+                                <div className="text-muted-foreground font-medium">
+                                    Add account
+                                </div>
                             </DropdownMenuItem>
-                            
+
                             <DropdownMenuItem
                                 className="gap-2 p-2 text-red-600"
                                 onClick={handleLogout}
@@ -148,21 +164,32 @@ export function AccountSwitcher() {
                     </DropdownMenu>
                 </SidebarMenuItem>
             </SidebarMenu>
-            
-            <AddAccount isOpen={isAddAccountOpen} onOpenChange={setIsAddAccountOpen} />
-            
-            <AlertDialog open={!!deleteUserId} onOpenChange={() => setDeleteUserId(null)}>
+
+            <AddAccount
+                isOpen={isAddAccountOpen}
+                onOpenChange={setIsAddAccountOpen}
+            />
+
+            <AlertDialog
+                open={!!deleteUserId}
+                onOpenChange={() => setDeleteUserId(null)}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Remove Account</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to remove this account? You&apos;ll need to login again with your API key to access it.
+                            Are you sure you want to remove this account?
+                            You&apos;ll need to login again with your API key to
+                            access it.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={() => deleteUserId && handleRemoveAccount(deleteUserId)}
+                            onClick={() =>
+                                deleteUserId &&
+                                handleRemoveAccount(deleteUserId)
+                            }
                         >
                             Remove
                         </AlertDialogAction>

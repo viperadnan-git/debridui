@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -10,14 +16,34 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play } from "lucide-react";
+import { Monitor, Moon, Sun, Play, Trash2 } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
 import { MEDIA_PLAYER_LABELS } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { del } from "idb-keyval";
+import { queryClient } from "@/lib/query-client";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
     const { mediaPlayer, setMediaPlayer } = useSettingsStore();
+    const [isClearing, setIsClearing] = useState(false);
+
+    const handleClearCache = async () => {
+        setIsClearing(true);
+        try {
+            await del("DEBRIDUI_CACHE");
+            queryClient.clear();
+            toast.success("Cache cleared successfully");
+        } catch (error) {
+            toast.error("Failed to clear cache");
+            console.error("Error clearing cache:", error);
+        } finally {
+            setIsClearing(false);
+        }
+    };
 
     const themes = [
         { value: "light", label: "Light", icon: Sun },
@@ -56,7 +82,10 @@ export default function SettingsPage() {
                                     {themes.map((themeOption) => {
                                         const Icon = themeOption.icon;
                                         return (
-                                            <SelectItem key={themeOption.value} value={themeOption.value}>
+                                            <SelectItem
+                                                key={themeOption.value}
+                                                value={themeOption.value}
+                                            >
                                                 <div className="flex items-center gap-2">
                                                     <Icon className="h-4 w-4" />
                                                     {themeOption.label}
@@ -80,27 +109,66 @@ export default function SettingsPage() {
                             Media Player
                         </CardTitle>
                         <CardDescription>
-                            Choose your preferred media player for video playback.
+                            Choose your preferred media player for video
+                            playback.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="media-player">Default Player</Label>
-                            <Select value={mediaPlayer} onValueChange={(value) => setMediaPlayer(value as MediaPlayer)}>
+                            <Select
+                                value={mediaPlayer}
+                                onValueChange={(value) =>
+                                    setMediaPlayer(value as MediaPlayer)
+                                }
+                            >
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Select media player" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {MEDIA_PLAYER_LABELS.map((player) => (
-                                        <SelectItem key={player.value} value={player.value}>
+                                        <SelectItem
+                                            key={player.value}
+                                            value={player.value}
+                                        >
                                             {player.label}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                             <p className="text-sm text-muted-foreground">
-                                Videos will open in your selected player. External players require the application to be installed.
+                                Videos will open in your selected player.
+                                External players require the application to be
+                                installed.
                             </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Trash2 className="h-5 w-5" />
+                            Cache Management
+                        </CardTitle>
+                        <CardDescription>
+                            Manage application cache and stored data.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-4">
+                                <Button
+                                    onClick={handleClearCache}
+                                    disabled={isClearing}
+                                    variant="destructive"
+                                >
+                                    {isClearing ? "Clearing..." : "Clear Cache"}
+                                </Button>
+                                <p className="text-sm text-muted-foreground">
+                                    Remove all cached data from browser.
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

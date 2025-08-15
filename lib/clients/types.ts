@@ -4,7 +4,7 @@ export type DebridFileNode = {
     size: number | undefined;
     type: "file" | "folder";
     children: DebridFileNode[];
-}
+};
 
 export type DebridFile = {
     id: string;
@@ -23,19 +23,27 @@ export type DebridFile = {
     completedAt?: Date;
 
     error?: string;
-}
+};
 
 export type DebridFileList = {
     files: DebridFile[];
     offset: number;
     limit: number;
     hasMore: boolean;
-}
+};
 
-export type DebridFileStatus = "downloading" | "uploading" | "seeding" | "paused" | "completed" | "failed" | "unknown" | "waiting";
+export type DebridFileStatus =
+    | "downloading"
+    | "uploading"
+    | "seeding"
+    | "paused"
+    | "completed"
+    | "failed"
+    | "unknown"
+    | "waiting";
 
 export type DebridLinkInfo = {
     link: string;
     name: string;
     size: number;
-}
+};

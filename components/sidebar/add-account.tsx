@@ -23,7 +23,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "../ui/form";
 import { formatAccountType } from "@/lib/utils";
 
 export function AddAccount({
@@ -78,11 +85,18 @@ export function AddAccount({
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {Object.values(AccountType).map((type) => (
-                                                    <SelectItem key={type} value={type}>
-                                                        {formatAccountType(type)}
-                                                    </SelectItem>
-                                                ))}
+                                                {Object.values(AccountType).map(
+                                                    (type) => (
+                                                        <SelectItem
+                                                            key={type}
+                                                            value={type}
+                                                        >
+                                                            {formatAccountType(
+                                                                type
+                                                            )}
+                                                        </SelectItem>
+                                                    )
+                                                )}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -109,10 +123,13 @@ export function AddAccount({
                                 <Button
                                     type="submit"
                                     disabled={
-                                        form.formState.isSubmitting || !form.formState.isValid
+                                        form.formState.isSubmitting ||
+                                        !form.formState.isValid
                                     }
                                 >
-                                    {form.formState.isSubmitting ? "Adding..." : "Add Account"}
+                                    {form.formState.isSubmitting
+                                        ? "Adding..."
+                                        : "Add Account"}
                                 </Button>
                             </DialogFooter>
                         </div>

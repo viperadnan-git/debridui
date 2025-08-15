@@ -11,6 +11,7 @@ import { FileList, FileListBody, FileListEmpty } from "./file-list";
 import { FileListHeader } from "./file-list-header";
 import { FileListItem } from "./file-list-item";
 import { ExpandedRow } from "./expanded-row";
+import { SettingsSwitches } from "./settings-switches";
 
 interface DataTableProps {
     data: DebridFile[];
@@ -60,7 +61,11 @@ const sortOptions: SortOptionWithAccessor[] = [
     },
 ];
 
-export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps) {
+export function DataTable({
+    data,
+    hasMore = false,
+    onLoadMore,
+}: DataTableProps) {
     const [sortBy, setSortBy] = useState<string>("date");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const [searchQuery, setSearchQuery] = useState<string>("");
@@ -72,7 +77,8 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
     const { client } = useAuthContext();
 
     // Search query with debounce
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] =
+        useState<string>("");
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -85,13 +91,16 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
     const { data: searchResults } = useQuery({
         queryKey: ["searchFiles", debouncedSearchQuery],
         queryFn: () =>
-            client.searchFiles ? client.searchFiles(debouncedSearchQuery) : Promise.resolve([]),
+            client.searchFiles
+                ? client.searchFiles(debouncedSearchQuery)
+                : Promise.resolve([]),
         enabled: !!debouncedSearchQuery && !!client.searchFiles,
         staleTime: 5_000,
     });
 
     // Use search results if searching, otherwise use provided data
-    const activeData = debouncedSearchQuery && searchResults ? searchResults : data;
+    const activeData =
+        debouncedSearchQuery && searchResults ? searchResults : data;
 
     // Sort data
     const sortedData = useMemo(() => {
@@ -109,11 +118,15 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
                 if (sortBy === "date") {
                     const aDate = new Date(aValue).getTime();
                     const bDate = new Date(bValue).getTime();
-                    return sortDirection === "desc" ? bDate - aDate : aDate - bDate;
+                    return sortDirection === "desc"
+                        ? bDate - aDate
+                        : aDate - bDate;
                 }
 
                 if (typeof aValue === "number" && typeof bValue === "number") {
-                    return sortDirection === "desc" ? bValue - aValue : aValue - bValue;
+                    return sortDirection === "desc"
+                        ? bValue - aValue
+                        : aValue - bValue;
                 }
 
                 const comparison = String(aValue).localeCompare(String(bValue));
@@ -143,11 +156,15 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
                 if (sortBy === "date") {
                     const aDate = new Date(aValue).getTime();
                     const bDate = new Date(bValue).getTime();
-                    return sortDirection === "desc" ? bDate - aDate : aDate - bDate;
+                    return sortDirection === "desc"
+                        ? bDate - aDate
+                        : aDate - bDate;
                 }
 
                 if (typeof aValue === "number" && typeof bValue === "number") {
-                    return sortDirection === "desc" ? bValue - aValue : aValue - bValue;
+                    return sortDirection === "desc"
+                        ? bValue - aValue
+                        : aValue - bValue;
                 }
 
                 const comparison = String(aValue).localeCompare(String(bValue));
@@ -172,7 +189,9 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
             }
 
             if (typeof aValue === "number" && typeof bValue === "number") {
-                return sortDirection === "desc" ? bValue - aValue : aValue - bValue;
+                return sortDirection === "desc"
+                    ? bValue - aValue
+                    : aValue - bValue;
             }
 
             const comparison = String(aValue).localeCompare(String(bValue));
@@ -180,7 +199,13 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
         });
 
         return sorted;
-    }, [activeData, sortBy, sortDirection, debouncedSearchQuery, searchResults]);
+    }, [
+        activeData,
+        sortBy,
+        sortDirection,
+        debouncedSearchQuery,
+        searchResults,
+    ]);
 
     const handleSortChange = (newSortBy: string) => {
         setSortBy(newSortBy);
@@ -189,13 +214,16 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
 
     const handleSelectAll = (checked: boolean | "indeterminate") => {
         if (checked) {
-            setSelectedFiles(new Set(sortedData.map(file => file.id)));
+            setSelectedFiles(new Set(sortedData.map((file) => file.id)));
         } else {
             setSelectedFiles(new Set());
         }
     };
 
-    const handleSelectFile = (fileId: string, checked: boolean | "indeterminate") => {
+    const handleSelectFile = (
+        fileId: string,
+        checked: boolean | "indeterminate"
+    ) => {
         const newSelected = new Set(selectedFiles);
         if (checked === true) {
             newSelected.add(fileId);
@@ -215,8 +243,10 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
         setExpandedFiles(newExpanded);
     };
 
-    const isAllSelected = sortedData.length > 0 && selectedFiles.size === sortedData.length;
-    const isSomeSelected = selectedFiles.size > 0 && selectedFiles.size < sortedData.length;
+    const isAllSelected =
+        sortedData.length > 0 && selectedFiles.size === sortedData.length;
+    const isSomeSelected =
+        selectedFiles.size > 0 && selectedFiles.size < sortedData.length;
 
     // Reset loading state when data changes
     useEffect(() => {
@@ -226,7 +256,7 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
     // Set up Intersection Observer for infinite scroll
     useEffect(() => {
         if (!hasMore || debouncedSearchQuery) return;
-        
+
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting && !isLoadingMore) {
@@ -243,7 +273,13 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
         return () => {
             if (trigger) observer.unobserve(trigger);
         };
-    }, [hasMore, isLoadingMore, onLoadMore, sortedData.length, debouncedSearchQuery]);
+    }, [
+        hasMore,
+        isLoadingMore,
+        onLoadMore,
+        sortedData.length,
+        debouncedSearchQuery,
+    ]);
 
     return (
         <>
@@ -260,14 +296,21 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
                     sortOptions={sortOptions}
                     onSortChange={handleSortChange}
                     onDirectionToggle={() =>
-                        setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))
+                        setSortDirection((prev) =>
+                            prev === "asc" ? "desc" : "asc"
+                        )
                     }
                 />
             </div>
 
+            {/* Settings Switches */}
+            <SettingsSwitches className="mb-2 w-full justify-end" />
+
             <FileList>
                 <FileListHeader
-                    isAllSelected={isSomeSelected ? "indeterminate" : isAllSelected}
+                    isAllSelected={
+                        isSomeSelected ? "indeterminate" : isAllSelected
+                    }
                     onSelectAll={handleSelectAll}
                 />
                 <FileListBody>
@@ -280,8 +323,12 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
                                         isSelected={selectedFiles.has(file.id)}
                                         isExpanded={expandedFiles.has(file.id)}
                                         canExpand={file.status === "completed"}
-                                        onToggleSelect={(checked) => handleSelectFile(file.id, checked)}
-                                        onToggleExpand={() => handleToggleExpand(file.id)}
+                                        onToggleSelect={(checked) =>
+                                            handleSelectFile(file.id, checked)
+                                        }
+                                        onToggleExpand={() =>
+                                            handleToggleExpand(file.id)
+                                        }
                                     />
                                     {expandedFiles.has(file.id) && (
                                         <div className="border-b border-border/40 bg-muted/10">
@@ -296,10 +343,10 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
                     )}
                 </FileListBody>
             </FileList>
-            
+
             {/* Infinite scroll trigger */}
             {hasMore && !debouncedSearchQuery && (
-                <div 
+                <div
                     ref={loadMoreTriggerRef}
                     className="flex items-center justify-center py-2 sm:py-4"
                 >

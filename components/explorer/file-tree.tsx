@@ -2,13 +2,33 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { DebridFileNode, DebridLinkInfo } from "@/lib/clients/types";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Copy, Download, CirclePlay, Loader2 } from "lucide-react";
+import {
+    ChevronRight,
+    Copy,
+    Download,
+    CirclePlay,
+    Loader2,
+} from "lucide-react";
 import { cn, getFileType } from "@/lib/utils";
-import { formatSize, playUrl, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import {
+    formatSize,
+    playUrl,
+    downloadLinks,
+    copyLinksToClipboard,
+} from "@/lib/utils";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+    TooltipProvider,
+} from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/app/(private)/layout";
 import { toast } from "sonner";
@@ -59,8 +79,6 @@ function FileActionButton({
         queryKey: ["getNodeDownloadUrl", node.id],
         queryFn: () => client.getNodeDownloadUrl(node.id!),
         enabled: false, // Don't auto-fetch
-        staleTime: 24 * 60 * 60 * 1000, // 1 day cache - don't refetch for 24 hours
-        gcTime: 24 * 60 * 60 * 1000, // Keep in memory and persist for 24 hours
     });
 
     const handleAction = async (linkInfo: DebridLinkInfo) => {
@@ -101,7 +119,9 @@ function FileActionButton({
 
     const icon = useMemo(() => {
         if (isButtonLoading) {
-            return <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />;
+            return (
+                <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
+            );
         }
 
         return {
@@ -124,15 +144,27 @@ function FileActionButton({
     );
 }
 
-function FileNode({ node, selectedFiles, onSelectionChange, fileId, depth, isFirst = false }: FileNodeProps & { isFirst?: boolean }) {
-    const [isOpen, setIsOpen] = useState(depth === 0 && isFirst && node.type === "folder");
+function FileNode({
+    node,
+    selectedFiles,
+    onSelectionChange,
+    fileId,
+    depth,
+    isFirst = false,
+}: FileNodeProps & { isFirst?: boolean }) {
+    const [isOpen, setIsOpen] = useState(
+        depth === 0 && isFirst && node.type === "folder"
+    );
 
     const allFileIds = useMemo(() => {
         return getAllFileIds(node);
     }, [node]);
 
-    const isSelected = allFileIds.length > 0 && allFileIds.every((id) => selectedFiles.has(id));
-    const isIndeterminate = !isSelected && allFileIds.some((id) => selectedFiles.has(id));
+    const isSelected =
+        allFileIds.length > 0 &&
+        allFileIds.every((id) => selectedFiles.has(id));
+    const isIndeterminate =
+        !isSelected && allFileIds.some((id) => selectedFiles.has(id));
 
     const handleCheckboxChange = useCallback(
         (checked: boolean) => {
@@ -169,7 +201,9 @@ function FileNode({ node, selectedFiles, onSelectionChange, fileId, depth, isFir
                         <TooltipTrigger asChild>
                             <span
                                 className="flex-1 cursor-pointer truncate"
-                                onClick={() => handleCheckboxChange(!isSelected)}
+                                onClick={() =>
+                                    handleCheckboxChange(!isSelected)
+                                }
                             >
                                 {node.name}
                             </span>
@@ -211,7 +245,9 @@ function FileNode({ node, selectedFiles, onSelectionChange, fileId, depth, isFir
                             )}
                         />
                         <Checkbox
-                            checked={isIndeterminate ? "indeterminate" : isSelected}
+                            checked={
+                                isIndeterminate ? "indeterminate" : isSelected
+                            }
                             onCheckedChange={handleCheckboxChange}
                             onClick={(e) => e.stopPropagation()}
                             className="h-3 w-3 sm:h-4 sm:w-4"
@@ -237,7 +273,10 @@ function FileNode({ node, selectedFiles, onSelectionChange, fileId, depth, isFir
                     <div className="flex flex-col">
                         {node.children.map((child, index) => (
                             <FileNode
-                                key={child.id || `${node.name}/${child.name}-${index}`}
+                                key={
+                                    child.id ||
+                                    `${node.name}/${child.name}-${index}`
+                                }
                                 node={child}
                                 selectedFiles={selectedFiles}
                                 onSelectionChange={onSelectionChange}
@@ -252,7 +291,12 @@ function FileNode({ node, selectedFiles, onSelectionChange, fileId, depth, isFir
     );
 }
 
-export function FileTree({ nodes, selectedFiles, onSelectionChange, fileId }: FileTreeProps) {
+export function FileTree({
+    nodes,
+    selectedFiles,
+    onSelectionChange,
+    fileId,
+}: FileTreeProps) {
     return (
         <div className="flex flex-col">
             {nodes.map((node, index) => (

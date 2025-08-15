@@ -15,7 +15,9 @@ export default function Home() {
                     height={38}
                     priority
                 />
-                <h1 className="font-mono text-sm">A better way to manage your debrid files</h1>
+                <h1 className="font-mono text-sm">
+                    A better way to manage your debrid files
+                </h1>
                 <div className="flex gap-4 items-center flex-col sm:flex-row">
                     <Link
                         href="/dashboard"
@@ -43,7 +45,13 @@ export default function Home() {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
+                    <Image
+                        aria-hidden
+                        src="/file.svg"
+                        alt="File icon"
+                        width={16}
+                        height={16}
+                    />
                     Learn
                 </a>
                 <a
@@ -52,7 +60,13 @@ export default function Home() {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
+                    <Image
+                        aria-hidden
+                        src="/window.svg"
+                        alt="Window icon"
+                        width={16}
+                        height={16}
+                    />
                     Examples
                 </a>
                 <a

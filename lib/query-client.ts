@@ -2,7 +2,11 @@ import { QueryClient } from "@tanstack/react-query";
 import { persistQueryClient } from "@tanstack/react-query-persist-client";
 
 import { get, set, del } from "idb-keyval";
-import { PersistedClient, Persister } from "@tanstack/react-query-persist-client";
+import {
+    PersistedClient,
+    Persister,
+} from "@tanstack/react-query-persist-client";
+import { QUERY_CACHE_MAX_AGE, QUERY_CACHE_STALE_TIME } from "./constants";
 
 export function createIDBPersister(idbValidKey: IDBValidKey = "reactQuery") {
     return {
@@ -22,8 +26,8 @@ export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             // Global defaults - can be overridden per query
-            gcTime: 1000 * 60 * 60 * 24, // 24 hours
-            staleTime: 1000 * 60 * 5, // 5 minutes default
+            gcTime: QUERY_CACHE_MAX_AGE,
+            staleTime: QUERY_CACHE_STALE_TIME,
         },
     },
 });

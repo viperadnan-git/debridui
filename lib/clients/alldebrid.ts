@@ -148,7 +148,10 @@ export default class AllDebridClient extends BaseClient {
                 const existing = this.magnetsState.get(magnet.id);
                 if (existing) {
                     // Merge changes with existing state
-                    this.magnetsState.set(magnet.id, { ...existing, ...magnet });
+                    this.magnetsState.set(magnet.id, {
+                        ...existing,
+                        ...magnet,
+                    });
                 } else {
                     // New magnet - add to front of order
                     this.magnetsState.set(magnet.id, magnet);
@@ -209,7 +212,9 @@ export default class AllDebridClient extends BaseClient {
         const list = await this.listFiles();
         const queries = query.split(" ");
         return list.files.filter((file) =>
-            queries.every((query) => file.name.toLowerCase().includes(query.toLowerCase()))
+            queries.every((query) =>
+                file.name.toLowerCase().includes(query.toLowerCase())
+            )
         );
     };
 
@@ -244,11 +249,15 @@ export default class AllDebridClient extends BaseClient {
         return this.parseFileNodes(files);
     };
 
-    private parseFileNodes = (nodes: MagnetFileNode[] | MagnetFolderNode[]): DebridFileNode[] => {
+    private parseFileNodes = (
+        nodes: MagnetFileNode[] | MagnetFolderNode[]
+    ): DebridFileNode[] => {
         return nodes.map(this.parseFileNode);
     };
 
-    private parseFileNode = (node: MagnetFileNode | MagnetFolderNode): DebridFileNode => {
+    private parseFileNode = (
+        node: MagnetFileNode | MagnetFolderNode
+    ): DebridFileNode => {
         if ("e" in node) {
             return {
                 name: node.n,

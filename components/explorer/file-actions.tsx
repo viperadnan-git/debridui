@@ -17,33 +17,34 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
     const { client } = useAuthContext();
     const queryClient = useQueryClient();
     const fileIds = Array.from(selectedFiles);
-    
+
     // Fetch link info for all selected files using the same cache strategy as FileActionButton
     const linkQueries = useQueries({
-        queries: fileIds.map(id => ({
+        queries: fileIds.map((id) => ({
             queryKey: ["getNodeDownloadUrl", id],
             queryFn: () => client.getNodeDownloadUrl(id),
-            staleTime: 24 * 60 * 60 * 1000, // 1 day cache
-            gcTime: 24 * 60 * 60 * 1000, // Keep in memory and persist for 24 hours
             enabled: false, // Don't auto-fetch until action is clicked
         })),
     });
-    
+
     const fetchAllLinks = async (): Promise<DebridLinkInfo[]> => {
         const promises = fileIds.map(async (id, index) => {
             // Check if data is already cached
-            const cached = queryClient.getQueryData<DebridLinkInfo>(["getNodeDownloadUrl", id]);
+            const cached = queryClient.getQueryData<DebridLinkInfo>([
+                "getNodeDownloadUrl",
+                id,
+            ]);
             if (cached) return cached;
-            
+
             // Fetch if not cached
             const result = await linkQueries[index].refetch();
             return result.data as DebridLinkInfo;
         });
-        
+
         const results = await Promise.all(promises);
         return results.filter(Boolean);
     };
-    
+
     const copyMutation = useMutation({
         mutationFn: async () => {
             const links = await fetchAllLinks();
@@ -57,7 +58,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
             toast.error(`Failed to copy: ${error.message}`);
         },
     });
-    
+
     const downloadMutation = useMutation({
         mutationFn: async () => {
             const links = await fetchAllLinks();
@@ -71,7 +72,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
             toast.error(`Failed to download: ${error.message}`);
         },
     });
-    
+
     const playMutation = useMutation({
         mutationFn: async () => {
             toast.info("Not implemented");
@@ -83,9 +84,9 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
             toast.error(`Failed to play: ${error.message}`);
         },
     });
-    
+
     const isDisabled = selectedFiles.size === 0;
-    
+
     return (
         <div className="flex gap-1 sm:gap-2">
             <Button

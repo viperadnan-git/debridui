@@ -21,4 +21,3 @@ export enum MediaPlayer {
     KODI = "kodi",
     EMBED = "embed",
 }
-

@@ -5,7 +5,12 @@ import { DebridFile } from "@/lib/clients/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatSize, formatRelativeTime, formatSpeed, cn } from "@/lib/utils";
 import { StatusBadge } from "../display";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FileListItemProps {
     file: DebridFile;
@@ -80,14 +85,22 @@ export function FileListItem({
 
         elements.push(
             <TooltipProvider key="completed">
-                <Tooltip>
+                <Tooltip delayDuration={2000}>
                     <TooltipTrigger asChild>
-                        <span>{formatRelativeTime(file.completedAt || file.createdAt)}</span>
+                        <span className="cursor-pointer">
+                            {formatRelativeTime(
+                                file.completedAt || file.createdAt
+                            )}
+                        </span>
                     </TooltipTrigger>
                     <TooltipContent>
                         <p>
-                            {file.status === "completed" ? "Completed" : "Added"}{" "}
-                            {(file.completedAt || file.createdAt).toLocaleString()}
+                            {file.status === "completed"
+                                ? "Completed"
+                                : "Added"}{" "}
+                            {(
+                                file.completedAt || file.createdAt
+                            ).toLocaleString()}
                         </p>
                     </TooltipContent>
                 </Tooltip>
@@ -106,7 +119,10 @@ export function FileListItem({
         return elements.reduce((acc: React.ReactNode[], elem, index) => {
             if (index > 0) {
                 acc.push(
-                    <span key={`sep-${index}`} className="text-muted-foreground">
+                    <span
+                        key={`sep-${index}`}
+                        className="text-muted-foreground"
+                    >
                         |
                     </span>
                 );
@@ -151,10 +167,15 @@ export function FileListItem({
                         </div>
                         <div className="flex items-center gap-1">
                             {file.progress !== undefined && (
-                                <span className="text-sm">{file.progress || "0"}%</span>
+                                <span className="text-sm">
+                                    {file.progress || "0"}%
+                                </span>
                             )}
                             &nbsp;
-                            <StatusBadge status={file.status} hide={"completed"} />
+                            <StatusBadge
+                                status={file.status}
+                                hide={"completed"}
+                            />
                         </div>
                     </div>
 

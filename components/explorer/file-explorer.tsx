@@ -16,10 +16,10 @@ export default function FileExplorer() {
 
     const { data, isLoading } = useQuery({
         queryKey: ["listFiles", currentUser.id, currentOffset],
-        queryFn: () => client.listFiles({ offset: currentOffset, limit: PAGE_SIZE }),
+        queryFn: () =>
+            client.listFiles({ offset: currentOffset, limit: PAGE_SIZE }),
         refetchInterval: currentOffset === 0 ? 3000 : false, // Only auto-refresh first page
         staleTime: 0,
-        gcTime: 1000 * 60 * 5, // Keep in memory for only 5 minutes after unmount
     });
 
     // Merge new data with existing files
@@ -30,9 +30,11 @@ export default function FileExplorer() {
                 setAllFiles(data.files || []);
             } else {
                 // Append new files
-                setAllFiles(prev => {
-                    const existingIds = new Set(prev.map(f => f.id));
-                    const newFiles = (data.files || []).filter(f => !existingIds.has(f.id));
+                setAllFiles((prev) => {
+                    const existingIds = new Set(prev.map((f) => f.id));
+                    const newFiles = (data.files || []).filter(
+                        (f) => !existingIds.has(f.id)
+                    );
                     return [...prev, ...newFiles];
                 });
             }
@@ -50,7 +52,7 @@ export default function FileExplorer() {
     return (
         <div className="flex flex-col gap-4">
             <h1 className="text-2xl font-bold">File Explorer</h1>
-            <DataTable 
+            <DataTable
                 data={allFiles}
                 hasMore={hasMore}
                 onLoadMore={handleLoadMore}

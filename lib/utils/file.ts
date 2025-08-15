@@ -19,8 +19,10 @@ export const sortFileNodes = (nodes: DebridFileNode[]): DebridFileNode[] => {
         const bFileType = getFileType(b.name);
 
         // Videos second (after folders)
-        if (aFileType === FileType.VIDEO && bFileType !== FileType.VIDEO) return -1;
-        if (aFileType !== FileType.VIDEO && bFileType === FileType.VIDEO) return 1;
+        if (aFileType === FileType.VIDEO && bFileType !== FileType.VIDEO)
+            return -1;
+        if (aFileType !== FileType.VIDEO && bFileType === FileType.VIDEO)
+            return 1;
 
         // If both are videos or both are non-videos, sort by name
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
@@ -70,7 +72,11 @@ export const processFileNodes = (
         if (node.type === "folder" && node.children) {
             return {
                 ...node,
-                children: processFileNodes(node.children, smartOrder, hideTrash),
+                children: processFileNodes(
+                    node.children,
+                    smartOrder,
+                    hideTrash
+                ),
             };
         }
         return node;

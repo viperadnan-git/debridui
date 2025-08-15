@@ -10,12 +10,14 @@ interface FileListProps {
 
 export function FileList({ children, className }: FileListProps) {
     return (
-        <div className={cn(
-            "rounded-md border border-border",
-            "overflow-hidden",
-            "mx-0.5 sm:mx-0",
-            className
-        )}>
+        <div
+            className={cn(
+                "rounded-md border border-border",
+                "overflow-hidden",
+                "mx-0.5 sm:mx-0",
+                className
+            )}
+        >
             {children}
         </div>
     );
@@ -27,11 +29,7 @@ interface FileListBodyProps {
 }
 
 export function FileListBody({ children, className }: FileListBodyProps) {
-    return (
-        <div className={cn("relative", className)}>
-            {children}
-        </div>
-    );
+    return <div className={cn("relative", className)}>{children}</div>;
 }
 
 interface FileListEmptyProps {
@@ -39,17 +37,19 @@ interface FileListEmptyProps {
     className?: string;
 }
 
-export function FileListEmpty({ 
-    message = "No results.", 
-    className 
+export function FileListEmpty({
+    message = "No results.",
+    className,
 }: FileListEmptyProps) {
     return (
-        <div className={cn(
-            "flex items-center justify-center",
-            "py-8 sm:py-12 md:py-16",
-            "text-sm text-muted-foreground",
-            className
-        )}>
+        <div
+            className={cn(
+                "flex items-center justify-center",
+                "py-8 sm:py-12 md:py-16",
+                "text-sm text-muted-foreground",
+                className
+            )}
+        >
             {message}
         </div>
     );

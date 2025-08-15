@@ -33,7 +33,10 @@ export function SortControls({
 }: SortControlsProps) {
     return (
         <div className="flex items-center gap-2">
-            <Label htmlFor="sort-select" className="text-sm font-medium whitespace-nowrap">
+            <Label
+                htmlFor="sort-select"
+                className="text-sm font-medium whitespace-nowrap"
+            >
                 Sort:
             </Label>
             <Select value={sortBy} onValueChange={onSortChange}>
