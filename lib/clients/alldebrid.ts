@@ -1,4 +1,10 @@
-import { DebridFile, DebridFileStatus, DebridFileNode, DebridLinkInfo, DebridFileList } from "./types";
+import {
+    DebridFile,
+    DebridFileStatus,
+    DebridFileNode,
+    DebridLinkInfo,
+    DebridFileList,
+} from "./types";
 import { AccountType, User } from "@/lib/types";
 import BaseClient from "./base";
 
@@ -158,15 +164,19 @@ export default class AllDebridClient extends BaseClient {
         // Convert magnets state to DebridFile format using order array
         const files: DebridFile[] = [];
         const end = Math.min(offset + limit, this.magnetsOrder.length);
-        
+
         for (let i = offset; i < end; i++) {
             const magnetId = this.magnetsOrder[i];
             const magnet = this.magnetsState.get(magnetId);
-            const processed = magnet?.uploaded || magnet?.downloaded;
-            const progress = processed !== undefined ? (processed / (magnet?.size || 0) * 100).toFixed(2) : undefined;
-            
+            let progress;
+
             if (magnet && magnet.filename) {
                 const status = this.getStatus(magnet.statusCode);
+                if (status === "downloading" || status === "uploading") {
+                    const processed = magnet.uploaded || magnet.downloaded || 0;
+                    const percentage = (processed / (magnet.size || 0)) * 100;
+                    progress = percentage > 0 ? percentage.toFixed(2) : 0;
+                }
                 files.push({
                     id: magnetId.toString(),
                     name: magnet.filename,

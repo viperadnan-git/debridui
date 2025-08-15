@@ -6,7 +6,7 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthContext } from "@/app/(private)/layout";
 import { DebridLinkInfo } from "@/lib/clients/types";
-import { playUrl, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
+import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 
 interface FileActionsProps {
     selectedFiles: Set<string>;
