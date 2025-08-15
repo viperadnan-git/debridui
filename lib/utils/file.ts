@@ -1,8 +1,7 @@
-import { DebridFileNode } from "./clients/types";
-import { getFileType } from "./utils";
-import { FileType } from "./types";
-
-const TRASH_SIZE_THRESHOLD = 1024 * 1024; // 1MB in bytes
+import { DebridFileNode } from "../clients/types";
+import { getFileType } from ".";
+import { FileType } from "../types";
+import { TRASH_SIZE_THRESHOLD } from "../constants";
 
 export const sortFileNodes = (nodes: DebridFileNode[]): DebridFileNode[] => {
     return [...nodes].sort((a, b) => {

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { FileTree } from "./file-tree";
 import { FileActions } from "./file-actions";
 import { useSettingsStore } from "@/lib/stores/settings";
-import { processFileNodes } from "@/lib/file-utils";
+import { processFileNodes } from "@/lib/utils/file";
 
 export function ExpandedRow({ file }: { file: DebridFile }) {
     const { client } = useAuthContext();

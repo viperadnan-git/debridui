@@ -12,7 +12,8 @@ import {
 import { useTheme } from "next-themes";
 import { Monitor, Moon, Sun, Play } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
-import { MediaPlayer, mediaPlayers } from "@/lib/types";
+import { MediaPlayer } from "@/lib/types";
+import { MEDIA_PLAYER_LABELS } from "@/lib/constants";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
@@ -90,7 +91,7 @@ export default function SettingsPage() {
                                     <SelectValue placeholder="Select media player" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {mediaPlayers.map((player) => (
+                                    {MEDIA_PLAYER_LABELS.map((player) => (
                                         <SelectItem key={player.value} value={player.value}>
                                             {player.label}
                                         </SelectItem>

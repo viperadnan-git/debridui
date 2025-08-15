@@ -1,66 +1,10 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { AccountType } from "./schemas";
+import { AccountType } from "../schemas";
 import { formatDistanceToNow } from "date-fns";
-import { DebridLinkInfo } from "./clients/types";
-import { FileType, MediaPlayer } from "./types";
-
-const accountTypeLabels = {
-    [AccountType.ALLDEBRID]: "AllDebrid",
-};
-
-const extensionToFileType: Record<string, FileType> = {
-    // Video
-    mp4: FileType.VIDEO,
-    mkv: FileType.VIDEO,
-    avi: FileType.VIDEO,
-    mov: FileType.VIDEO,
-    wmv: FileType.VIDEO,
-    flv: FileType.VIDEO,
-    webm: FileType.VIDEO,
-    m4v: FileType.VIDEO,
-    m3u8: FileType.VIDEO,
-    m3u: FileType.VIDEO,
-
-    // Audio
-    mp3: FileType.AUDIO,
-    flac: FileType.AUDIO,
-    wav: FileType.AUDIO,
-    aac: FileType.AUDIO,
-    ogg: FileType.AUDIO,
-    wma: FileType.AUDIO,
-    m4a: FileType.AUDIO,
-    opus: FileType.AUDIO,
-
-    // Image
-    jpg: FileType.IMAGE,
-    jpeg: FileType.IMAGE,
-    png: FileType.IMAGE,
-    gif: FileType.IMAGE,
-    bmp: FileType.IMAGE,
-    webp: FileType.IMAGE,
-    svg: FileType.IMAGE,
-    tiff: FileType.IMAGE,
-    ico: FileType.IMAGE,
-
-    // Document
-    pdf: FileType.DOCUMENT,
-    doc: FileType.DOCUMENT,
-    docx: FileType.DOCUMENT,
-    txt: FileType.DOCUMENT,
-    rtf: FileType.DOCUMENT,
-    epub: FileType.DOCUMENT,
-    mobi: FileType.DOCUMENT,
-
-    // Archive
-    zip: FileType.ARCHIVE,
-    rar: FileType.ARCHIVE,
-    "7z": FileType.ARCHIVE,
-    tar: FileType.ARCHIVE,
-    gz: FileType.ARCHIVE,
-    bz2: FileType.ARCHIVE,
-    xz: FileType.ARCHIVE,
-};
+import { DebridLinkInfo } from "../clients/types";
+import { FileType, MediaPlayer } from "../types";
+import { ACCOUNT_TYPE_LABELS, EXTENSION_TO_FILE_TYPE } from "../constants";
 
 export const cn = (...inputs: ClassValue[]) => {
     return twMerge(clsx(inputs));
@@ -74,7 +18,7 @@ export const formatSize = (bytes: number | undefined) => {
 };
 
 export const formatAccountType = (type: AccountType | string) => {
-    return accountTypeLabels[type as AccountType] || type;
+    return ACCOUNT_TYPE_LABELS[type as AccountType] || type;
 };
 
 export const formatSpeed = (bytesPerSec?: number) => {
@@ -136,5 +80,5 @@ export const copyLinksToClipboard = (links: DebridLinkInfo[]) => {
 export const getFileType = (name: string): FileType => {
     const extension = name.split(".").pop();
     if (!extension) return FileType.OTHER;
-    return extensionToFileType[extension.toLowerCase()] || FileType.OTHER;
+    return EXTENSION_TO_FILE_TYPE[extension.toLowerCase()] || FileType.OTHER;
 };
