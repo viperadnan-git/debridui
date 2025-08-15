@@ -1,36 +1,19 @@
 "use client";
 
-import {
-    ColumnDef,
-    flexRender,
-    getCoreRowModel,
-    getSortedRowModel,
-    getExpandedRowModel,
-    SortingState,
-    ExpandedState,
-    useReactTable,
-} from "@tanstack/react-table";
-
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { ExpandedRow } from "./expanded-row";
-import { SearchBar } from "./search-bar";
-import { SortControls, SortOption } from "./sort-controls";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { DebridFile } from "@/lib/clients/types";
 import { useAuthContext } from "@/app/(private)/layout";
-import { useQuery } from "@tanstack/react-query";
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { SearchBar } from "./search-bar";
+import { SortControls, SortOption } from "./sort-controls";
+import { FileList, FileListBody, FileListEmpty } from "./file-list";
+import { FileListHeader } from "./file-list-header";
+import { FileListItem } from "./file-list-item";
+import { ExpandedRow } from "./expanded-row";
 
-interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
+interface DataTableProps {
+    data: DebridFile[];
     hasMore?: boolean;
     onLoadMore?: (offset: number) => void;
 }
@@ -43,7 +26,7 @@ const sortOptions: SortOptionWithAccessor[] = [
     {
         value: "date",
         label: "Date Added",
-        accessor: (file: DebridFile) => file.completedAt || file.createdAt,
+        accessor: (file: DebridFile) => file.createdAt,
     },
     {
         value: "name",
@@ -77,13 +60,13 @@ const sortOptions: SortOptionWithAccessor[] = [
     },
 ];
 
-export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoadMore }: DataTableProps<TData, TValue>) {
+export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps) {
     const [sortBy, setSortBy] = useState<string>("date");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-    const [sorting, setSorting] = useState<SortingState>([]);
-    const [expanded, setExpanded] = useState<ExpandedState>({});
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+    const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
     const previousDataLength = useRef(data.length);
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
     const { client } = useAuthContext();
@@ -91,7 +74,7 @@ export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoa
     // Search query with debounce
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
 
-    React.useEffect(() => {
+    useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearchQuery(searchQuery);
         }, 1000);
@@ -104,13 +87,13 @@ export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoa
         queryFn: () =>
             client.searchFiles ? client.searchFiles(debouncedSearchQuery) : Promise.resolve([]),
         enabled: !!debouncedSearchQuery && !!client.searchFiles,
-        staleTime: 5_000, // 5 seconds
+        staleTime: 5_000,
     });
 
     // Use search results if searching, otherwise use provided data
     const activeData = debouncedSearchQuery && searchResults ? searchResults : data;
 
-    // Track new files to put them at the top
+    // Sort data
     const sortedData = useMemo(() => {
         const sortOption = sortOptions.find((opt) => opt.value === sortBy);
         if (!sortOption) return activeData;
@@ -118,8 +101,8 @@ export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoa
         // For search results, just sort normally without new file logic
         if (debouncedSearchQuery && searchResults) {
             const sorted = [...activeData].sort((a, b) => {
-                const aValue = sortOption.accessor(a as DebridFile);
-                const bValue = sortOption.accessor(b as DebridFile);
+                const aValue = sortOption.accessor(a);
+                const bValue = sortOption.accessor(b);
 
                 if (aValue === bValue) return 0;
 
@@ -152,8 +135,8 @@ export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoa
 
             // Sort existing files normally
             const sortedExisting = existingFiles.sort((a, b) => {
-                const aValue = sortOption.accessor(a as DebridFile);
-                const bValue = sortOption.accessor(b as DebridFile);
+                const aValue = sortOption.accessor(a);
+                const bValue = sortOption.accessor(b);
 
                 if (aValue === bValue) return 0;
 
@@ -177,8 +160,8 @@ export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoa
 
         // Normal sorting when no new files
         const sorted = [...activeData].sort((a, b) => {
-            const aValue = sortOption.accessor(a as DebridFile);
-            const bValue = sortOption.accessor(b as DebridFile);
+            const aValue = sortOption.accessor(a);
+            const bValue = sortOption.accessor(b);
 
             if (aValue === bValue) return 0;
 
@@ -199,32 +182,41 @@ export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoa
         return sorted;
     }, [activeData, sortBy, sortDirection, debouncedSearchQuery, searchResults]);
 
-    const table = useReactTable({
-        data: sortedData,
-        columns: columns as ColumnDef<TData | DebridFile>[],
-        getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getExpandedRowModel: getExpandedRowModel(),
-        onSortingChange: setSorting,
-        onExpandedChange: setExpanded,
-        getRowCanExpand: (row) => (row.original as DebridFile).status === "completed",
-        state: {
-            sorting,
-            expanded,
-        },
-    });
-
-    const handleRowClick = (row: { original: DebridFile; toggleExpanded: () => void }) => {
-        if (row.original.status === "completed") {
-            row.toggleExpanded();
-        }
-    };
-
     const handleSortChange = (newSortBy: string) => {
-        // New field selected, set field and use default direction
         setSortBy(newSortBy);
         setSortDirection(newSortBy === "date" ? "desc" : "asc");
     };
+
+    const handleSelectAll = (checked: boolean | "indeterminate") => {
+        if (checked) {
+            setSelectedFiles(new Set(sortedData.map(file => file.id)));
+        } else {
+            setSelectedFiles(new Set());
+        }
+    };
+
+    const handleSelectFile = (fileId: string, checked: boolean | "indeterminate") => {
+        const newSelected = new Set(selectedFiles);
+        if (checked === true) {
+            newSelected.add(fileId);
+        } else {
+            newSelected.delete(fileId);
+        }
+        setSelectedFiles(newSelected);
+    };
+
+    const handleToggleExpand = (fileId: string) => {
+        const newExpanded = new Set(expandedFiles);
+        if (newExpanded.has(fileId)) {
+            newExpanded.delete(fileId);
+        } else {
+            newExpanded.add(fileId);
+        }
+        setExpandedFiles(newExpanded);
+    };
+
+    const isAllSelected = sortedData.length > 0 && selectedFiles.size === sortedData.length;
+    const isSomeSelected = selectedFiles.size > 0 && selectedFiles.size < sortedData.length;
 
     // Reset loading state when data changes
     useEffect(() => {
@@ -256,7 +248,7 @@ export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoa
     return (
         <>
             {/* Search and Sort Controls */}
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-4">
                 <SearchBar
                     value={searchQuery}
                     onChange={setSearchQuery}
@@ -273,74 +265,47 @@ export function DataTable<TData, TValue>({ columns, data, hasMore = false, onLoa
                 />
             </div>
 
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead key={header.id}>
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                      header.column.columnDef.header,
-                                                      header.getContext()
-                                                  )}
-                                        </TableHead>
-                                    );
-                                })}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <React.Fragment key={row.id}>
-                                    <TableRow
-                                        data-state={row.getIsSelected() && "selected"}
-                                        className={`${(row.original as DebridFile).status === "completed" ? "cursor-pointer hover:bg-muted/50" : ""} ${row.getIsExpanded() ? "bg-muted/20" : ""}`}
-                                        onClick={() => handleRowClick(row as { original: DebridFile; toggleExpanded: () => void })}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                    {row.getIsExpanded() && (
-                                        <TableRow>
-                                            <TableCell colSpan={columns.length} className="p-0">
-                                                <ExpandedRow file={row.original as DebridFile} />
-                                            </TableCell>
-                                        </TableRow>
+            <FileList>
+                <FileListHeader
+                    isAllSelected={isSomeSelected ? "indeterminate" : isAllSelected}
+                    onSelectAll={handleSelectAll}
+                />
+                <FileListBody>
+                    {sortedData.length > 0 ? (
+                        <>
+                            {sortedData.map((file) => (
+                                <React.Fragment key={file.id}>
+                                    <FileListItem
+                                        file={file}
+                                        isSelected={selectedFiles.has(file.id)}
+                                        isExpanded={expandedFiles.has(file.id)}
+                                        canExpand={file.status === "completed"}
+                                        onToggleSelect={(checked) => handleSelectFile(file.id, checked)}
+                                        onToggleExpand={() => handleToggleExpand(file.id)}
+                                    />
+                                    {expandedFiles.has(file.id) && (
+                                        <div className="border-b border-border/40 bg-muted/10">
+                                            <ExpandedRow file={file} />
+                                        </div>
                                     )}
                                 </React.Fragment>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-                
-            </div>
+                            ))}
+                        </>
+                    ) : (
+                        <FileListEmpty />
+                    )}
+                </FileListBody>
+            </FileList>
             
             {/* Infinite scroll trigger */}
             {hasMore && !debouncedSearchQuery && (
                 <div 
                     ref={loadMoreTriggerRef}
-                    className="flex items-center justify-center py-4"
+                    className="flex items-center justify-center py-2 sm:py-4"
                 >
                     {isLoadingMore && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                             Loading more...
                         </div>
                     )}

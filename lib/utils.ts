@@ -65,13 +65,26 @@ export const playUrl = (url: string, player: string) => {
 };
 
 export const downloadLinks = (downloads: DebridLinkInfo[]) => {
-    for (const download of downloads) {
-        // initiate download in browser
-        const a = document.createElement("a");
-        a.href = download.link;
-        a.download = download.name;
-        a.click();
-    }
+    const downloadContainer = document.createElement("a");
+    downloadContainer.style.display = "none";
+    document.body.appendChild(downloadContainer);
+
+    const download = (url: DebridLinkInfo) => {
+        downloadContainer.href = url.link;
+        downloadContainer.download = url.name;
+        downloadContainer.target = "_blank";
+        downloadContainer.click();
+    };
+
+    const interval = setInterval(() => {
+        const url = downloads.pop();
+        if (!url) {
+            clearInterval(interval);
+            document.body.removeChild(downloadContainer);
+            return;
+        }
+        download(url);
+    }, 1000);
 };
 
 export const copyLinksToClipboard = (links: DebridLinkInfo[]) => {

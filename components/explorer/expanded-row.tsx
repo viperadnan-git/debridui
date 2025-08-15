@@ -20,7 +20,7 @@ export function ExpandedRow({ file }: { file: DebridFile }) {
     });
 
     return (
-        <div className="p-4">
+        <div className="px-0.5 py-2 md:px-4">
             {/* Action Buttons */}
             <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs sm:text-sm text-muted-foreground">
@@ -30,7 +30,7 @@ export function ExpandedRow({ file }: { file: DebridFile }) {
             </div>
 
             {/* File Tree */}
-            <div className="border rounded-lg p-2 sm:p-3 bg-background">
+            <div className="p-2 sm:p-3">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-4">
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

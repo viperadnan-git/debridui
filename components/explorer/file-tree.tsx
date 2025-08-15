@@ -151,7 +151,7 @@ function FileNode({ node, selectedFiles, onSelectionChange, fileId, depth, isFir
         return (
             <div
                 className={cn(
-                    "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2",
+                    "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 hover:bg-muted",
                     "text-xs sm:text-sm"
                 )}
                 style={{ paddingLeft: `${depth * 12}px` }}
@@ -197,7 +197,7 @@ function FileNode({ node, selectedFiles, onSelectionChange, fileId, depth, isFir
                 <CollapsibleTrigger asChild>
                     <div
                         className={cn(
-                            "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 cursor-pointer",
+                            "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 cursor-pointer hover:bg-muted",
                             "text-xs sm:text-sm"
                         )}
                         style={{ paddingLeft: `${depth * 12}px` }}
@@ -217,7 +217,7 @@ function FileNode({ node, selectedFiles, onSelectionChange, fileId, depth, isFir
                         <TooltipProvider>
                             <Tooltip delayDuration={2000}>
                                 <TooltipTrigger asChild>
-                                    <span className="flex-1 hover:underline cursor-pointer truncate">
+                                    <span className="flex-1 cursor-pointer truncate">
                                         {node.name}
                                     </span>
                                 </TooltipTrigger>

@@ -45,6 +45,7 @@ export default class AllDebridClient extends BaseClient {
     private sessionId: number;
     private counter: number = 0;
     private magnetsState: Map<number, MagnetStatus> = new Map();
+    private magnetsOrder: number[] = []; // Track order with newest first
 
     constructor(private readonly account: User) {
         super();
@@ -129,35 +130,43 @@ export default class AllDebridClient extends BaseClient {
         if (data.fullsync) {
             // Full sync - reset state and store all magnets
             this.magnetsState.clear();
+            this.magnetsOrder = [];
             data.magnets.forEach((magnet) => {
                 this.magnetsState.set(magnet.id, magnet);
+                this.magnetsOrder.push(magnet.id);
             });
         } else {
             // Incremental update - merge changes with existing state
+            const newMagnets: number[] = [];
             data.magnets.forEach((magnet) => {
                 const existing = this.magnetsState.get(magnet.id);
-                console.log("existing", existing);
-                console.log("magnet", magnet);
                 if (existing) {
                     // Merge changes with existing state
                     this.magnetsState.set(magnet.id, { ...existing, ...magnet });
                 } else {
-                    // New magnet
-                    console.log("new magnet", magnet);
+                    // New magnet - add to front of order
                     this.magnetsState.set(magnet.id, magnet);
+                    newMagnets.push(magnet.id);
                 }
             });
+            // Add new magnets to the front of the order array
+            if (newMagnets.length > 0) {
+                this.magnetsOrder = [...newMagnets, ...this.magnetsOrder];
+            }
         }
 
-        // Convert magnets state to DebridFile format
+        // Convert magnets state to DebridFile format using order array
         const files: DebridFile[] = [];
-        const entries = Array.from(this.magnetsState.entries());
-        const end = offset + limit;
-        for (const [id, magnet] of entries.slice(offset, end)) {
-            if (magnet.filename) {
+        const end = Math.min(offset + limit, this.magnetsOrder.length);
+        
+        for (let i = offset; i < end; i++) {
+            const magnetId = this.magnetsOrder[i];
+            const magnet = this.magnetsState.get(magnetId);
+            
+            if (magnet && magnet.filename) {
                 const status = this.getStatus(magnet.statusCode);
                 files.push({
-                    id: id.toString(),
+                    id: magnetId.toString(),
                     name: magnet.filename,
                     size: magnet.size || 0,
                     status,
@@ -180,7 +189,7 @@ export default class AllDebridClient extends BaseClient {
             files,
             offset,
             limit,
-            hasMore: end < entries.length,
+            hasMore: end < this.magnetsOrder.length,
         };
     };
 
@@ -206,47 +215,6 @@ export default class AllDebridClient extends BaseClient {
             name: data.filename,
             size: data.filesize,
         };
-    };
-
-    /**
-     * Get the full magnet status data using Live Mode
-     * Returns the complete state of all magnets
-     */
-    getMagnetStatus = async (): Promise<MagnetStatus[]> => {
-        const form = new FormData();
-        form.append("session", this.sessionId.toString());
-        form.append("counter", this.counter.toString());
-
-        const data = (await this.fetch(`magnet/status`, {
-            method: "POST",
-            body: form,
-        })) as LiveModeResponse;
-
-        // Update counter for next call
-        this.counter = data.counter;
-
-        // Handle Live Mode response
-        if (data.fullsync) {
-            // Full sync - reset state and store all magnets
-            this.magnetsState.clear();
-            data.magnets.forEach((magnet) => {
-                this.magnetsState.set(magnet.id, magnet);
-            });
-        } else {
-            // Incremental update - merge changes with existing state
-            data.magnets.forEach((magnet) => {
-                const existing = this.magnetsState.get(magnet.id);
-                if (existing) {
-                    // Merge changes with existing state
-                    this.magnetsState.set(magnet.id, { ...existing, ...magnet });
-                } else {
-                    // New magnet
-                    this.magnetsState.set(magnet.id, magnet);
-                }
-            });
-        }
-
-        return Array.from(this.magnetsState.values());
     };
 
     getFile = async (id: string): Promise<DebridFileNode[]> => {
@@ -289,6 +257,8 @@ export default class AllDebridClient extends BaseClient {
 
     private getStatus = (status: number): DebridFileStatus => {
         switch (status) {
+            case 0:
+                return "waiting";
             case 1:
                 return "downloading";
             case 2:
@@ -298,6 +268,7 @@ export default class AllDebridClient extends BaseClient {
             case 4:
                 return "completed";
             case 10:
+            case 7:
                 return "failed";
             default:
                 return "unknown";

@@ -2,7 +2,6 @@
 
 import { useAuthContext } from "@/app/(private)/layout";
 import { useQuery } from "@tanstack/react-query";
-import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { useState, useEffect } from "react";
 import { DebridFile } from "@/lib/clients/types";
@@ -52,7 +51,6 @@ export default function FileExplorer() {
         <div className="flex flex-col gap-4">
             <h1 className="text-2xl font-bold">File Explorer</h1>
             <DataTable 
-                columns={columns} 
                 data={allFiles}
                 hasMore={hasMore}
                 onLoadMore={handleLoadMore}

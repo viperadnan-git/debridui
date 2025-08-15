@@ -64,8 +64,8 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
             downloadLinks(links);
             return links;
         },
-        onSuccess: () => {
-            toast.success("Downloads started");
+        onSuccess: (links) => {
+            toast.success(`Downloading ${links.length} files`);
         },
         onError: (error) => {
             toast.error(`Failed to download: ${error.message}`);

@@ -32,7 +32,7 @@ export type DebridFileList = {
     hasMore: boolean;
 }
 
-export type DebridFileStatus = "downloading" | "uploading" | "seeding" | "paused" | "completed" | "failed" | "unknown";
+export type DebridFileStatus = "downloading" | "uploading" | "seeding" | "paused" | "completed" | "failed" | "unknown" | "waiting";
 
 export type DebridLinkInfo = {
     link: string;
