@@ -10,10 +10,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun, Play } from "lucide-react";
+import { useSettingsStore } from "@/lib/stores/settings";
+import { MediaPlayer, mediaPlayers } from "@/lib/types";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
+    const { mediaPlayer, setMediaPlayer } = useSettingsStore();
 
     const themes = [
         { value: "light", label: "Light", icon: Sun },
@@ -64,6 +67,38 @@ export default function SettingsPage() {
                             </Select>
                             <p className="text-sm text-muted-foreground">
                                 Choose how the application looks to you.
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Play className="h-5 w-5" />
+                            Media Player
+                        </CardTitle>
+                        <CardDescription>
+                            Choose your preferred media player for video playback.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="media-player">Default Player</Label>
+                            <Select value={mediaPlayer} onValueChange={(value) => setMediaPlayer(value as MediaPlayer)}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select media player" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {mediaPlayers.map((player) => (
+                                        <SelectItem key={player.value} value={player.value}>
+                                            {player.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-sm text-muted-foreground">
+                                Videos will open in your selected player. External players require the application to be installed.
                             </p>
                         </div>
                     </CardContent>

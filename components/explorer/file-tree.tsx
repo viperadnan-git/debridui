@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/app/(private)/layout";
 import { toast } from "sonner";
 import { FileType } from "@/lib/types";
+import { useSettingsStore } from "@/lib/stores/settings";
 
 interface FileTreeProps {
     nodes: DebridFileNode[];
@@ -52,6 +53,7 @@ function FileActionButton({
 }) {
     const { client } = useAuthContext();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
+    const { mediaPlayer } = useSettingsStore();
 
     const { data: linkInfo, refetch } = useQuery({
         queryKey: ["getNodeDownloadUrl", node.id],
@@ -66,7 +68,7 @@ function FileActionButton({
 
         switch (action) {
             case "play":
-                window.open(playUrl(linkInfo.link, "iina"), "_self");
+                window.open(playUrl(linkInfo.link, mediaPlayer), "_self");
                 break;
             case "download":
                 downloadLinks([linkInfo]);

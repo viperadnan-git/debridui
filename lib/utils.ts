@@ -3,13 +3,14 @@ import { twMerge } from "tailwind-merge";
 import { AccountType } from "./schemas";
 import { formatDistanceToNow } from "date-fns";
 import { DebridLinkInfo } from "./clients/types";
-import { FileType } from "./types";
+import { FileType, MediaPlayer } from "./types";
 
 const accountTypeLabels = {
     [AccountType.ALLDEBRID]: "AllDebrid",
 };
 
-const extensionToFileType = {
+const extensionToFileType: Record<string, FileType> = {
+    // Video
     mp4: FileType.VIDEO,
     mkv: FileType.VIDEO,
     avi: FileType.VIDEO,
@@ -18,9 +19,47 @@ const extensionToFileType = {
     flv: FileType.VIDEO,
     webm: FileType.VIDEO,
     m4v: FileType.VIDEO,
-    m4a: FileType.VIDEO,
     m3u8: FileType.VIDEO,
     m3u: FileType.VIDEO,
+
+    // Audio
+    mp3: FileType.AUDIO,
+    flac: FileType.AUDIO,
+    wav: FileType.AUDIO,
+    aac: FileType.AUDIO,
+    ogg: FileType.AUDIO,
+    wma: FileType.AUDIO,
+    m4a: FileType.AUDIO,
+    opus: FileType.AUDIO,
+
+    // Image
+    jpg: FileType.IMAGE,
+    jpeg: FileType.IMAGE,
+    png: FileType.IMAGE,
+    gif: FileType.IMAGE,
+    bmp: FileType.IMAGE,
+    webp: FileType.IMAGE,
+    svg: FileType.IMAGE,
+    tiff: FileType.IMAGE,
+    ico: FileType.IMAGE,
+
+    // Document
+    pdf: FileType.DOCUMENT,
+    doc: FileType.DOCUMENT,
+    docx: FileType.DOCUMENT,
+    txt: FileType.DOCUMENT,
+    rtf: FileType.DOCUMENT,
+    epub: FileType.DOCUMENT,
+    mobi: FileType.DOCUMENT,
+
+    // Archive
+    zip: FileType.ARCHIVE,
+    rar: FileType.ARCHIVE,
+    "7z": FileType.ARCHIVE,
+    tar: FileType.ARCHIVE,
+    gz: FileType.ARCHIVE,
+    bz2: FileType.ARCHIVE,
+    xz: FileType.ARCHIVE,
 };
 
 export const cn = (...inputs: ClassValue[]) => {
@@ -47,20 +86,22 @@ export const formatRelativeTime = (date: Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true });
 };
 
-export const playUrl = (url: string, player: string) => {
+export const playUrl = (url: string, player: MediaPlayer) => {
     switch (player) {
-        case "iina":
+        case MediaPlayer.IINA:
             return `iina://weblink?url=${encodeURIComponent(url)}`;
-        case "vlc":
+        case MediaPlayer.VLC:
             return `vlc://${encodeURIComponent(url)}`;
-        case "mpv":
+        case MediaPlayer.MPV:
             return `mpv://${encodeURIComponent(url)}`;
-        case "potplayer":
+        case MediaPlayer.POTPLAYER:
             return `potplayer://${encodeURIComponent(url)}`;
         case "kodi":
             return `kodi://${encodeURIComponent(url)}`;
         default:
-            return `vlc://${encodeURIComponent(url)}`;
+            return `https://embed-player.com/video/?source=${encodeURIComponent(
+                url
+            )}&color=%23a1c2c3&preload=metadata`;
     }
 };
 
@@ -92,11 +133,8 @@ export const copyLinksToClipboard = (links: DebridLinkInfo[]) => {
     navigator.clipboard.writeText(text);
 };
 
-export const getFileType = (name: string) => {
+export const getFileType = (name: string): FileType => {
     const extension = name.split(".").pop();
     if (!extension) return FileType.OTHER;
-    return (
-        extensionToFileType[extension.toLowerCase() as keyof typeof extensionToFileType] ||
-        FileType.OTHER
-    );
+    return extensionToFileType[extension.toLowerCase()] || FileType.OTHER;
 };
