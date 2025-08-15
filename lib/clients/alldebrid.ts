@@ -162,6 +162,8 @@ export default class AllDebridClient extends BaseClient {
         for (let i = offset; i < end; i++) {
             const magnetId = this.magnetsOrder[i];
             const magnet = this.magnetsState.get(magnetId);
+            const processed = magnet?.uploaded || magnet?.downloaded;
+            const progress = processed !== undefined ? (processed / (magnet?.size || 0) * 100).toFixed(2) : undefined;
             
             if (magnet && magnet.filename) {
                 const status = this.getStatus(magnet.statusCode);
@@ -170,7 +172,7 @@ export default class AllDebridClient extends BaseClient {
                     name: magnet.filename,
                     size: magnet.size || 0,
                     status,
-                    progress: magnet.processingPerc,
+                    progress,
                     downloadSpeed: magnet.downloadSpeed,
                     uploadSpeed: magnet.uploadSpeed,
                     uploaded: magnet.uploaded,
