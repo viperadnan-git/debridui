@@ -15,7 +15,7 @@ import { Separator } from "../ui/separator";
 
 interface FileListItemProps {
     file: DebridFile;
-    isSelected: boolean;
+    isSelected: boolean | "indeterminate";
     canExpand: boolean;
     onToggleSelect: (checked: boolean | "indeterminate") => void;
     onToggleExpand: () => void;

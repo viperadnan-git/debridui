@@ -10,7 +10,7 @@ import React, {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { DebridFile, DebridFileNode } from "@/lib/clients/types";
-import { useAuthContext } from "@/app/(private)/layout";
+import { useAuthContext } from "@/lib/contexts/auth";
 import { SearchBar } from "./search-bar";
 import { SortControls, SortOption } from "./sort-controls";
 import { FileList, FileListBody, FileListEmpty } from "./file-list";
@@ -18,7 +18,7 @@ import { FileListHeader } from "./file-list-header";
 import { FileListItem } from "./file-list-item";
 import { ExpandedRow } from "./expanded-row";
 import { FileActionsDrawer } from "./file-actions-drawer";
-import { useHierarchicalSelection } from "@/hooks/use-selection";
+import { useSelectionStore } from "@/lib/stores/selection";
 import { useFileStore } from "@/lib/stores/files";
 
 interface DataTableProps {
@@ -81,8 +81,19 @@ export function DataTable({
     const { client } = useAuthContext();
     const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore();
 
-    // Use the hierarchical selection hook
-    const selection = useHierarchicalSelection();
+    // Use the selection store
+    const {
+        selectedFileIds,
+        selectedNodesByFile,
+        toggleFileSelection,
+        updateNodeSelection,
+        getFileSelectionState,
+        registerFileNodes,
+        selectAll,
+        clearAll,
+        getAllSelectedNodeIds,
+        getFullySelectedFileIds,
+    } = useSelectionStore();
     const queryClient = useQueryClient();
 
     // Search query with debounce
@@ -121,9 +132,9 @@ export function DataTable({
 
     const handleSelectAll = (checked: boolean | "indeterminate") => {
         if (checked) {
-            selection.selectAll(data.map((file) => file.id));
+            selectAll(data.map((file) => file.id));
         } else {
-            selection.clearAll();
+            clearAll();
         }
     };
 
@@ -145,7 +156,7 @@ export function DataTable({
             collectNodeIds(fileNodes);
         }
 
-        selection.toggleFileSelection(fileId, allNodeIds);
+        toggleFileSelection(fileId, allNodeIds);
     };
 
     const handleToggleExpand = (fileId: string) => {
@@ -162,16 +173,16 @@ export function DataTable({
 
     const handleNodeSelectionChange = useCallback(
         (fileId: string, nodeIds: Set<string>) => {
-            selection.updateNodeSelection(fileId, nodeIds);
+            updateNodeSelection(fileId, nodeIds);
         },
-        [selection]
+        [updateNodeSelection]
     );
 
     const handleNodesLoaded = useCallback(
         (fileId: string, nodeIds: string[]) => {
-            selection.registerFileNodes(fileId, nodeIds);
+            registerFileNodes(fileId, nodeIds);
         },
-        [selection]
+        [registerFileNodes]
     );
 
     // Calculate header checkbox state
@@ -179,16 +190,16 @@ export function DataTable({
         if (activeData.length === 0) return false;
 
         const allFilesSelected = activeData.every((file) =>
-            selection.selectedFileIds.has(file.id)
+            selectedFileIds.has(file.id)
         );
 
         const someFilesSelected = activeData.some((file) =>
-            selection.selectedFileIds.has(file.id)
+            selectedFileIds.has(file.id)
         );
 
         const hasIndeterminateFiles = activeData.some(
             (file) =>
-                selection.getFileSelectionState(file.id) === "indeterminate"
+                getFileSelectionState(file.id) === "indeterminate"
         );
 
         if (allFilesSelected && !hasIndeterminateFiles) {
@@ -270,15 +281,7 @@ export function DataTable({
                                 <React.Fragment key={file.id}>
                                     <FileListItem
                                         file={file}
-                                        isSelected={
-                                            selection.getFileSelectionState(
-                                                file.id
-                                            ) === "indeterminate"
-                                                ? false
-                                                : selection.getFileSelectionState(
-                                                      file.id
-                                                  ) === true
-                                        }
+                                        isSelected={getFileSelectionState(file.id)}
                                         canExpand={file.status === "completed"}
                                         onToggleSelect={() =>
                                             handleSelectFile(file.id)
@@ -292,7 +295,7 @@ export function DataTable({
                                             <ExpandedRow
                                                 file={file}
                                                 selectedNodes={
-                                                    selection.selectedNodesByFile.get(
+                                                    selectedNodesByFile.get(
                                                         file.id
                                                     ) || new Set()
                                                 }
@@ -341,9 +344,9 @@ export function DataTable({
 
             {/* Bottom Actions Drawer */}
             <FileActionsDrawer
-                selectedFileIds={selection.selectedFileIds}
-                selectedNodeIds={selection.getAllSelectedNodeIds()}
-                fullySelectedFileIds={selection.getFullySelectedFileIds()}
+                selectedFileIds={selectedFileIds}
+                selectedNodeIds={getAllSelectedNodeIds()}
+                fullySelectedFileIds={getFullySelectedFileIds()}
                 files={activeData}
             />
         </>

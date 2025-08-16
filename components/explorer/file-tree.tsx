@@ -30,7 +30,7 @@ import {
     TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthContext } from "@/app/(private)/layout";
+import { useAuthContext } from "@/lib/contexts/auth";
 import { toast } from "sonner";
 import { FileType } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";

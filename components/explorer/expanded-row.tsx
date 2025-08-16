@@ -3,7 +3,7 @@
 import { DebridFile, DebridFileNode } from "@/lib/clients/types";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useAuthContext } from "@/app/(private)/layout";
+import { useAuthContext } from "@/lib/contexts/auth";
 import { Loader2 } from "lucide-react";
 import { FileTree } from "./file-tree";
 import { useSettingsStore } from "@/lib/stores/settings";
@@ -61,19 +61,22 @@ export function ExpandedRow({
     const hasNotifiedNodes = useRef(false);
 
     useEffect(() => {
-        if (nodes && onNodesLoaded && !hasNotifiedNodes.current) {
+        if (processedNodes.length > 0 && onNodesLoaded && !hasNotifiedNodes.current) {
             const nodeIds: string[] = [];
             const collectNodeIds = (nodeList: DebridFileNode[]) => {
                 nodeList.forEach((node) => {
-                    if (node.id) nodeIds.push(node.id);
+                    // Only collect file IDs, not folder IDs (to match FileTree behavior)
+                    if (node.type === "file" && node.id) {
+                        nodeIds.push(node.id);
+                    }
                     if (node.children) collectNodeIds(node.children);
                 });
             };
-            collectNodeIds(nodes);
+            collectNodeIds(processedNodes);
             onNodesLoaded(nodeIds);
             hasNotifiedNodes.current = true;
         }
-    }, [nodes, onNodesLoaded]);
+    }, [processedNodes, onNodesLoaded]);
 
     return (
         <div className="px-0.5 md:px-4">

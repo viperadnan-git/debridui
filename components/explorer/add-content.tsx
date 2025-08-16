@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { useAuthContext } from "@/app/(private)/layout";
+import { useAuthContext } from "@/lib/contexts/auth";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
 import { Upload, Link, FileUp, Loader2 } from "lucide-react";

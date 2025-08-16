@@ -1,6 +1,9 @@
 import { DebridFile } from "../clients/types";
 import { create } from "zustand";
 import { PAGE_SIZE } from "../constants";
+import { queryClient } from "../query-client";
+import AllDebridClient from "../clients/alldebrid";
+import { useSelectionStore } from "./selection";
 
 interface FileStoreState {
     files: DebridFile[];
@@ -15,6 +18,11 @@ interface FileStoreState {
     setOffset: (offset: number) => void;
     setSortBy: (sortBy: string) => void;
     setSortOrder: (sortOrder: "asc" | "desc") => void;
+    deleteFile: (client: AllDebridClient, fileId: string) => Promise<string>;
+    retryFiles: (
+        client: AllDebridClient,
+        fileIds: string[]
+    ) => Promise<Record<string, string>>;
 }
 
 const initialState = {
@@ -139,5 +147,20 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
     setSortOrder: (sortOrder: "asc" | "desc") => {
         set({ sortOrder });
         get().sortFiles();
+    },
+    deleteFile: async (client: AllDebridClient, fileId: string) => {
+        const message = await client.deleteFile(fileId);
+        get().removeFile(fileId);
+        // Clear selection for this file
+        useSelectionStore.getState().removeFileSelection(fileId);
+        queryClient.invalidateQueries({ queryKey: ["listFiles"] });
+        queryClient.invalidateQueries({ queryKey: ["searchFiles"] });
+        return message;
+    },
+    retryFiles: async (client: AllDebridClient, fileIds: string[]) => {
+        const message = await client.retryFile(fileIds);
+        queryClient.invalidateQueries({ queryKey: ["listFiles"] });
+        queryClient.invalidateQueries({ queryKey: ["searchFiles"] });
+        return message;
     },
 }));

@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import { FileActions } from "./file-actions";
 import { DebridFile } from "@/lib/clients/types";
 import { cn } from "@/lib/utils";
-import { useFileExplorer } from "@/hooks/use-file-explorer";
+import { useFileStore } from "@/lib/stores/files";
+import { useAuthContext } from "@/lib/contexts/auth";
 
 interface FileActionsDrawerProps {
     selectedFileIds: Set<string>;
@@ -23,7 +24,8 @@ export function FileActionsDrawer({
     fullySelectedFileIds,
     files,
 }: FileActionsDrawerProps) {
-    const { deleteFile, retryFiles } = useFileExplorer();
+    const { client } = useAuthContext();
+    const { deleteFile, retryFiles } = useFileStore();
 
     // Check if drawer should be shown
     const hasAnySelection =
@@ -49,11 +51,12 @@ export function FileActionsDrawer({
     // Delete mutation
     const deleteMutation = useMutation({
         mutationFn: async (fileIds: string[]) => {
-            const promises = fileIds.map((id) => deleteFile(id));
+            const promises = fileIds.map((id) => deleteFile(client, id));
             await Promise.all(promises);
             return fileIds;
         },
         onSuccess: (fileIds) => {
+            // Selection clearing is now handled in the store's deleteFile
             toast.success(`Deleted ${fileIds.length} file(s)`);
         },
         onError: (error: Error) => {
@@ -64,7 +67,7 @@ export function FileActionsDrawer({
     // Retry mutation
     const retryMutation = useMutation({
         mutationFn: async (fileIds: string[]) => {
-            return retryFiles(fileIds);
+            return retryFiles(client, fileIds);
         },
         onSuccess: (results) => {
             Object.entries(results).forEach(([magnet, message]) => {

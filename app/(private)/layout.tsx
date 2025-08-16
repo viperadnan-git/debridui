@@ -9,24 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/sidebar";
 import { useAuth, useClient } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { useEffect, createContext, useContext } from "react";
-import { User } from "@/lib/types";
-import AllDebridClient from "@/lib/clients/alldebrid";
-
-type AuthContextType = {
-    currentUser: User;
-    client: AllDebridClient;
-};
-
-const AuthContext = createContext<AuthContextType | null>(null);
-
-export function useAuthContext() {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error("useAuthContext must be used within PrivateLayout");
-    }
-    return context;
-}
+import { useEffect } from "react";
+import { AuthContext } from "@/lib/contexts/auth";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const { currentUser, isReady } = useAuth();

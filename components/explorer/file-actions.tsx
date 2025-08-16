@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Download, Play, Loader2 } from "lucide-react";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAuthContext } from "@/app/(private)/layout";
+import { useAuthContext } from "@/lib/contexts/auth";
 import { DebridLinkInfo } from "@/lib/clients/types";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { QUERY_CACHE_MAX_AGE } from "@/lib/constants";
