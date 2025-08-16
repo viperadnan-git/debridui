@@ -10,7 +10,6 @@ import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 
 interface FileActionsProps {
     selectedFiles: Set<string>;
-    fileId: string;
 }
 
 export function FileActions({ selectedFiles }: FileActionsProps) {
@@ -101,7 +100,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 ) : (
                     <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 )}
-                Copy
+                Copy ({selectedFiles.size})
             </Button>
             <Button
                 variant="outline"
@@ -115,7 +114,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 ) : (
                     <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 )}
-                Download
+                Download ({selectedFiles.size})
             </Button>
             <Button
                 variant="outline"
@@ -129,7 +128,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 ) : (
                     <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 )}
-                Play
+                Play ({selectedFiles.size})
             </Button>
         </div>
     );

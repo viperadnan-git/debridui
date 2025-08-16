@@ -35,13 +35,17 @@ export const playUrl = (url: string, player: MediaPlayer) => {
         case MediaPlayer.IINA:
             return `iina://weblink?url=${encodeURIComponent(url)}`;
         case MediaPlayer.VLC:
-            return `vlc://${encodeURIComponent(url)}`;
+            return `vlc://${url}`;
         case MediaPlayer.MPV:
             return `mpv://${encodeURIComponent(url)}`;
         case MediaPlayer.POTPLAYER:
             return `potplayer://${encodeURIComponent(url)}`;
-        case "kodi":
+        case MediaPlayer.KODI:
             return `kodi://${encodeURIComponent(url)}`;
+        case MediaPlayer.MX_PLAYER:
+            return `intent:${url}#Intent;package=com.mxtech.videoplayer.ad;S.title=undefined;end`;
+        case MediaPlayer.MX_PLAYER_PRO:
+            return `intent:${url}#Intent;package=com.mxtech.videoplayer.pro;S.title=undefined;end`;
         default:
             return `https://embed-player.com/video/?source=${encodeURIComponent(
                 url

@@ -34,6 +34,7 @@ import { useAuthContext } from "@/app/(private)/layout";
 import { toast } from "sonner";
 import { FileType } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FileTreeProps {
     nodes: DebridFileNode[];
@@ -135,7 +136,7 @@ function FileActionButton({
         <Button
             variant="ghost"
             size="icon"
-            className="h-5 w-5 sm:h-6 sm:w-6 cursor-pointer"
+            className="size-4 sm:size-6 cursor-pointer"
             onClick={handleClick}
             disabled={isButtonLoading || !node.id}
         >
@@ -152,6 +153,9 @@ function FileNode({
     depth,
     isFirst = false,
 }: FileNodeProps & { isFirst?: boolean }) {
+    const isMobile = useIsMobile();
+    const [showActions, setShowActions] = useState(false);
+
     const [isOpen, setIsOpen] = useState(
         depth === 0 && isFirst && node.type === "folder"
     );
@@ -201,9 +205,13 @@ function FileNode({
                         <TooltipTrigger asChild>
                             <span
                                 className="flex-1 cursor-pointer truncate"
-                                onClick={() =>
-                                    handleCheckboxChange(!isSelected)
-                                }
+                                onClick={() => {
+                                    if (isMobile) {
+                                        setShowActions(!showActions);
+                                    } else {
+                                        handleCheckboxChange(!isSelected);
+                                    }
+                                }}
                             >
                                 {node.name}
                             </span>
@@ -216,13 +224,15 @@ function FileNode({
                 <span className="text-[10px] sm:text-xs text-muted-foreground">
                     {formatSize(node.size)}
                 </span>
-                <div className="flex gap-0.5">
-                    {getFileType(node.name) === FileType.VIDEO && (
-                        <FileActionButton node={node} action="play" />
-                    )}
-                    <FileActionButton node={node} action="copy" />
-                    <FileActionButton node={node} action="download" />
-                </div>
+                {(!isMobile || showActions) && (
+                    <div className="flex gap-1 md:gap-0.5">
+                        {getFileType(node.name) === FileType.VIDEO && (
+                            <FileActionButton node={node} action="play" />
+                        )}
+                        <FileActionButton node={node} action="copy" />
+                        <FileActionButton node={node} action="download" />
+                    </div>
+                )}
             </div>
         );
     }

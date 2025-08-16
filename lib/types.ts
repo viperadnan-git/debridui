@@ -19,5 +19,7 @@ export enum MediaPlayer {
     MPV = "mpv",
     POTPLAYER = "potplayer",
     KODI = "kodi",
+    MX_PLAYER = "mxplayer",
+    MX_PLAYER_PRO = "mxplayerpro",
     EMBED = "embed",
 }

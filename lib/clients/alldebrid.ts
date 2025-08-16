@@ -186,6 +186,47 @@ export default class AllDebridClient extends BaseClient {
         return this.parseFileNodes(files);
     };
 
+    deleteFile = async (id: string): Promise<string> => {
+        const form = new FormData();
+        form.append("id", id);
+        const data = await this.fetch(`magnet/delete`, {
+            method: "POST",
+            body: form,
+        });
+
+        return data.message;
+    };
+
+    retryFile = async (ids: string[]): Promise<Record<string, string>> => {
+        const form = new FormData();
+        ids.forEach((id) => {
+            form.append("ids[]", id);
+        });
+
+        const data = await this.fetch(`magnet/restart`, {
+            method: "POST",
+            body: form,
+        });
+
+        return data.magnets.reduce(
+            (
+                acc: Record<string, string>,
+                magnet: {
+                    magnet: string;
+                    message?: string;
+                    error?: { message: string };
+                }
+            ) => {
+                acc[magnet.magnet] =
+                    magnet?.message ||
+                    magnet?.error?.message ||
+                    "Unknown error";
+                return acc;
+            },
+            {} as Record<string, string>
+        );
+    };
+
     private parseMagnetStatus = (magnet: MagnetStatus): DebridFile => {
         let progress;
 
@@ -304,6 +345,7 @@ export default class AllDebridClient extends BaseClient {
             case 4:
                 return "completed";
             case 10:
+            case 15:
             case 7:
                 return "failed";
             default:

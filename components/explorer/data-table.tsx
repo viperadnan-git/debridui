@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, {
+    useState,
+    useMemo,
+    useRef,
+    useEffect,
+    useCallback,
+} from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { DebridFile } from "@/lib/clients/types";
+import { DebridFile, DebridFileNode } from "@/lib/clients/types";
 import { useAuthContext } from "@/app/(private)/layout";
 import { SearchBar } from "./search-bar";
 import { SortControls, SortOption } from "./sort-controls";
@@ -12,6 +18,8 @@ import { FileListHeader } from "./file-list-header";
 import { FileListItem } from "./file-list-item";
 import { ExpandedRow } from "./expanded-row";
 import { SettingsSwitches } from "./settings-switches";
+import { FileActionsDrawer } from "./file-actions-drawer";
+import { useHierarchicalSelection } from "@/hooks/use-selection";
 
 interface DataTableProps {
     data: DebridFile[];
@@ -70,11 +78,13 @@ export function DataTable({
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
     const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
-    const previousDataLength = useRef(data.length);
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
     const { client } = useAuthContext();
+
+    // Use the hierarchical selection hook
+    const selection = useHierarchicalSelection();
+    const queryClient = useQueryClient();
 
     // Search query with debounce
     const [debouncedSearchQuery, setDebouncedSearchQuery] =
@@ -104,79 +114,16 @@ export function DataTable({
 
     // Sort data
     const sortedData = useMemo(() => {
+        // Data comes pre-sorted by date desc, skip sorting if that's selected
+        if (sortBy === "date" && sortDirection === "desc") {
+            return activeData;
+        }
+
         const sortOption = sortOptions.find((opt) => opt.value === sortBy);
         if (!sortOption) return activeData;
 
-        // For search results, just sort normally without new file logic
-        if (debouncedSearchQuery && searchResults) {
-            const sorted = [...activeData].sort((a, b) => {
-                const aValue = sortOption.accessor(a);
-                const bValue = sortOption.accessor(b);
-
-                if (aValue === bValue) return 0;
-
-                if (sortBy === "date") {
-                    const aDate = new Date(aValue).getTime();
-                    const bDate = new Date(bValue).getTime();
-                    return sortDirection === "desc"
-                        ? bDate - aDate
-                        : aDate - bDate;
-                }
-
-                if (typeof aValue === "number" && typeof bValue === "number") {
-                    return sortDirection === "desc"
-                        ? bValue - aValue
-                        : aValue - bValue;
-                }
-
-                const comparison = String(aValue).localeCompare(String(bValue));
-                return sortDirection === "desc" ? -comparison : comparison;
-            });
-            return sorted;
-        }
-
-        // Check if new files were added (data length increased)
-        const hasNewFiles = activeData.length > previousDataLength.current;
-        const oldLength = previousDataLength.current;
-        previousDataLength.current = activeData.length;
-
-        if (hasNewFiles) {
-            // Get the newest files (recently added)
-            const newFilesCount = activeData.length - oldLength;
-            const newFiles = activeData.slice(0, newFilesCount);
-            const existingFiles = activeData.slice(newFilesCount);
-
-            // Sort existing files normally
-            const sortedExisting = existingFiles.sort((a, b) => {
-                const aValue = sortOption.accessor(a);
-                const bValue = sortOption.accessor(b);
-
-                if (aValue === bValue) return 0;
-
-                if (sortBy === "date") {
-                    const aDate = new Date(aValue).getTime();
-                    const bDate = new Date(bValue).getTime();
-                    return sortDirection === "desc"
-                        ? bDate - aDate
-                        : aDate - bDate;
-                }
-
-                if (typeof aValue === "number" && typeof bValue === "number") {
-                    return sortDirection === "desc"
-                        ? bValue - aValue
-                        : aValue - bValue;
-                }
-
-                const comparison = String(aValue).localeCompare(String(bValue));
-                return sortDirection === "desc" ? -comparison : comparison;
-            });
-
-            // Return new files at top, then sorted existing files
-            return [...newFiles, ...sortedExisting];
-        }
-
-        // Normal sorting when no new files
-        const sorted = [...activeData].sort((a, b) => {
+        // Sort all items together
+        return [...activeData].sort((a, b) => {
             const aValue = sortOption.accessor(a);
             const bValue = sortOption.accessor(b);
 
@@ -197,15 +144,7 @@ export function DataTable({
             const comparison = String(aValue).localeCompare(String(bValue));
             return sortDirection === "desc" ? -comparison : comparison;
         });
-
-        return sorted;
-    }, [
-        activeData,
-        sortBy,
-        sortDirection,
-        debouncedSearchQuery,
-        searchResults,
-    ]);
+    }, [activeData, sortBy, sortDirection]);
 
     const handleSortChange = (newSortBy: string) => {
         setSortBy(newSortBy);
@@ -214,39 +153,87 @@ export function DataTable({
 
     const handleSelectAll = (checked: boolean | "indeterminate") => {
         if (checked) {
-            setSelectedFiles(new Set(sortedData.map((file) => file.id)));
+            selection.selectAll(sortedData.map((file) => file.id));
         } else {
-            setSelectedFiles(new Set());
+            selection.clearAll();
         }
     };
 
-    const handleSelectFile = (
-        fileId: string,
-        checked: boolean | "indeterminate"
-    ) => {
-        const newSelected = new Set(selectedFiles);
-        if (checked === true) {
-            newSelected.add(fileId);
-        } else {
-            newSelected.delete(fileId);
+    const handleSelectFile = (fileId: string) => {
+        // Get all node IDs for this file from cache
+        const fileNodes = queryClient.getQueryData<DebridFileNode[]>([
+            "getFile",
+            fileId,
+        ]);
+        const allNodeIds: string[] = [];
+
+        if (fileNodes) {
+            const collectNodeIds = (nodes: DebridFileNode[]): void => {
+                nodes.forEach((node) => {
+                    if (node.id) allNodeIds.push(node.id);
+                    if (node.children) collectNodeIds(node.children);
+                });
+            };
+            collectNodeIds(fileNodes);
         }
-        setSelectedFiles(newSelected);
+
+        selection.toggleFileSelection(fileId, allNodeIds);
     };
 
     const handleToggleExpand = (fileId: string) => {
-        const newExpanded = new Set(expandedFiles);
-        if (newExpanded.has(fileId)) {
-            newExpanded.delete(fileId);
-        } else {
-            newExpanded.add(fileId);
-        }
-        setExpandedFiles(newExpanded);
+        setExpandedFiles((prev) => {
+            const newExpanded = new Set(prev);
+            if (newExpanded.has(fileId)) {
+                newExpanded.delete(fileId);
+            } else {
+                newExpanded.add(fileId);
+            }
+            return newExpanded;
+        });
     };
 
-    const isAllSelected =
-        sortedData.length > 0 && selectedFiles.size === sortedData.length;
-    const isSomeSelected =
-        selectedFiles.size > 0 && selectedFiles.size < sortedData.length;
+    const handleNodeSelectionChange = useCallback(
+        (fileId: string, nodeIds: Set<string>) => {
+            selection.updateNodeSelection(fileId, nodeIds);
+        },
+        [selection]
+    );
+
+    const handleNodesLoaded = useCallback(
+        (fileId: string, nodeIds: string[]) => {
+            selection.registerFileNodes(fileId, nodeIds);
+        },
+        [selection]
+    );
+
+    // Calculate header checkbox state
+    const getHeaderCheckboxState = (): boolean | "indeterminate" => {
+        if (sortedData.length === 0) return false;
+
+        const allFilesSelected = sortedData.every((file) =>
+            selection.selectedFileIds.has(file.id)
+        );
+
+        const someFilesSelected = sortedData.some((file) =>
+            selection.selectedFileIds.has(file.id)
+        );
+
+        const hasIndeterminateFiles = sortedData.some(
+            (file) =>
+                selection.getFileSelectionState(file.id) === "indeterminate"
+        );
+
+        if (allFilesSelected && !hasIndeterminateFiles) {
+            // All files fully selected
+            return true;
+        } else if (someFilesSelected || hasIndeterminateFiles) {
+            // Some files selected or some files partially selected
+            return "indeterminate";
+        }
+        return false;
+    };
+
+    const headerCheckboxState = getHeaderCheckboxState();
 
     // Reset loading state when data changes
     useEffect(() => {
@@ -308,9 +295,7 @@ export function DataTable({
 
             <FileList className="-mx-4 md:-mx-0">
                 <FileListHeader
-                    isAllSelected={
-                        isSomeSelected ? "indeterminate" : isAllSelected
-                    }
+                    isAllSelected={headerCheckboxState}
                     onSelectAll={handleSelectAll}
                 />
                 <FileListBody>
@@ -320,11 +305,19 @@ export function DataTable({
                                 <React.Fragment key={file.id}>
                                     <FileListItem
                                         file={file}
-                                        isSelected={selectedFiles.has(file.id)}
+                                        isSelected={
+                                            selection.getFileSelectionState(
+                                                file.id
+                                            ) === "indeterminate"
+                                                ? false
+                                                : selection.getFileSelectionState(
+                                                      file.id
+                                                  ) === true
+                                        }
                                         isExpanded={expandedFiles.has(file.id)}
                                         canExpand={file.status === "completed"}
-                                        onToggleSelect={(checked) =>
-                                            handleSelectFile(file.id, checked)
+                                        onToggleSelect={() =>
+                                            handleSelectFile(file.id)
                                         }
                                         onToggleExpand={() =>
                                             handleToggleExpand(file.id)
@@ -332,7 +325,30 @@ export function DataTable({
                                     />
                                     {expandedFiles.has(file.id) && (
                                         <div className="border-b border-border/40 bg-muted/10">
-                                            <ExpandedRow file={file} />
+                                            <ExpandedRow
+                                                file={file}
+                                                selectedNodes={
+                                                    selection.selectedNodesByFile.get(
+                                                        file.id
+                                                    ) || new Set()
+                                                }
+                                                onNodeSelectionChange={(
+                                                    nodeSelection
+                                                ) =>
+                                                    handleNodeSelectionChange(
+                                                        file.id,
+                                                        nodeSelection
+                                                    )
+                                                }
+                                                onNodesLoaded={(
+                                                    nodeIds: string[]
+                                                ) =>
+                                                    handleNodesLoaded(
+                                                        file.id,
+                                                        nodeIds
+                                                    )
+                                                }
+                                            />
                                         </div>
                                     )}
                                 </React.Fragment>
@@ -358,6 +374,14 @@ export function DataTable({
                     )}
                 </div>
             )}
+
+            {/* Bottom Actions Drawer */}
+            <FileActionsDrawer
+                selectedFileIds={selection.selectedFileIds}
+                selectedNodeIds={selection.getAllSelectedNodeIds()}
+                fullySelectedFileIds={selection.getFullySelectedFileIds()}
+                files={sortedData}
+            />
         </>
     );
 }

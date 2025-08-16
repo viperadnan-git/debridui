@@ -2,18 +2,44 @@
 
 import { DebridFile, DebridFileNode } from "@/lib/clients/types";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useAuthContext } from "@/app/(private)/layout";
 import { Loader2 } from "lucide-react";
 import { FileTree } from "./file-tree";
-import { FileActions } from "./file-actions";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { processFileNodes } from "@/lib/utils/file";
 
-export function ExpandedRow({ file }: { file: DebridFile }) {
+interface ExpandedRowProps {
+    file: DebridFile;
+    selectedNodes?: Set<string>;
+    onNodeSelectionChange?: (nodeSelection: Set<string>) => void;
+    onNodesLoaded?: (nodeIds: string[]) => void;
+}
+
+export function ExpandedRow({
+    file,
+    selectedNodes: externalSelectedNodes,
+    onNodeSelectionChange,
+    onNodesLoaded,
+}: ExpandedRowProps) {
     const { client } = useAuthContext();
-    const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+    const [selectedFiles, setSelectedFiles] = useState<Set<string>>(
+        externalSelectedNodes || new Set()
+    );
     const { smartOrder, hideTrash } = useSettingsStore();
+
+    // Sync with external selection when it changes
+    useEffect(() => {
+        if (externalSelectedNodes) {
+            setSelectedFiles(externalSelectedNodes);
+        }
+    }, [externalSelectedNodes]);
+
+    // Handle selection changes
+    const handleSelectionChange = (newSelection: Set<string>) => {
+        setSelectedFiles(newSelection);
+        onNodeSelectionChange?.(newSelection);
+    };
 
     const {
         data: nodes,
@@ -31,17 +57,26 @@ export function ExpandedRow({ file }: { file: DebridFile }) {
         return processFileNodes(nodes, smartOrder, hideTrash);
     }, [nodes, smartOrder, hideTrash]);
 
+    // Notify parent about loaded nodes (only once when nodes first load)
+    const hasNotifiedNodes = useRef(false);
+
+    useEffect(() => {
+        if (nodes && onNodesLoaded && !hasNotifiedNodes.current) {
+            const nodeIds: string[] = [];
+            const collectNodeIds = (nodeList: DebridFileNode[]) => {
+                nodeList.forEach((node) => {
+                    if (node.id) nodeIds.push(node.id);
+                    if (node.children) collectNodeIds(node.children);
+                });
+            };
+            collectNodeIds(nodes);
+            onNodesLoaded(nodeIds);
+            hasNotifiedNodes.current = true;
+        }
+    }, [nodes, onNodesLoaded]);
+
     return (
         <div className="px-0.5 py-2 md:px-4">
-            {/* File Actions Bar */}
-            <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-muted-foreground">
-                    {selectedFiles.size} file
-                    {selectedFiles.size !== 1 ? "s" : ""} selected
-                </span>
-                <FileActions selectedFiles={selectedFiles} fileId={file.id} />
-            </div>
-
             {/* File Tree */}
             <div className="p-2 sm:p-3 md:mt-0">
                 {isLoading ? (
@@ -56,7 +91,7 @@ export function ExpandedRow({ file }: { file: DebridFile }) {
                     <FileTree
                         nodes={processedNodes}
                         selectedFiles={selectedFiles}
-                        onSelectionChange={setSelectedFiles}
+                        onSelectionChange={handleSelectionChange}
                         fileId={file.id}
                     />
                 ) : (
