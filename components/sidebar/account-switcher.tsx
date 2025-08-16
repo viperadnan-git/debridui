@@ -8,6 +8,7 @@ import {
     Check,
     Trash2,
     LogOut,
+    HardDrive,
 } from "lucide-react";
 
 import {
@@ -75,8 +76,8 @@ export function AccountSwitcher() {
                                 size="lg"
                                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                             >
-                                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                                    <User className="size-4" />
+                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
+                                    <HardDrive className="size-6" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-medium">

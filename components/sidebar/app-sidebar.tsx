@@ -9,9 +9,11 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarRail,
+    useSidebar,
 } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
 import { File, Home, Settings } from "lucide-react";
+import Image from "next/image";
 
 // This is sample data.
 const data = {
@@ -40,23 +42,35 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const { open } = useSidebar();
+
     return (
-        <Sidebar collapsible="icon" {...props}>
+        <Sidebar collapsible={"icon"} {...props}>
             <SidebarHeader>
                 <AccountSwitcher />
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={data.navMain} />
             </SidebarContent>
-            <SidebarFooter>
-                {/* <NavUser user={data.user} /> */}
-                <a
-                    className="flex items-center justify-center text-muted-foreground text-sm hover:underline"
-                    href="https://github.com/viperadnan-git/debridui/issues"
-                >
-                    Report a bug
-                </a>
-            </SidebarFooter>
+            {/* <NavUser user={data.user} /> */}
+            {open && (
+                <SidebarFooter className="flex flex-col items-center gap-2 py-6">
+                    <Image
+                        className="dark:invert w-1/2"
+                        src="/logo.svg"
+                        alt="DebridUI logo"
+                        width={160}
+                        height={38}
+                        priority
+                    />
+                    <a
+                        className="flex items-center justify-center text-muted-foreground text-xs uppercase hover:underline"
+                        href="https://github.com/viperadnan-git/debridui/issues"
+                    >
+                        Report a bug
+                    </a>
+                </SidebarFooter>
+            )}
             <SidebarRail />
         </Sidebar>
     );
