@@ -48,6 +48,33 @@ type LiveModeResponse = {
     magnets: MagnetStatus[];
 };
 
+type MagnetBaseInfo = {
+    id: number;
+    name: string;
+    size: number;
+    hash: string;
+    ready: boolean;
+};
+
+type MagnetBaseError = {
+    error: {
+        code: number;
+        message: string;
+    };
+};
+
+type AddFileResponse = {
+    files: ({ file: string } & MagnetBaseInfo & MagnetBaseError)[];
+};
+
+type AddMagnetResponse = {
+    magnets: ({ magnet: string } & MagnetBaseInfo & MagnetBaseError)[];
+};
+
+type RetryFileResponse = {
+    magnets: ({ magnet: string; message?: string } & MagnetBaseError)[];
+};
+
 export default class AllDebridClient extends BaseClient {
     private sessionId: number;
     private counter: number = 0;
@@ -205,20 +232,13 @@ export default class AllDebridClient extends BaseClient {
             form.append("ids[]", id);
         });
 
-        const data = await this.fetch(`magnet/restart`, {
+        const data: RetryFileResponse = await this.fetch(`magnet/restart`, {
             method: "POST",
             body: form,
         });
 
         return data.magnets.reduce(
-            (
-                acc: Record<string, string>,
-                magnet: {
-                    magnet: string;
-                    message?: string;
-                    error?: { message: string };
-                }
-            ) => {
+            (acc, magnet) => {
                 acc[magnet.magnet] =
                     magnet?.message ||
                     magnet?.error?.message ||
@@ -227,6 +247,99 @@ export default class AllDebridClient extends BaseClient {
             },
             {} as Record<string, string>
         );
+    };
+
+    addURI = async (uris: string[]): Promise<Record<string, string>> => {
+        const httpUri: string[] = [];
+        const magnetUri: string[] = [];
+        uris.forEach((uri) => {
+            const trimmedUri = uri.trim();
+            if (trimmedUri.startsWith("http")) {
+                httpUri.push(trimmedUri);
+            } else {
+                magnetUri.push(trimmedUri);
+            }
+        });
+
+        const [httpData, magnetData] = await Promise.all([
+            httpUri.length > 0 ? this.addHTTPUri(httpUri) : Promise.resolve({}),
+            magnetUri.length > 0
+                ? this.addMagnets(magnetUri)
+                : Promise.resolve({}),
+        ]);
+
+        return { ...httpData, ...magnetData };
+    };
+
+    addMagnets = async (magnets: string[]): Promise<Record<string, string>> => {
+        const form = new FormData();
+        magnets.forEach((magnet) => {
+            form.append("magnets[]", magnet);
+        });
+        const data: AddMagnetResponse = await this.fetch(`magnet/upload`, {
+            method: "POST",
+            body: form,
+        });
+
+        return data.magnets.reduce(
+            (acc, magnet) => {
+                acc[magnet.magnet] =
+                    magnet?.error?.message || `Magnet ${magnet.name} added`;
+                return acc;
+            },
+            {} as Record<string, string>
+        );
+    };
+
+    addFile = async (files: File[]): Promise<Record<string, string>> => {
+        const form = new FormData();
+        files.forEach((file) => {
+            form.append("files[]", file);
+        });
+        const data: AddFileResponse = await this.fetch(`magnet/upload/file`, {
+            method: "POST",
+            body: form,
+        });
+
+        return data.files.reduce(
+            (acc, magnet) => {
+                acc[magnet.file] =
+                    magnet?.error?.message || `File ${magnet.name} added`;
+                return acc;
+            },
+            {} as Record<string, string>
+        );
+    };
+
+    private addHTTPUri = async (
+        uris: string[]
+    ): Promise<Record<string, string>> => {
+        const results: Record<string, string> = {};
+
+        const files = await Promise.all(
+            uris.map(async (uri) => {
+                try {
+                    return await this.fetchFile(uri.trim());
+                } catch (error) {
+                    results[uri] = `Failed to fetch ${uri}: ${error}`;
+                }
+            })
+        );
+
+        return {
+            ...results,
+            ...(await this.addFile(files.filter(Boolean) as File[])),
+        };
+    };
+
+    private fetchFile = async (uri: string): Promise<File> => {
+        const response = await fetch(uri.trim());
+        const blob = await response.blob();
+        return new File([blob], uri.trim(), {
+            type:
+                response.headers.get("content-type") ||
+                "application/x-bittorrent",
+        });
     };
 
     private parseMagnetStatus = (magnet: MagnetStatus): DebridFile => {
@@ -313,7 +426,9 @@ export default class AllDebridClient extends BaseClient {
 
     private removeDeletedMagnet = (magnetId: number): void => {
         if (this.magnetsState.delete(magnetId)) {
-            this.magnetsOrder = this.magnetsOrder.filter((id) => id !== magnetId);
+            this.magnetsOrder = this.magnetsOrder.filter(
+                (id) => id !== magnetId
+            );
         }
     };
 

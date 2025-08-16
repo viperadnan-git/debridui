@@ -3,6 +3,7 @@
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { SettingsSwitches } from "./settings-switches";
 
 interface FileListHeaderProps {
     isAllSelected: boolean | "indeterminate";
@@ -40,9 +41,9 @@ export function FileListHeader({
                 />
             </div>
 
-            <div className="flex-1 min-w-0">
-                <span className="hidden sm:inline">File Details</span>
-                <span className="sm:hidden">Files</span>
+            <div className="flex flex-1 items-center min-w-0">
+                <span>Files</span>
+                <SettingsSwitches className="ml-auto" />
             </div>
         </div>
     );

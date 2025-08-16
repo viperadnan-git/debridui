@@ -16,6 +16,7 @@ export function SettingsSwitches({ className }: { className?: string }) {
                     id="smart-order"
                     checked={smartOrder}
                     onCheckedChange={setSmartOrder}
+                    className="max-sm:h-2 data-[state=checked]:bg-primary/50"
                 />
                 <Label htmlFor="smart-order" className="text-sm">
                     Smart Order
@@ -26,6 +27,7 @@ export function SettingsSwitches({ className }: { className?: string }) {
                     id="hide-trash"
                     checked={hideTrash}
                     onCheckedChange={setHideTrash}
+                    className="max-sm:h-2 data-[state=checked]:bg-primary/50"
                 />
                 <Label htmlFor="hide-trash" className="text-sm">
                     Hide Trash

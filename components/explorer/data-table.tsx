@@ -258,8 +258,6 @@ export function DataTable({
                 />
             </div>
 
-            {/* Settings Switches */}
-            <SettingsSwitches className="mb-2 w-full justify-end" />
 
             <FileList className="-mx-4 md:-mx-0">
                 <FileListHeader
