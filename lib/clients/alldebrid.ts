@@ -39,6 +39,7 @@ type MagnetStatus = {
     uploadDate: number;
     completionDate?: number;
     processingPerc?: number;
+    deleted?: boolean;
 };
 
 type LiveModeResponse = {
@@ -194,6 +195,7 @@ export default class AllDebridClient extends BaseClient {
             body: form,
         });
 
+        this.removeDeletedMagnet(parseInt(id));
         return data.message;
     };
 
@@ -285,6 +287,10 @@ export default class AllDebridClient extends BaseClient {
             data.magnets.forEach((magnet) => {
                 const existing = this.magnetsState.get(magnet.id);
                 if (existing) {
+                    if (magnet.deleted) {
+                        this.removeDeletedMagnet(magnet.id);
+                        return;
+                    }
                     // Merge changes with existing state
                     this.magnetsState.set(magnet.id, {
                         ...existing,
@@ -303,6 +309,12 @@ export default class AllDebridClient extends BaseClient {
         }
 
         return this.magnetsState;
+    };
+
+    private removeDeletedMagnet = (magnetId: number): void => {
+        if (this.magnetsState.delete(magnetId)) {
+            this.magnetsOrder = this.magnetsOrder.filter((id) => id !== magnetId);
+        }
     };
 
     private parseFileNodes = (

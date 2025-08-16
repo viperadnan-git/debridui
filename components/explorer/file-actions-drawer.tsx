@@ -3,12 +3,12 @@
 import { useMemo, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, RotateCcw } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAuthContext } from "@/app/(private)/layout";
 import { FileActions } from "./file-actions";
 import { DebridFile } from "@/lib/clients/types";
 import { cn } from "@/lib/utils";
+import { useFileExplorer } from "@/hooks/use-file-explorer";
 
 interface FileActionsDrawerProps {
     selectedFileIds: Set<string>;
@@ -23,8 +23,7 @@ export function FileActionsDrawer({
     fullySelectedFileIds,
     files,
 }: FileActionsDrawerProps) {
-    const { client } = useAuthContext();
-    const queryClient = useQueryClient();
+    const { deleteFile, retryFiles } = useFileExplorer();
 
     // Check if drawer should be shown
     const hasAnySelection =
@@ -50,13 +49,12 @@ export function FileActionsDrawer({
     // Delete mutation
     const deleteMutation = useMutation({
         mutationFn: async (fileIds: string[]) => {
-            const promises = fileIds.map((id) => client.deleteFile(id));
+            const promises = fileIds.map((id) => deleteFile(id));
             await Promise.all(promises);
             return fileIds;
         },
         onSuccess: (fileIds) => {
             toast.success(`Deleted ${fileIds.length} file(s)`);
-            queryClient.invalidateQueries({ queryKey: ["files"] });
         },
         onError: (error: Error) => {
             toast.error(`Failed to delete: ${error.message}`);
@@ -66,13 +64,12 @@ export function FileActionsDrawer({
     // Retry mutation
     const retryMutation = useMutation({
         mutationFn: async (fileIds: string[]) => {
-            return client.retryFile(fileIds);
+            return retryFiles(fileIds);
         },
         onSuccess: (results) => {
             Object.entries(results).forEach(([magnet, message]) => {
                 toast.success(`Retrying ${magnet}: ${message}`);
             });
-            queryClient.invalidateQueries({ queryKey: ["files"] });
         },
         onError: (error: Error) => {
             toast.error(`Failed to retry: ${error.message}`);

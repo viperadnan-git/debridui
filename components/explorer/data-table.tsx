@@ -20,6 +20,7 @@ import { ExpandedRow } from "./expanded-row";
 import { SettingsSwitches } from "./settings-switches";
 import { FileActionsDrawer } from "./file-actions-drawer";
 import { useHierarchicalSelection } from "@/hooks/use-selection";
+import { useFileStore } from "@/lib/stores/files";
 
 interface DataTableProps {
     data: DebridFile[];
@@ -74,13 +75,12 @@ export function DataTable({
     hasMore = false,
     onLoadMore,
 }: DataTableProps) {
-    const [sortBy, setSortBy] = useState<string>("date");
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
     const { client } = useAuthContext();
+    const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore();
 
     // Use the hierarchical selection hook
     const selection = useHierarchicalSelection();
@@ -108,52 +108,21 @@ export function DataTable({
         staleTime: 5_000,
     });
 
-    // Use search results if searching, otherwise use provided data
-    const activeData =
-        debouncedSearchQuery && searchResults ? searchResults : data;
-
-    // Sort data
-    const sortedData = useMemo(() => {
-        // Data comes pre-sorted by date desc, skip sorting if that's selected
-        if (sortBy === "date" && sortDirection === "desc") {
-            return activeData;
+    const activeData = useMemo(() => {
+        if (debouncedSearchQuery && searchResults) {
+            return searchResults;
         }
-
-        const sortOption = sortOptions.find((opt) => opt.value === sortBy);
-        if (!sortOption) return activeData;
-
-        // Sort all items together
-        return [...activeData].sort((a, b) => {
-            const aValue = sortOption.accessor(a);
-            const bValue = sortOption.accessor(b);
-
-            if (aValue === bValue) return 0;
-
-            if (sortBy === "date") {
-                const aDate = new Date(aValue).getTime();
-                const bDate = new Date(bValue).getTime();
-                return sortDirection === "desc" ? bDate - aDate : aDate - bDate;
-            }
-
-            if (typeof aValue === "number" && typeof bValue === "number") {
-                return sortDirection === "desc"
-                    ? bValue - aValue
-                    : aValue - bValue;
-            }
-
-            const comparison = String(aValue).localeCompare(String(bValue));
-            return sortDirection === "desc" ? -comparison : comparison;
-        });
-    }, [activeData, sortBy, sortDirection]);
+        return data;
+    }, [debouncedSearchQuery, searchResults, data]);
 
     const handleSortChange = (newSortBy: string) => {
         setSortBy(newSortBy);
-        setSortDirection(newSortBy === "date" ? "desc" : "asc");
+        setSortOrder(newSortBy === "date" ? "desc" : "asc");
     };
 
     const handleSelectAll = (checked: boolean | "indeterminate") => {
         if (checked) {
-            selection.selectAll(sortedData.map((file) => file.id));
+            selection.selectAll(data.map((file) => file.id));
         } else {
             selection.clearAll();
         }
@@ -208,17 +177,17 @@ export function DataTable({
 
     // Calculate header checkbox state
     const getHeaderCheckboxState = (): boolean | "indeterminate" => {
-        if (sortedData.length === 0) return false;
+        if (activeData.length === 0) return false;
 
-        const allFilesSelected = sortedData.every((file) =>
+        const allFilesSelected = activeData.every((file) =>
             selection.selectedFileIds.has(file.id)
         );
 
-        const someFilesSelected = sortedData.some((file) =>
+        const someFilesSelected = activeData.some((file) =>
             selection.selectedFileIds.has(file.id)
         );
 
-        const hasIndeterminateFiles = sortedData.some(
+        const hasIndeterminateFiles = activeData.some(
             (file) =>
                 selection.getFileSelectionState(file.id) === "indeterminate"
         );
@@ -248,7 +217,8 @@ export function DataTable({
             (entries) => {
                 if (entries[0].isIntersecting && !isLoadingMore) {
                     setIsLoadingMore(true);
-                    onLoadMore?.(sortedData.length);
+                    console.log("loadMore", activeData.length);
+                    onLoadMore?.(activeData.length);
                 }
             },
             { rootMargin: "100px" }
@@ -264,7 +234,7 @@ export function DataTable({
         hasMore,
         isLoadingMore,
         onLoadMore,
-        sortedData.length,
+        activeData.length,
         debouncedSearchQuery,
     ]);
 
@@ -279,13 +249,11 @@ export function DataTable({
                 />
                 <SortControls
                     sortBy={sortBy}
-                    sortDirection={sortDirection}
+                    sortDirection={sortOrder}
                     sortOptions={sortOptions}
                     onSortChange={handleSortChange}
                     onDirectionToggle={() =>
-                        setSortDirection((prev) =>
-                            prev === "asc" ? "desc" : "asc"
-                        )
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc")
                     }
                 />
             </div>
@@ -299,9 +267,9 @@ export function DataTable({
                     onSelectAll={handleSelectAll}
                 />
                 <FileListBody>
-                    {sortedData.length > 0 ? (
+                    {activeData.length > 0 ? (
                         <>
-                            {sortedData.map((file) => (
+                            {activeData.map((file) => (
                                 <React.Fragment key={file.id}>
                                     <FileListItem
                                         file={file}
@@ -379,7 +347,7 @@ export function DataTable({
                 selectedFileIds={selection.selectedFileIds}
                 selectedNodeIds={selection.getAllSelectedNodeIds()}
                 fullySelectedFileIds={selection.getFullySelectedFileIds()}
-                files={sortedData}
+                files={activeData}
             />
         </>
     );

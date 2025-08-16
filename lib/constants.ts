@@ -70,3 +70,4 @@ export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {
 export const TRASH_SIZE_THRESHOLD = 1024 * 1024; // 1MB in bytes
 export const QUERY_CACHE_MAX_AGE = 1000 * 60 * 10; // 10 minutes
 export const QUERY_CACHE_STALE_TIME = 1000 * 60 * 5; // 5 minutes
+export const PAGE_SIZE = 50;
