@@ -119,6 +119,103 @@ export default class AllDebridClient extends BaseClient {
         offset?: number;
         limit?: number;
     } = {}): Promise<DebridFileList> => {
+        await this.updateFiles();
+
+        // Convert magnets state to DebridFile format using order array
+        const files: DebridFile[] = [];
+        const end = Math.min(offset + limit, this.magnetsOrder.length);
+
+        for (let i = offset; i < end; i++) {
+            const magnetId = this.magnetsOrder[i];
+            const magnet = this.magnetsState.get(magnetId);
+
+            if (magnet && magnet.filename) {
+                files.push(this.parseMagnetStatus(magnet));
+            }
+        }
+
+        return {
+            files,
+            offset,
+            limit,
+            hasMore: end < this.magnetsOrder.length,
+        };
+    };
+
+    searchFiles = async (query: string): Promise<DebridFile[]> => {
+        await this.updateFiles();
+
+        const queries = query.split(" ");
+        return Array.from(this.magnetsState.values())
+            .filter((file) =>
+                queries.every((query) =>
+                    file.filename?.toLowerCase().includes(query.toLowerCase())
+                )
+            )
+            .map(this.parseMagnetStatus);
+    };
+
+    getNodeDownloadUrl = async (fileId: string): Promise<DebridLinkInfo> => {
+        const form = new FormData();
+        form.append("link", fileId);
+
+        const data = await this.fetch(`link/unlock`, {
+            method: "POST",
+            body: form,
+        });
+
+        return {
+            link: data.link,
+            name: data.filename,
+            size: data.filesize,
+        };
+    };
+
+    getFile = async (id: string): Promise<DebridFileNode[]> => {
+        const form = new FormData();
+        form.append("id[]", id);
+
+        const data = await this.fetch(`magnet/files`, {
+            method: "POST",
+            body: form,
+        });
+
+        const magnet = data.magnets[0] as MagnetFile;
+        const files = magnet.files;
+
+        return this.parseFileNodes(files);
+    };
+
+    private parseMagnetStatus = (magnet: MagnetStatus): DebridFile => {
+        let progress;
+
+        const status = this.getStatus(magnet.statusCode);
+        if (status === "downloading" || status === "uploading") {
+            const processed = magnet.uploaded || magnet.downloaded || 0;
+            const percentage = (processed / (magnet.size || 0)) * 100;
+            progress = percentage > 0 ? percentage.toFixed(2) : 0;
+        }
+
+        return {
+            id: magnet.id.toString(),
+            name: magnet.filename!,
+            size: magnet.size || 0,
+            status,
+            progress,
+            downloadSpeed: magnet.downloadSpeed,
+            uploadSpeed: magnet.uploadSpeed,
+            uploaded: magnet.uploaded,
+            downloaded: magnet.downloaded,
+            peers: magnet.seeders,
+            createdAt: new Date(magnet.uploadDate * 1000),
+            completedAt: magnet.completionDate
+                ? new Date(magnet.completionDate * 1000)
+                : undefined,
+            error: status === "failed" ? magnet.status : undefined,
+        };
+    };
+
+    private updateFiles = async (): Promise<Map<number, MagnetStatus>> => {
         // Use Live Mode to get magnet status
         const form = new FormData();
         form.append("session", this.sessionId.toString());
@@ -164,89 +261,7 @@ export default class AllDebridClient extends BaseClient {
             }
         }
 
-        // Convert magnets state to DebridFile format using order array
-        const files: DebridFile[] = [];
-        const end = Math.min(offset + limit, this.magnetsOrder.length);
-
-        for (let i = offset; i < end; i++) {
-            const magnetId = this.magnetsOrder[i];
-            const magnet = this.magnetsState.get(magnetId);
-            let progress;
-
-            if (magnet && magnet.filename) {
-                const status = this.getStatus(magnet.statusCode);
-                if (status === "downloading" || status === "uploading") {
-                    const processed = magnet.uploaded || magnet.downloaded || 0;
-                    const percentage = (processed / (magnet.size || 0)) * 100;
-                    progress = percentage > 0 ? percentage.toFixed(2) : 0;
-                }
-                files.push({
-                    id: magnetId.toString(),
-                    name: magnet.filename,
-                    size: magnet.size || 0,
-                    status,
-                    progress,
-                    downloadSpeed: magnet.downloadSpeed,
-                    uploadSpeed: magnet.uploadSpeed,
-                    uploaded: magnet.uploaded,
-                    downloaded: magnet.downloaded,
-                    peers: magnet.seeders,
-                    createdAt: new Date(magnet.uploadDate * 1000),
-                    completedAt: magnet.completionDate
-                        ? new Date(magnet.completionDate * 1000)
-                        : undefined,
-                    error: status === "failed" ? magnet.status : undefined,
-                });
-            }
-        }
-
-        return {
-            files,
-            offset,
-            limit,
-            hasMore: end < this.magnetsOrder.length,
-        };
-    };
-
-    searchFiles = async (query: string): Promise<DebridFile[]> => {
-        const list = await this.listFiles();
-        const queries = query.split(" ");
-        return list.files.filter((file) =>
-            queries.every((query) =>
-                file.name.toLowerCase().includes(query.toLowerCase())
-            )
-        );
-    };
-
-    getNodeDownloadUrl = async (fileId: string): Promise<DebridLinkInfo> => {
-        const form = new FormData();
-        form.append("link", fileId);
-
-        const data = await this.fetch(`link/unlock`, {
-            method: "POST",
-            body: form,
-        });
-
-        return {
-            link: data.link,
-            name: data.filename,
-            size: data.filesize,
-        };
-    };
-
-    getFile = async (id: string): Promise<DebridFileNode[]> => {
-        const form = new FormData();
-        form.append("id[]", id);
-
-        const data = await this.fetch(`magnet/files`, {
-            method: "POST",
-            body: form,
-        });
-
-        const magnet = data.magnets[0] as MagnetFile;
-        const files = magnet.files;
-
-        return this.parseFileNodes(files);
+        return this.magnetsState;
     };
 
     private parseFileNodes = (
