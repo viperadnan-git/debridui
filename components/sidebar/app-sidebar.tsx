@@ -3,7 +3,6 @@
 import * as React from "react";
 
 import { NavMain } from "@/components/sidebar/nav-main";
-import { NavUser } from "@/components/sidebar/nav-user";
 import {
     Sidebar,
     SidebarContent,
@@ -50,7 +49,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <NavMain items={data.navMain} />
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={data.user} />
+                {/* <NavUser user={data.user} /> */}
+                <a
+                    className="flex items-center justify-center text-muted-foreground text-sm hover:underline"
+                    href="https://github.com/viperadnan-git/debridui/issues"
+                >
+                    Report a bug
+                </a>
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>
