@@ -197,7 +197,7 @@ function FileNode({
                 <Checkbox
                     checked={isSelected}
                     onCheckedChange={handleCheckboxChange}
-                    className="h-3 w-3 sm:h-4 sm:w-4"
+                    className="size-3 sm:size-4"
                 />
 
                 <TooltipProvider>

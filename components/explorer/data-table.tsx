@@ -314,7 +314,6 @@ export function DataTable({
                                                       file.id
                                                   ) === true
                                         }
-                                        isExpanded={expandedFiles.has(file.id)}
                                         canExpand={file.status === "completed"}
                                         onToggleSelect={() =>
                                             handleSelectFile(file.id)

@@ -76,7 +76,7 @@ export function ExpandedRow({
     }, [nodes, onNodesLoaded]);
 
     return (
-        <div className="px-0.5 py-2 md:px-4">
+        <div className="px-0.5 md:px-4">
             {/* File Tree */}
             <div className="p-2 sm:p-3 md:mt-0">
                 {isLoading ? (

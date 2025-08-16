@@ -16,7 +16,6 @@ import { Separator } from "../ui/separator";
 interface FileListItemProps {
     file: DebridFile;
     isSelected: boolean;
-    isExpanded: boolean;
     canExpand: boolean;
     onToggleSelect: (checked: boolean | "indeterminate") => void;
     onToggleExpand: () => void;
@@ -26,7 +25,6 @@ interface FileListItemProps {
 export function FileListItem({
     file,
     isSelected,
-    isExpanded,
     canExpand,
     onToggleSelect,
     onToggleExpand,
@@ -136,13 +134,8 @@ export function FileListItem({
     return (
         <div
             className={cn(
-                "flex items-center gap-1 sm:gap-2 md:gap-3",
-                "px-1 sm:px-2 md:px-4",
-                "py-1.5 sm:py-2 md:py-3",
-                "border-b border-border/40",
-                "transition-colors duration-150",
-                canExpand && "cursor-pointer hover:bg-muted/50",
-                isExpanded && "bg-muted/20",
+                "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b border-border/40 transition-colors duration-150 bg-card",
+                canExpand && "cursor-pointer hover:bg-card/50",
                 className
             )}
             onClick={() => canExpand && onToggleExpand()}

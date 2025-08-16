@@ -44,9 +44,7 @@ export function FileListEmpty({
     return (
         <div
             className={cn(
-                "flex items-center justify-center",
-                "py-8 sm:py-12 md:py-16",
-                "text-sm text-muted-foreground",
+                "flex items-center justify-center py-8 sm:py-12 md:py-16 text-sm text-muted-foreground",
                 className
             )}
         >
