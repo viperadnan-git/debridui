@@ -31,11 +31,15 @@ export default function SettingsPage() {
     const { mediaPlayer, setMediaPlayer } = useSettingsStore();
     const [isClearing, setIsClearing] = useState(false);
 
-    const handleClearCache = async () => {
+    const handleClearCache = async (key?: string) => {
         setIsClearing(true);
         try {
-            await del("DEBRIDUI_CACHE");
-            queryClient.clear();
+            if (key) {
+                queryClient.removeQueries({ queryKey: [key] });
+            } else {
+                await del("DEBRIDUI_CACHE");
+                queryClient.clear();
+            }
             toast.success("Cache cleared successfully");
         } catch (error) {
             toast.error("Failed to clear cache");
@@ -159,11 +163,27 @@ export default function SettingsPage() {
                         <div className="space-y-2">
                             <div className="flex items-center gap-4">
                                 <Button
-                                    onClick={handleClearCache}
+                                    onClick={() => handleClearCache("getNodeDownloadUrl")}
                                     disabled={isClearing}
                                     variant="destructive"
                                 >
-                                    {isClearing ? "Clearing..." : "Clear Cache"}
+                                    {isClearing
+                                        ? "Clearing..."
+                                        : "Clear Download Links Cache"}
+                                </Button>
+                                <p className="text-sm text-muted-foreground">
+                                    Remove all cached download links from browser.
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <Button
+                                    onClick={() => handleClearCache()}
+                                    disabled={isClearing}
+                                    variant="destructive"
+                                >
+                                    {isClearing
+                                        ? "Clearing..."
+                                        : "Clear All Cache"}
                                 </Button>
                                 <p className="text-sm text-muted-foreground">
                                     Remove all cached data from browser.
