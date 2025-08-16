@@ -111,7 +111,7 @@ export function AddContent() {
     };
 
     return (
-        <Card className="max-sm:-mx-5">
+        <Card className="max-sm:-mx-4 max-sm:rounded-none max-sm:border-none">
             <CardHeader className="max-sm:gap-0">
                 <CardTitle className="flex items-center gap-2">
                     <Upload className="size-5" />

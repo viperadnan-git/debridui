@@ -269,7 +269,7 @@ export function DataTable({
             </div>
 
 
-            <FileList className="-mx-4 md:-mx-0">
+            <FileList className="max-sm:-mx-4">
                 <FileListHeader
                     isAllSelected={headerCheckboxState}
                     onSelectAll={handleSelectAll}

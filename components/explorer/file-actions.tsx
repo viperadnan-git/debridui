@@ -1,13 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Play, Loader2 } from "lucide-react";
+import { Copy, Download, Loader2 } from "lucide-react";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { DebridLinkInfo } from "@/lib/clients/types";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { QUERY_CACHE_MAX_AGE } from "@/lib/constants";
+import { downloadM3U } from "@/lib/utils/file";
 
 interface FileActionsProps {
     selectedFiles: Set<string>;
@@ -76,7 +77,9 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
 
     const playMutation = useMutation({
         mutationFn: async () => {
-            toast.info("Not implemented");
+            const links = await fetchAllLinks();
+            downloadM3U(links);
+            return links;
         },
         onSuccess: () => {
             toast.success("Opening media player");
@@ -89,7 +92,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
     const isDisabled = selectedFiles.size === 0;
 
     return (
-        <div className="flex gap-1 sm:gap-2">
+        <div className="flex flex-wrap gap-1 sm:gap-2">
             <Button
                 variant="outline"
                 size="sm"
@@ -128,9 +131,9 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 {playMutation.isPending ? (
                     <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
                 ) : (
-                    <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 )}
-                Play ({selectedFiles.size})
+                Playlist ({selectedFiles.size})
             </Button>
         </div>
     );

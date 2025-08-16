@@ -1,7 +1,8 @@
-import { DebridFileNode } from "../clients/types";
+import { DebridFileNode, DebridLinkInfo } from "../clients/types";
 import { getFileType } from ".";
 import { FileType } from "../types";
 import { TRASH_SIZE_THRESHOLD } from "../constants";
+import { format } from "date-fns";
 
 export const sortFileNodes = (nodes: DebridFileNode[]): DebridFileNode[] => {
     return [...nodes].sort((a, b) => {
@@ -81,4 +82,20 @@ export const processFileNodes = (
         }
         return node;
     });
+};
+
+export const downloadM3U = (nodes: DebridLinkInfo[]) => {
+    const nowString = format(new Date(), "yyyy-MM-dd-HH-mm-ss");
+    let m3u = "#EXTM3U\n\n";
+    m3u += nodes
+        .map((node) => {
+            return `#EXTINF:-1,${node.name}\n${node.link}\n`;
+        })
+        .join("\n");
+    const blob = new Blob([m3u], { type: "application/x-mpegurl" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Playlist-${nowString}.m3u`;
+    a.click();
 };
