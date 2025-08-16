@@ -27,7 +27,7 @@ export function FileListHeader({
                 className
             )}
         >
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 px-1">
                 <Checkbox
                     checked={isAllSelected}
                     onCheckedChange={(checked) => {

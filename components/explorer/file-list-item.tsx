@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import { DebridFile } from "@/lib/clients/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatSize, formatRelativeTime, formatSpeed, cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Separator } from "../ui/separator";
 
 interface FileListItemProps {
     file: DebridFile;
@@ -32,20 +33,19 @@ export function FileListItem({
     className,
 }: FileListItemProps) {
     // Format size with progress for active transfers
-    const getSizeDisplay = () => {
+    const getSizeDisplay = useCallback(() => {
         if (file.status === "downloading" && file.downloaded !== undefined) {
-            return `${formatSize(file.size)} | Downloaded: ${formatSize(file.downloaded)}`;
+            return `${formatSize(file.size)} | DL: ${formatSize(file.downloaded)}`;
         } else if (file.status === "uploading" && file.uploaded !== undefined) {
-            return `${formatSize(file.size)} | Uploaded: ${formatSize(file.uploaded)}`;
+            return `${formatSize(file.size)} | UL: ${formatSize(file.uploaded)}`;
         }
         return formatSize(file.size);
-    };
+    }, [file]);
 
     // Desktop second row content
-    const getDesktopSecondRow = () => {
+    const getDesktopSecondRow = useCallback(() => {
         const elements = [];
 
-        elements.push(<span key="size">Size: {getSizeDisplay()}</span>);
         if (file.peers !== undefined) {
             elements.push(<span key="peers">Peers: {file.peers}</span>);
         }
@@ -57,7 +57,7 @@ export function FileListItem({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span className="text-blue-600">
-                                DL: {formatSpeed(file.downloadSpeed)}
+                                Speed: {formatSpeed(file.downloadSpeed)}
                             </span>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -72,7 +72,7 @@ export function FileListItem({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span className="text-green-600">
-                                UL: {formatSpeed(file.uploadSpeed)}
+                                Speed: {formatSpeed(file.uploadSpeed)}
                             </span>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -83,7 +83,32 @@ export function FileListItem({
             );
         }
 
-        elements.push(
+        if (file.error) {
+            elements.push(
+                <span key="error" className="truncate max-w-[200px]">
+                    {file.error}
+                </span>
+            );
+        }
+
+        // Join elements with separators
+        return elements.reduce((acc: React.ReactNode[], elem, index) => {
+            if (index > 0) {
+                acc.push(
+                    <Separator
+                        orientation="vertical"
+                        key={`sep-${index}`}
+                        className="h-4 bg-muted-foreground/20"
+                    />
+                );
+            }
+            acc.push(elem);
+            return acc;
+        }, []);
+    }, [file]);
+
+    const getTimeDisplay = useCallback(() => {
+        return (
             <TooltipProvider key="completed">
                 <Tooltip delayDuration={2000}>
                     <TooltipTrigger asChild>
@@ -106,31 +131,7 @@ export function FileListItem({
                 </Tooltip>
             </TooltipProvider>
         );
-
-        if (file.error) {
-            elements.push(
-                <span key="error" className="truncate max-w-[200px]">
-                    {file.error}
-                </span>
-            );
-        }
-
-        // Join elements with separators
-        return elements.reduce((acc: React.ReactNode[], elem, index) => {
-            if (index > 0) {
-                acc.push(
-                    <span
-                        key={`sep-${index}`}
-                        className="text-muted-foreground"
-                    >
-                        |
-                    </span>
-                );
-            }
-            acc.push(elem);
-            return acc;
-        }, []);
-    };
+    }, [file]);
 
     return (
         <div
@@ -146,7 +147,7 @@ export function FileListItem({
             )}
             onClick={() => canExpand && onToggleExpand()}
         >
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 px-1">
                 <Checkbox
                     checked={isSelected}
                     onCheckedChange={onToggleSelect}
@@ -155,7 +156,7 @@ export function FileListItem({
             </div>
 
             <div className="flex-1 min-w-0">
-                <div className="flexflex-col gap-0.5">
+                <div className="flex flex-col gap-0.5">
                     <div className="flex justify-between gap-1">
                         <div
                             className={cn(
@@ -180,8 +181,11 @@ export function FileListItem({
                     </div>
 
                     {/* Row 2: Everything else */}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        {<span key="size">Size: {getSizeDisplay()}</span>}
                         {getDesktopSecondRow()}
+                        <span className="flex-1"></span>
+                        {getTimeDisplay()}
                     </div>
                 </div>
             </div>

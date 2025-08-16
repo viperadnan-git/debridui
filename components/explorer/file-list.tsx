@@ -12,7 +12,7 @@ export function FileList({ children, className }: FileListProps) {
     return (
         <div
             className={cn(
-                "rounded-md border border-border",
+                "rounded-md md:border md:border-border",
                 "overflow-hidden",
                 "mx-0.5 sm:mx-0",
                 className

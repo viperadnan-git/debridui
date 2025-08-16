@@ -306,7 +306,7 @@ export function DataTable({
             {/* Settings Switches */}
             <SettingsSwitches className="mb-2 w-full justify-end" />
 
-            <FileList>
+            <FileList className="-mx-4 md:-mx-0">
                 <FileListHeader
                     isAllSelected={
                         isSomeSelected ? "indeterminate" : isAllSelected
