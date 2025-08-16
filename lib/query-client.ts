@@ -37,7 +37,7 @@ export const initializeQueryClientPersistence = () => {
         persistQueryClient({
             queryClient,
             persister: createIDBPersister("DEBRIDUI_CACHE"),
-            maxAge: 1000 * 60 * 60 * 24, // 24 hours
+            maxAge: QUERY_CACHE_MAX_AGE * 7, // 7 days
         });
     }
 };

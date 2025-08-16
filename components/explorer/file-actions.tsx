@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuthContext } from "@/app/(private)/layout";
 import { DebridLinkInfo } from "@/lib/clients/types";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
+import { QUERY_CACHE_MAX_AGE } from "@/lib/constants";
 
 interface FileActionsProps {
     selectedFiles: Set<string>;
@@ -23,6 +24,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
             queryKey: ["getNodeDownloadUrl", id],
             queryFn: () => client.getNodeDownloadUrl(id),
             enabled: false, // Don't auto-fetch until action is clicked
+            staleTime: QUERY_CACHE_MAX_AGE,
         })),
     });
 

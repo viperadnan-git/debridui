@@ -17,7 +17,6 @@ import { FileList, FileListBody, FileListEmpty } from "./file-list";
 import { FileListHeader } from "./file-list-header";
 import { FileListItem } from "./file-list-item";
 import { ExpandedRow } from "./expanded-row";
-import { SettingsSwitches } from "./settings-switches";
 import { FileActionsDrawer } from "./file-actions-drawer";
 import { useHierarchicalSelection } from "@/hooks/use-selection";
 import { useFileStore } from "@/lib/stores/files";

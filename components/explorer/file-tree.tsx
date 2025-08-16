@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { FileType } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { QUERY_CACHE_MAX_AGE } from "@/lib/constants";
 
 interface FileTreeProps {
     nodes: DebridFileNode[];
@@ -80,6 +81,7 @@ function FileActionButton({
         queryKey: ["getNodeDownloadUrl", node.id],
         queryFn: () => client.getNodeDownloadUrl(node.id!),
         enabled: false, // Don't auto-fetch
+        staleTime: QUERY_CACHE_MAX_AGE,
     });
 
     const handleAction = async (linkInfo: DebridLinkInfo) => {
