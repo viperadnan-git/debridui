@@ -87,6 +87,7 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
         const { offset } = get();
         if (offset === 0) {
             set({ files });
+            get().sortFiles();
         } else {
             const existingIds = new Set(get().files.map((f) => f.id));
             const newFiles = files.filter((f) => !existingIds.has(f.id));
