@@ -12,7 +12,7 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
-import { File, Home, Settings, Search } from "lucide-react";
+import { ServerIcon, SearchIcon, HomeIcon, SettingsIcon } from "lucide-react";
 import { useSearch } from "@/components/search-provider";
 import Image from "next/image";
 
@@ -27,23 +27,23 @@ const data = {
         {
             title: "Dashboard",
             url: "/dashboard",
-            icon: Home,
+            icon: HomeIcon,
         },
         {
             title: "Search",
             url: "#",
-            icon: Search,
+            icon: SearchIcon,
             action: "search",
         },
         {
             title: "Files",
             url: "/files",
-            icon: File,
+            icon: ServerIcon,
         },
         {
             title: "Settings",
             url: "/settings",
-            icon: Settings,
+            icon: SettingsIcon,
         },
     ],
 };
