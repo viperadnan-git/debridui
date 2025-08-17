@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/use-auth";
+import { useUserStore } from "@/lib/stores/users";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -40,7 +40,7 @@ export function AddAccount({
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
-    const { login } = useAuth();
+    const { login } = useUserStore();
 
     const form = useForm<z.infer<typeof addAccountSchema>>({
         resolver: zodResolver(addAccountSchema),

@@ -2,12 +2,14 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { User } from "@/lib/types";
 import { queryClient } from "../query-client";
+import { AllDebridClient, getClient, getClientInstance } from "@/lib/clients";
+import { toast } from "sonner";
 
 interface UserStore {
     users: User[];
-    currentUserId: string | null;
     currentUser: User | null;
     isHydrated: boolean;
+    client: AllDebridClient | null;
 
     addAccount: (user: User) => void;
     removeAccount: (userId: string) => void;
@@ -15,15 +17,17 @@ interface UserStore {
     updateAccount: (userId: string, user: Partial<User>) => void;
     logout: () => void;
     setHydrated: () => void;
+    login: (apiKey: string, type: string) => Promise<User | null>;
+    refreshUser: (userId: string) => Promise<void>;
 }
 
 export const useUserStore = create<UserStore>()(
     persist(
         (set, get) => ({
             users: [],
-            currentUserId: null,
             currentUser: null,
             isHydrated: false,
+            client: null,
 
             addAccount: (user) => {
                 set((state) => {
@@ -33,13 +37,11 @@ export const useUserStore = create<UserStore>()(
                             users: state.users.map((u) =>
                                 u.id === user.id ? user : u
                             ),
-                            currentUserId: user.id,
                             currentUser: user,
                         };
                     }
                     return {
                         users: [...state.users, user],
-                        currentUserId: user.id,
                         currentUser: user,
                     };
                 });
@@ -50,7 +52,7 @@ export const useUserStore = create<UserStore>()(
                     const filteredUsers = state.users.filter(
                         (u) => u.id !== userId
                     );
-                    const isCurrentUser = state.currentUserId === userId;
+                    const isCurrentUser = state.currentUser?.id === userId;
                     const newCurrentUser =
                         isCurrentUser && filteredUsers.length > 0
                             ? filteredUsers[0]
@@ -60,7 +62,6 @@ export const useUserStore = create<UserStore>()(
 
                     return {
                         users: filteredUsers,
-                        currentUserId: newCurrentUser?.id || null,
                         currentUser: newCurrentUser,
                     };
                 });
@@ -73,7 +74,6 @@ export const useUserStore = create<UserStore>()(
                     if (!user) return state;
 
                     return {
-                        currentUserId: userId,
                         currentUser: user,
                     };
                 });
@@ -91,7 +91,7 @@ export const useUserStore = create<UserStore>()(
                     return {
                         users: updatedUsers,
                         currentUser:
-                            state.currentUserId === userId
+                            state.currentUser?.id === userId
                                 ? updatedUser || null
                                 : state.currentUser,
                     };
@@ -100,28 +100,69 @@ export const useUserStore = create<UserStore>()(
 
             logout: () => {
                 set({
-                    currentUserId: null,
                     currentUser: null,
                     users: [],
                 });
             },
 
             setHydrated: () => {
-                const { users, currentUserId } = get();
-                const currentUser =
-                    users.find((u) => u.id === currentUserId) || null;
+                const { currentUser, users } = get();
+                const user = currentUser || users[0];
+                const client = getClientInstance(user);
+                console.log("Initializing client", user.type);
                 set({
                     isHydrated: true,
-                    currentUser,
-                    currentUserId: currentUser?.id || null,
+                    currentUser: user,
+                    client,
                 });
+            },
+
+            login: async (
+                apiKey: string,
+                type: string
+            ): Promise<User | null> => {
+                try {
+                    const ClientClass = getClient({ type });
+                    if (!ClientClass) {
+                        toast.error("Invalid account type");
+                        return null;
+                    }
+
+                    const user = await ClientClass.getUser(apiKey);
+                    get().addAccount(user);
+                    toast.success(`Logged in as ${user.username}`);
+                    return user;
+                } catch (error) {
+                    toast.error(
+                        (error as Error).message || "Failed to authenticate"
+                    );
+                    return null;
+                }
+            },
+
+            refreshUser: async (userId: string) => {
+                const { users, updateAccount } = get();
+                const user = users.find((u) => u.id === userId);
+                if (!user) return;
+
+                try {
+                    const ClientClass = getClient({ type: user.type });
+                    if (!ClientClass) return;
+
+                    const updatedUser = await ClientClass.getUser(user.apiKey);
+                    updateAccount(userId, updatedUser);
+                } catch (error) {
+                    toast.error(
+                        `Failed to refresh user: ${(error as Error).message}`
+                    );
+                }
             },
         }),
         {
             name: "debridui-users",
             partialize: (state) => ({
                 users: state.users,
-                currentUserId: state.currentUserId,
+                currentUser: state.currentUser,
             }),
             onRehydrateStorage: () => (state) => {
                 state?.setHydrated();

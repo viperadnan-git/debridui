@@ -7,23 +7,22 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
 import { SearchProvider } from "@/components/search-provider";
-import { useAuth, useClient } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AuthContext } from "@/lib/contexts/auth";
+import { useUserStore } from "@/lib/stores/users";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const { currentUser, isReady } = useAuth();
-    const client = useClient();
+    const { isHydrated, currentUser, client } = useUserStore();
     const router = useRouter();
 
     useEffect(() => {
-        if (isReady && !currentUser) {
+        if (isHydrated && !currentUser) {
             router.push("/login");
         }
-    }, [currentUser, isReady, router]);
+    }, [currentUser, isHydrated, router]);
 
-    if (!isReady) {
+    if (!isHydrated) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <div className="animate-pulse text-muted-foreground">

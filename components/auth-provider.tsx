@@ -1,11 +1,11 @@
 "use client";
 
-import { useAuth } from "@/hooks/use-auth";
+import { useUserStore } from "@/lib/stores/users";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { isReady } = useAuth();
+    const { isHydrated } = useUserStore();
 
-    if (!isReady) {
+    if (!isHydrated) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <div className="animate-pulse text-muted-foreground">

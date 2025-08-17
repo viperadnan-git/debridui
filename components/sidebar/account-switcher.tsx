@@ -35,15 +35,15 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
 import { AddAccount } from "./add-account";
 import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useUserStore } from "@/lib/stores/users";
 
 export function AccountSwitcher() {
     const { users, currentUser, switchAccount, removeAccount, logout } =
-        useAuth();
+        useUserStore();
     const { isMobile } = useSidebar();
     const router = useRouter();
     const [isAddAccountOpen, setIsAddAccountOpen] = React.useState(false);
