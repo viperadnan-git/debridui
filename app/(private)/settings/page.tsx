@@ -164,7 +164,7 @@ export default function SettingsPage() {
                             <div className="flex items-center gap-4">
                                 <Button
                                     onClick={() =>
-                                        handleClearCache("getNodeDownloadUrl")
+                                        handleClearCache("getDownloadLink")
                                     }
                                     disabled={isClearing}
                                     variant="destructive"

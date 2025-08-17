@@ -9,24 +9,24 @@ import { AccountType, User } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
 
-type MagnetFileNode = {
+// Response type definitions
+interface FileNode {
     n: string;
     s: number;
     l: string;
-};
+}
 
-type MagnetFolderNode = {
+interface FolderNode {
     n: string;
-    e: MagnetFileNode[];
-};
+    e: FileNode[];
+}
 
-type MagnetFile = {
+interface TorrentFile {
     id: string;
-    files: MagnetFileNode[] | MagnetFolderNode[];
-};
+    files: FileNode[] | FolderNode[];
+}
 
-// Live Mode types for magnet status
-type MagnetStatus = {
+interface TorrentStatus {
     id: number;
     filename?: string;
     size?: number;
@@ -41,95 +41,91 @@ type MagnetStatus = {
     completionDate?: number;
     processingPerc?: number;
     deleted?: boolean;
-};
+}
 
-type LiveModeResponse = {
+interface LiveModeResponse {
     counter: number;
     fullsync: boolean;
-    magnets: MagnetStatus[];
-};
+    magnets: TorrentStatus[];
+}
 
-type MagnetBaseInfo = {
+interface BaseInfo {
     id: number;
     name: string;
     size: number;
     hash: string;
     ready: boolean;
-};
+}
 
-type MagnetBaseError = {
+interface ErrorResponse {
     error: {
         code: number;
         message: string;
     };
-};
+}
 
-type AddFileResponse = {
-    files: ({ file: string } & MagnetBaseInfo & MagnetBaseError)[];
-};
+interface AddFileResponse {
+    files: ({ file: string } & BaseInfo & ErrorResponse)[];
+}
 
-type AddMagnetResponse = {
-    magnets: ({ magnet: string } & MagnetBaseInfo & MagnetBaseError)[];
-};
+interface AddTorrentResponse {
+    magnets: ({ magnet: string } & BaseInfo & ErrorResponse)[];
+}
 
-type RetryFileResponse = {
-    magnets: ({ magnet: string; message?: string } & MagnetBaseError)[];
-};
+interface RetryResponse {
+    magnets: ({ magnet: string; message?: string } & ErrorResponse)[];
+}
 
 export default class AllDebridClient extends BaseClient {
-    private sessionId: number;
+    private readonly sessionId: number;
     private counter: number = 0;
-    private magnetsState: Map<number, MagnetStatus> = new Map();
-    private magnetsOrder: number[] = []; // Track order with newest first
+    private readonly torrentsCache = new Map<number, TorrentStatus>();
+    private torrentOrder: number[] = []; // Maintains order with newest first
 
     constructor(private readonly account: User) {
         super();
-        // Generate a random session ID for Live Mode
         this.sessionId = Math.floor(Math.random() * 1000000);
     }
 
-    private fetch = async (path: string, options: RequestInit = {}) => {
+    private async makeRequest<T>(
+        path: string,
+        options: RequestInit = {}
+    ): Promise<T> {
         const { apiKey } = this.account;
+        const url = `https://api.alldebrid.com/v4.1/${path}?agent=${USER_AGENT}`;
 
-        const response = await fetch(
-            `https://api.alldebrid.com/v4.1/${path}?agent=${USER_AGENT}`,
-            {
-                ...options,
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    ...options.headers,
-                },
-            }
-        );
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                ...options.headers,
+            },
+        });
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch ${path}: ${response.statusText}`);
+            throw new Error(
+                `API request failed for ${path}: ${response.statusText}`
+            );
         }
 
         const data = await response.json();
-
-        AllDebridClient.throwError(data);
-
+        AllDebridClient.validateResponse(data);
         return data.data;
-    };
+    }
 
-    static getUser = async (apiKey: string): Promise<User> => {
-        const response = await fetch(
-            `https://api.alldebrid.com/v4.1/user?agent=${USER_AGENT}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                },
-            }
-        );
+    static async getUser(apiKey: string): Promise<User> {
+        const url = `https://api.alldebrid.com/v4.1/user?agent=${USER_AGENT}`;
+
+        const response = await fetch(url, {
+            headers: { Authorization: `Bearer ${apiKey}` },
+        });
 
         const data = await response.json();
+        this.validateResponse(data);
 
-        this.throwError(data);
-
-        const user = data.data.user;
-        const userPremium = user.premiumUntil;
-        const isPremium = userPremium && userPremium > new Date().getTime();
+        const { user } = data.data;
+        const premiumExpiry = user.premiumUntil;
+        const isPremium = premiumExpiry && premiumExpiry > Date.now();
 
         return {
             id: crypto.randomUUID(),
@@ -139,83 +135,82 @@ export default class AllDebridClient extends BaseClient {
             email: user.email,
             language: user.language,
             isPremium,
-            premiumExpiresAt: new Date(userPremium),
+            premiumExpiresAt: new Date(premiumExpiry),
         };
-    };
+    }
 
-    static getPin = async (): Promise<{
+    static async getAuthPin(): Promise<{
         pin: string;
         check: string;
         redirect_url: string;
-    }> => {
-        const response = await fetch(
-            `https://api.alldebrid.com/v4.1/pin/get?agent=${USER_AGENT}`
-        );
-
+    }> {
+        const url = `https://api.alldebrid.com/v4.1/pin/get?agent=${USER_AGENT}`;
+        const response = await fetch(url);
         const data = await response.json();
 
-        this.throwError(data);
+        this.validateResponse(data);
 
         return {
             pin: data.data.pin,
             check: data.data.check,
             redirect_url: data.data.user_url,
         };
-    };
+    }
 
-    static checkPin = async (
+    static async validateAuthPin(
         pin: string,
         check: string,
-        timeout: number = 600 * 1000 // 10 minutes
-    ): Promise<{ success: boolean; apiKey?: string }> => {
-        const form = new FormData();
-        form.append("pin", pin);
-        form.append("check", check);
+        timeoutMs: number = 600000 // 10 minutes
+    ): Promise<{ success: boolean; apiKey?: string }> {
+        const formData = new FormData();
+        formData.append("pin", pin);
+        formData.append("check", check);
 
-        const now = Date.now();
+        const startTime = Date.now();
+        const url = `https://api.alldebrid.com/v4.1/pin/check?agent=${USER_AGENT}`;
 
-        do {
-            const response = await fetch(
-                `https://api.alldebrid.com/v4.1/pin/check?agent=${USER_AGENT}`,
-                {
-                    method: "POST",
-                    body: form,
-                }
-            );
+        while (Date.now() - startTime < timeoutMs) {
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData,
+            });
 
             const data = await response.json();
-            this.throwError(data);
+            this.validateResponse(data);
+
             if (data.data.activated) {
                 return {
                     success: true,
                     apiKey: data.data.apikey,
                 };
             }
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
-        } while (Date.now() - now < timeout);
 
-        throw new Error("Timeout while waiting for pin to be activated");
-    };
+            await this.delay(1000);
+        }
 
-    listFiles = async ({
+        throw new Error(
+            "Authentication timeout: PIN was not activated within the time limit"
+        );
+    }
+
+    async getTorrentList({
         offset = 0,
         limit = 20,
     }: {
         offset?: number;
         limit?: number;
-    } = {}): Promise<DebridFileList> => {
-        await this.updateFiles();
+    } = {}): Promise<DebridFileList> {
+        await this.syncTorrentStatus();
 
-        // Convert magnets state to DebridFile format using order array
         const files: DebridFile[] = [];
-        const end = Math.min(offset + limit, this.magnetsOrder.length);
+        const endIndex = Math.min(offset + limit, this.torrentOrder.length);
 
-        for (let i = offset; i < end; i++) {
-            const magnetId = this.magnetsOrder[i];
-            const magnet = this.magnetsState.get(magnetId);
+        for (let i = offset; i < endIndex; i++) {
+            const torrentId = this.torrentOrder[i];
+            const torrent = this.torrentsCache.get(torrentId);
 
-            if (magnet && magnet.filename) {
-                files.push(this.parseMagnetStatus(magnet));
+            if (torrent?.filename) {
+                files.push(this.mapToDebridFile(torrent));
             }
         }
 
@@ -223,290 +218,342 @@ export default class AllDebridClient extends BaseClient {
             files,
             offset,
             limit,
-            hasMore: end < this.magnetsOrder.length,
+            hasMore: endIndex < this.torrentOrder.length,
         };
-    };
+    }
 
-    searchFiles = async (query: string): Promise<DebridFile[]> => {
-        await this.updateFiles();
+    async findTorrents(searchQuery: string): Promise<DebridFile[]> {
+        await this.syncTorrentStatus();
 
-        const queries = query.split(" ");
-        return Array.from(this.magnetsState.values())
-            .filter((file) =>
-                queries.every((query) =>
-                    file.filename?.toLowerCase().includes(query.toLowerCase())
-                )
+        const searchTerms = searchQuery.toLowerCase().split(/\s+/);
+
+        return Array.from(this.torrentsCache.values())
+            .filter(
+                (torrent) =>
+                    torrent.filename &&
+                    searchTerms.every((term) =>
+                        torrent.filename!.toLowerCase().includes(term)
+                    )
             )
-            .map(this.parseMagnetStatus);
-    };
+            .map(this.mapToDebridFile);
+    }
 
-    getNodeDownloadUrl = async (fileId: string): Promise<DebridLinkInfo> => {
-        const form = new FormData();
-        form.append("link", fileId);
+    async getDownloadLink(fileId: string): Promise<DebridLinkInfo> {
+        const formData = new FormData();
+        formData.append("link", fileId);
 
-        const data = await this.fetch(`link/unlock`, {
+        const response = await this.makeRequest<{
+            link: string;
+            filename: string;
+            filesize: number;
+        }>(`link/unlock`, {
             method: "POST",
-            body: form,
+            body: formData,
         });
 
         return {
-            link: data.link,
-            name: data.filename,
-            size: data.filesize,
+            link: response.link,
+            name: response.filename,
+            size: response.filesize,
         };
-    };
+    }
 
-    getFile = async (id: string): Promise<DebridFileNode[]> => {
-        const form = new FormData();
-        form.append("id[]", id);
+    async getTorrentFiles(torrentId: string): Promise<DebridFileNode[]> {
+        const formData = new FormData();
+        formData.append("id[]", torrentId);
 
-        const data = await this.fetch(`magnet/files`, {
-            method: "POST",
-            body: form,
-        });
+        const response = await this.makeRequest<{ magnets: TorrentFile[] }>(
+            `magnet/files`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
 
-        const magnet = data.magnets[0] as MagnetFile;
-        const files = magnet.files;
+        const torrentFile = response.magnets[0];
+        return this.convertFileNodes(torrentFile.files);
+    }
 
-        return this.parseFileNodes(files);
-    };
+    async removeTorrent(torrentId: string): Promise<string> {
+        const formData = new FormData();
+        formData.append("id", torrentId);
 
-    deleteFile = async (id: string): Promise<string> => {
-        const form = new FormData();
-        form.append("id", id);
-        const data = await this.fetch(`magnet/delete`, {
-            method: "POST",
-            body: form,
-        });
+        const response = await this.makeRequest<{ message: string }>(
+            `magnet/delete`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
 
-        this.removeDeletedMagnet(parseInt(id));
-        return data.message;
-    };
+        this.removeTorrentFromCache(parseInt(torrentId));
+        return response.message;
+    }
 
-    retryFile = async (ids: string[]): Promise<Record<string, string>> => {
-        const form = new FormData();
-        ids.forEach((id) => {
-            form.append("ids[]", id);
-        });
+    async restartTorrents(
+        torrentIds: string[]
+    ): Promise<Record<string, string>> {
+        const formData = new FormData();
+        torrentIds.forEach((id) => formData.append("ids[]", id));
 
-        const data: RetryFileResponse = await this.fetch(`magnet/restart`, {
-            method: "POST",
-            body: form,
-        });
+        const response: RetryResponse = await this.makeRequest(
+            `magnet/restart`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
 
-        return data.magnets.reduce(
-            (acc, magnet) => {
-                acc[magnet.magnet] =
-                    magnet?.message ||
-                    magnet?.error?.message ||
-                    "Unknown error";
-                return acc;
+        return response.magnets.reduce(
+            (results, torrent) => {
+                results[torrent.magnet] =
+                    torrent.message ||
+                    torrent.error?.message ||
+                    "Unknown error occurred";
+                return results;
             },
             {} as Record<string, string>
         );
-    };
+    }
 
-    addURI = async (uris: string[]): Promise<Record<string, string>> => {
-        const httpUri: string[] = [];
-        const magnetUri: string[] = [];
-        uris.forEach((uri) => {
+    async addDownloads(uris: string[]): Promise<Record<string, string>> {
+        const httpUris: string[] = [];
+        const magnetUris: string[] = [];
+
+        for (const uri of uris) {
             const trimmedUri = uri.trim();
             if (trimmedUri.startsWith("http")) {
-                httpUri.push(trimmedUri);
+                httpUris.push(trimmedUri);
             } else {
-                magnetUri.push(trimmedUri);
+                magnetUris.push(trimmedUri);
             }
-        });
+        }
 
-        const [httpData, magnetData] = await Promise.all([
-            httpUri.length > 0 ? this.addHTTPUri(httpUri) : Promise.resolve({}),
-            magnetUri.length > 0
-                ? this.addMagnets(magnetUri)
+        const [httpResults, magnetResults] = await Promise.allSettled([
+            httpUris.length > 0
+                ? this.addHttpDownloads(httpUris)
+                : Promise.resolve({}),
+            magnetUris.length > 0
+                ? this.addMagnetLinks(magnetUris)
                 : Promise.resolve({}),
         ]);
 
+        const httpData =
+            httpResults.status === "fulfilled" ? httpResults.value : {};
+        const magnetData =
+            magnetResults.status === "fulfilled" ? magnetResults.value : {};
+
         return { ...httpData, ...magnetData };
-    };
+    }
 
-    addMagnets = async (magnets: string[]): Promise<Record<string, string>> => {
-        const form = new FormData();
-        magnets.forEach((magnet) => {
-            form.append("magnets[]", magnet);
-        });
-        const data: AddMagnetResponse = await this.fetch(`magnet/upload`, {
-            method: "POST",
-            body: form,
-        });
+    async addMagnetLinks(
+        magnetUris: string[]
+    ): Promise<Record<string, string>> {
+        const formData = new FormData();
+        magnetUris.forEach((magnet) => formData.append("magnets[]", magnet));
 
-        return data.magnets.reduce(
-            (acc, magnet) => {
-                acc[magnet.magnet] =
-                    magnet?.error?.message || `Magnet ${magnet.name} added`;
-                return acc;
+        const response: AddTorrentResponse = await this.makeRequest(
+            `magnet/upload`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        return response.magnets.reduce(
+            (results, torrent) => {
+                results[torrent.magnet] =
+                    torrent.error?.message ||
+                    `Successfully added: ${torrent.name}`;
+                return results;
             },
             {} as Record<string, string>
         );
-    };
+    }
 
-    addFile = async (files: File[]): Promise<Record<string, string>> => {
-        const form = new FormData();
-        files.forEach((file) => {
-            form.append("files[]", file);
-        });
-        const data: AddFileResponse = await this.fetch(`magnet/upload/file`, {
-            method: "POST",
-            body: form,
-        });
+    async uploadTorrentFiles(files: File[]): Promise<Record<string, string>> {
+        const formData = new FormData();
+        files.forEach((file) => formData.append("files[]", file));
 
-        return data.files.reduce(
-            (acc, magnet) => {
-                acc[magnet.file] =
-                    magnet?.error?.message || `File ${magnet.name} added`;
-                return acc;
+        const response: AddFileResponse = await this.makeRequest(
+            `magnet/upload/file`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        return response.files.reduce(
+            (results, file) => {
+                results[file.file] =
+                    file.error?.message ||
+                    `Successfully uploaded: ${file.name}`;
+                return results;
             },
             {} as Record<string, string>
         );
-    };
+    }
 
-    private addHTTPUri = async (
-        uris: string[]
-    ): Promise<Record<string, string>> => {
+    private async addHttpDownloads(
+        httpUris: string[]
+    ): Promise<Record<string, string>> {
         const results: Record<string, string> = {};
+        const downloadedFiles: File[] = [];
 
-        const files = await Promise.all(
-            uris.map(async (uri) => {
+        await Promise.allSettled(
+            httpUris.map(async (uri) => {
                 try {
-                    return await this.fetchFile(uri.trim());
+                    const file = await this.downloadFile(uri);
+                    downloadedFiles.push(file);
                 } catch (error) {
-                    results[uri] = `Failed to fetch ${uri}: ${error}`;
+                    results[uri] = `Failed to download ${uri}: ${error}`;
                 }
             })
         );
 
-        return {
-            ...results,
-            ...(await this.addFile(files.filter(Boolean) as File[])),
-        };
-    };
-
-    private fetchFile = async (uri: string): Promise<File> => {
-        const response = await fetch(uri.trim());
-        const blob = await response.blob();
-        return new File([blob], uri.trim(), {
-            type:
-                response.headers.get("content-type") ||
-                "application/x-bittorrent",
-        });
-    };
-
-    private parseMagnetStatus = (magnet: MagnetStatus): DebridFile => {
-        let progress;
-
-        const status = this.getStatus(magnet.statusCode);
-        if (status === "downloading" || status === "uploading") {
-            const processed = magnet.uploaded || magnet.downloaded || 0;
-            const percentage = (processed / (magnet.size || 0)) * 100;
-            progress = percentage > 0 ? percentage.toFixed(2) : 0;
+        if (downloadedFiles.length > 0) {
+            const uploadResults =
+                await this.uploadTorrentFiles(downloadedFiles);
+            Object.assign(results, uploadResults);
         }
 
-        return {
-            id: magnet.id.toString(),
-            name: magnet.filename!,
-            size: magnet.size || 0,
-            status,
-            progress,
-            downloadSpeed: magnet.downloadSpeed,
-            uploadSpeed: magnet.uploadSpeed,
-            uploaded: magnet.uploaded,
-            downloaded: magnet.downloaded,
-            peers: magnet.seeders,
-            createdAt: new Date(magnet.uploadDate * 1000),
-            completedAt: magnet.completionDate
-                ? new Date(magnet.completionDate * 1000)
-                : undefined,
-            error: status === "failed" ? magnet.status : undefined,
-        };
-    };
+        return results;
+    }
 
-    private updateFiles = async (): Promise<Map<number, MagnetStatus>> => {
-        // Use Live Mode to get magnet status
-        const form = new FormData();
-        form.append("session", this.sessionId.toString());
-        form.append("counter", this.counter.toString());
+    private async downloadFile(uri: string): Promise<File> {
+        const response = await fetch(uri);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
-        const data = (await this.fetch(`magnet/status`, {
-            method: "POST",
-            body: form,
-        })) as LiveModeResponse;
+        const blob = await response.blob();
+        const contentType =
+            response.headers.get("content-type") || "application/x-bittorrent";
 
-        // Update counter for next call
-        this.counter = data.counter;
+        return new File([blob], uri, { type: contentType });
+    }
 
-        // Handle Live Mode response
-        if (data.fullsync) {
-            // Full sync - reset state and store all magnets
-            this.magnetsState.clear();
-            this.magnetsOrder = [];
-            data.magnets.forEach((magnet) => {
-                this.magnetsState.set(magnet.id, magnet);
-                this.magnetsOrder.push(magnet.id);
-            });
-        } else {
-            // Incremental update - merge changes with existing state
-            const newMagnets: number[] = [];
-            data.magnets.forEach((magnet) => {
-                const existing = this.magnetsState.get(magnet.id);
-                if (existing) {
-                    if (magnet.deleted) {
-                        this.removeDeletedMagnet(magnet.id);
-                        return;
-                    }
-                    // Merge changes with existing state
-                    this.magnetsState.set(magnet.id, {
-                        ...existing,
-                        ...magnet,
-                    });
-                } else {
-                    // New magnet - add to front of order
-                    this.magnetsState.set(magnet.id, magnet);
-                    newMagnets.push(magnet.id);
-                }
-            });
-            // Add new magnets to the front of the order array
-            if (newMagnets.length > 0) {
-                this.magnetsOrder = [...newMagnets, ...this.magnetsOrder];
+    private mapToDebridFile(torrent: TorrentStatus): DebridFile {
+        const status = this.mapStatusCode(torrent.statusCode);
+        let progress: string | number | undefined;
+
+        if (status === "downloading" || status === "uploading") {
+            const processed = torrent.uploaded || torrent.downloaded || 0;
+            const total = torrent.size || 0;
+            if (total > 0) {
+                const percentage = (processed / total) * 100;
+                progress = percentage > 0 ? percentage.toFixed(2) : "0";
             }
         }
 
-        return this.magnetsState;
-    };
+        return {
+            id: torrent.id.toString(),
+            name: torrent.filename!,
+            size: torrent.size || 0,
+            status,
+            progress,
+            downloadSpeed: torrent.downloadSpeed,
+            uploadSpeed: torrent.uploadSpeed,
+            uploaded: torrent.uploaded,
+            downloaded: torrent.downloaded,
+            peers: torrent.seeders,
+            createdAt: new Date(torrent.uploadDate * 1000),
+            completedAt: torrent.completionDate
+                ? new Date(torrent.completionDate * 1000)
+                : undefined,
+            error: status === "failed" ? torrent.status : undefined,
+        };
+    }
 
-    private removeDeletedMagnet = (magnetId: number): void => {
-        if (this.magnetsState.delete(magnetId)) {
-            this.magnetsOrder = this.magnetsOrder.filter(
-                (id) => id !== magnetId
+    private async syncTorrentStatus(): Promise<void> {
+        const formData = new FormData();
+        formData.append("session", this.sessionId.toString());
+        formData.append("counter", this.counter.toString());
+
+        const response: LiveModeResponse = await this.makeRequest(
+            `magnet/status`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        this.counter = response.counter;
+
+        if (response.fullsync) {
+            this.performFullSync(response.magnets);
+        } else {
+            this.performIncrementalSync(response.magnets);
+        }
+    }
+
+    private performFullSync(torrents: TorrentStatus[]): void {
+        this.torrentsCache.clear();
+        this.torrentOrder = [];
+
+        for (const torrent of torrents) {
+            this.torrentsCache.set(torrent.id, torrent);
+            this.torrentOrder.push(torrent.id);
+        }
+    }
+
+    private performIncrementalSync(torrents: TorrentStatus[]): void {
+        const newTorrentIds: number[] = [];
+
+        for (const torrent of torrents) {
+            const existingTorrent = this.torrentsCache.get(torrent.id);
+
+            if (existingTorrent) {
+                if (torrent.deleted) {
+                    this.removeTorrentFromCache(torrent.id);
+                } else {
+                    // Merge with existing data
+                    this.torrentsCache.set(torrent.id, {
+                        ...existingTorrent,
+                        ...torrent,
+                    });
+                }
+            } else if (!torrent.deleted) {
+                // New torrent
+                this.torrentsCache.set(torrent.id, torrent);
+                newTorrentIds.push(torrent.id);
+            }
+        }
+
+        // Add new torrents to the beginning of the order array
+        if (newTorrentIds.length > 0) {
+            this.torrentOrder = [...newTorrentIds, ...this.torrentOrder];
+        }
+    }
+
+    private removeTorrentFromCache(torrentId: number): void {
+        if (this.torrentsCache.delete(torrentId)) {
+            this.torrentOrder = this.torrentOrder.filter(
+                (id) => id !== torrentId
             );
         }
-    };
+    }
 
-    private parseFileNodes = (
-        nodes: MagnetFileNode[] | MagnetFolderNode[]
-    ): DebridFileNode[] => {
-        return nodes.map(this.parseFileNode);
-    };
+    private convertFileNodes(
+        nodes: FileNode[] | FolderNode[]
+    ): DebridFileNode[] {
+        return nodes.map(this.convertSingleNode);
+    }
 
-    private parseFileNode = (
-        node: MagnetFileNode | MagnetFolderNode
+    private convertSingleNode = (
+        node: FileNode | FolderNode
     ): DebridFileNode => {
         if ("e" in node) {
+            // Folder node
             return {
                 name: node.n,
                 size: undefined,
                 type: "folder",
-                children: node.e.map(this.parseFileNode),
+                children: node.e.map(this.convertSingleNode),
             };
         }
 
+        // File node
         return {
             id: node.l,
             name: node.n,
@@ -516,33 +563,33 @@ export default class AllDebridClient extends BaseClient {
         };
     };
 
-    private getStatus = (status: number): DebridFileStatus => {
-        switch (status) {
-            case 0:
-                return "waiting";
-            case 1:
-                return "downloading";
-            case 2:
-                return "paused";
-            case 3:
-                return "uploading";
-            case 4:
-                return "completed";
-            case 10:
-            case 15:
-            case 7:
-                return "failed";
-            default:
-                return "unknown";
-        }
-    };
+    private mapStatusCode(statusCode: number): DebridFileStatus {
+        const statusMap: Record<number, DebridFileStatus> = {
+            0: "waiting",
+            1: "downloading",
+            2: "paused",
+            3: "uploading",
+            4: "completed",
+            7: "failed",
+            10: "failed",
+            15: "failed",
+        };
 
-    private static throwError = (data: {
+        return statusMap[statusCode] || "unknown";
+    }
+
+    private static validateResponse(data: {
         status: string;
         error?: { message?: string };
-    }) => {
+    }): void {
         if (data.status !== "success") {
-            throw new Error(data?.error?.message || "Unknown error");
+            throw new Error(
+                data.error?.message || "API request failed with unknown error"
+            );
         }
-    };
+    }
+
+    private static delay(ms: number): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
 }

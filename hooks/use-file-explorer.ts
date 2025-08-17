@@ -20,9 +20,9 @@ export function useFileExplorer() {
     } = useFileStore();
 
     const { data, isLoading } = useQuery({
-        queryKey: [currentUser.id, "listFiles", offset],
+        queryKey: [currentUser.id, "getTorrentList", offset],
         queryFn: () =>
-            client.listFiles({ offset: 0, limit: PAGE_SIZE + offset }),
+            client.getTorrentList({ offset: 0, limit: PAGE_SIZE + offset }),
         refetchInterval: 3000,
         staleTime: 0,
     });

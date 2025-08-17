@@ -111,12 +111,12 @@ export function DataTable({
 
     // Search files query
     const { data: searchResults } = useQuery({
-        queryKey: [currentUser.id, "searchFiles", debouncedSearchQuery],
+        queryKey: [currentUser.id, "findTorrents", debouncedSearchQuery],
         queryFn: () =>
-            client.searchFiles
-                ? client.searchFiles(debouncedSearchQuery)
+            client.findTorrents
+                ? client.findTorrents(debouncedSearchQuery)
                 : Promise.resolve([]),
-        enabled: !!debouncedSearchQuery && !!client.searchFiles,
+        enabled: !!debouncedSearchQuery && !!client.findTorrents,
         staleTime: 5_000,
     });
 
@@ -143,7 +143,7 @@ export function DataTable({
     const handleSelectFile = (fileId: string) => {
         // Get all node IDs for this file from cache
         const fileNodes = queryClient.getQueryData<DebridFileNode[]>([
-            "getFile",
+            "getTorrentFiles",
             fileId,
         ]);
         const allNodeIds: string[] = [];

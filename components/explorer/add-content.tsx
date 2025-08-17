@@ -32,7 +32,7 @@ export function AddContent() {
                 .map((link) => link.trim())
                 .filter((link) => link.length > 0);
 
-            const results = await client.addURI(uris);
+            const results = await client.addDownloads(uris);
 
             let successCount = 0;
             let errorCount = 0;
@@ -51,7 +51,7 @@ export function AddContent() {
                     `Successfully added ${successCount} link${successCount > 1 ? "s" : ""}`
                 );
                 setLinks("");
-                queryClient.invalidateQueries({ queryKey: ["listFiles"] });
+                queryClient.invalidateQueries({ queryKey: ["getTorrentList"] });
             }
 
             if (errorCount > 0) {
@@ -73,7 +73,7 @@ export function AddContent() {
         setIsUploadingFiles(true);
         try {
             const fileArray = Array.from(files);
-            const results = await client.addFile(fileArray);
+            const results = await client.uploadTorrentFiles(fileArray);
 
             let successCount = 0;
             let errorCount = 0;
@@ -91,7 +91,7 @@ export function AddContent() {
                 toast.success(
                     `Successfully uploaded ${successCount} file${successCount > 1 ? "s" : ""}`
                 );
-                queryClient.invalidateQueries({ queryKey: ["listFiles"] });
+                queryClient.invalidateQueries({ queryKey: ["getTorrentList"] });
             }
 
             if (errorCount > 0) {
@@ -182,7 +182,11 @@ export function AddContent() {
                                     </>
                                 )}
                             </Button>
-                            <Button variant="outline" disabled={isAddingLinks} onClick={handlePaste}>
+                            <Button
+                                variant="outline"
+                                disabled={isAddingLinks}
+                                onClick={handlePaste}
+                            >
                                 <ClipboardIcon className="mr-2 size-4" />
                                 Paste
                             </Button>

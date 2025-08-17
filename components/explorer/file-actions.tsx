@@ -22,8 +22,8 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
     // Fetch link info for all selected files using the same cache strategy as FileActionButton
     const linkQueries = useQueries({
         queries: fileIds.map((id) => ({
-            queryKey: [currentUser.id, "getNodeDownloadUrl", id],
-            queryFn: () => client.getNodeDownloadUrl(id),
+            queryKey: [currentUser.id, "getDownloadLink", id],
+            queryFn: () => client.getDownloadLink(id),
             enabled: false, // Don't auto-fetch until action is clicked
             staleTime: QUERY_CACHE_MAX_AGE,
         })),
@@ -33,7 +33,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
         const promises = fileIds.map(async (id, index) => {
             // Check if data is already cached
             const cached = queryClient.getQueryData<DebridLinkInfo>([
-                "getNodeDownloadUrl",
+                "getDownloadLink",
                 id,
             ]);
             if (cached) return cached;

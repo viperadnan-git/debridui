@@ -46,8 +46,8 @@ export function ExpandedRow({
         isLoading,
         error,
     } = useQuery<DebridFileNode[]>({
-        queryKey: [currentUser.id, "getFile", file.id],
-        queryFn: () => client.getFile(file.id),
+        queryKey: [currentUser.id, "getTorrentFiles", file.id],
+        queryFn: () => client.getTorrentFiles(file.id),
         enabled: file.status === "completed",
     });
 

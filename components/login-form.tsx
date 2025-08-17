@@ -68,10 +68,11 @@ export function LoginForm({
     async function handleAllDebridLogin() {
         setIsAllDebridLoading(true);
         try {
-            const { pin, check, redirect_url } = await AllDebridClient.getPin();
+            const { pin, check, redirect_url } =
+                await AllDebridClient.getAuthPin();
             window.open(redirect_url, "_blank", "noreferrer");
 
-            const { success, apiKey } = await AllDebridClient.checkPin(
+            const { success, apiKey } = await AllDebridClient.validateAuthPin(
                 pin,
                 check
             );
@@ -206,7 +207,9 @@ export function LoginForm({
                                 ) : (
                                     <>
                                         Continue with{" "}
-                                        <span className="font-bold">AllDebrid</span>
+                                        <span className="font-bold">
+                                            AllDebrid
+                                        </span>
                                     </>
                                 )}
                             </Button>

@@ -18,7 +18,7 @@ interface FileStoreState {
     setOffset: (offset: number) => void;
     setSortBy: (sortBy: string) => void;
     setSortOrder: (sortOrder: "asc" | "desc") => void;
-    deleteFile: (client: AllDebridClient, fileId: string) => Promise<string>;
+    removeTorrent: (client: AllDebridClient, fileId: string) => Promise<string>;
     retryFiles: (
         client: AllDebridClient,
         fileIds: string[]
@@ -151,19 +151,19 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
         set({ sortOrder });
         get().sortAndSetFiles(get().files);
     },
-    deleteFile: async (client: AllDebridClient, fileId: string) => {
-        const message = await client.deleteFile(fileId);
+    removeTorrent: async (client: AllDebridClient, fileId: string) => {
+        const message = await client.removeTorrent(fileId);
         get().removeFile(fileId);
         // Clear selection for this file
         useSelectionStore.getState().removeFileSelection(fileId);
-        queryClient.invalidateQueries({ queryKey: ["listFiles"] });
-        queryClient.invalidateQueries({ queryKey: ["searchFiles"] });
+        queryClient.invalidateQueries({ queryKey: ["getTorrentList"] });
+        queryClient.invalidateQueries({ queryKey: ["findTorrents"] });
         return message;
     },
     retryFiles: async (client: AllDebridClient, fileIds: string[]) => {
-        const message = await client.retryFile(fileIds);
-        queryClient.invalidateQueries({ queryKey: ["listFiles"] });
-        queryClient.invalidateQueries({ queryKey: ["searchFiles"] });
+        const message = await client.restartTorrents(fileIds);
+        queryClient.invalidateQueries({ queryKey: ["getTorrentList"] });
+        queryClient.invalidateQueries({ queryKey: ["findTorrents"] });
         return message;
     },
 }));

@@ -78,8 +78,8 @@ function FileActionButton({
     const { mediaPlayer } = useSettingsStore();
 
     const { data: linkInfo, refetch } = useQuery({
-        queryKey: [currentUser.id, "getNodeDownloadUrl", node.id],
-        queryFn: () => client.getNodeDownloadUrl(node.id!),
+        queryKey: [currentUser.id, "getDownloadLink", node.id],
+        queryFn: () => client.getDownloadLink(node.id!),
         enabled: false, // Don't auto-fetch
         staleTime: QUERY_CACHE_MAX_AGE,
     });

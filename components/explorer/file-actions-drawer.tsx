@@ -25,7 +25,7 @@ export function FileActionsDrawer({
     files,
 }: FileActionsDrawerProps) {
     const { client } = useAuthContext();
-    const { deleteFile, retryFiles } = useFileStore();
+    const { removeTorrent, retryFiles } = useFileStore();
 
     // Check if drawer should be shown
     const hasAnySelection =
@@ -51,12 +51,12 @@ export function FileActionsDrawer({
     // Delete mutation
     const deleteMutation = useMutation({
         mutationFn: async (fileIds: string[]) => {
-            const promises = fileIds.map((id) => deleteFile(client, id));
+            const promises = fileIds.map((id) => removeTorrent(client, id));
             await Promise.all(promises);
             return fileIds;
         },
         onSuccess: (fileIds) => {
-            // Selection clearing is now handled in the store's deleteFile
+            // Selection clearing is now handled in the store's removeTorrent
             toast.success(`Deleted ${fileIds.length} file(s)`);
         },
         onError: (error: Error) => {
