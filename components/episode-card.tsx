@@ -13,7 +13,7 @@ interface EpisodeCardProps {
 
 export const EpisodeCard = memo(function EpisodeCard({ episode, className }: EpisodeCardProps) {
   const screenshotUrl = episode.images?.screenshot?.[0]
-    ? `https:${episode.images.screenshot[0]}`
+    ? `https://${episode.images.screenshot[0]}`
     : `https://placehold.co/400x225/1a1a1a/white?text=Episode+${episode.number}`
 
   const formatDate = (dateString?: string) => {

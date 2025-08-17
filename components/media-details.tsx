@@ -97,13 +97,13 @@ export const MediaDetails = memo(function MediaDetails({
     }
 
     const posterUrl = media.images?.poster?.[0]
-        ? `https:${media.images.poster[0]}`
+        ? `https://${media.images.poster[0]}`
         : `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
 
     const backdropUrl = media.images?.fanart?.[0]
-        ? `https:${media.images.fanart[0]}`
+        ? `https://${media.images.fanart[0]}`
         : media.images?.banner?.[0]
-          ? `https:${media.images.banner[0]}`
+          ? `https://${media.images.banner[0]}`
           : null;
 
     return (

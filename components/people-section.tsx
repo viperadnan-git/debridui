@@ -61,7 +61,7 @@ interface PersonCardProps {
 
 function PersonCard({ person, type }: PersonCardProps) {
   const imageUrl = person.person.images?.headshot?.[0]
-    ? `https:${person.person.images.headshot[0]}`
+    ? `https://${person.person.images.headshot[0]}`
     : null
 
   const role = type === 'cast' 

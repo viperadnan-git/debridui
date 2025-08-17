@@ -20,7 +20,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
     : '#'
 
   const posterUrl = media.images?.poster?.[0] 
-    ? `https:${media.images.poster[0]}`
+    ? `https://${media.images.poster[0]}`
     : `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`
 
   return (

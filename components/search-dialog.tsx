@@ -60,7 +60,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         const Icon = icon;
 
         const posterImage = media.images?.poster?.[0]
-            ? `https:${media.images.poster[0]}`
+            ? `https://${media.images.poster[0]}`
             : null;
 
         return (

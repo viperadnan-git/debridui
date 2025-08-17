@@ -15,7 +15,7 @@ interface SeasonCardProps {
 
 export const SeasonCard = memo(function SeasonCard({ season, isSelected, onClick, className }: SeasonCardProps) {
   const posterUrl = season.images?.poster?.[0]
-    ? `https:${season.images.poster[0]}`
+    ? `https://${season.images.poster[0]}`
     : `https://placehold.co/200x300/1a1a1a/white?text=Season+${season.number}`
 
   const formatDate = (dateString?: string) => {

@@ -40,8 +40,8 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
     if (!media) return null;
 
     const desktopImage = media.images?.fanart?.[0]
-        ? `https:${media.images.fanart[0]}`
-        : `https://image.tmdb.org/t/p/original/placeholder-backdrop.jpg`;
+        ? `https://${media.images.fanart[0]}`
+        : `https://placehold.co/1920x1080/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
 
     const linkHref = media.ids?.imdb ? `/${type}/${media.ids.imdb}` : "#";
 
@@ -155,8 +155,8 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
     if (!media) return null;
 
     const mobileImage = media.images?.poster?.[0]
-        ? `https:${media.images.poster[0]}`
-        : `https://image.tmdb.org/t/p/w500/placeholder-poster.jpg`;
+        ? `https://${media.images.poster[0]}`
+        : `https://placehold.co/500x750/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
 
     const linkHref = media.ids?.imdb ? `/${type}/${media.ids.imdb}` : "#";
 
