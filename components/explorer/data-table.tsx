@@ -20,7 +20,8 @@ import { ExpandedRow } from "./expanded-row";
 import { FileActionsDrawer } from "./file-actions-drawer";
 import { useSelectionStore } from "@/lib/stores/selection";
 import { useFileStore } from "@/lib/stores/files";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useSettingsStore } from "@/lib/stores/settings";
+import { processFileNodes } from "@/lib/utils/file";
 
 interface DataTableProps {
     data: DebridFile[];
@@ -79,7 +80,7 @@ export function DataTable({
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
-    const { client } = useAuthContext();
+    const { client, currentUser } = useAuthContext();
     const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore();
 
     // Use the selection store
@@ -95,7 +96,6 @@ export function DataTable({
         getAllSelectedNodeIds,
         getFullySelectedFileIds,
     } = useSelectionStore();
-    const { currentUser } = useAuthContext();
     const queryClient = useQueryClient();
 
     // Search query with debounce
@@ -143,19 +143,28 @@ export function DataTable({
     const handleSelectFile = (fileId: string) => {
         // Get all node IDs for this file from cache
         const fileNodes = queryClient.getQueryData<DebridFileNode[]>([
+            currentUser.id,
             "getTorrentFiles",
             fileId,
         ]);
+        
         const allNodeIds: string[] = [];
-
+        
         if (fileNodes) {
+            // Only apply filtering if hideTrash is enabled
+            const { smartOrder, hideTrash } = useSettingsStore.getState();
+            const processedNodes = processFileNodes(fileNodes, smartOrder, hideTrash);
+            
             const collectNodeIds = (nodes: DebridFileNode[]): void => {
                 nodes.forEach((node) => {
-                    if (node.id) allNodeIds.push(node.id);
+                    // Only collect file IDs, not folder IDs (to match ExpandedRow behavior)
+                    if (node.type === "file" && node.id) {
+                        allNodeIds.push(node.id);
+                    }
                     if (node.children) collectNodeIds(node.children);
                 });
             };
-            collectNodeIds(fileNodes);
+            collectNodeIds(processedNodes);
         }
 
         toggleFileSelection(fileId, allNodeIds);
