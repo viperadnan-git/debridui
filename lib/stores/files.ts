@@ -1,9 +1,10 @@
-import { DebridFile } from "../clients/types";
+import { DebridFile } from "@/lib/types";
 import { create } from "zustand";
 import { PAGE_SIZE } from "../constants";
 import { queryClient } from "../query-client";
 import AllDebridClient from "../clients/alldebrid";
 import { useSelectionStore } from "./selection";
+import { sortTorrents } from "../utils/file";
 
 interface FileStoreState {
     files: DebridFile[];
@@ -33,53 +34,6 @@ const initialState = {
     sortOrder: "desc" as const,
     sortChanged: false,
 };
-
-export type SortOption = {
-    value: string;
-    label: string;
-};
-
-type SortOptionWithAccessor = SortOption & {
-    accessor: (item: DebridFile) => string | number | Date;
-};
-
-const sortOptions: SortOptionWithAccessor[] = [
-    {
-        value: "date",
-        label: "Date Added",
-        accessor: (file: DebridFile) => file.createdAt,
-    },
-    {
-        value: "name",
-        label: "Name",
-        accessor: (file: DebridFile) => file.name.toLowerCase(),
-    },
-    {
-        value: "size",
-        label: "Size",
-        accessor: (file: DebridFile) => file.size,
-    },
-    {
-        value: "status",
-        label: "Status",
-        accessor: (file: DebridFile) => file.status,
-    },
-    {
-        value: "progress",
-        label: "Progress",
-        accessor: (file: DebridFile) => file.progress || 0,
-    },
-    {
-        value: "downloaded",
-        label: "Downloaded",
-        accessor: (file: DebridFile) => file.downloaded || 0,
-    },
-    {
-        value: "downloadSpeed",
-        label: "Download Speed",
-        accessor: (file: DebridFile) => file.downloadSpeed || 0,
-    },
-];
 
 export const useFileStore = create<FileStoreState>((set, get) => ({
     ...initialState,
@@ -111,30 +65,7 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
             set({ files });
             return;
         }
-
-        const sortOption = sortOptions.find((opt) => opt.value === sortBy);
-        if (!sortOption) return;
-
-        console.log("sorting files");
-        const sortedFiles = [...files].sort((a, b) => {
-            const aValue = sortOption.accessor(a);
-            const bValue = sortOption.accessor(b);
-
-            if (aValue === bValue) return 0;
-
-            if (sortBy === "date") {
-                const aDate = new Date(aValue).getTime();
-                const bDate = new Date(bValue).getTime();
-                return sortOrder === "desc" ? bDate - aDate : aDate - bDate;
-            }
-
-            if (typeof aValue === "number" && typeof bValue === "number") {
-                return sortOrder === "desc" ? bValue - aValue : aValue - bValue;
-            }
-
-            const comparison = String(aValue).localeCompare(String(bValue));
-            return sortOrder === "desc" ? -comparison : comparison;
-        });
+        const sortedFiles = sortTorrents(files, sortBy, sortOrder);
         set({
             files: sortedFiles,
             sortChanged: sortBy !== "date" || sortOrder !== "desc",

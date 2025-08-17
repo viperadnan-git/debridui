@@ -2,8 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { AccountType } from "../schemas";
 import { formatDistanceToNow } from "date-fns";
-import { DebridLinkInfo } from "../clients/types";
-import { FileType, MediaPlayer } from "../types";
+import { DebridLinkInfo, FileType, MediaPlayer } from "../types";
 import { ACCOUNT_TYPE_LABELS, EXTENSION_TO_FILE_TYPE } from "../constants";
 
 export const cn = (...inputs: ClassValue[]) => {

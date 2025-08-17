@@ -9,10 +9,10 @@ import React, {
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { DebridFile, DebridFileNode } from "@/lib/clients/types";
+import { DebridFile, DebridFileNode } from "@/lib/types";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { SearchBar } from "./search-bar";
-import { SortControls, SortOption } from "./sort-controls";
+import { SortControls } from "./sort-controls";
 import { FileList, FileListBody, FileListEmpty } from "./file-list";
 import { FileListHeader } from "./file-list-header";
 import { FileListItem } from "./file-list-item";
@@ -28,48 +28,6 @@ interface DataTableProps {
     hasMore?: boolean;
     onLoadMore?: (offset: number) => void;
 }
-
-type SortOptionWithAccessor = SortOption & {
-    accessor: (item: DebridFile) => string | number | Date;
-};
-
-const sortOptions: SortOptionWithAccessor[] = [
-    {
-        value: "date",
-        label: "Date Added",
-        accessor: (file: DebridFile) => file.createdAt,
-    },
-    {
-        value: "name",
-        label: "Name",
-        accessor: (file: DebridFile) => file.name.toLowerCase(),
-    },
-    {
-        value: "size",
-        label: "Size",
-        accessor: (file: DebridFile) => file.size,
-    },
-    {
-        value: "status",
-        label: "Status",
-        accessor: (file: DebridFile) => file.status,
-    },
-    {
-        value: "progress",
-        label: "Progress",
-        accessor: (file: DebridFile) => file.progress || 0,
-    },
-    {
-        value: "downloaded",
-        label: "Downloaded",
-        accessor: (file: DebridFile) => file.downloaded || 0,
-    },
-    {
-        value: "downloadSpeed",
-        label: "Download Speed",
-        accessor: (file: DebridFile) => file.downloadSpeed || 0,
-    },
-];
 
 export function DataTable({
     data,
@@ -270,7 +228,6 @@ export function DataTable({
                 <SortControls
                     sortBy={sortBy}
                     sortDirection={sortOrder}
-                    sortOptions={sortOptions}
                     onSortChange={handleSortChange}
                     onDirectionToggle={() =>
                         setSortOrder(sortOrder === "asc" ? "desc" : "asc")

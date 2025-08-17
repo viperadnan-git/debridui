@@ -1,8 +1,59 @@
-import { DebridFileNode, DebridLinkInfo } from "../clients/types";
+import {
+    DebridFileNode,
+    DebridLinkInfo,
+    DebridFile,
+    FileType,
+} from "@/lib/types";
 import { getFileType } from ".";
-import { FileType } from "../types";
 import { TRASH_SIZE_THRESHOLD } from "../constants";
 import { format } from "date-fns";
+
+export type SortOption = {
+    value: string;
+    label: string;
+};
+
+type SortOptionWithAccessor = SortOption & {
+    accessor: (item: DebridFile) => string | number | Date;
+};
+
+export const sortOptions: SortOptionWithAccessor[] = [
+    {
+        value: "date",
+        label: "Date Added",
+        accessor: (file: DebridFile) => file.createdAt,
+    },
+    {
+        value: "name",
+        label: "Name",
+        accessor: (file: DebridFile) => file.name.toLowerCase(),
+    },
+    {
+        value: "size",
+        label: "Size",
+        accessor: (file: DebridFile) => file.size,
+    },
+    {
+        value: "status",
+        label: "Status",
+        accessor: (file: DebridFile) => file.status,
+    },
+    {
+        value: "progress",
+        label: "Progress",
+        accessor: (file: DebridFile) => file.progress || 0,
+    },
+    {
+        value: "downloaded",
+        label: "Downloaded",
+        accessor: (file: DebridFile) => file.downloaded || 0,
+    },
+    {
+        value: "downloadSpeed",
+        label: "Download Speed",
+        accessor: (file: DebridFile) => file.downloadSpeed || 0,
+    },
+];
 
 export const sortFileNodes = (nodes: DebridFileNode[]): DebridFileNode[] => {
     return [...nodes].sort((a, b) => {
@@ -98,4 +149,32 @@ export const downloadM3U = (nodes: DebridLinkInfo[]) => {
     a.href = url;
     a.download = `Playlist-${nowString}.m3u`;
     a.click();
+};
+
+export const sortTorrents = (
+    torrents: DebridFile[],
+    sortBy: string,
+    sortOrder: "asc" | "desc"
+) => {
+    const sortOption = sortOptions.find((opt) => opt.value === sortBy);
+    if (!sortOption) return;
+    return torrents.sort((a, b) => {
+        const aValue = sortOption.accessor(a);
+        const bValue = sortOption.accessor(b);
+
+        if (aValue === bValue) return 0;
+
+        if (sortBy === "date") {
+            const aDate = new Date(aValue).getTime();
+            const bDate = new Date(bValue).getTime();
+            return sortOrder === "desc" ? bDate - aDate : aDate - bDate;
+        }
+
+        if (typeof aValue === "number" && typeof bValue === "number") {
+            return sortOrder === "desc" ? bValue - aValue : aValue - bValue;
+        }
+
+        const comparison = String(aValue).localeCompare(String(bValue));
+        return sortOrder === "desc" ? -comparison : comparison;
+    });
 };

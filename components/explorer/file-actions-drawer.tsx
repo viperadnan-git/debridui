@@ -6,7 +6,7 @@ import { Trash2, RotateCcw } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FileActions } from "./file-actions";
-import { DebridFile } from "@/lib/clients/types";
+import { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useFileStore } from "@/lib/stores/files";
 import { useAuthContext } from "@/lib/contexts/auth";

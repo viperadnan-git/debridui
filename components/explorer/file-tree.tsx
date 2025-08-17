@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { DebridFileNode, DebridLinkInfo } from "@/lib/clients/types";
+import { DebridFileNode, DebridLinkInfo } from "@/lib/types";
 import {
     Collapsible,
     CollapsibleContent,

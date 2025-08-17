@@ -7,19 +7,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown } from "lucide-react";
-
-export type SortOption = {
-    value: string;
-    label: string;
-};
+import { sortOptions } from "@/lib/utils/file";
 
 interface SortControlsProps {
     sortBy: string;
     sortDirection: "asc" | "desc";
-    sortOptions: SortOption[];
     onSortChange: (sortBy: string) => void;
     onDirectionToggle: () => void;
 }
@@ -27,7 +21,6 @@ interface SortControlsProps {
 export function SortControls({
     sortBy,
     sortDirection,
-    sortOptions,
     onSortChange,
     onDirectionToggle,
 }: SortControlsProps) {

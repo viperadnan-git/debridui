@@ -1,5 +1,4 @@
-import { DebridFileStatus } from "@/lib/clients/types";
-import { AccountType } from "@/lib/types";
+import { AccountType, DebridFileStatus } from "@/lib/types";
 import {
     DownloadIcon,
     PauseIcon,

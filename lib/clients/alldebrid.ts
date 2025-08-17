@@ -4,8 +4,9 @@ import {
     DebridFileNode,
     DebridLinkInfo,
     DebridFileList,
-} from "./types";
-import { AccountType, User } from "@/lib/types";
+    AccountType,
+    User,
+} from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
 
@@ -235,7 +236,7 @@ export default class AllDebridClient extends BaseClient {
                         torrent.filename!.toLowerCase().includes(term)
                     )
             )
-            .map(this.mapToDebridFile);
+            .map((torrent) => this.mapToDebridFile(torrent));
     }
 
     async getDownloadLink(fileId: string): Promise<DebridLinkInfo> {

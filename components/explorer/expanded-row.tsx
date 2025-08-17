@@ -1,6 +1,6 @@
 "use client";
 
-import { DebridFile, DebridFileNode } from "@/lib/clients/types";
+import { DebridFile, DebridFileNode } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useAuthContext } from "@/lib/contexts/auth";

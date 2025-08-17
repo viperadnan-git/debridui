@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback } from "react";
-import { DebridFile } from "@/lib/clients/types";
+import { DebridFile } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatSize, formatRelativeTime, formatSpeed, cn } from "@/lib/utils";
 import { StatusBadge } from "../display";
