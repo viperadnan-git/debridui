@@ -33,9 +33,12 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
 
             // If file was already selected but had no nodes, select all nodes now
             if (state.selectedFileIds.has(fileId) && nodeIds.length > 0) {
-                const currentNodes = state.selectedNodesByFile.get(fileId) || new Set();
+                const currentNodes =
+                    state.selectedNodesByFile.get(fileId) || new Set();
                 if (currentNodes.size === 0) {
-                    const newSelectedNodesByFile = new Map(state.selectedNodesByFile);
+                    const newSelectedNodesByFile = new Map(
+                        state.selectedNodesByFile
+                    );
                     newSelectedNodesByFile.set(fileId, new Set(nodeIds));
                     return {
                         totalNodesByFile: newTotalNodesByFile,
@@ -67,7 +70,9 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
                 newSelectedFileIds.add(fileId);
 
                 if (allNodeIds && allNodeIds.length > 0) {
-                    const newSelectedNodesByFile = new Map(state.selectedNodesByFile);
+                    const newSelectedNodesByFile = new Map(
+                        state.selectedNodesByFile
+                    );
                     newSelectedNodesByFile.set(fileId, new Set(allNodeIds));
                     const newTotalNodesByFile = new Map(state.totalNodesByFile);
                     newTotalNodesByFile.set(fileId, allNodeIds.length);
@@ -85,7 +90,9 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
             set((state) => {
                 const newSelectedFileIds = new Set(state.selectedFileIds);
                 newSelectedFileIds.delete(fileId);
-                const newSelectedNodesByFile = new Map(state.selectedNodesByFile);
+                const newSelectedNodesByFile = new Map(
+                    state.selectedNodesByFile
+                );
                 newSelectedNodesByFile.delete(fileId);
                 return {
                     selectedFileIds: newSelectedFileIds,
@@ -123,7 +130,8 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
             return false;
         }
 
-        const selectedNodes = state.selectedNodesByFile.get(fileId) || new Set();
+        const selectedNodes =
+            state.selectedNodesByFile.get(fileId) || new Set();
         const totalNodes = state.totalNodesByFile.get(fileId) || 0;
 
         // If no nodes are registered (not loaded or don't exist), treat as fully selected
@@ -161,7 +169,8 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
     getFullySelectedFileIds: (): string[] => {
         const state = get();
         return Array.from(state.selectedFileIds).filter((fileId) => {
-            const selectedNodes = state.selectedNodesByFile.get(fileId) || new Set();
+            const selectedNodes =
+                state.selectedNodesByFile.get(fileId) || new Set();
             const totalNodes = state.totalNodesByFile.get(fileId) || 0;
 
             // Files with no nodes are considered fully selected

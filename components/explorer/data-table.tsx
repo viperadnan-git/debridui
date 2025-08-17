@@ -198,8 +198,7 @@ export function DataTable({
         );
 
         const hasIndeterminateFiles = activeData.some(
-            (file) =>
-                getFileSelectionState(file.id) === "indeterminate"
+            (file) => getFileSelectionState(file.id) === "indeterminate"
         );
 
         if (allFilesSelected && !hasIndeterminateFiles) {
@@ -268,7 +267,6 @@ export function DataTable({
                 />
             </div>
 
-
             <FileList className="max-sm:-mx-4">
                 <FileListHeader
                     isAllSelected={headerCheckboxState}
@@ -281,7 +279,9 @@ export function DataTable({
                                 <React.Fragment key={file.id}>
                                     <FileListItem
                                         file={file}
-                                        isSelected={getFileSelectionState(file.id)}
+                                        isSelected={getFileSelectionState(
+                                            file.id
+                                        )}
                                         canExpand={file.status === "completed"}
                                         onToggleSelect={() =>
                                             handleSelectFile(file.id)

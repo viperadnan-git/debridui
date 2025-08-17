@@ -14,7 +14,7 @@ interface FileStoreState {
     sortChanged: boolean;
     addFiles: (files: DebridFile[]) => void;
     removeFile: (fileId: string) => void;
-    sortFiles: () => void;
+    sortAndSetFiles: (files: DebridFile[]) => void;
     setOffset: (offset: number) => void;
     setSortBy: (sortBy: string) => void;
     setSortOrder: (sortOrder: "asc" | "desc") => void;
@@ -86,8 +86,7 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
     addFiles: (files: DebridFile[]) => {
         const { offset } = get();
         if (offset === 0) {
-            set({ files });
-            get().sortFiles();
+            get().sortAndSetFiles(files);
         } else {
             const existingIds = new Set(get().files.map((f) => f.id));
             const newFiles = files.filter((f) => !existingIds.has(f.id));
@@ -96,7 +95,7 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
                     files: [...state.files, ...newFiles],
                     hasMore: files.length === PAGE_SIZE + offset,
                 }));
-                get().sortFiles();
+                get().sortAndSetFiles(files);
             }
         }
     },
@@ -105,17 +104,19 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
             files: state.files.filter((f) => f.id !== fileId),
         }));
     },
-    sortFiles: () => {
+    sortAndSetFiles: (files: DebridFile[]) => {
         const { sortBy, sortOrder, sortChanged } = get();
         if (sortBy === "date" && sortOrder === "desc" && !sortChanged) {
             console.log("skipping sort");
+            set({ files });
             return;
         }
 
         const sortOption = sortOptions.find((opt) => opt.value === sortBy);
         if (!sortOption) return;
 
-        const sortedFiles = [...get().files].sort((a, b) => {
+        console.log("sorting files");
+        const sortedFiles = [...files].sort((a, b) => {
             const aValue = sortOption.accessor(a);
             const bValue = sortOption.accessor(b);
 
@@ -134,19 +135,21 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
             const comparison = String(aValue).localeCompare(String(bValue));
             return sortOrder === "desc" ? -comparison : comparison;
         });
-        set({ files: sortedFiles, sortChanged: true });
+        set({
+            files: sortedFiles,
+            sortChanged: sortBy !== "date" || sortOrder !== "desc",
+        });
     },
     setOffset: (offset: number) => {
         set({ offset });
     },
     setSortBy: (sortBy: string) => {
         set({ sortBy });
-        console.log("setSortBy", sortBy);
-        get().sortFiles();
+        get().sortAndSetFiles(get().files);
     },
     setSortOrder: (sortOrder: "asc" | "desc") => {
         set({ sortOrder });
-        get().sortFiles();
+        get().sortAndSetFiles(get().files);
     },
     deleteFile: async (client: AllDebridClient, fileId: string) => {
         const message = await client.deleteFile(fileId);

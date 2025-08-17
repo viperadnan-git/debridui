@@ -73,16 +73,19 @@ function SidebarProvider({
         if (typeof window === "undefined") {
             return defaultOpen;
         }
-        
+
         try {
             const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
             if (stored !== null) {
                 return JSON.parse(stored);
             }
         } catch (error) {
-            console.error("Failed to parse sidebar state from localStorage:", error);
+            console.error(
+                "Failed to parse sidebar state from localStorage:",
+                error
+            );
         }
-        
+
         return defaultOpen;
     }, [defaultOpen]);
 
@@ -100,9 +103,15 @@ function SidebarProvider({
             }
 
             try {
-                localStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(openState));
+                localStorage.setItem(
+                    SIDEBAR_STORAGE_KEY,
+                    JSON.stringify(openState)
+                );
             } catch (error) {
-                console.error("Failed to save sidebar state to localStorage:", error);
+                console.error(
+                    "Failed to save sidebar state to localStorage:",
+                    error
+                );
             }
         },
         [setOpenProp, open]

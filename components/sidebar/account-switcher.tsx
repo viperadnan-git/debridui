@@ -8,7 +8,6 @@ import {
     Check,
     Trash2,
     LogOut,
-    HardDrive,
 } from "lucide-react";
 
 import {
@@ -40,6 +39,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { AddAccount } from "./add-account";
 import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function AccountSwitcher() {
     const { users, currentUser, switchAccount, removeAccount, logout } =
@@ -76,11 +76,15 @@ export function AccountSwitcher() {
                                 size="lg"
                                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                             >
-                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
-                                    <HardDrive className="size-6" />
-                                </div>
+                                <Image
+                                    src="/square-logo.svg"
+                                    alt="DebridUI logo"
+                                    width={32}
+                                    height={32}
+                                    className="size-7"
+                                />
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-medium">
+                                    <span className="truncate font-bold">
                                         {currentUser.username}
                                     </span>
                                     <span className="truncate text-xs">
@@ -110,7 +114,7 @@ export function AccountSwitcher() {
                                             <User className="size-3.5 shrink-0" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-sm">
+                                            <span className="text-sm font-medium">
                                                 {user.username}
                                             </span>
                                             <span className="text-xs text-muted-foreground">

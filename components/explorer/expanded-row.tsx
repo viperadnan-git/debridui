@@ -61,7 +61,11 @@ export function ExpandedRow({
     const hasNotifiedNodes = useRef(false);
 
     useEffect(() => {
-        if (processedNodes.length > 0 && onNodesLoaded && !hasNotifiedNodes.current) {
+        if (
+            processedNodes.length > 0 &&
+            onNodesLoaded &&
+            !hasNotifiedNodes.current
+        ) {
             const nodeIds: string[] = [];
             const collectNodeIds = (nodeList: DebridFileNode[]) => {
                 nodeList.forEach((node) => {

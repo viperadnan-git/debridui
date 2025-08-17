@@ -21,11 +21,11 @@ export function useFileExplorer() {
 
     const { data, isLoading } = useQuery({
         queryKey: ["listFiles", currentUser.id, offset],
-        queryFn: () => client.listFiles({ offset: 0, limit: PAGE_SIZE + offset }),
+        queryFn: () =>
+            client.listFiles({ offset: 0, limit: PAGE_SIZE + offset }),
         refetchInterval: 3000,
         staleTime: 0,
     });
-
 
     useEffect(() => {
         if (data) {

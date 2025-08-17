@@ -163,7 +163,9 @@ export default function SettingsPage() {
                         <div className="space-y-2">
                             <div className="flex items-center gap-4">
                                 <Button
-                                    onClick={() => handleClearCache("getNodeDownloadUrl")}
+                                    onClick={() =>
+                                        handleClearCache("getNodeDownloadUrl")
+                                    }
                                     disabled={isClearing}
                                     variant="destructive"
                                 >
@@ -172,7 +174,8 @@ export default function SettingsPage() {
                                         : "Clear Download Links Cache"}
                                 </Button>
                                 <p className="text-sm text-muted-foreground">
-                                    Remove all cached download links from browser.
+                                    Remove all cached download links from
+                                    browser.
                                 </p>
                             </div>
                             <div className="flex items-center gap-4">
