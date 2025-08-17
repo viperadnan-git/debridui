@@ -114,7 +114,6 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
         const sortOption = sortOptions.find((opt) => opt.value === sortBy);
         if (!sortOption) return;
 
-        set({ sortChanged: true });
         const sortedFiles = [...get().files].sort((a, b) => {
             const aValue = sortOption.accessor(a);
             const bValue = sortOption.accessor(b);
@@ -134,7 +133,7 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
             const comparison = String(aValue).localeCompare(String(bValue));
             return sortOrder === "desc" ? -comparison : comparison;
         });
-        set({ files: sortedFiles });
+        set({ files: sortedFiles, sortChanged: true });
     },
     setOffset: (offset: number) => {
         set({ offset });
