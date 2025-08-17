@@ -3,5 +3,7 @@
     "useTabs": false,
     "singleQuote": false,
     "trailingComma": "es5",
-    "endOfLine": "lf"
+    "endOfLine": "lf",
+    "arrowParens": "always",
+    "bracketSameLine": true
 }

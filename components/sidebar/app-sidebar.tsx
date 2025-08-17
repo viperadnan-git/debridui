@@ -12,7 +12,8 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
-import { File, Home, Settings } from "lucide-react";
+import { File, Home, Settings, Search } from "lucide-react";
+import { useSearch } from "@/components/search-provider";
 import Image from "next/image";
 
 // This is sample data.
@@ -29,6 +30,12 @@ const data = {
             icon: Home,
         },
         {
+            title: "Search",
+            url: "#",
+            icon: Search,
+            action: "search",
+        },
+        {
             title: "Files",
             url: "/files",
             icon: File,
@@ -42,7 +49,14 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { open } = useSidebar();
+    const { open, isMobile } = useSidebar();
+    const { toggle: toggleSearch } = useSearch();
+
+    const handleNavAction = (action?: string) => {
+        if (action === "search") {
+            toggleSearch();
+        }
+    };
 
     return (
         <Sidebar collapsible={"icon"} {...props}>
@@ -50,10 +64,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <AccountSwitcher />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
+                <NavMain items={data.navMain} onAction={handleNavAction} />
             </SidebarContent>
             {/* <NavUser user={data.user} /> */}
-            {open && (
+            {(open || isMobile) && (
                 <SidebarFooter className="flex flex-col items-center gap-2 py-6">
                     <Image
                         className="dark:invert w-1/2"

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:ui.shadcn.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

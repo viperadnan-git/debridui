@@ -12,28 +12,42 @@ import Link from "next/link";
 
 export function NavMain({
     items,
+    onAction,
 }: {
     items: {
         title: string;
         url: string;
         icon?: LucideIcon;
         isActive?: boolean;
+        action?: string;
         items?: {
             title: string;
             url: string;
         }[];
     }[];
+    onAction?: (action: string) => void;
 }) {
     return (
         <SidebarGroup>
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton tooltip={item.title} asChild>
-                            <Link href={item.url}>
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
-                            </Link>
+                        <SidebarMenuButton 
+                            tooltip={item.title} 
+                            asChild={!item.action}
+                            onClick={item.action ? () => onAction?.(item.action!) : undefined}
+                        >
+                            {item.action ? (
+                                <>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </>
+                            ) : (
+                                <Link href={item.url}>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </Link>
+                            )}
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 ))}
