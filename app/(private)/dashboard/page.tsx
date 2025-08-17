@@ -1,8 +1,8 @@
 "use client";
 
-import { HeroCarousel } from "@/components/hero-carousel";
-import { MediaSection } from "@/components/media-section";
-import { SearchDialog } from "@/components/search-dialog";
+import { HeroCarousel } from "@/components/mdb/hero-carousel";
+import { MediaSection } from "@/components/mdb/media-section";
+import { SearchDialog } from "@/components/mdb/search-dialog";
 import { memo, useState } from "react";
 import {
     useTraktTrendingMixed,

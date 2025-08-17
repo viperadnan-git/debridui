@@ -1,6 +1,6 @@
 'use client'
 
-import { MediaCard } from './media-card'
+import { MediaCard } from '@/components/mdb/media-card'
 import { type TraktMediaItem } from '@/lib/trakt'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ChevronRight } from 'lucide-react'

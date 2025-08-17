@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
 import { ServerIcon, SearchIcon, HomeIcon, SettingsIcon } from "lucide-react";
-import { useSearch } from "@/components/search-provider";
+import { useSearch } from "@/components/mdb/search-provider";
 import Image from "next/image";
 
 // This is sample data.

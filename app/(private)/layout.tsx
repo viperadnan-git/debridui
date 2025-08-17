@@ -6,7 +6,7 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
-import { SearchProvider } from "@/components/search-provider";
+import { SearchProvider } from "@/components/mdb/search-provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AuthContext } from "@/lib/contexts/auth";

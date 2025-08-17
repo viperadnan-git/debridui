@@ -10,7 +10,6 @@ import {
     Globe,
     Film,
     Tv,
-    Hash,
     ExternalLink,
     Home,
 } from "lucide-react";
@@ -22,7 +21,7 @@ import {
     useTraktPeople,
 } from "@/hooks/use-trakt";
 import { SeasonCard } from "./season-card";
-import { EpisodeCard } from "./episode-card";
+import { EpisodeCard } from "@/components/mdb/episode-card";
 import { PeopleSection } from "./people-section";
 import { MediaStats } from "./media-stats";
 import { useState, memo } from "react";
@@ -115,7 +114,7 @@ export const MediaDetails = memo(function MediaDetails({
                         <img
                             src={backdropUrl}
                             alt={media.title}
-                            className="w-full h-full object-cover opacity-80"
+                            className="w-full h-full object-cover opacity-60"
                             loading="lazy"
                             decoding="async"
                         />
@@ -138,7 +137,7 @@ export const MediaDetails = memo(function MediaDetails({
                         />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                         {media.homepage && (
                             <Link
                                 href={media.homepage}
@@ -262,7 +261,7 @@ export const MediaDetails = memo(function MediaDetails({
                                             variant="secondary"
                                             className="cursor-pointer hover:bg-secondary/80">
                                             <Globe className="h-3 w-3 mr-1" />
-                                            IMDb: {media.ids.imdb}
+                                            IMDb
                                         </Badge>
                                     </Link>
                                 )}
@@ -274,22 +273,34 @@ export const MediaDetails = memo(function MediaDetails({
                                             variant="secondary"
                                             className="cursor-pointer hover:bg-secondary/80">
                                             <Globe className="h-3 w-3 mr-1" />
-                                            TMDB: {media.ids.tmdb}
+                                            TMDB
                                         </Badge>
                                     </Link>
                                 )}
                                 {media.ids.trakt && (
-                                    <Badge variant="secondary">
-                                        <Hash className="h-3 w-3 mr-1" />
-                                        Trakt: {media.ids.trakt}
-                                    </Badge>
+                                    <Link
+                                        href={`https://trakt.tv/${type === "movie" ? "movies" : "shows"}/${media.ids.trakt}`}
+                                        target="_blank">
+                                        <Badge
+                                            variant="secondary"
+                                            className="cursor-pointer hover:bg-secondary/80">
+                                            <Globe className="h-3 w-3 mr-1" />
+                                            Trakt
+                                        </Badge>
+                                    </Link>
                                 )}
-                                {media.ids.tvdb && (
-                                    <Badge variant="secondary">
-                                        <Hash className="h-3 w-3 mr-1" />
-                                        TVDB: {media.ids.tvdb}
-                                    </Badge>
-                                )}
+                                {
+                                    type === "show" && (
+                                        <Link
+                                            href={`https://tvcharts.co/show/${media.ids.imdb}`}
+                                            target="_blank">
+                                            <Badge variant="secondary">
+                                                <Globe className="h-3 w-3 mr-1" />
+                                                TV Charts
+                                            </Badge>
+                                        </Link>
+                                    )
+                                }
                             </div>
                         </div>
                     )}

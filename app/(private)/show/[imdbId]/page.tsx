@@ -1,6 +1,6 @@
 'use client'
 
-import { MediaDetails } from '@/components/media-details'
+import { MediaDetails } from '@/components/mdb/media-details'
 import { useTraktMedia } from '@/hooks/use-trakt'
 import { useParams } from 'next/navigation'
 import { memo } from 'react'
