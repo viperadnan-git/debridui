@@ -73,12 +73,12 @@ function FileActionButton({
     node: DebridFileNode;
     action: "copy" | "download" | "play";
 }) {
-    const { client } = useAuthContext();
+    const { client, currentUser } = useAuthContext();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const { mediaPlayer } = useSettingsStore();
 
     const { data: linkInfo, refetch } = useQuery({
-        queryKey: ["getNodeDownloadUrl", node.id],
+        queryKey: [currentUser.id, "getNodeDownloadUrl", node.id],
         queryFn: () => client.getNodeDownloadUrl(node.id!),
         enabled: false, // Don't auto-fetch
         staleTime: QUERY_CACHE_MAX_AGE,

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { User } from "@/lib/types";
+import { queryClient } from "../query-client";
 
 interface UserStore {
     users: User[];
@@ -63,6 +64,7 @@ export const useUserStore = create<UserStore>()(
                         currentUser: newCurrentUser,
                     };
                 });
+                queryClient.invalidateQueries({ queryKey: [userId] });
             },
 
             switchAccount: (userId) => {
@@ -100,6 +102,7 @@ export const useUserStore = create<UserStore>()(
                 set({
                     currentUserId: null,
                     currentUser: null,
+                    users: [],
                 });
             },
 

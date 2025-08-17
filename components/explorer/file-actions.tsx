@@ -15,14 +15,14 @@ interface FileActionsProps {
 }
 
 export function FileActions({ selectedFiles }: FileActionsProps) {
-    const { client } = useAuthContext();
+    const { client, currentUser } = useAuthContext();
     const queryClient = useQueryClient();
     const fileIds = Array.from(selectedFiles);
 
     // Fetch link info for all selected files using the same cache strategy as FileActionButton
     const linkQueries = useQueries({
         queries: fileIds.map((id) => ({
-            queryKey: ["getNodeDownloadUrl", id],
+            queryKey: [currentUser.id, "getNodeDownloadUrl", id],
             queryFn: () => client.getNodeDownloadUrl(id),
             enabled: false, // Don't auto-fetch until action is clicked
             staleTime: QUERY_CACHE_MAX_AGE,

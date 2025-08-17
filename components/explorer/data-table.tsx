@@ -20,6 +20,7 @@ import { ExpandedRow } from "./expanded-row";
 import { FileActionsDrawer } from "./file-actions-drawer";
 import { useSelectionStore } from "@/lib/stores/selection";
 import { useFileStore } from "@/lib/stores/files";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 interface DataTableProps {
     data: DebridFile[];
@@ -94,6 +95,7 @@ export function DataTable({
         getAllSelectedNodeIds,
         getFullySelectedFileIds,
     } = useSelectionStore();
+    const { currentUser } = useAuthContext();
     const queryClient = useQueryClient();
 
     // Search query with debounce
@@ -109,7 +111,7 @@ export function DataTable({
 
     // Search files query
     const { data: searchResults } = useQuery({
-        queryKey: ["searchFiles", debouncedSearchQuery],
+        queryKey: [currentUser.id, "searchFiles", debouncedSearchQuery],
         queryFn: () =>
             client.searchFiles
                 ? client.searchFiles(debouncedSearchQuery)

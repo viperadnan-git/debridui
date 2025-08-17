@@ -7,8 +7,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
-import { Upload, Link, FileUp, Loader2 } from "lucide-react";
+import { Upload, Link, FileUp, Loader2, ClipboardIcon } from "lucide-react";
 import { Dropzone } from "../ui/dropzone";
+import { getTextFromClipboard } from "@/lib/utils";
 
 export function AddContent() {
     const [links, setLinks] = useState("");
@@ -17,7 +18,7 @@ export function AddContent() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { client } = useAuthContext();
 
-    const handleAddLinks = async () => {
+    const addLinks = async (links: string) => {
         const trimmedLinks = links.trim();
         if (!trimmedLinks) {
             toast.error("Please enter at least one link");
@@ -110,6 +111,16 @@ export function AddContent() {
         }
     };
 
+    const handlePaste = async () => {
+        const text = await getTextFromClipboard();
+        setLinks(text);
+        await addLinks(text);
+    };
+
+    const handleAddLinks = async () => {
+        await addLinks(links);
+    };
+
     return (
         <Card className="max-sm:-mx-4 max-sm:rounded-none max-sm:border-none">
             <CardHeader className="max-sm:gap-0">
@@ -151,25 +162,31 @@ export function AddContent() {
                             value={links}
                             onChange={(e) => setLinks(e.target.value)}
                             rows={4}
-                            className="font-mono text-sm md:min-h-32"
+                            className="font-mono text-sm max-h-28 md:h-full"
                         />
-                        <Button
-                            onClick={handleAddLinks}
-                            disabled={isAddingLinks || !links.trim()}
-                            className="w-full sm:w-auto"
-                        >
-                            {isAddingLinks ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Adding...
-                                </>
-                            ) : (
-                                <>
-                                    <Link className="mr-2 h-4 w-4" />
-                                    Add Links
-                                </>
-                            )}
-                        </Button>
+                        <div className="flex flex-row gap-2">
+                            <Button
+                                onClick={handleAddLinks}
+                                disabled={isAddingLinks || !links.trim()}
+                                className="flex-1"
+                            >
+                                {isAddingLinks ? (
+                                    <>
+                                        <Loader2 className="mr-2 size-4 animate-spin" />
+                                        Adding...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link className="mr-2 size-4" />
+                                        Add Links
+                                    </>
+                                )}
+                            </Button>
+                            <Button variant="outline" disabled={isAddingLinks} onClick={handlePaste}>
+                                <ClipboardIcon className="mr-2 size-4" />
+                                Paste
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </CardContent>

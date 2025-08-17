@@ -7,6 +7,7 @@ import {
 } from "./types";
 import { AccountType, User } from "@/lib/types";
 import BaseClient from "./base";
+import { USER_AGENT } from "../constants";
 
 type MagnetFileNode = {
     n: string;
@@ -90,13 +91,16 @@ export default class AllDebridClient extends BaseClient {
     private fetch = async (path: string, options: RequestInit = {}) => {
         const { apiKey } = this.account;
 
-        const response = await fetch(`https://api.alldebrid.com/v4.1/${path}`, {
-            ...options,
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                ...options.headers,
-            },
-        });
+        const response = await fetch(
+            `https://api.alldebrid.com/v4.1/${path}?agent=${USER_AGENT}`,
+            {
+                ...options,
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    ...options.headers,
+                },
+            }
+        );
 
         if (!response.ok) {
             throw new Error(`Failed to fetch ${path}: ${response.statusText}`);
@@ -104,25 +108,24 @@ export default class AllDebridClient extends BaseClient {
 
         const data = await response.json();
 
-        if (data.status !== "success") {
-            throw new Error(data?.error?.message || "Unknown error");
-        }
+        AllDebridClient.throwError(data);
 
         return data.data;
     };
 
     static getUser = async (apiKey: string): Promise<User> => {
-        const response = await fetch("https://api.alldebrid.com/v4.1/user", {
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-            },
-        });
+        const response = await fetch(
+            `https://api.alldebrid.com/v4.1/user?agent=${USER_AGENT}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                },
+            }
+        );
 
         const data = await response.json();
 
-        if (data.status !== "success") {
-            throw new Error(data?.error?.message || "Unknown error");
-        }
+        this.throwError(data);
 
         const user = data.data.user;
         const userPremium = user.premiumUntil;
@@ -138,6 +141,60 @@ export default class AllDebridClient extends BaseClient {
             isPremium,
             premiumExpiresAt: new Date(userPremium),
         };
+    };
+
+    static getPin = async (): Promise<{
+        pin: string;
+        check: string;
+        redirect_url: string;
+    }> => {
+        const response = await fetch(
+            `https://api.alldebrid.com/v4.1/pin/get?agent=${USER_AGENT}`
+        );
+
+        const data = await response.json();
+
+        this.throwError(data);
+
+        return {
+            pin: data.data.pin,
+            check: data.data.check,
+            redirect_url: data.data.user_url,
+        };
+    };
+
+    static checkPin = async (
+        pin: string,
+        check: string,
+        timeout: number = 600 * 1000 // 10 minutes
+    ): Promise<{ success: boolean; apiKey?: string }> => {
+        const form = new FormData();
+        form.append("pin", pin);
+        form.append("check", check);
+
+        const now = Date.now();
+
+        do {
+            const response = await fetch(
+                `https://api.alldebrid.com/v4.1/pin/check?agent=${USER_AGENT}`,
+                {
+                    method: "POST",
+                    body: form,
+                }
+            );
+
+            const data = await response.json();
+            this.throwError(data);
+            if (data.data.activated) {
+                return {
+                    success: true,
+                    apiKey: data.data.apikey,
+                };
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
+        } while (Date.now() - now < timeout);
+
+        throw new Error("Timeout while waiting for pin to be activated");
     };
 
     listFiles = async ({
@@ -477,6 +534,15 @@ export default class AllDebridClient extends BaseClient {
                 return "failed";
             default:
                 return "unknown";
+        }
+    };
+
+    private static throwError = (data: {
+        status: string;
+        error?: { message?: string };
+    }) => {
+        if (data.status !== "success") {
+            throw new Error(data?.error?.message || "Unknown error");
         }
     };
 }

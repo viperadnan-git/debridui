@@ -22,7 +22,7 @@ export function ExpandedRow({
     onNodeSelectionChange,
     onNodesLoaded,
 }: ExpandedRowProps) {
-    const { client } = useAuthContext();
+    const { client, currentUser } = useAuthContext();
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(
         externalSelectedNodes || new Set()
     );
@@ -46,7 +46,7 @@ export function ExpandedRow({
         isLoading,
         error,
     } = useQuery<DebridFileNode[]>({
-        queryKey: ["getFile", file.id],
+        queryKey: [currentUser.id, "getFile", file.id],
         queryFn: () => client.getFile(file.id),
         enabled: file.status === "completed",
     });
@@ -88,7 +88,7 @@ export function ExpandedRow({
             <div className="p-2 sm:p-3 md:mt-0">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
                     </div>
                 ) : error ? (
                     <div className="text-center py-4 text-xs text-red-500">

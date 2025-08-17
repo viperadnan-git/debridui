@@ -20,7 +20,7 @@ export function useFileExplorer() {
     } = useFileStore();
 
     const { data, isLoading } = useQuery({
-        queryKey: ["listFiles", currentUser.id, offset],
+        queryKey: [currentUser.id, "listFiles", offset],
         queryFn: () =>
             client.listFiles({ offset: 0, limit: PAGE_SIZE + offset }),
         refetchInterval: 3000,

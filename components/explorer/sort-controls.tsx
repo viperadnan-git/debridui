@@ -58,9 +58,9 @@ export function SortControls({
                 className="px-2"
             >
                 {sortDirection === "desc" ? (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="size-4" />
                 ) : (
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="size-4" />
                 )}
             </Button>
         </div>

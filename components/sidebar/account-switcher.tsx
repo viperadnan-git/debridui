@@ -195,6 +195,7 @@ export function AccountSwitcher() {
                                 deleteUserId &&
                                 handleRemoveAccount(deleteUserId)
                             }
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Remove
                         </AlertDialogAction>

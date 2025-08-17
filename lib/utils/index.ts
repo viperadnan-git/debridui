@@ -86,3 +86,7 @@ export const getFileType = (name: string): FileType => {
     if (!extension) return FileType.OTHER;
     return EXTENSION_TO_FILE_TYPE[extension.toLowerCase()] || FileType.OTHER;
 };
+
+export const getTextFromClipboard = async (): Promise<string> => {
+    return await navigator.clipboard.readText();
+};
