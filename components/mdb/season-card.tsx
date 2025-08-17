@@ -14,9 +14,10 @@ interface SeasonCardProps {
 }
 
 export const SeasonCard = memo(function SeasonCard({ season, isSelected, onClick, className }: SeasonCardProps) {
+  const seasonName = season.number === 0 ? 'Specials' : `${season.number}`
   const posterUrl = season.images?.poster?.[0]
     ? `https://${season.images.poster[0]}`
-    : `https://placehold.co/200x300/1a1a1a/white?text=Season+${season.number}`
+    : `https://placehold.co/200x300/1a1a1a/white?text=${encodeURIComponent(seasonName)}`
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return null
@@ -52,7 +53,7 @@ export const SeasonCard = memo(function SeasonCard({ season, isSelected, onClick
             variant={isSelected ? "default" : "secondary"} 
             className="text-xs font-bold shadow-sm"
           >
-            {season.number === 0 ? 'Specials' : `${season.number}`}
+            {seasonName}
           </Badge>
         </div>
 
