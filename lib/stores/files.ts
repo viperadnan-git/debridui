@@ -5,6 +5,7 @@ import { queryClient } from "../query-client";
 import AllDebridClient from "../clients/alldebrid";
 import { useSelectionStore } from "./selection";
 import { sortTorrents } from "../utils/file";
+import { useUserStore } from "./users";
 
 interface FileStoreState {
     files: DebridFile[];
@@ -83,18 +84,28 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
         get().sortAndSetFiles(get().files);
     },
     removeTorrent: async (client: AllDebridClient, fileId: string) => {
+        const currentUser = useUserStore.getState().currentUser;
         const message = await client.removeTorrent(fileId);
         get().removeFile(fileId);
         // Clear selection for this file
         useSelectionStore.getState().removeFileSelection(fileId);
-        queryClient.invalidateQueries({ queryKey: ["getTorrentList"] });
-        queryClient.invalidateQueries({ queryKey: ["findTorrents"] });
+        queryClient.invalidateQueries({
+            queryKey: [currentUser?.id, "getTorrentList"],
+        });
+        queryClient.invalidateQueries({
+            queryKey: [currentUser?.id, "findTorrents"],
+        });
         return message;
     },
     retryFiles: async (client: AllDebridClient, fileIds: string[]) => {
+        const currentUser = useUserStore.getState().currentUser;
         const message = await client.restartTorrents(fileIds);
-        queryClient.invalidateQueries({ queryKey: ["getTorrentList"] });
-        queryClient.invalidateQueries({ queryKey: ["findTorrents"] });
+        queryClient.invalidateQueries({
+            queryKey: [currentUser?.id, "getTorrentList"],
+        });
+        queryClient.invalidateQueries({
+            queryKey: [currentUser?.id, "findTorrents"],
+        });
         return message;
     },
 }));

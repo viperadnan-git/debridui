@@ -82,8 +82,7 @@ export function AccountSwitcher() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <SidebarMenuButton
-                                size="lg"
-                                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                                size="lg">
                                 <Image
                                     src="/square-logo.svg"
                                     alt="DebridUI logo"

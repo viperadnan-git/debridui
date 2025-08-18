@@ -16,7 +16,7 @@ export function AddContent() {
     const [isAddingLinks, setIsAddingLinks] = useState(false);
     const [isUploadingFiles, setIsUploadingFiles] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { client } = useAuthContext();
+    const { client, currentUser } = useAuthContext();
 
     const addLinks = async (links: string) => {
         const trimmedLinks = links.trim();
@@ -51,7 +51,9 @@ export function AddContent() {
                     `Successfully added ${successCount} link${successCount > 1 ? "s" : ""}`
                 );
                 setLinks("");
-                queryClient.invalidateQueries({ queryKey: ["getTorrentList"] });
+                queryClient.invalidateQueries({
+                    queryKey: [currentUser.id, "getTorrentList"],
+                });
             }
 
             if (errorCount > 0) {
@@ -91,7 +93,9 @@ export function AddContent() {
                 toast.success(
                     `Successfully uploaded ${successCount} file${successCount > 1 ? "s" : ""}`
                 );
-                queryClient.invalidateQueries({ queryKey: ["getTorrentList"] });
+                queryClient.invalidateQueries({
+                    queryKey: [currentUser.id, "getTorrentList"],
+                });
             }
 
             if (errorCount > 0) {
