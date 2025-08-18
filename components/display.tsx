@@ -91,8 +91,7 @@ export function StatusBadge({
             className={cn(
                 "px-1 md:px-1.5 py-0.2 border-0 rounded-sm text-xs md:text-sm",
                 config.color
-            )}
-        >
+            )}>
             <Icon className="size-3" />
             {config.name}
         </Badge>

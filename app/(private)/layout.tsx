@@ -13,7 +13,11 @@ import { AuthContext } from "@/lib/contexts/auth";
 import { useUserStore } from "@/lib/stores/users";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const { isHydrated, currentUser, client } = useUserStore();
+    const { isHydrated, currentUser, client } = useUserStore((state) => ({
+        isHydrated: state.isHydrated,
+        currentUser: state.currentUser,
+        client: state.client,
+    }));
     const router = useRouter();
 
     useEffect(() => {

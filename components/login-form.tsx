@@ -35,7 +35,12 @@ export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
-    const { addAccount, currentUser: activeAccount } = useUserStore();
+    const { addAccount, currentUser: activeAccount } = useUserStore(
+        (state) => ({
+            addAccount: state.addAccount,
+            currentUser: state.currentUser,
+        })
+    );
     const router = useRouter();
     const [isAllDebridLoading, setIsAllDebridLoading] = useState(false);
 
@@ -101,8 +106,7 @@ export function LoginForm({
                         <div className="flex flex-col items-center gap-2">
                             <a
                                 href="#"
-                                className="flex flex-col items-center gap-2 font-medium"
-                            >
+                                className="flex flex-col items-center gap-2 font-medium">
                                 <div className="flex size-8 items-center justify-center rounded-md">
                                     <GalleryVerticalEnd className="size-6" />
                                 </div>
@@ -115,8 +119,7 @@ export function LoginForm({
                                 Don&apos;t have an account?{" "}
                                 <Link
                                     href="#"
-                                    className="underline underline-offset-4"
-                                >
+                                    className="underline underline-offset-4">
                                     Sign up
                                 </Link>
                             </div>
@@ -134,8 +137,7 @@ export function LoginForm({
                                                     onValueChange={
                                                         field.onChange
                                                     }
-                                                    defaultValue={field.value}
-                                                >
+                                                    defaultValue={field.value}>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select an account type" />
                                                     </SelectTrigger>
@@ -145,8 +147,7 @@ export function LoginForm({
                                                         ).map((type) => (
                                                             <SelectItem
                                                                 key={type}
-                                                                value={type}
-                                                            >
+                                                                value={type}>
                                                                 {formatAccountType(
                                                                     type
                                                                 )}
@@ -182,8 +183,7 @@ export function LoginForm({
                                     form.formState.isSubmitting ||
                                     !form.formState.isValid ||
                                     isAllDebridLoading
-                                }
-                            >
+                                }>
                                 {form.formState.isSubmitting
                                     ? "Logging in..."
                                     : "Login"}
@@ -200,8 +200,7 @@ export function LoginForm({
                                 type="button"
                                 className="w-full"
                                 onClick={handleAllDebridLogin}
-                                disabled={isAllDebridLoading}
-                            >
+                                disabled={isAllDebridLoading}>
                                 {isAllDebridLoading ? (
                                     <Loader2 className="size-4 animate-spin" />
                                 ) : (
@@ -217,8 +216,7 @@ export function LoginForm({
                                 variant="outline"
                                 type="button"
                                 className="w-full"
-                                disabled={true}
-                            >
+                                disabled={true}>
                                 Continue with{" "}
                                 <span className="font-bold">RealDebrid</span>
                             </Button>

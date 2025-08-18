@@ -79,8 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     />
                     <a
                         className="flex items-center justify-center text-muted-foreground text-xs uppercase hover:underline"
-                        href="https://github.com/viperadnan-git/debridui/issues"
-                    >
+                        href="https://github.com/viperadnan-git/debridui/issues">
                         Report a bug
                     </a>
                 </SidebarFooter>

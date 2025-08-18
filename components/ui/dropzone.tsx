@@ -79,8 +79,7 @@ export const Dropzone = ({
     return (
         <DropzoneContext.Provider
             key={JSON.stringify(src)}
-            value={{ src, accept, maxSize, minSize, maxFiles }}
-        >
+            value={{ src, accept, maxSize, minSize, maxFiles }}>
             <Button
                 className={cn(
                     "relative h-auto w-full flex-col overflow-hidden p-8 border-dashed border-3 border-gray-300 hover:border-gray-400",
@@ -90,8 +89,7 @@ export const Dropzone = ({
                 disabled={disabled}
                 type="button"
                 variant="outline"
-                {...getRootProps()}
-            >
+                {...getRootProps()}>
                 <input {...getInputProps()} disabled={disabled} />
                 {children}
             </Button>
@@ -135,8 +133,7 @@ export const DropzoneContent = ({
             className={cn(
                 "flex flex-col items-center justify-center",
                 className
-            )}
-        >
+            )}>
             <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <UploadIcon size={16} />
             </div>
@@ -195,8 +192,7 @@ export const DropzoneEmptyState = ({
             className={cn(
                 "flex flex-col items-center justify-center",
                 className
-            )}
-        >
+            )}>
             <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <UploadIcon size={16} />
             </div>

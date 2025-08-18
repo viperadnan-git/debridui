@@ -26,8 +26,7 @@ export function FileListHeader({
                 "bg-muted/30",
                 "text-xs sm:text-sm font-medium text-muted-foreground",
                 className
-            )}
-        >
+            )}>
             <div className="flex-shrink-0 px-1">
                 <Checkbox
                     checked={isAllSelected}

@@ -412,7 +412,12 @@ export class TraktClient {
         const typeParam = types.join(",");
         const endpoint = `search/${typeParam}?query=${encodeURIComponent(query)}`;
 
-        return this.makeRequest<TraktSearchResult[]>(endpoint, {}, false, extended);
+        return this.makeRequest<TraktSearchResult[]>(
+            endpoint,
+            {},
+            false,
+            extended
+        );
     }
 
     // Generic Media Methods
@@ -746,8 +751,16 @@ export class TraktClient {
     /**
      * Get show seasons
      */
-    public async getShowSeasons(id: string, extended = "full,images"): Promise<TraktSeason[]> {
-        return this.makeRequest<TraktSeason[]>(`shows/${id}/seasons`, {}, false, extended);
+    public async getShowSeasons(
+        id: string,
+        extended = "full,images"
+    ): Promise<TraktSeason[]> {
+        return this.makeRequest<TraktSeason[]>(
+            `shows/${id}/seasons`,
+            {},
+            false,
+            extended
+        );
     }
 
     /**

@@ -27,14 +27,12 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
             attribute="class"
             defaultTheme="dark"
             enableSystem
-            disableTransitionOnChange
-        >
+            disableTransitionOnChange>
             <ProgressProvider
                 height="4px"
                 color="var(--foreground)"
                 options={{ showSpinner: false }}
-                shallowRouting
-            >
+                shallowRouting>
                 <QueryClientProvider client={queryClient}>
                     {children}
                 </QueryClientProvider>

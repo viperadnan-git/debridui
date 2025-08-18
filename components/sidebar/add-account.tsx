@@ -40,7 +40,9 @@ export function AddAccount({
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
-    const { login } = useUserStore();
+    const { login } = useUserStore((state) => ({
+        login: state.login,
+    }));
 
     const form = useForm<z.infer<typeof addAccountSchema>>({
         resolver: zodResolver(addAccountSchema),
@@ -77,8 +79,7 @@ export function AddAccount({
                                     <FormItem>
                                         <Select
                                             onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                        >
+                                            defaultValue={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select an account type" />
@@ -89,8 +90,7 @@ export function AddAccount({
                                                     (type) => (
                                                         <SelectItem
                                                             key={type}
-                                                            value={type}
-                                                        >
+                                                            value={type}>
                                                             {formatAccountType(
                                                                 type
                                                             )}
@@ -125,8 +125,7 @@ export function AddAccount({
                                     disabled={
                                         form.formState.isSubmitting ||
                                         !form.formState.isValid
-                                    }
-                                >
+                                    }>
                                     {form.formState.isSubmitting
                                         ? "Adding..."
                                         : "Add Account"}

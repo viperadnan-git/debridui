@@ -56,26 +56,24 @@ export function MediaStats({ media, type }: MediaStatsProps) {
         <div className="space-y-4">
             <h3 className="text-base sm:text-lg font-semibold">Details</h3>
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-            {stats.map((s, i) => (
-                <div
-                    key={i}
-                    role="listitem"
-                    className="flex flex-col items-center justify-center px-3 text-center"
-                >
+                {stats.map((s, i) => (
                     <div
-                        className={[
-                            "text-foreground font-semibold tracking-tight whitespace-nowrap",
-                            // Fluid font size
-                            "text-[clamp(1.75rem,5vw,2.5rem)] leading-none uppercase",
-                        ].join(" ")}
-                    >
-                        {s.value}
+                        key={i}
+                        role="listitem"
+                        className="flex flex-col items-center justify-center px-3 text-center">
+                        <div
+                            className={[
+                                "text-foreground font-semibold tracking-tight whitespace-nowrap",
+                                // Fluid font size
+                                "text-[clamp(1.75rem,5vw,2.5rem)] leading-none uppercase",
+                            ].join(" ")}>
+                            {s.value}
+                        </div>
+                        <p className="text-muted-foreground mt-2 text-sm sm:text-base capitalize">
+                            {s.label}
+                        </p>
                     </div>
-                    <p className="text-muted-foreground mt-2 text-sm sm:text-base capitalize">
-                        {s.label}
-                    </p>
-                </div>
-            ))}
+                ))}
             </div>
         </div>
     );

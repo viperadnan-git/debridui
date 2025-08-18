@@ -1,9 +1,7 @@
 {
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:ui.shadcn.com)"
-    ],
-    "deny": [],
-    "ask": []
-  }
+    "permissions": {
+        "allow": ["WebFetch(domain:ui.shadcn.com)"],
+        "deny": [],
+        "ask": []
+    }
 }

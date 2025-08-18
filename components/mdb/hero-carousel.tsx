@@ -30,11 +30,14 @@ interface DesktopHeroCarouselProps {
 }
 
 interface MobileHeroCarouselProps {
-    item: TraktMediaItem;   
+    item: TraktMediaItem;
     index: number;
 }
 
-const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: DesktopHeroCarouselProps) {
+const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
+    item,
+    index,
+}: DesktopHeroCarouselProps) {
     const media = item.movie || item.show;
     const type = item.movie ? "movie" : "show";
     if (!media) return null;
@@ -149,7 +152,10 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
     );
 });
 
-const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: MobileHeroCarouselProps) {
+const MobileHeroCarousel = memo(function MobileHeroCarousel({
+    item,
+    index,
+}: MobileHeroCarouselProps) {
     const media = item.movie || item.show;
     const type = item.movie ? "movie" : "show";
     if (!media) return null;
@@ -299,8 +305,7 @@ export function HeroCarousel({ items, isLoading }: HeroCarouselProps) {
                 <CarouselContent>
                     {items.map((item, index) => {
                         return (
-                            <CarouselItem
-                                key={`carousel-item-${index}`}>
+                            <CarouselItem key={`carousel-item-${index}`}>
                                 {isMobile ? (
                                     <MobileHeroCarousel
                                         item={item}

@@ -98,8 +98,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 size="sm"
                 disabled={isDisabled || copyMutation.isPending}
                 onClick={() => copyMutation.mutate()}
-                className="text-xs sm:text-sm h-7 sm:h-8"
-            >
+                className="text-xs sm:text-sm h-7 sm:h-8">
                 {copyMutation.isPending ? (
                     <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
                 ) : (
@@ -112,8 +111,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 size="sm"
                 disabled={isDisabled || downloadMutation.isPending}
                 onClick={() => downloadMutation.mutate()}
-                className="text-xs sm:text-sm h-7 sm:h-8"
-            >
+                className="text-xs sm:text-sm h-7 sm:h-8">
                 {downloadMutation.isPending ? (
                     <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
                 ) : (
@@ -126,8 +124,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 size="sm"
                 disabled={isDisabled || playMutation.isPending}
                 onClick={() => playMutation.mutate()}
-                className="text-xs sm:text-sm h-7 sm:h-8"
-            >
+                className="text-xs sm:text-sm h-7 sm:h-8">
                 {playMutation.isPending ? (
                     <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
                 ) : (

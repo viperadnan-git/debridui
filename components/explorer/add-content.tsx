@@ -141,8 +141,7 @@ export function AddContent() {
                             accept={{
                                 "application/x-bittorrent": [".torrent"],
                             }}
-                            className="max-sm:h-24"
-                        >
+                            className="max-sm:h-24">
                             <FileUp className="size-5 md:size-8 text-gray-400" />
                             <h3 className="font-bold text-sm md:text-md">
                                 Upload Torrent Files
@@ -168,8 +167,7 @@ export function AddContent() {
                             <Button
                                 onClick={handleAddLinks}
                                 disabled={isAddingLinks || !links.trim()}
-                                className="flex-1"
-                            >
+                                className="flex-1">
                                 {isAddingLinks ? (
                                     <>
                                         <Loader2 className="mr-2 size-4 animate-spin" />
@@ -185,8 +183,7 @@ export function AddContent() {
                             <Button
                                 variant="outline"
                                 disabled={isAddingLinks}
-                                onClick={handlePaste}
-                            >
+                                onClick={handlePaste}>
                                 <ClipboardIcon className="mr-2 size-4" />
                                 Paste
                             </Button>

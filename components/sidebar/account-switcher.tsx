@@ -43,7 +43,13 @@ import { useUserStore } from "@/lib/stores/users";
 
 export function AccountSwitcher() {
     const { users, currentUser, switchAccount, removeAccount, logout } =
-        useUserStore();
+        useUserStore((state) => ({
+            users: state.users,
+            currentUser: state.currentUser,
+            switchAccount: state.switchAccount,
+            removeAccount: state.removeAccount,
+            logout: state.logout,
+        }));
     const { isMobile } = useSidebar();
     const router = useRouter();
     const [isAddAccountOpen, setIsAddAccountOpen] = React.useState(false);
@@ -74,8 +80,7 @@ export function AccountSwitcher() {
                         <DropdownMenuTrigger asChild>
                             <SidebarMenuButton
                                 size="lg"
-                                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                            >
+                                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                                 <Image
                                     src="/square-logo.svg"
                                     alt="DebridUI logo"
@@ -98,8 +103,7 @@ export function AccountSwitcher() {
                             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
                             align="start"
                             side={isMobile ? "bottom" : "right"}
-                            sideOffset={4}
-                        >
+                            sideOffset={4}>
                             <DropdownMenuLabel className="text-muted-foreground text-xs">
                                 Accounts
                             </DropdownMenuLabel>
@@ -107,8 +111,7 @@ export function AccountSwitcher() {
                                 <DropdownMenuItem
                                     key={user.id}
                                     onClick={() => switchAccount(user.id)}
-                                    className="gap-2 p-2 flex items-center justify-between group"
-                                >
+                                    className="gap-2 p-2 flex items-center justify-between group">
                                     <div className="flex items-center gap-2">
                                         <div className="flex size-6 items-center justify-center rounded-md border">
                                             <User className="size-3.5 shrink-0" />
@@ -134,8 +137,7 @@ export function AccountSwitcher() {
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setDeleteUserId(user.id);
-                                                }}
-                                            >
+                                                }}>
                                                 <Trash2 className="size-3" />
                                             </Button>
                                         )}
@@ -146,8 +148,7 @@ export function AccountSwitcher() {
 
                             <DropdownMenuItem
                                 className="gap-2 p-2"
-                                onClick={() => setIsAddAccountOpen(true)}
-                            >
+                                onClick={() => setIsAddAccountOpen(true)}>
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                     <Plus className="size-4" />
                                 </div>
@@ -158,8 +159,7 @@ export function AccountSwitcher() {
 
                             <DropdownMenuItem
                                 className="gap-2 p-2 text-red-600"
-                                onClick={handleLogout}
-                            >
+                                onClick={handleLogout}>
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                     <LogOut className="size-4" />
                                 </div>
@@ -177,8 +177,7 @@ export function AccountSwitcher() {
 
             <AlertDialog
                 open={!!deleteUserId}
-                onOpenChange={() => setDeleteUserId(null)}
-            >
+                onOpenChange={() => setDeleteUserId(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Remove Account</AlertDialogTitle>
@@ -195,8 +194,7 @@ export function AccountSwitcher() {
                                 deleteUserId &&
                                 handleRemoveAccount(deleteUserId)
                             }
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                             Remove
                         </AlertDialogAction>
                     </AlertDialogFooter>

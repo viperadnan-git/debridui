@@ -7,7 +7,12 @@ import { cn } from "@/lib/utils";
 
 export function SettingsSwitches({ className }: { className?: string }) {
     const { smartOrder, hideTrash, setSmartOrder, setHideTrash } =
-        useSettingsStore();
+        useSettingsStore((state) => ({
+            smartOrder: state.smartOrder,
+            hideTrash: state.hideTrash,
+            setSmartOrder: state.setSmartOrder,
+            setHideTrash: state.setHideTrash,
+        }));
 
     return (
         <div className={cn("flex flex-wrap items-center gap-4", className)}>

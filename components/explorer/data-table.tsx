@@ -39,7 +39,14 @@ export function DataTable({
     const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
     const { client, currentUser } = useAuthContext();
-    const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore();
+    const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore(
+        (state) => ({
+            sortBy: state.sortBy,
+            sortOrder: state.sortOrder,
+            setSortBy: state.setSortBy,
+            setSortOrder: state.setSortOrder,
+        })
+    );
 
     // Use the selection store
     const {
@@ -105,14 +112,18 @@ export function DataTable({
             "getTorrentFiles",
             fileId,
         ]);
-        
+
         const allNodeIds: string[] = [];
-        
+
         if (fileNodes) {
             // Only apply filtering if hideTrash is enabled
             const { smartOrder, hideTrash } = useSettingsStore.getState();
-            const processedNodes = processFileNodes(fileNodes, smartOrder, hideTrash);
-            
+            const processedNodes = processFileNodes(
+                fileNodes,
+                smartOrder,
+                hideTrash
+            );
+
             const collectNodeIds = (nodes: DebridFileNode[]): void => {
                 nodes.forEach((node) => {
                     // Only collect file IDs, not folder IDs (to match ExpandedRow behavior)
@@ -299,8 +310,7 @@ export function DataTable({
             {hasMore && !debouncedSearchQuery && (
                 <div
                     ref={loadMoreTriggerRef}
-                    className="flex items-center justify-center py-2 sm:py-4"
-                >
+                    className="flex items-center justify-center py-2 sm:py-4">
                     {isLoadingMore && (
                         <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                             <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />

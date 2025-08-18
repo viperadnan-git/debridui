@@ -25,7 +25,10 @@ export function FileActionsDrawer({
     files,
 }: FileActionsDrawerProps) {
     const { client } = useAuthContext();
-    const { removeTorrent, retryFiles } = useFileStore();
+    const { removeTorrent, retryFiles } = useFileStore((state) => ({
+        removeTorrent: state.removeTorrent,
+        retryFiles: state.retryFiles,
+    }));
 
     // Check if drawer should be shown
     const hasAnySelection =
@@ -112,8 +115,7 @@ export function FileActionsDrawer({
                 className={cn(
                     "fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border shadow-lg transition-transform duration-300 ease-in-out",
                     isAnimating ? "translate-y-0" : "translate-y-full"
-                )}
-            >
+                )}>
                 <div className="container mx-auto max-w-7xl">
                     <div className="flex flex-col items-center gap-3 p-4">
                         <div className="flex gap-2 flex-wrap justify-center">
@@ -133,8 +135,7 @@ export function FileActionsDrawer({
                                         )
                                     }
                                     disabled={deleteMutation.isPending}
-                                    className="text-xs sm:text-sm h-7 sm:h-8"
-                                >
+                                    className="text-xs sm:text-sm h-7 sm:h-8">
                                     <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                     Delete ({fullySelectedFiles.length})
                                 </Button>
@@ -150,8 +151,7 @@ export function FileActionsDrawer({
                                         )
                                     }
                                     disabled={retryMutation.isPending}
-                                    className="text-xs sm:text-sm h-7 sm:h-8"
-                                >
+                                    className="text-xs sm:text-sm h-7 sm:h-8">
                                     <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                     Retry ({canRetry.length})
                                 </Button>

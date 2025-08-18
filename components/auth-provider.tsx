@@ -3,7 +3,9 @@
 import { useUserStore } from "@/lib/stores/users";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { isHydrated } = useUserStore();
+    const { isHydrated } = useUserStore((state) => ({
+        isHydrated: state.isHydrated,
+    }));
 
     if (!isHydrated) {
         return (

@@ -42,8 +42,7 @@ export function SortControls({
                 variant="outline"
                 size="sm"
                 onClick={onDirectionToggle}
-                className="px-2"
-            >
+                className="px-2">
                 {sortDirection === "desc" ? (
                     <ChevronDown className="size-4" />
                 ) : (

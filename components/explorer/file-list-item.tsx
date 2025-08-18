@@ -138,8 +138,7 @@ export function FileListItem({
                 canExpand && "cursor-pointer hover:bg-card/50",
                 className
             )}
-            onClick={() => canExpand && onToggleExpand()}
-        >
+            onClick={() => canExpand && onToggleExpand()}>
             <div className="flex-shrink-0 px-1">
                 <Checkbox
                     checked={isSelected}
@@ -155,8 +154,7 @@ export function FileListItem({
                             className={cn(
                                 "text-sm font-medium truncate",
                                 file.status === "completed" && "cursor-pointer"
-                            )}
-                        >
+                            )}>
                             {file.name}
                         </div>
                         <div className="flex items-center gap-1">

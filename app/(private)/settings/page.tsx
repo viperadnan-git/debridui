@@ -28,7 +28,10 @@ import { toast } from "sonner";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
-    const { mediaPlayer, setMediaPlayer } = useSettingsStore();
+    const { mediaPlayer, setMediaPlayer } = useSettingsStore((state) => ({
+        mediaPlayer: state.mediaPlayer,
+        setMediaPlayer: state.setMediaPlayer,
+    }));
     const [isClearing, setIsClearing] = useState(false);
 
     const handleClearCache = async (key?: string) => {
@@ -88,8 +91,7 @@ export default function SettingsPage() {
                                         return (
                                             <SelectItem
                                                 key={themeOption.value}
-                                                value={themeOption.value}
-                                            >
+                                                value={themeOption.value}>
                                                 <div className="flex items-center gap-2">
                                                     <Icon className="size-4" />
                                                     {themeOption.label}
@@ -124,8 +126,7 @@ export default function SettingsPage() {
                                 value={mediaPlayer}
                                 onValueChange={(value) =>
                                     setMediaPlayer(value as MediaPlayer)
-                                }
-                            >
+                                }>
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Select media player" />
                                 </SelectTrigger>
@@ -133,8 +134,7 @@ export default function SettingsPage() {
                                     {MEDIA_PLAYER_LABELS.map((player) => (
                                         <SelectItem
                                             key={player.value}
-                                            value={player.value}
-                                        >
+                                            value={player.value}>
                                             {player.label}
                                         </SelectItem>
                                     ))}
@@ -167,8 +167,7 @@ export default function SettingsPage() {
                                         handleClearCache("getDownloadLink")
                                     }
                                     disabled={isClearing}
-                                    variant="destructive"
-                                >
+                                    variant="destructive">
                                     {isClearing
                                         ? "Clearing..."
                                         : "Clear Download Links Cache"}
@@ -182,8 +181,7 @@ export default function SettingsPage() {
                                 <Button
                                     onClick={() => handleClearCache()}
                                     disabled={isClearing}
-                                    variant="destructive"
-                                >
+                                    variant="destructive">
                                     {isClearing
                                         ? "Clearing..."
                                         : "Clear All Cache"}

@@ -32,11 +32,14 @@ export function NavMain({
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton 
-                            tooltip={item.title} 
+                        <SidebarMenuButton
+                            tooltip={item.title}
                             asChild={!item.action}
-                            onClick={item.action ? () => onAction?.(item.action!) : undefined}
-                        >
+                            onClick={
+                                item.action
+                                    ? () => onAction?.(item.action!)
+                                    : undefined
+                            }>
                             {item.action ? (
                                 <>
                                     {item.icon && <item.icon />}

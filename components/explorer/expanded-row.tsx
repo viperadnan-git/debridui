@@ -26,7 +26,10 @@ export function ExpandedRow({
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(
         externalSelectedNodes || new Set()
     );
-    const { smartOrder, hideTrash } = useSettingsStore();
+    const { smartOrder, hideTrash } = useSettingsStore((state) => ({
+        smartOrder: state.smartOrder,
+        hideTrash: state.hideTrash,
+    }));
 
     // Sync with external selection when it changes
     useEffect(() => {

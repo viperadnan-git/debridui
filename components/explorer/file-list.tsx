@@ -16,8 +16,7 @@ export function FileList({ children, className }: FileListProps) {
                 "overflow-hidden",
                 "mx-0.5 sm:mx-0",
                 className
-            )}
-        >
+            )}>
             {children}
         </div>
     );
@@ -46,8 +45,7 @@ export function FileListEmpty({
             className={cn(
                 "flex items-center justify-center py-8 sm:py-12 md:py-16 text-sm text-muted-foreground",
                 className
-            )}
-        >
+            )}>
             {message}
         </div>
     );

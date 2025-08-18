@@ -75,7 +75,9 @@ function FileActionButton({
 }) {
     const { client, currentUser } = useAuthContext();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
-    const { mediaPlayer } = useSettingsStore();
+    const { mediaPlayer } = useSettingsStore((state) => ({
+        mediaPlayer: state.mediaPlayer,
+    }));
 
     const { data: linkInfo, refetch } = useQuery({
         queryKey: [currentUser.id, "getDownloadLink", node.id],
@@ -140,8 +142,7 @@ function FileActionButton({
             size="icon"
             className="size-4 sm:size-6 cursor-pointer"
             onClick={handleClick}
-            disabled={isButtonLoading || !node.id}
-        >
+            disabled={isButtonLoading || !node.id}>
             {icon}
         </Button>
     );
@@ -194,8 +195,7 @@ function FileNode({
                     "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 hover:bg-muted",
                     "text-xs sm:text-sm"
                 )}
-                style={{ paddingLeft: `${depth * 12}px` }}
-            >
+                style={{ paddingLeft: `${depth * 12}px` }}>
                 <Checkbox
                     checked={isSelected}
                     onCheckedChange={handleCheckboxChange}
@@ -213,8 +213,7 @@ function FileNode({
                                     } else {
                                         handleCheckboxChange(!isSelected);
                                     }
-                                }}
-                            >
+                                }}>
                                 {node.name}
                             </span>
                         </TooltipTrigger>
@@ -248,8 +247,7 @@ function FileNode({
                             "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 cursor-pointer hover:bg-muted",
                             "text-xs sm:text-sm"
                         )}
-                        style={{ paddingLeft: `${depth * 12}px` }}
-                    >
+                        style={{ paddingLeft: `${depth * 12}px` }}>
                         <ChevronRight
                             className={cn(
                                 "h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground transition-transform flex-shrink-0",
