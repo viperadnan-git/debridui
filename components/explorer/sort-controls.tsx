@@ -10,23 +10,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { sortOptions } from "@/lib/utils/file";
+import { useShallow } from "zustand/react/shallow";
+import { useFileStore } from "@/lib/stores/files";
 
-interface SortControlsProps {
-    sortBy: string;
-    sortDirection: "asc" | "desc";
-    onSortChange: (sortBy: string) => void;
-    onDirectionToggle: () => void;
-}
+export function SortControls() {
+    const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore(
+        useShallow((state) => ({
+            sortBy: state.sortBy,
+            sortOrder: state.sortOrder,
+            setSortBy: state.setSortBy,
+            setSortOrder: state.setSortOrder,
+        }))
+    );
 
-export function SortControls({
-    sortBy,
-    sortDirection,
-    onSortChange,
-    onDirectionToggle,
-}: SortControlsProps) {
+    const handleSortChange = (newSortBy: string) => {
+        setSortBy(newSortBy);
+        setSortOrder(newSortBy === "date" ? "desc" : "asc");
+    };
+
     return (
         <div className="flex items-center gap-2">
-            <Select value={sortBy} onValueChange={onSortChange}>
+            <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger className="w-[180px]" id="sort-select">
                     <SelectValue />
                 </SelectTrigger>
@@ -41,9 +45,11 @@ export function SortControls({
             <Button
                 variant="outline"
                 size="sm"
-                onClick={onDirectionToggle}
+                onClick={() =>
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                }
                 className="px-2">
-                {sortDirection === "desc" ? (
+                {sortOrder === "desc" ? (
                     <ChevronDown className="size-4" />
                 ) : (
                     <ChevronUp className="size-4" />

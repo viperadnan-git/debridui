@@ -19,10 +19,8 @@ import { FileListItem } from "./file-list-item";
 import { ExpandedRow } from "./expanded-row";
 import { FileActionsDrawer } from "./file-actions-drawer";
 import { useSelectionStore } from "@/lib/stores/selection";
-import { useFileStore } from "@/lib/stores/files";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { processFileNodes } from "@/lib/utils/file";
-import { useShallow } from "zustand/react/shallow";
 
 interface DataTableProps {
     data: DebridFile[];
@@ -40,15 +38,6 @@ export function DataTable({
     const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
     const { client, currentUser } = useAuthContext();
-
-    const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore(
-        useShallow((state) => ({
-            sortBy: state.sortBy,
-            sortOrder: state.sortOrder,
-            setSortBy: state.setSortBy,
-            setSortOrder: state.setSortOrder,
-        }))
-    );
 
     // Use the selection store
     const {
@@ -94,10 +83,7 @@ export function DataTable({
         return data;
     }, [debouncedSearchQuery, searchResults, data]);
 
-    const handleSortChange = (newSortBy: string) => {
-        setSortBy(newSortBy);
-        setSortOrder(newSortBy === "date" ? "desc" : "asc");
-    };
+   
 
     const handleSelectAll = (checked: boolean | "indeterminate") => {
         if (checked) {
@@ -208,7 +194,6 @@ export function DataTable({
             (entries) => {
                 if (entries[0].isIntersecting && !isLoadingMore) {
                     setIsLoadingMore(true);
-                    console.log("loadMore", activeData.length);
                     onLoadMore?.(activeData.length);
                 }
             },
@@ -238,14 +223,7 @@ export function DataTable({
                     onChange={setSearchQuery}
                     placeholder="Search files..."
                 />
-                <SortControls
-                    sortBy={sortBy}
-                    sortDirection={sortOrder}
-                    onSortChange={handleSortChange}
-                    onDirectionToggle={() =>
-                        setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                    }
-                />
+                <SortControls />
             </div>
 
             <FileList className="max-sm:-mx-4">

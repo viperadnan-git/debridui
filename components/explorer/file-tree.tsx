@@ -75,9 +75,7 @@ function FileActionButton({
 }) {
     const { client, currentUser } = useAuthContext();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
-    const { mediaPlayer } = useSettingsStore((state) => ({
-        mediaPlayer: state.mediaPlayer,
-    }));
+    const mediaPlayer = useSettingsStore((state) => state.mediaPlayer);
 
     const { data: linkInfo, refetch } = useQuery({
         queryKey: [currentUser.id, "getDownloadLink", node.id],

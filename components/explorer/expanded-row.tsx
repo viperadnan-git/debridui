@@ -7,6 +7,7 @@ import { useAuthContext } from "@/lib/contexts/auth";
 import { Loader2 } from "lucide-react";
 import { FileTree } from "./file-tree";
 import { useSettingsStore } from "@/lib/stores/settings";
+import { useShallow } from "zustand/react/shallow";
 import { processFileNodes } from "@/lib/utils/file";
 
 interface ExpandedRowProps {
@@ -26,10 +27,12 @@ export function ExpandedRow({
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(
         externalSelectedNodes || new Set()
     );
-    const { smartOrder, hideTrash } = useSettingsStore((state) => ({
-        smartOrder: state.smartOrder,
-        hideTrash: state.hideTrash,
-    }));
+    const { smartOrder, hideTrash } = useSettingsStore(
+        useShallow((state) => ({
+            smartOrder: state.smartOrder,
+            hideTrash: state.hideTrash,
+        }))
+    );
 
     // Sync with external selection when it changes
     useEffect(() => {

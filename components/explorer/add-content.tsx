@@ -152,7 +152,7 @@ export function AddContent() {
                         </Dropzone>
                     </div>
 
-                    <div className="flex flex-col space-y-1 md:space-y-2">
+                    <div className="flex flex-col space-y-2">
                         <label className="text-sm font-bold">
                             Add Links (HTTP/Magnet)
                         </label>
