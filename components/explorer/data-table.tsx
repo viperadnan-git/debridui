@@ -19,7 +19,6 @@ import { FileListItem } from "./file-list-item";
 import { ExpandedRow } from "./expanded-row";
 import { FileActionsDrawer } from "./file-actions-drawer";
 import { useSelectionStore } from "@/lib/stores/selection";
-import { useSettingsStore } from "@/lib/stores/settings";
 import { processFileNodes } from "@/lib/utils/file";
 
 interface DataTableProps {
@@ -104,12 +103,8 @@ export function DataTable({
         const allNodeIds: string[] = [];
 
         if (fileNodes) {
-            // Only apply filtering if hideTrash is enabled
-            const { smartOrder, hideTrash } = useSettingsStore.getState();
             const processedNodes = processFileNodes(
                 fileNodes,
-                smartOrder,
-                hideTrash
             );
 
             const collectNodeIds = (nodes: DebridFileNode[]): void => {

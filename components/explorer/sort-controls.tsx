@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { sortOptions } from "@/lib/utils/file";
+import { SORT_OPTIONS } from "@/lib/utils/file";
 import { useShallow } from "zustand/react/shallow";
 import { useFileStore } from "@/lib/stores/files";
 
@@ -35,7 +35,7 @@ export function SortControls() {
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                    {sortOptions.map((option) => (
+                    {SORT_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                             {option.label}
                         </SelectItem>

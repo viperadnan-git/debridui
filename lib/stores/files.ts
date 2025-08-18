@@ -4,7 +4,7 @@ import { PAGE_SIZE } from "../constants";
 import { queryClient } from "../query-client";
 import AllDebridClient from "../clients/alldebrid";
 import { useSelectionStore } from "./selection";
-import { sortTorrents } from "../utils/file";
+import { sortTorrentFiles } from "../utils/file";
 import { useUserStore } from "./users";
 
 interface FileStoreState {
@@ -66,7 +66,7 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
             set({ files });
             return;
         }
-        const sortedFiles = sortTorrents(files, sortBy, sortOrder);
+        const sortedFiles = sortTorrentFiles(files, sortBy, sortOrder);
         set({
             files: sortedFiles,
             sortChanged: sortBy !== "date" || sortOrder !== "desc",

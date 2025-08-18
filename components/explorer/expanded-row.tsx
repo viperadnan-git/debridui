@@ -6,9 +6,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { Loader2 } from "lucide-react";
 import { FileTree } from "./file-tree";
-import { useSettingsStore } from "@/lib/stores/settings";
-import { useShallow } from "zustand/react/shallow";
 import { processFileNodes } from "@/lib/utils/file";
+import { useSettingsStore } from "@/lib/stores/settings";
 
 interface ExpandedRowProps {
     file: DebridFile;
@@ -27,12 +26,7 @@ export function ExpandedRow({
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(
         externalSelectedNodes || new Set()
     );
-    const { smartOrder, hideTrash } = useSettingsStore(
-        useShallow((state) => ({
-            smartOrder: state.smartOrder,
-            hideTrash: state.hideTrash,
-        }))
-    );
+    const hideTrash = useSettingsStore((state) => state.hideTrash);
 
     // Sync with external selection when it changes
     useEffect(() => {
@@ -60,8 +54,8 @@ export function ExpandedRow({
     // Process nodes with smart order and trash filtering
     const processedNodes = useMemo(() => {
         if (!nodes) return [];
-        return processFileNodes(nodes, smartOrder, hideTrash);
-    }, [nodes, smartOrder, hideTrash]);
+        return processFileNodes(nodes);
+    }, [nodes]);
 
     // Notify parent about loaded nodes (only once when nodes first load)
     const hasNotifiedNodes = useRef(false);

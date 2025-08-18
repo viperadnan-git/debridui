@@ -2,13 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Copy, Download, Loader2 } from "lucide-react";
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthContext } from "@/lib/contexts/auth";
-import { DebridLinkInfo } from "@/lib/types";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
-import { QUERY_CACHE_MAX_AGE } from "@/lib/constants";
-import { downloadM3U } from "@/lib/utils/file";
+import { downloadM3UPlaylist, fetchSelectedDownloadLinks } from "@/lib/utils/file";
 
 interface FileActionsProps {
     selectedFiles: Set<string>;
@@ -16,76 +14,65 @@ interface FileActionsProps {
 
 export function FileActions({ selectedFiles }: FileActionsProps) {
     const { client, currentUser } = useAuthContext();
-    const queryClient = useQueryClient();
     const fileIds = Array.from(selectedFiles);
-
-    // Fetch link info for all selected files using the same cache strategy as FileActionButton
-    const linkQueries = useQueries({
-        queries: fileIds.map((id) => ({
-            queryKey: [currentUser.id, "getDownloadLink", id],
-            queryFn: () => client.getDownloadLink(id),
-            enabled: false, // Don't auto-fetch until action is clicked
-            staleTime: QUERY_CACHE_MAX_AGE,
-        })),
-    });
-
-    const fetchAllLinks = async (): Promise<DebridLinkInfo[]> => {
-        const promises = fileIds.map(async (id, index) => {
-            // Check if data is already cached
-            const cached = queryClient.getQueryData<DebridLinkInfo>([
-                "getDownloadLink",
-                id,
-            ]);
-            if (cached) return cached;
-
-            // Fetch if not cached
-            const result = await linkQueries[index].refetch();
-            return result.data as DebridLinkInfo;
-        });
-
-        const results = await Promise.all(promises);
-        return results.filter(Boolean);
-    };
 
     const copyMutation = useMutation({
         mutationFn: async () => {
-            const links = await fetchAllLinks();
-            copyLinksToClipboard(links);
-            return links;
-        },
-        onSuccess: () => {
-            toast.success("Links copied to clipboard");
-        },
-        onError: (error) => {
-            toast.error(`Failed to copy: ${error.message}`);
+            const toastId = toast.loading("Loading links...");
+            try {
+                const links = await fetchSelectedDownloadLinks(
+                    fileIds,
+                    client,
+                    currentUser.id,
+                );
+                copyLinksToClipboard(links);
+                toast.success(`${links.length} link(s) copied to clipboard`, { id: toastId });
+                return links;
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to copy: ${errorMessage}`, { id: toastId });
+                throw error;
+            }
         },
     });
 
     const downloadMutation = useMutation({
         mutationFn: async () => {
-            const links = await fetchAllLinks();
-            downloadLinks(links);
-            return links;
-        },
-        onSuccess: (links) => {
-            toast.success(`Downloading ${links.length} files`);
-        },
-        onError: (error) => {
-            toast.error(`Failed to download: ${error.message}`);
+            const toastId = toast.loading("Loading links...");
+            try {
+                const links = await fetchSelectedDownloadLinks(
+                    fileIds,
+                    client,
+                    currentUser.id,
+                );
+                downloadLinks(links);
+                toast.success(`Downloading ${links.length} files`, { id: toastId });
+                return links;
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to download: ${errorMessage}`, { id: toastId });
+                throw error;
+            }
         },
     });
 
     const playMutation = useMutation({
         mutationFn: async () => {
-            const links = await fetchAllLinks();
-            downloadM3U(links);
-            return links;
-        },
-        onSuccess: () => {
-            toast.success("Opening media player");
-        },
-        onError: (error) => {
-            toast.error(`Failed to play: ${error.message}`);
+            const toastId = toast.loading("Loading links...");
+            try {
+                const links = await fetchSelectedDownloadLinks(
+                    fileIds,
+                    client,
+                    currentUser.id,
+                );
+                downloadM3UPlaylist(links);
+                toast.success("Playlist downloaded", { id: toastId });
+                return links;
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to create playlist: ${errorMessage}`, { id: toastId });
+                throw error;
+            }
         },
     });
 

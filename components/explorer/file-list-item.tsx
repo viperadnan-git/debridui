@@ -12,6 +12,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Separator } from "../ui/separator";
+import { FileItemContextMenu } from "./file-item-context-menu";
 
 interface FileListItemProps {
     file: DebridFile;
@@ -132,54 +133,56 @@ export function FileListItem({
     }, [file]);
 
     return (
-        <div
-            className={cn(
-                "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b border-border/40 transition-colors duration-150 bg-card",
-                canExpand && "cursor-pointer hover:bg-card/50",
-                className
-            )}
-            onClick={() => canExpand && onToggleExpand()}>
-            <div className="flex-shrink-0 px-1">
-                <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={onToggleSelect}
-                    onClick={(e) => e.stopPropagation()}
-                />
-            </div>
+        <FileItemContextMenu file={file}>
+            <div
+                className={cn(
+                    "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b border-border/40 transition-colors duration-150 bg-card",
+                    canExpand && "cursor-pointer hover:bg-card/50",
+                    className
+                )}
+                onClick={() => canExpand && onToggleExpand()}>
+                <div className="flex-shrink-0 px-1">
+                    <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={onToggleSelect}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
 
-            <div className="flex-1 min-w-0">
-                <div className="flex flex-col gap-0.5">
-                    <div className="flex justify-between gap-1">
-                        <div
-                            className={cn(
-                                "text-sm font-medium truncate",
-                                file.status === "completed" && "cursor-pointer"
-                            )}>
-                            {file.name}
+                <div className="flex-1 min-w-0">
+                    <div className="flex flex-col gap-0.5">
+                        <div className="flex justify-between gap-1">
+                            <div
+                                className={cn(
+                                    "text-sm font-medium truncate",
+                                    file.status === "completed" && "cursor-pointer"
+                                )}>
+                                {file.name}
+                            </div>
+                            <div className="flex items-center gap-1">
+                                {file.progress !== undefined && (
+                                    <span className="text-sm">
+                                        {file.progress || "0"}%
+                                    </span>
+                                )}
+                                &nbsp;
+                                <StatusBadge
+                                    status={file.status}
+                                    hide={"completed"}
+                                />
+                            </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                            {file.progress !== undefined && (
-                                <span className="text-sm">
-                                    {file.progress || "0"}%
-                                </span>
-                            )}
-                            &nbsp;
-                            <StatusBadge
-                                status={file.status}
-                                hide={"completed"}
-                            />
-                        </div>
-                    </div>
 
-                    {/* Row 2: Everything else */}
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        {<span key="size">Size: {getSizeDisplay()}</span>}
-                        {getDesktopSecondRow()}
-                        <span className="flex-1"></span>
-                        {getTimeDisplay()}
+                        {/* Row 2: Everything else */}
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            {<span key="size">Size: {getSizeDisplay()}</span>}
+                            {getDesktopSecondRow()}
+                            <span className="flex-1"></span>
+                            {getTimeDisplay()}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </FileItemContextMenu>
     );
 }

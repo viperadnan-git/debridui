@@ -36,7 +36,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
                 <QueryClientProvider client={queryClient}>
                     {children}
                 </QueryClientProvider>
-                <Toaster position="top-right" richColors closeButton />
+                <Toaster position="top-right" closeButton />
             </ProgressProvider>
         </ThemeProvider>
     );
