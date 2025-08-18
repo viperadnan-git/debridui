@@ -25,6 +25,7 @@ import { EpisodeCard } from "@/components/mdb/episode-card";
 import { PeopleSection } from "./people-section";
 import { MediaStats } from "./media-stats";
 import { useState, memo } from "react";
+import { Sources } from "./sources";
 
 interface MediaDetailsProps {
     media?: TraktMedia;
@@ -307,6 +308,20 @@ export const MediaDetails = memo(function MediaDetails({
                         )}
                     </div>
                 </div>
+                
+                {/* Sources Section for Movies */}
+                {type === "movie" && media?.ids?.imdb && (
+                    <div className="space-y-4">
+                        <h2 className="text-lg sm:text-xl font-bold">
+                            Available Sources
+                        </h2>
+                        <Sources
+                            imdbId={media.ids.imdb}
+                            mediaType="movie"
+                        />
+                    </div>
+                )}
+
                 {/* Seasons & Episodes for TV Shows */}
                 {type === "show" && (
                     <div className="space-y-4">
@@ -352,6 +367,7 @@ export const MediaDetails = memo(function MediaDetails({
                                             <EpisodeCard
                                                 key={episode.number}
                                                 episode={episode}
+                                                imdbId={media.ids?.imdb}
                                             />
                                         ))}
                                     </div>

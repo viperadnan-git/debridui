@@ -2,19 +2,23 @@
 
 import { type TraktEpisode } from "@/lib/trakt";
 import { Badge } from "@/components/ui/badge";
-import { Star, Calendar, Clock, Play } from "lucide-react";
+import { Star, Calendar, Clock, GlobeIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
+import { SourcesDialog } from "./sources";
 
 interface EpisodeCardProps {
     episode: TraktEpisode;
     className?: string;
+    imdbId?: string;
 }
 
 export const EpisodeCard = memo(function EpisodeCard({
     episode,
     className,
+    imdbId,
 }: EpisodeCardProps) {
+
     const screenshotUrl = episode.images?.screenshot?.[0]
         ? `https://${episode.images.screenshot[0]}`
         : `https://placehold.co/400x225/1a1a1a/white?text=Episode+${episode.number}`;
@@ -29,6 +33,11 @@ export const EpisodeCard = memo(function EpisodeCard({
     };
 
     return (
+        <SourcesDialog
+        imdbId={imdbId}
+        mediaType="show"
+        tvParams={episode.season ? { season: episode.season, episode: episode.number } : undefined}
+    >
         <div className={cn("group cursor-pointer", className)}>
             <div className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all hover:scale-[1.02]">
                 {/* Episode thumbnail */}
@@ -46,8 +55,11 @@ export const EpisodeCard = memo(function EpisodeCard({
 
                     {/* Play button overlay */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="bg-black/50 rounded-full p-3">
-                            <Play className="h-6 w-6 text-white fill-white" />
+                        <div className="bg-black/50 rounded-full p-3 flex items-center gap-2">
+                            <GlobeIcon className="h-6 w-6" />
+                            <span className="text-white text-sm">
+                                Show Sources
+                            </span> 
                         </div>
                     </div>
 
@@ -104,6 +116,8 @@ export const EpisodeCard = memo(function EpisodeCard({
                     </div>
                 </div>
             </div>
+           
         </div>
+            </SourcesDialog>
     );
 });

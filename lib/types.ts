@@ -73,3 +73,10 @@ export type DebridLinkInfo = {
     name: string;
     size: number;
 };
+
+export type DebridFileAddStatus = {
+    id?: number | string;
+    message: string;
+    error?: string;
+    is_cached: boolean;
+};

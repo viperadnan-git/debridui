@@ -37,12 +37,12 @@ export function AddContent() {
             let successCount = 0;
             let errorCount = 0;
 
-            Object.entries(results).forEach(([uri, message]) => {
-                if (message.includes("added") || message.includes("Added")) {
+            Object.entries(results).forEach(([uri, status]) => {
+                if (!status.error) {
                     successCount++;
                 } else {
                     errorCount++;
-                    toast.error(`${uri}: ${message}`);
+                    toast.error(`${uri}: ${status.error}`);
                 }
             });
 
@@ -80,12 +80,12 @@ export function AddContent() {
             let successCount = 0;
             let errorCount = 0;
 
-            Object.entries(results).forEach(([fileName, message]) => {
-                if (message.includes("added") || message.includes("Added")) {
+            Object.entries(results).forEach(([fileName, status]) => {
+                if (!status.error) {
                     successCount++;
                 } else {
                     errorCount++;
-                    toast.error(`${fileName}: ${message}`);
+                    toast.error(`${fileName}: ${status.error}`);
                 }
             });
 

@@ -4,6 +4,7 @@ import {
     DebridFileNode,
     DebridLinkInfo,
     DebridFileList,
+    DebridFileAddStatus,
     AccountType,
     User,
 } from "@/lib/types";
@@ -317,7 +318,9 @@ export default class AllDebridClient extends BaseClient {
         );
     }
 
-    async addDownloads(uris: string[]): Promise<Record<string, string>> {
+    async addDownloads(
+        uris: string[]
+    ): Promise<Record<string, DebridFileAddStatus>> {
         const httpUris: string[] = [];
         const magnetUris: string[] = [];
 
@@ -349,7 +352,7 @@ export default class AllDebridClient extends BaseClient {
 
     async addMagnetLinks(
         magnetUris: string[]
-    ): Promise<Record<string, string>> {
+    ): Promise<Record<string, DebridFileAddStatus>> {
         const formData = new FormData();
         magnetUris.forEach((magnet) => formData.append("magnets[]", magnet));
 
@@ -363,16 +366,24 @@ export default class AllDebridClient extends BaseClient {
 
         return response.magnets.reduce(
             (results, torrent) => {
-                results[torrent.magnet] =
+                const message =
                     torrent.error?.message ||
                     `Successfully added: ${torrent.name}`;
+                results[torrent.magnet] = {
+                    id: torrent.id,
+                    message,
+                    error: torrent.error?.message,
+                    is_cached: torrent.ready,
+                };
                 return results;
             },
-            {} as Record<string, string>
+            {} as Record<string, DebridFileAddStatus>
         );
     }
 
-    async uploadTorrentFiles(files: File[]): Promise<Record<string, string>> {
+    async uploadTorrentFiles(
+        files: File[]
+    ): Promise<Record<string, DebridFileAddStatus>> {
         const formData = new FormData();
         files.forEach((file) => formData.append("files[]", file));
 
@@ -386,19 +397,25 @@ export default class AllDebridClient extends BaseClient {
 
         return response.files.reduce(
             (results, file) => {
-                results[file.file] =
+                const message =
                     file.error?.message ||
                     `Successfully uploaded: ${file.name}`;
+                results[file.file] = {
+                    id: file.id,
+                    message,
+                    error: file.error?.message,
+                    is_cached: file.ready,
+                };
                 return results;
             },
-            {} as Record<string, string>
+            {} as Record<string, DebridFileAddStatus>
         );
     }
 
     private async addHttpDownloads(
         httpUris: string[]
-    ): Promise<Record<string, string>> {
-        const results: Record<string, string> = {};
+    ): Promise<Record<string, DebridFileAddStatus>> {
+        const results: Record<string, DebridFileAddStatus> = {};
         const downloadedFiles: File[] = [];
 
         await Promise.allSettled(
@@ -407,7 +424,14 @@ export default class AllDebridClient extends BaseClient {
                     const file = await this.downloadFile(uri);
                     downloadedFiles.push(file);
                 } catch (error) {
-                    results[uri] = `Failed to download ${uri}: ${error}`;
+                    results[uri] = {
+                        message: `Failed to download ${uri}: ${error}`,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                        is_cached: false,
+                    };
                 }
             })
         );
