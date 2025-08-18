@@ -82,8 +82,6 @@ export function DataTable({
         return data;
     }, [debouncedSearchQuery, searchResults, data]);
 
-   
-
     const handleSelectAll = (checked: boolean | "indeterminate") => {
         if (checked) {
             selectAll(data.map((file) => file.id));
@@ -103,9 +101,7 @@ export function DataTable({
         const allNodeIds: string[] = [];
 
         if (fileNodes) {
-            const processedNodes = processFileNodes(
-                fileNodes,
-            );
+            const processedNodes = processFileNodes(fileNodes);
 
             const collectNodeIds = (nodes: DebridFileNode[]): void => {
                 nodes.forEach((node) => {

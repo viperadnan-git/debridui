@@ -43,7 +43,9 @@ export function QuickSettings() {
                 <DialogDescription asChild>
                     <div className="flex flex-col gap-4 py-4">
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="smart-order" className="text-sm text-foreground">
+                            <Label
+                                htmlFor="smart-order"
+                                className="text-sm text-foreground">
                                 Smart Order
                             </Label>
                             <Switch

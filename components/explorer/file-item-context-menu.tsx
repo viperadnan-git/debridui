@@ -14,7 +14,10 @@ import {
 import { DebridFile } from "@/lib/types";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
-import { downloadM3UPlaylist, fetchTorrentDownloadLinks } from "@/lib/utils/file";
+import {
+    downloadM3UPlaylist,
+    fetchTorrentDownloadLinks,
+} from "@/lib/utils/file";
 import { useFileStore } from "@/lib/stores/files";
 
 interface FileItemContextMenuProps {
@@ -39,13 +42,16 @@ export function FileItemContextMenu({
                 const links = await fetchTorrentDownloadLinks(
                     file.id,
                     client,
-                    currentUser.id,
+                    currentUser.id
                 );
                 copyLinksToClipboard(links);
-                toast.success(`${links.length} link(s) copied to clipboard`, { id: toastId });
+                toast.success(`${links.length} link(s) copied to clipboard`, {
+                    id: toastId,
+                });
                 return links;
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
                 toast.error(`Failed to copy: ${errorMessage}`, { id: toastId });
                 throw error;
             }
@@ -60,14 +66,19 @@ export function FileItemContextMenu({
                 const links = await fetchTorrentDownloadLinks(
                     file.id,
                     client,
-                    currentUser.id,
+                    currentUser.id
                 );
                 downloadLinks(links);
-                toast.success(`Downloading ${links.length} file(s)`, { id: toastId });
+                toast.success(`Downloading ${links.length} file(s)`, {
+                    id: toastId,
+                });
                 return links;
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to download: ${errorMessage}`, { id: toastId });
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to download: ${errorMessage}`, {
+                    id: toastId,
+                });
                 throw error;
             }
         },
@@ -81,14 +92,17 @@ export function FileItemContextMenu({
                 const links = await fetchTorrentDownloadLinks(
                     file.id,
                     client,
-                    currentUser.id,
+                    currentUser.id
                 );
                 downloadM3UPlaylist(links);
                 toast.success("Playlist downloaded", { id: toastId });
                 return links;
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to download playlist: ${errorMessage}`, { id: toastId });
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to download playlist: ${errorMessage}`, {
+                    id: toastId,
+                });
                 throw error;
             }
         },
@@ -103,8 +117,11 @@ export function FileItemContextMenu({
                 toast.success(message || "File deleted", { id: toastId });
                 return message;
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to delete: ${errorMessage}`, { id: toastId });
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to delete: ${errorMessage}`, {
+                    id: toastId,
+                });
                 throw error;
             }
         },
@@ -120,8 +137,11 @@ export function FileItemContextMenu({
                 toast.success(message, { id: toastId });
                 return message;
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to retry: ${errorMessage}`, { id: toastId });
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to retry: ${errorMessage}`, {
+                    id: toastId,
+                });
                 throw error;
             }
         },
@@ -142,33 +162,42 @@ export function FileItemContextMenu({
             <ContextMenuContent className="w-56">
                 <ContextMenuItem
                     onClick={() => copyMutation.mutate()}
-                    disabled={isAnyActionPending || file.status !== "completed"}>
+                    disabled={
+                        isAnyActionPending || file.status !== "completed"
+                    }>
                     {copyMutation.isPending ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                         <Copy className="mr-2 h-4 w-4" />
                     )}
-                    Copy Link{file.status !== "completed" && " (Completed files only)"}
+                    Copy Link
+                    {file.status !== "completed" && " (Completed files only)"}
                 </ContextMenuItem>
                 <ContextMenuItem
                     onClick={() => downloadMutation.mutate()}
-                    disabled={isAnyActionPending || file.status !== "completed"}>
+                    disabled={
+                        isAnyActionPending || file.status !== "completed"
+                    }>
                     {downloadMutation.isPending ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                         <Download className="mr-2 h-4 w-4" />
                     )}
-                    Download{file.status !== "completed" && " (Completed files only)"}
+                    Download
+                    {file.status !== "completed" && " (Completed files only)"}
                 </ContextMenuItem>
                 <ContextMenuItem
                     onClick={() => playlistMutation.mutate()}
-                    disabled={isAnyActionPending || file.status !== "completed"}>
+                    disabled={
+                        isAnyActionPending || file.status !== "completed"
+                    }>
                     {playlistMutation.isPending ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                         <List className="mr-2 h-4 w-4" />
                     )}
-                    Download Playlist{file.status !== "completed" && " (Completed files only)"}
+                    Download Playlist
+                    {file.status !== "completed" && " (Completed files only)"}
                 </ContextMenuItem>
                 <ContextMenuSeparator />
                 {file.status === "failed" && (

@@ -41,95 +41,101 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             .sort((a, b) => b.score - a.score);
     }, [searchResults]);
 
-    const handleSelect = useCallback((result: TraktSearchResult) => {
-        const media = result.movie || result.show;
-        if (!media?.ids?.imdb) return;
+    const handleSelect = useCallback(
+        (result: TraktSearchResult) => {
+            const media = result.movie || result.show;
+            if (!media?.ids?.imdb) return;
 
-        const type = result.movie ? "movie" : "show";
-        router.push(`/${type}/${media.ids.imdb}`);
-        onOpenChange(false);
-        setQuery("");
-    }, [router, onOpenChange, setQuery]);
+            const type = result.movie ? "movie" : "show";
+            router.push(`/${type}/${media.ids.imdb}`);
+            onOpenChange(false);
+            setQuery("");
+        },
+        [router, onOpenChange, setQuery]
+    );
 
-    const renderMediaItem = useCallback((result: TraktSearchResult) => {
-        const media = result.movie || result.show;
-        if (!media) return null;
+    const renderMediaItem = useCallback(
+        (result: TraktSearchResult) => {
+            const media = result.movie || result.show;
+            if (!media) return null;
 
-        const type = result.movie ? "movie" : "show";
-        const icon = type === "movie" ? Film : Tv;
-        const Icon = icon;
+            const type = result.movie ? "movie" : "show";
+            const icon = type === "movie" ? Film : Tv;
+            const Icon = icon;
 
-        const posterImage = media.images?.poster?.[0]
-            ? `https://${media.images.poster[0]}`
-            : media.images?.fanart?.[0]
-            ? `https://${media.images.fanart[0]}`
-            : media.images?.banner?.[0]
-            ? `https://${media.images.banner[0]}`
-            : null;
+            const posterImage = media.images?.poster?.[0]
+                ? `https://${media.images.poster[0]}`
+                : media.images?.fanart?.[0]
+                  ? `https://${media.images.fanart[0]}`
+                  : media.images?.banner?.[0]
+                    ? `https://${media.images.banner[0]}`
+                    : null;
 
-        return (
-            <CommandItem
-                key={`${type}-${media.ids?.slug || media.title}`}
-                value={`${media.title} ${media.year || ""}`}
-                onSelect={() => handleSelect(result)}
-                className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
-                {/* Poster thumbnail or icon */}
-                <div className="flex-shrink-0 w-16 h-20 bg-muted rounded overflow-hidden">
-                    {posterImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={posterImage}
-                            alt={media.title}
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                            <Icon className="h-6 w-6 text-muted-foreground" />
+            return (
+                <CommandItem
+                    key={`${type}-${media.ids?.slug || media.title}`}
+                    value={`${media.title} ${media.year || ""}`}
+                    onSelect={() => handleSelect(result)}
+                    className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
+                    {/* Poster thumbnail or icon */}
+                    <div className="flex-shrink-0 w-16 h-20 bg-muted rounded overflow-hidden">
+                        {posterImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                src={posterImage}
+                                alt={media.title}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <Icon className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium truncate text-sm">
+                                {media.title}
+                            </span>
+                            <Badge
+                                variant="outline"
+                                className={cn(
+                                    "text-xs px-1.5 py-0.5",
+                                    type === "movie"
+                                        ? "border-blue-200 text-blue-700 bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-950"
+                                        : "border-purple-200 text-purple-700 bg-purple-50 dark:border-purple-800 dark:text-purple-400 dark:bg-purple-950"
+                                )}>
+                                {type === "movie" ? "Movie" : "TV Show"}
+                            </Badge>
                         </div>
-                    )}
-                </div>
 
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium truncate text-sm">
-                            {media.title}
-                        </span>
-                        <Badge
-                            variant="outline"
-                            className={cn(
-                                "text-xs px-1.5 py-0.5",
-                                type === "movie"
-                                    ? "border-blue-200 text-blue-700 bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-950"
-                                    : "border-purple-200 text-purple-700 bg-purple-50 dark:border-purple-800 dark:text-purple-400 dark:bg-purple-950"
-                            )}>
-                            {type === "movie" ? "Movie" : "TV Show"}
-                        </Badge>
-                    </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-1">
+                            {media.year && (
+                                <div className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>{media.year}</span>
+                                </div>
+                            )}
+                            {media.rating && (
+                                <div className="flex items-center gap-1">
+                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                    <span>{media.rating.toFixed(1)}</span>
+                                </div>
+                            )}
+                        </div>
 
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mb-1">
-                        {media.year && (
-                            <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                <span>{media.year}</span>
-                            </div>
-                        )}
-                        {media.rating && (
-                            <div className="flex items-center gap-1">
-                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                <span>{media.rating.toFixed(1)}</span>
-                            </div>
+                        {media.overview && (
+                            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                {media.overview}
+                            </p>
                         )}
                     </div>
-
-                    {media.overview && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                            {media.overview}
-                        </p>
-                    )}
-                </div>
-            </CommandItem>
-        );
-    }, [handleSelect]);
+                </CommandItem>
+            );
+        },
+        [handleSelect]
+    );
 
     return (
         <CommandDialog

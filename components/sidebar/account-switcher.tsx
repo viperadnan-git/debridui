@@ -45,14 +45,14 @@ import { useShallow } from "zustand/react/shallow";
 export function AccountSwitcher() {
     const { users, currentUser, switchAccount, removeAccount, logout } =
         useUserStore(
-        useShallow((state) => ({
-            users: state.users,
-            currentUser: state.currentUser,
-            switchAccount: state.switchAccount,
-            removeAccount: state.removeAccount,
-            logout: state.logout,
-        }))
-    );
+            useShallow((state) => ({
+                users: state.users,
+                currentUser: state.currentUser,
+                switchAccount: state.switchAccount,
+                removeAccount: state.removeAccount,
+                logout: state.logout,
+            }))
+        );
     const { isMobile } = useSidebar();
     const router = useRouter();
     const [isAddAccountOpen, setIsAddAccountOpen] = React.useState(false);
@@ -81,8 +81,7 @@ export function AccountSwitcher() {
                 <SidebarMenuItem>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <SidebarMenuButton
-                                size="lg">
+                            <SidebarMenuButton size="lg">
                                 <Image
                                     src="/square-logo.svg"
                                     alt="DebridUI logo"

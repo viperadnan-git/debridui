@@ -6,7 +6,10 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
-import { downloadM3UPlaylist, fetchSelectedDownloadLinks } from "@/lib/utils/file";
+import {
+    downloadM3UPlaylist,
+    fetchSelectedDownloadLinks,
+} from "@/lib/utils/file";
 
 interface FileActionsProps {
     selectedFiles: Set<string>;
@@ -23,13 +26,16 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 const links = await fetchSelectedDownloadLinks(
                     fileIds,
                     client,
-                    currentUser.id,
+                    currentUser.id
                 );
                 copyLinksToClipboard(links);
-                toast.success(`${links.length} link(s) copied to clipboard`, { id: toastId });
+                toast.success(`${links.length} link(s) copied to clipboard`, {
+                    id: toastId,
+                });
                 return links;
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
                 toast.error(`Failed to copy: ${errorMessage}`, { id: toastId });
                 throw error;
             }
@@ -43,14 +49,19 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 const links = await fetchSelectedDownloadLinks(
                     fileIds,
                     client,
-                    currentUser.id,
+                    currentUser.id
                 );
                 downloadLinks(links);
-                toast.success(`Downloading ${links.length} files`, { id: toastId });
+                toast.success(`Downloading ${links.length} files`, {
+                    id: toastId,
+                });
                 return links;
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to download: ${errorMessage}`, { id: toastId });
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to download: ${errorMessage}`, {
+                    id: toastId,
+                });
                 throw error;
             }
         },
@@ -63,14 +74,17 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
                 const links = await fetchSelectedDownloadLinks(
                     fileIds,
                     client,
-                    currentUser.id,
+                    currentUser.id
                 );
                 downloadM3UPlaylist(links);
                 toast.success("Playlist downloaded", { id: toastId });
                 return links;
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to create playlist: ${errorMessage}`, { id: toastId });
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
+                toast.error(`Failed to create playlist: ${errorMessage}`, {
+                    id: toastId,
+                });
                 throw error;
             }
         },

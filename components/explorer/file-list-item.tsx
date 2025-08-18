@@ -155,7 +155,8 @@ export function FileListItem({
                             <div
                                 className={cn(
                                     "text-sm font-medium truncate",
-                                    file.status === "completed" && "cursor-pointer"
+                                    file.status === "completed" &&
+                                        "cursor-pointer"
                                 )}>
                                 {file.name}
                             </div>

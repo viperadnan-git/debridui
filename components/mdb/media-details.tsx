@@ -308,17 +308,14 @@ export const MediaDetails = memo(function MediaDetails({
                         )}
                     </div>
                 </div>
-                
+
                 {/* Sources Section for Movies */}
                 {type === "movie" && media?.ids?.imdb && (
                     <div className="space-y-4">
                         <h2 className="text-lg sm:text-xl font-bold">
                             Available Sources
                         </h2>
-                        <Sources
-                            imdbId={media.ids.imdb}
-                            mediaType="movie"
-                        />
+                        <Sources imdbId={media.ids.imdb} mediaType="movie" />
                     </div>
                 )}
 

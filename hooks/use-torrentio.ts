@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import torrentio, { type TorrentioSource, type TvSearchParams } from "@/lib/torrentio";
+import torrentio, {
+    type TorrentioSource,
+    type TvSearchParams,
+} from "@/lib/torrentio";
 
 export function useTorrentioSources(
     imdbId: string | undefined,
@@ -12,11 +15,11 @@ export function useTorrentioSources(
             if (!imdbId) {
                 throw new Error("IMDB ID is required");
             }
-            
+
             if (mediaType === "show") {
                 return torrentio.searchTvShow(imdbId, tvParams);
             }
-            
+
             return torrentio.searchMovie(imdbId);
         },
         enabled: !!imdbId,
