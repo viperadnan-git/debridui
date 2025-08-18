@@ -37,7 +37,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AddAccount } from "./add-account";
 import { formatAccountType } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@bprogress/next/app";
 import Image from "next/image";
 import { useUserStore } from "@/lib/stores/users";
 import { useShallow } from "zustand/react/shallow";

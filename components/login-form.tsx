@@ -28,7 +28,7 @@ import {
     SelectContent,
     SelectTrigger,
 } from "./ui/select";
-import { useRouter } from "@bprogress/next";
+import { useRouter } from "@bprogress/next/app";
 import { useEffect, useState } from "react";
 
 export function LoginForm({

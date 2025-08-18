@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
 import { SearchProvider } from "@/components/mdb/search-provider";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@bprogress/next/app";
 import { useEffect } from "react";
 import { AuthContext } from "@/lib/contexts/auth";
 import { useUserStore } from "@/lib/stores/users";
