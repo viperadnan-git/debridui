@@ -19,6 +19,7 @@ import {
     fetchTorrentDownloadLinks,
 } from "@/lib/utils/file";
 import { useFileStore } from "@/lib/stores/files";
+import { cn } from "@/lib/utils";
 
 interface FileItemContextMenuProps {
     file: DebridFile;
@@ -156,7 +157,9 @@ export function FileItemContextMenu({
 
     return (
         <ContextMenu>
-            <ContextMenuTrigger className={className} asChild>
+            <ContextMenuTrigger
+                className={cn("data-[state=open]:select-none", className)}
+                asChild>
                 {children}
             </ContextMenuTrigger>
             <ContextMenuContent className="w-56">
