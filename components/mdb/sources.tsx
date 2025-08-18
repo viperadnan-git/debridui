@@ -10,7 +10,6 @@ import {
     Plus,
     HardDrive,
     AlertCircle,
-    FolderIcon,
     Users,
     CheckCircle2Icon,
     RotateCcwIcon,
