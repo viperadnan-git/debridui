@@ -11,13 +11,16 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AuthContext } from "@/lib/contexts/auth";
 import { useUserStore } from "@/lib/stores/users";
+import { useShallow } from "zustand/react/shallow";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const { isHydrated, currentUser, client } = useUserStore((state) => ({
-        isHydrated: state.isHydrated,
-        currentUser: state.currentUser,
-        client: state.client,
-    }));
+    const { isHydrated, currentUser, client } = useUserStore(
+        useShallow((state) => ({
+            isHydrated: state.isHydrated,
+            currentUser: state.currentUser,
+            client: state.client,
+        }))
+    );
     const router = useRouter();
 
     useEffect(() => {

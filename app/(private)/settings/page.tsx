@@ -25,13 +25,16 @@ import { useState } from "react";
 import { del } from "idb-keyval";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
-    const { mediaPlayer, setMediaPlayer } = useSettingsStore((state) => ({
-        mediaPlayer: state.mediaPlayer,
-        setMediaPlayer: state.setMediaPlayer,
-    }));
+    const { mediaPlayer, setMediaPlayer } = useSettingsStore(
+        useShallow((state) => ({
+            mediaPlayer: state.mediaPlayer,
+            setMediaPlayer: state.setMediaPlayer,
+        }))
+    );
     const [isClearing, setIsClearing] = useState(false);
 
     const handleClearCache = async (key?: string) => {

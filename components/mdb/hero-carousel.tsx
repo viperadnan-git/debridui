@@ -105,11 +105,14 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
                                     {media.runtime % 60}m
                                 </span>
                             )}
+                            <Badge className="bg-red-600 text-white text-sm font-bold px-3 py-1">
+                                #{index + 1} Today
+                            </Badge>
                         </div>
 
                         {/* Description */}
                         {media.overview && (
-                            <p className="text-white/90 text-lg lg:text-xl leading-relaxed max-w-xl line-clamp-3">
+                            <p className="text-white/90 text-lg lg:text-xl leading-tight max-w-xl line-clamp-3">
                                 {media.overview}
                             </p>
                         )}
@@ -140,13 +143,6 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Top-right ranking badge */}
-            <div className="absolute top-4 right-4">
-                <Badge className="bg-red-600 text-white text-lg font-bold px-3 py-1">
-                    #{index + 1} Today
-                </Badge>
             </div>
         </div>
     );
@@ -185,13 +181,8 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({
 
                 {/* Mobile Content */}
                 <div className="absolute inset-0 flex flex-col justify-between p-4">
-                    {/* Top badges */}
-                    <Badge className="bg-red-600 text-white text-xs font-bold ms-auto">
-                        #{index + 1}
-                    </Badge>
-
                     {/* Bottom content */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 mt-auto">
                         <div className="flex items-center gap-2">
                             <Badge
                                 variant="outline"
@@ -206,6 +197,9 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({
                                     {media.rating.toFixed(1)}
                                 </Badge>
                             )}
+                            <Badge className="bg-red-600 text-white text-xs font-bold">
+                                #{index + 1}
+                            </Badge>
                         </div>
 
                         <h2 className="text-white font-bold text-xl leading-tight line-clamp-2">
@@ -223,7 +217,7 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({
                         </div>
 
                         {media.overview && (
-                            <p className="text-white/80 text-sm line-clamp-2 leading-relaxed">
+                            <p className="text-white/80 text-sm line-clamp-3 leading-relaxed">
                                 {media.overview}
                             </p>
                         )}

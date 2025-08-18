@@ -40,9 +40,7 @@ export function AddAccount({
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
-    const { login } = useUserStore((state) => ({
-        login: state.login,
-    }));
+    const login = useUserStore((state) => state.login);
 
     const form = useForm<z.infer<typeof addAccountSchema>>({
         resolver: zodResolver(addAccountSchema),

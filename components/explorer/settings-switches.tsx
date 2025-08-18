@@ -4,15 +4,18 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { cn } from "@/lib/utils";
+import { useShallow } from "zustand/react/shallow";
 
 export function SettingsSwitches({ className }: { className?: string }) {
     const { smartOrder, hideTrash, setSmartOrder, setHideTrash } =
-        useSettingsStore((state) => ({
-            smartOrder: state.smartOrder,
-            hideTrash: state.hideTrash,
-            setSmartOrder: state.setSmartOrder,
-            setHideTrash: state.setHideTrash,
-        }));
+        useSettingsStore(
+            useShallow((state) => ({
+                smartOrder: state.smartOrder,
+                hideTrash: state.hideTrash,
+                setSmartOrder: state.setSmartOrder,
+                setHideTrash: state.setHideTrash,
+            }))
+        );
 
     return (
         <div className={cn("flex flex-wrap items-center gap-4", className)}>

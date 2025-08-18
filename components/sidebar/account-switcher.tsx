@@ -40,16 +40,19 @@ import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUserStore } from "@/lib/stores/users";
+import { useShallow } from "zustand/react/shallow";
 
 export function AccountSwitcher() {
     const { users, currentUser, switchAccount, removeAccount, logout } =
-        useUserStore((state) => ({
+        useUserStore(
+        useShallow((state) => ({
             users: state.users,
             currentUser: state.currentUser,
             switchAccount: state.switchAccount,
             removeAccount: state.removeAccount,
             logout: state.logout,
-        }));
+        }))
+    );
     const { isMobile } = useSidebar();
     const router = useRouter();
     const [isAddAccountOpen, setIsAddAccountOpen] = React.useState(false);

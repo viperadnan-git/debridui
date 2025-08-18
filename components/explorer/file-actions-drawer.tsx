@@ -10,6 +10,7 @@ import { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useFileStore } from "@/lib/stores/files";
 import { useAuthContext } from "@/lib/contexts/auth";
+import { useShallow } from "zustand/react/shallow";
 
 interface FileActionsDrawerProps {
     selectedFileIds: Set<string>;
@@ -25,10 +26,12 @@ export function FileActionsDrawer({
     files,
 }: FileActionsDrawerProps) {
     const { client } = useAuthContext();
-    const { removeTorrent, retryFiles } = useFileStore((state) => ({
-        removeTorrent: state.removeTorrent,
-        retryFiles: state.retryFiles,
-    }));
+    const { removeTorrent, retryFiles } = useFileStore(
+        useShallow((state) => ({
+            removeTorrent: state.removeTorrent,
+            retryFiles: state.retryFiles,
+        }))
+    );
 
     // Check if drawer should be shown
     const hasAnySelection =

@@ -22,6 +22,7 @@ import { useSelectionStore } from "@/lib/stores/selection";
 import { useFileStore } from "@/lib/stores/files";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { processFileNodes } from "@/lib/utils/file";
+import { useShallow } from "zustand/react/shallow";
 
 interface DataTableProps {
     data: DebridFile[];
@@ -39,13 +40,14 @@ export function DataTable({
     const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
     const { client, currentUser } = useAuthContext();
+
     const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore(
-        (state) => ({
+        useShallow((state) => ({
             sortBy: state.sortBy,
             sortOrder: state.sortOrder,
             setSortBy: state.setSortBy,
             setSortOrder: state.setSortOrder,
-        })
+        }))
     );
 
     // Use the selection store

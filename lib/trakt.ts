@@ -260,7 +260,6 @@ export class TraktClient {
     constructor(config: TraktClientConfig) {
         this.baseUrl = config.baseUrl || "https://api.trakt.tv";
         this.clientId = config.clientId;
-        console.log(this.clientId);
         this.accessToken = config.accessToken;
         this.apiVersion = config.apiVersion || "2";
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
     CommandDialog,
@@ -41,7 +41,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             .sort((a, b) => b.score - a.score);
     }, [searchResults]);
 
-    const handleSelect = (result: TraktSearchResult) => {
+    const handleSelect = useCallback((result: TraktSearchResult) => {
         const media = result.movie || result.show;
         if (!media?.ids?.imdb) return;
 
@@ -49,9 +49,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         router.push(`/${type}/${media.ids.imdb}`);
         onOpenChange(false);
         setQuery("");
-    };
+    }, [router, onOpenChange, setQuery]);
 
-    const renderMediaItem = (result: TraktSearchResult) => {
+    const renderMediaItem = useCallback((result: TraktSearchResult) => {
         const media = result.movie || result.show;
         if (!media) return null;
 
@@ -61,6 +61,10 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
         const posterImage = media.images?.poster?.[0]
             ? `https://${media.images.poster[0]}`
+            : media.images?.fanart?.[0]
+            ? `https://${media.images.fanart[0]}`
+            : media.images?.banner?.[0]
+            ? `https://${media.images.banner[0]}`
             : null;
 
         return (
@@ -70,7 +74,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 onSelect={() => handleSelect(result)}
                 className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
                 {/* Poster thumbnail or icon */}
-                <div className="flex-shrink-0 w-12 h-16 bg-muted rounded overflow-hidden">
+                <div className="flex-shrink-0 w-16 h-20 bg-muted rounded overflow-hidden">
                     {posterImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -125,20 +129,20 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 </div>
             </CommandItem>
         );
-    };
+    }, [handleSelect]);
 
     return (
         <CommandDialog
             open={open}
             onOpenChange={onOpenChange}
-            className="rounded-lg shadow-md md:min-w-[450px] md:min-h-[40vh]">
+            className="rounded-lg shadow-md md:min-w-[450px] top-1/3 md:top-1/2">
             <CommandInput
                 placeholder="Search movies and TV shows... (⌘K)"
                 value={query}
                 onValueChange={setQuery}
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            <CommandList>
+            <CommandList className="max-h-[50vh] overflow-y-auto">
                 {isLoading && query.trim().length > 2 && (
                     <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
                         <Search className="h-8 w-8 animate-spin mb-3 opacity-50" />
