@@ -312,7 +312,9 @@ export const MediaDetails = memo(function MediaDetails({
                 {/* Sources Section for Movies */}
                 {type === "movie" && media?.ids?.imdb && (
                     <div className="space-y-4">
-                        <h2 className="text-lg sm:text-xl font-bold">
+                        <h2
+                            className="text-lg sm:text-xl font-bold"
+                            id="sources">
                             Available Sources
                         </h2>
                         <Sources imdbId={media.ids.imdb} mediaType="movie" />
@@ -353,7 +355,9 @@ export const MediaDetails = memo(function MediaDetails({
                         {episodesQuery.data &&
                             episodesQuery.data.length > 0 && (
                                 <div>
-                                    <h3 className="text-base sm:text-lg font-semibold mb-3">
+                                    <h3
+                                        className="text-base sm:text-lg font-semibold mb-3"
+                                        id="sources">
                                         {selectedSeason === 0
                                             ? "Specials"
                                             : `Season ${selectedSeason}`}{" "}

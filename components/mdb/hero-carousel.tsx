@@ -119,12 +119,14 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
 
                         {/* Netflix-style Action Buttons */}
                         <div className="flex items-center gap-3">
-                            <Button
-                                size="lg"
-                                className="bg-white text-black hover:bg-white/90 font-semibold px-8">
-                                <Play className="h-5 w-5 mr-2 fill-current" />
-                                Play
-                            </Button>
+                            <Link href={`${linkHref}#sources`}>
+                                <Button
+                                    size="lg"
+                                    className="bg-white text-black hover:bg-white/90 font-semibold px-8">
+                                    <Play className="h-5 w-5 mr-2 fill-current" />
+                                    Play
+                                </Button>
+                            </Link>
                             <Link href={linkHref}>
                                 <Button
                                     size="lg"

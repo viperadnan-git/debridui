@@ -20,7 +20,7 @@ export const MediaCard = memo(function MediaCard({
     rank,
     className,
 }: MediaCardProps) {
-    const linkHref = media.ids?.imdb ? `/${type}/${media.ids.imdb}` : "#";
+    const linkHref = media.ids?.imdb ? `/${type}/${media.ids.slug}` : "#";
 
     const posterUrl = media.images?.poster?.[0]
         ? `https://${media.images.poster[0]}`
