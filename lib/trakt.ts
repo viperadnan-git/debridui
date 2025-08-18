@@ -411,12 +411,20 @@ export class TraktClient {
         const typeParam = types.join(",");
         const endpoint = `search/${typeParam}?query=${encodeURIComponent(query)}`;
 
-        return this.makeRequest<TraktSearchResult[]>(
+        const results = await this.makeRequest<TraktSearchResult[]>(
             endpoint,
             {},
             false,
             extended
         );
+
+        return results
+            .filter(
+                (result) =>
+                    (result.type === "movie" && result.movie) ||
+                    (result.type === "show" && result.show)
+            )
+            .sort((a, b) => b.score - a.score);
     }
 
     // Generic Media Methods

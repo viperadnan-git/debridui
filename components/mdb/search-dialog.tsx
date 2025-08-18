@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "@bprogress/next/app";
 import {
     CommandDialog,
@@ -28,18 +28,6 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         query,
         open && query.trim().length > 2
     );
-
-    const sortedResults = useMemo(() => {
-        if (!searchResults) return [];
-
-        return searchResults
-            .filter(
-                (result) =>
-                    (result.type === "movie" && result.movie) ||
-                    (result.type === "show" && result.show)
-            )
-            .sort((a, b) => b.score - a.score);
-    }, [searchResults]);
 
     const handleSelect = useCallback(
         (result: TraktSearchResult) => {
@@ -73,8 +61,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
             return (
                 <CommandItem
-                    key={`${type}-${media.ids?.slug || media.title}`}
-                    value={`${media.title} ${media.year || ""}`}
+                    key={`${type}-${media.ids?.trakt}-${media.title}`}
+                    value={`${type}-${media.ids?.trakt}-${media.title}`}
                     onSelect={() => handleSelect(result)}
                     className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
                     {/* Poster thumbnail or icon */}
@@ -141,6 +129,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         <CommandDialog
             open={open}
             onOpenChange={onOpenChange}
+            shouldFilter={false}
             className="rounded-lg shadow-md md:min-w-[450px] top-1/3 md:top-1/2">
             <CommandInput
                 placeholder="Search movies and TV shows... (⌘K)"
@@ -182,9 +171,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     </div>
                 )}
 
-                {!isLoading && sortedResults.length > 0 && (
+                {!isLoading && searchResults && searchResults.length > 0 && (
                     <CommandGroup heading="Trakt Results">
-                        {sortedResults.slice(0, 10).map(renderMediaItem)}
+                        {searchResults.map(renderMediaItem)}
                     </CommandGroup>
                 )}
             </CommandList>
