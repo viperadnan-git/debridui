@@ -30,10 +30,7 @@ interface MobileHeroCarouselProps {
     index: number;
 }
 
-const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
-    item,
-    index,
-}: DesktopHeroCarouselProps) {
+const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: DesktopHeroCarouselProps) {
     const media = item.movie || item.show;
     const type = item.movie ? "movie" : "show";
     if (!media) return null;
@@ -42,7 +39,8 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
         ? `https://${media.images.fanart[0]}`
         : `https://placehold.co/1920x1080/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
 
-    const linkHref = media.ids?.imdb ? `/${type}/${media.ids.imdb}` : "#";
+    const slug = media.ids?.slug || media.ids?.imdb;
+    const linkHref = slug ? `/${type}/${slug}` : "#";
 
     return (
         <div className="relative w-full aspect-video overflow-hidden">
@@ -67,9 +65,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
                     <div className="max-w-2xl space-y-4 lg:space-y-6">
                         {/* Netflix Series/Movie Badge */}
                         <div className="flex items-center gap-3">
-                            <Badge
-                                variant="outline"
-                                className="border-white/30 text-white bg-black/30">
+                            <Badge variant="outline" className="border-white/30 text-white bg-black/30">
                                 {type === "movie" ? "Movie" : "Series"}
                             </Badge>
                         </div>
@@ -84,9 +80,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
                             {media.rating && (
                                 <div className="flex items-center gap-1">
                                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-medium">
-                                        {media.rating.toFixed(1)}
-                                    </span>
+                                    <span className="font-medium">{media.rating.toFixed(1)}</span>
                                 </div>
                             )}
                             {media.year && (
@@ -97,8 +91,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
                             )}
                             {media.runtime && (
                                 <span>
-                                    {Math.floor(media.runtime / 60)}h{" "}
-                                    {media.runtime % 60}m
+                                    {Math.floor(media.runtime / 60)}h {media.runtime % 60}m
                                 </span>
                             )}
                             <Badge className="bg-red-600 text-white text-sm font-bold px-3 py-1">
@@ -116,9 +109,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
                         {/* Netflix-style Action Buttons */}
                         <div className="flex items-center gap-3">
                             <Link href={`${linkHref}#sources`}>
-                                <Button
-                                    size="lg"
-                                    className="bg-white text-black hover:bg-white/90 font-semibold px-8">
+                                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-semibold px-8">
                                     <Play className="h-5 w-5 mr-2 fill-current" />
                                     Play
                                 </Button>
@@ -132,10 +123,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
                                     More Info
                                 </Button>
                             </Link>
-                            <Button
-                                size="lg"
-                                variant="ghost"
-                                className="text-white hover:bg-white/20 p-2">
+                            <Button size="lg" variant="ghost" className="text-white hover:bg-white/20 p-2">
                                 <Plus className="h-6 w-6" />
                             </Button>
                         </div>
@@ -146,10 +134,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({
     );
 });
 
-const MobileHeroCarousel = memo(function MobileHeroCarousel({
-    item,
-    index,
-}: MobileHeroCarouselProps) {
+const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: MobileHeroCarouselProps) {
     const media = item.movie || item.show;
     const type = item.movie ? "movie" : "show";
     if (!media) return null;
@@ -158,7 +143,7 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({
         ? `https://${media.images.poster[0]}`
         : `https://placehold.co/500x750/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
 
-    const linkHref = media.ids?.imdb ? `/${type}/${media.ids.imdb}` : "#";
+    const linkHref = media.ids?.slug ? `/${type}/${media.ids.slug}` : "#";
 
     return (
         <div className="md:hidden relative w-full aspect-[9/14] overflow-hidden">
@@ -182,56 +167,40 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({
                     {/* Bottom content */}
                     <div className="space-y-3 mt-auto">
                         <div className="flex items-center gap-2">
-                            <Badge
-                                variant="outline"
-                                className="border-white/30 text-white bg-black/40 text-xs">
+                            <Badge variant="outline" className="border-white/30 text-white bg-black/40 text-xs">
                                 {type === "movie" ? "Movie" : "Series"}
                             </Badge>
                             {media.rating && (
-                                <Badge
-                                    variant="outline"
-                                    className="border-white/30 text-white bg-black/40">
+                                <Badge variant="outline" className="border-white/30 text-white bg-black/40">
                                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
                                     {media.rating.toFixed(1)}
                                 </Badge>
                             )}
-                            <Badge className="bg-red-600 text-white text-xs font-bold">
-                                #{index + 1}
-                            </Badge>
+                            <Badge className="bg-red-600 text-white text-xs font-bold">#{index + 1}</Badge>
                         </div>
 
-                        <h2 className="text-white font-bold text-xl leading-tight line-clamp-2">
-                            {media.title}
-                        </h2>
+                        <h2 className="text-white font-bold text-xl leading-tight line-clamp-2">{media.title}</h2>
 
                         <div className="flex items-center gap-2 text-xs text-white/80">
                             {media.year && <span>{media.year}</span>}
                             {media.runtime && (
                                 <span>
-                                    • {Math.floor(media.runtime / 60)}h{" "}
-                                    {media.runtime % 60}m
+                                    • {Math.floor(media.runtime / 60)}h {media.runtime % 60}m
                                 </span>
                             )}
                         </div>
 
                         {media.overview && (
-                            <p className="text-white/80 text-sm line-clamp-3 leading-relaxed">
-                                {media.overview}
-                            </p>
+                            <p className="text-white/80 text-sm line-clamp-3 leading-relaxed">{media.overview}</p>
                         )}
 
                         {/* Mobile action buttons */}
                         <div className="flex items-center gap-2">
-                            <Button
-                                size="sm"
-                                className="bg-white text-black hover:bg-white/90 flex-1">
+                            <Button size="sm" className="bg-white text-black hover:bg-white/90 flex-1">
                                 <Play className="h-4 w-4 mr-1 fill-current" />
                                 Play
                             </Button>
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-white hover:bg-white/20 p-2">
+                            <Button size="sm" variant="ghost" className="text-white hover:bg-white/20 p-2">
                                 <Plus className="h-4 w-4" />
                             </Button>
                         </div>
@@ -302,15 +271,9 @@ export function HeroCarousel() {
                         return (
                             <CarouselItem key={`carousel-item-${index}`}>
                                 {isMobile ? (
-                                    <MobileHeroCarousel
-                                        item={item}
-                                        index={index}
-                                    />
+                                    <MobileHeroCarousel item={item} index={index} />
                                 ) : (
-                                    <DesktopHeroCarousel
-                                        item={item}
-                                        index={index}
-                                    />
+                                    <DesktopHeroCarousel item={item} index={index} />
                                 )}
                             </CarouselItem>
                         );
@@ -332,9 +295,7 @@ export function HeroCarousel() {
                         onClick={() => api?.scrollTo(index)}
                         className={cn(
                             "h-2 rounded-full transition-all duration-300 cursor-pointer",
-                            index === current - 1
-                                ? "w-8 bg-white"
-                                : "w-2 bg-white/40 hover:bg-white/60"
+                            index === current - 1 ? "w-8 bg-white" : "w-2 bg-white/40 hover:bg-white/60"
                         )}
                     />
                 ))}

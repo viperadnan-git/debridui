@@ -2,13 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "@bprogress/next/app";
-import {
-    CommandDialog,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/ui/command";
+import { CommandDialog, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { useTraktSearch } from "@/hooks/use-trakt";
 import { Search, Film, Tv, Star, Calendar } from "lucide-react";
@@ -24,18 +18,16 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     const [query, setQuery] = useState("");
     const router = useRouter();
 
-    const { data: searchResults, isLoading } = useTraktSearch(
-        query,
-        open && query.trim().length > 2
-    );
+    const { data: searchResults, isLoading } = useTraktSearch(query, open && query.trim().length > 2);
 
     const handleSelect = useCallback(
         (result: TraktSearchResult) => {
             const media = result.movie || result.show;
-            if (!media?.ids?.imdb) return;
+            const slug = media?.ids?.slug || media?.ids?.imdb;
+            if (!slug) return;
 
             const type = result.movie ? "movie" : "show";
-            router.push(`/${type}/${media.ids.imdb}`);
+            router.push(`/${type}/${slug}`);
             onOpenChange(false);
             setQuery("");
         },
@@ -69,11 +61,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     <div className="flex-shrink-0 w-16 h-20 bg-muted rounded overflow-hidden">
                         {posterImage ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                                src={posterImage}
-                                alt={media.title}
-                                className="w-full h-full object-cover"
-                            />
+                            <img src={posterImage} alt={media.title} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center">
                                 <Icon className="h-6 w-6 text-muted-foreground" />
@@ -83,9 +71,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium truncate text-sm">
-                                {media.title}
-                            </span>
+                            <span className="font-medium truncate text-sm">{media.title}</span>
                             <Badge
                                 variant="outline"
                                 className={cn(
@@ -145,36 +131,24 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     </div>
                 )}
 
-                {!isLoading &&
-                    query.trim().length > 2 &&
-                    (!searchResults || searchResults.length === 0) && (
-                        <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
-                            <Search className="h-8 w-8 mb-3 opacity-50" />
-                            <span className="font-medium">
-                                No results found
-                            </span>
-                            <span className="text-xs mt-1">
-                                Try searching with different keywords
-                            </span>
-                        </div>
-                    )}
+                {!isLoading && query.trim().length > 2 && (!searchResults || searchResults.length === 0) && (
+                    <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
+                        <Search className="h-8 w-8 mb-3 opacity-50" />
+                        <span className="font-medium">No results found</span>
+                        <span className="text-xs mt-1">Try searching with different keywords</span>
+                    </div>
+                )}
 
                 {query.trim().length <= 2 && (
                     <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
                         <Search className="h-8 w-8 mb-3 opacity-50" />
-                        <span className="font-medium">
-                            Start typing to search
-                        </span>
-                        <span className="text-xs mt-1">
-                            Type at least 3 characters
-                        </span>
+                        <span className="font-medium">Start typing to search</span>
+                        <span className="text-xs mt-1">Type at least 3 characters</span>
                     </div>
                 )}
 
                 {!isLoading && searchResults && searchResults.length > 0 && (
-                    <CommandGroup heading="Trakt Results">
-                        {searchResults.map(renderMediaItem)}
-                    </CommandGroup>
+                    <CommandGroup heading="Trakt Results">{searchResults.map(renderMediaItem)}</CommandGroup>
                 )}
             </CommandList>
         </CommandDialog>

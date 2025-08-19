@@ -7,19 +7,13 @@ import { memo } from "react";
 
 const ShowPage = memo(function ShowPage() {
     const params = useParams();
-    const imdbId = params.imdbId as string;
+    const slug = params.slug as string;
 
-    const { data, isLoading, error } = useTraktMedia(imdbId, "show");
+    const { data, isLoading, error } = useTraktMedia(slug, "show");
 
     return (
         <div className="w-full px-2 sm:px-4 lg:px-6 max-w-7xl mx-auto">
-            <MediaDetails
-                media={data}
-                mediaId={imdbId}
-                type="show"
-                isLoading={isLoading}
-                error={error}
-            />
+            <MediaDetails media={data} mediaId={slug} type="show" isLoading={isLoading} error={error} />
         </div>
     );
 });
