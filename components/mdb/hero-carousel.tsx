@@ -18,11 +18,7 @@ import { Play, Plus, Info, Star, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-interface HeroCarouselProps {
-    items?: TraktMediaItem[];
-    isLoading?: boolean;
-}
+import { useTraktTrendingMixed } from "@/hooks/use-trakt";
 
 interface DesktopHeroCarouselProps {
     item: TraktMediaItem;
@@ -246,11 +242,13 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({
     );
 });
 
-export function HeroCarousel({ items, isLoading }: HeroCarouselProps) {
+export function HeroCarousel() {
     const isMobile = useIsMobile();
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
     const [count, setCount] = useState(0);
+
+    const { data: items, isLoading } = useTraktTrendingMixed(10);
 
     useEffect(() => {
         if (!api) return;
@@ -278,7 +276,9 @@ export function HeroCarousel({ items, isLoading }: HeroCarouselProps) {
         );
     }
 
-    if (!items || items.length === 0) {
+    const mixed = items?.mixed;
+
+    if (!mixed || mixed.length === 0) {
         return null;
     }
 
@@ -294,12 +294,11 @@ export function HeroCarousel({ items, isLoading }: HeroCarouselProps) {
                 plugins={[
                     Autoplay({
                         delay: 5000,
-                        stopOnInteraction: false,
                         stopOnMouseEnter: true,
                     }),
                 ]}>
                 <CarouselContent>
-                    {items.map((item, index) => {
+                    {mixed.map((item, index) => {
                         return (
                             <CarouselItem key={`carousel-item-${index}`}>
                                 {isMobile ? (
@@ -332,10 +331,10 @@ export function HeroCarousel({ items, isLoading }: HeroCarouselProps) {
                         key={index}
                         onClick={() => api?.scrollTo(index)}
                         className={cn(
-                            "h-1 rounded-full transition-all duration-300 cursor-pointer",
+                            "h-2 rounded-full transition-all duration-300 cursor-pointer",
                             index === current - 1
                                 ? "w-8 bg-white"
-                                : "w-1 bg-white/40 hover:bg-white/60"
+                                : "w-2 bg-white/40 hover:bg-white/60"
                         )}
                     />
                 ))}

@@ -130,18 +130,21 @@ export function AccountSwitcher() {
                                         {user.id === currentUser.id && (
                                             <Check className="size-3" />
                                         )}
-                                        {users.length > 1 && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="size-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setDeleteUserId(user.id);
-                                                }}>
-                                                <Trash2 className="size-3" />
-                                            </Button>
-                                        )}
+                                        {users.length > 1 &&
+                                            user.id !== currentUser.id && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDeleteUserId(
+                                                            user.id
+                                                        );
+                                                    }}>
+                                                    <Trash2 className="size-3" />
+                                                </Button>
+                                            )}
                                     </div>
                                 </DropdownMenuItem>
                             ))}

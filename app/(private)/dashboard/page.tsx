@@ -5,7 +5,6 @@ import { MediaSection } from "@/components/mdb/media-section";
 import { SearchDialog } from "@/components/mdb/search-dialog";
 import { memo, useState } from "react";
 import {
-    useTraktTrendingMixed,
     useTraktTrendingMovies,
     useTraktTrendingShows,
     useTraktPopularMovies,
@@ -24,7 +23,6 @@ import { Button } from "@/components/ui/button";
 const DashboardPage = memo(function DashboardPage() {
     const [searchOpen, setSearchOpen] = useState(false);
 
-    const trendingMixed = useTraktTrendingMixed(10);
     const trendingMovies = useTraktTrendingMovies(20);
     const trendingShows = useTraktTrendingShows(20);
     const popularMovies = useTraktPopularMovies(20);
@@ -40,10 +38,7 @@ const DashboardPage = memo(function DashboardPage() {
     return (
         <div className="space-y-4 sm:space-y-6 lg:space-y-8 pb-4 sm:pb-8">
             {/* Full-width Hero Carousel */}
-            <HeroCarousel
-                items={trendingMixed.data.mixed}
-                isLoading={trendingMixed.isLoading}
-            />
+            <HeroCarousel />
 
             {/* Search Bar */}
             <div className="py-6 md:px-4 mb-4">
