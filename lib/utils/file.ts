@@ -1,9 +1,4 @@
-import {
-    DebridFileNode,
-    DebridLinkInfo,
-    DebridFile,
-    FileType,
-} from "@/lib/types";
+import { DebridFileNode, DebridLinkInfo, DebridFile, FileType } from "@/lib/types";
 import { getFileType } from ".";
 import { TRASH_SIZE_THRESHOLD } from "../constants";
 import { format } from "date-fns";
@@ -70,9 +65,7 @@ const PRESERVED_FILE_TYPES = new Set([
 /**
  * Sorts file nodes with folders first, videos second, then alphabetically
  */
-export const sortFileNodesByPriority = (
-    fileNodes: DebridFileNode[]
-): DebridFileNode[] => {
+export const sortFileNodesByPriority = (fileNodes: DebridFileNode[]): DebridFileNode[] => {
     return [...fileNodes].sort((nodeA, nodeB) => {
         // Folders have highest priority
         if (nodeA.type === "folder" && nodeB.type !== "folder") return -1;
@@ -80,19 +73,15 @@ export const sortFileNodesByPriority = (
 
         // If both are folders, sort alphabetically
         if (nodeA.type === "folder" && nodeB.type === "folder") {
-            return nodeA.name
-                .toLowerCase()
-                .localeCompare(nodeB.name.toLowerCase());
+            return nodeA.name.toLowerCase().localeCompare(nodeB.name.toLowerCase());
         }
 
         // For files, videos have priority over other file types
         const fileTypeA = getFileType(nodeA.name);
         const fileTypeB = getFileType(nodeB.name);
 
-        if (fileTypeA === FileType.VIDEO && fileTypeB !== FileType.VIDEO)
-            return -1;
-        if (fileTypeA !== FileType.VIDEO && fileTypeB === FileType.VIDEO)
-            return 1;
+        if (fileTypeA === FileType.VIDEO && fileTypeB !== FileType.VIDEO) return -1;
+        if (fileTypeA !== FileType.VIDEO && fileTypeB === FileType.VIDEO) return 1;
 
         // Same type or both non-videos - sort alphabetically
         return nodeA.name.toLowerCase().localeCompare(nodeB.name.toLowerCase());
@@ -102,16 +91,13 @@ export const sortFileNodesByPriority = (
 /**
  * Filters out small/trash files while preserving folders and media files
  */
-export const filterTrashFiles = (
-    fileNodes: DebridFileNode[]
-): DebridFileNode[] => {
+export const filterTrashFiles = (fileNodes: DebridFileNode[]): DebridFileNode[] => {
     return fileNodes.filter((fileNode) => {
         // Always preserve folders
         if (fileNode.type === "folder") return true;
 
         // Preserve files larger than threshold
-        if (!fileNode.size || fileNode.size >= TRASH_SIZE_THRESHOLD)
-            return true;
+        if (!fileNode.size || fileNode.size >= TRASH_SIZE_THRESHOLD) return true;
 
         // Preserve small media/document files
         const fileType = getFileType(fileNode.name);
@@ -122,9 +108,7 @@ export const filterTrashFiles = (
 /**
  * Processes file nodes with optional smart ordering and trash filtering
  */
-export const processFileNodes = (
-    fileNodes: DebridFileNode[]
-): DebridFileNode[] => {
+export const processFileNodes = (fileNodes: DebridFileNode[]): DebridFileNode[] => {
     let processedNodes = fileNodes;
     // Apply trash filtering if enabled
     if (useSettingsStore.getState().hideTrash) {
@@ -157,9 +141,7 @@ export const downloadM3UPlaylist = (linkNodes: DebridLinkInfo[]): void => {
     const playlistContent = [
         "#EXTM3U",
         "",
-        ...linkNodes.map(
-            (linkNode) => `#EXTINF:-1,${linkNode.name}\n${linkNode.link}`
-        ),
+        ...linkNodes.map((linkNode) => `#EXTINF:-1,${linkNode.name}\n${linkNode.link}`),
     ].join("\n");
 
     const playlistBlob = new Blob([playlistContent], {
@@ -184,9 +166,7 @@ export const sortTorrentFiles = (
     sortCriteria: string,
     sortDirection: "asc" | "desc"
 ): DebridFile[] => {
-    const sortOption = SORT_OPTIONS.find(
-        (option) => option.value === sortCriteria
-    );
+    const sortOption = SORT_OPTIONS.find((option) => option.value === sortCriteria);
     if (!sortOption) {
         console.warn(`Invalid sort criteria: ${sortCriteria}`);
         return torrentFiles;
@@ -202,9 +182,7 @@ export const sortTorrentFiles = (
         if (sortCriteria === "date") {
             const timestampA = new Date(valueA).getTime();
             const timestampB = new Date(valueB).getTime();
-            return sortDirection === "desc"
-                ? timestampB - timestampA
-                : timestampA - timestampB;
+            return sortDirection === "desc" ? timestampB - timestampA : timestampA - timestampB;
         }
 
         // Numeric comparison
@@ -218,23 +196,49 @@ export const sortTorrentFiles = (
     });
 };
 
-/**
- * Cache key generator for download links
- */
-const getDownloadLinkCacheKey = (userId: string, nodeId: string): string[] => [
-    userId,
-    "getDownloadLink",
-    nodeId,
-];
+const getDownloadLinkCacheKey = (userId: string, nodeId: string): string[] => [userId, "getDownloadLink", nodeId];
 
-/**
- * Cache key generator for torrent files
- */
-const getTorrentFilesCacheKey = (userId: string, fileId: string): string[] => [
-    userId,
-    "getTorrentFiles",
+const getTorrentFilesCacheKey = (userId: string, fileId: string): string[] => [userId, "getTorrentFiles", fileId];
+
+export const getTorrentFilesWithCache = async ({
     fileId,
-];
+    client,
+    userId,
+}: {
+    fileId: string;
+    client: DebridClient;
+    userId: string;
+}): Promise<DebridFileNode[]> => {
+    const cacheKey = getTorrentFilesCacheKey(userId, fileId);
+    let node = queryClient.getQueryData(cacheKey) as DebridFileNode[] | undefined;
+
+    if (!node) {
+        node = await client.getTorrentFiles(fileId);
+        queryClient.setQueryData(cacheKey, node);
+    }
+
+    return node;
+};
+
+export const getDownloadLinkWithCache = async ({
+    fileId,
+    client,
+    userId,
+}: {
+    fileId: string;
+    client: DebridClient;
+    userId: string;
+}): Promise<DebridLinkInfo> => {
+    const cacheKey = getDownloadLinkCacheKey(userId, fileId);
+    let linkInfo = queryClient.getQueryData(cacheKey) as DebridLinkInfo | undefined;
+
+    if (!linkInfo) {
+        linkInfo = await client.getDownloadLink(fileId);
+        queryClient.setQueryData(cacheKey, linkInfo);
+    }
+
+    return linkInfo;
+};
 
 /**
  * Recursively collects download links from file nodes with caching
@@ -248,21 +252,7 @@ export async function collectDownloadLinks(
 
     const processFileNode = async (fileNode: DebridFileNode): Promise<void> => {
         if (fileNode.type === "file" && fileNode.id) {
-            const cacheKey = getDownloadLinkCacheKey(userId, fileNode.id);
-
-            // Try to get from cache first
-            let linkInfo = queryClient.getQueryData(cacheKey) as
-                | DebridLinkInfo
-                | undefined;
-
-            if (!linkInfo) {
-                // Fetch from API if not cached
-                linkInfo = await debridClient.getDownloadLink(fileNode.id);
-                // Cache the result
-                queryClient.setQueryData(cacheKey, linkInfo);
-            }
-
-            collectedLinks.push(linkInfo);
+            collectedLinks.push(await getDownloadLinkWithCache({ fileId: fileNode.id, client: debridClient, userId }));
         }
 
         // Recursively process children
@@ -285,28 +275,13 @@ export async function fetchTorrentDownloadLinks(
     debridClient: DebridClient,
     userId: string
 ): Promise<DebridLinkInfo[]> {
-    const torrentCacheKey = getTorrentFilesCacheKey(userId, torrentFileId);
-
-    // Try to get torrent files from cache
-    let torrentFileNodes = queryClient.getQueryData(torrentCacheKey) as
-        | DebridFileNode[]
-        | undefined;
-
-    if (!torrentFileNodes) {
-        // Fetch from API if not cached
-        torrentFileNodes = await debridClient.getTorrentFiles(torrentFileId);
-        queryClient.setQueryData(torrentCacheKey, torrentFileNodes);
-    }
+    const torrentFileNodes = await getTorrentFilesWithCache({ fileId: torrentFileId, client: debridClient, userId });
 
     // Process nodes with specified options
     const processedFileNodes = processFileNodes(torrentFileNodes);
 
     // Collect all download links
-    const downloadLinks = await collectDownloadLinks(
-        processedFileNodes,
-        debridClient,
-        userId
-    );
+    const downloadLinks = await collectDownloadLinks(processedFileNodes, debridClient, userId);
 
     if (downloadLinks.length === 0) {
         throw new Error("No downloadable files found in torrent");
@@ -327,23 +302,9 @@ export async function fetchSelectedDownloadLinks(
         return [];
     }
 
-    const linkPromises = selectedFileIds.map(async (fileId) => {
-        const cacheKey = getDownloadLinkCacheKey(userId, fileId);
+    const downloadLinks = await Promise.all(
+        selectedFileIds.map((fileId) => getDownloadLinkWithCache({ fileId, client: debridClient, userId }))
+    );
 
-        // Check cache first
-        let linkInfo = queryClient.getQueryData(cacheKey) as
-            | DebridLinkInfo
-            | undefined;
-
-        if (!linkInfo) {
-            // Fetch from API if not cached
-            linkInfo = await debridClient.getDownloadLink(fileId);
-            queryClient.setQueryData(cacheKey, linkInfo);
-        }
-
-        return linkInfo;
-    });
-
-    const downloadLinks = await Promise.all(linkPromises);
     return downloadLinks.filter(Boolean); // Remove any null/undefined values
 }

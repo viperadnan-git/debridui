@@ -8,6 +8,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cache, Fragment, memo } from "react";
 
@@ -29,22 +30,21 @@ const formatLabel = cache((label: string) => {
 
 export const Breadcrumbs = memo(function Breadcrumbs() {
     const pathname = usePathname();
-    const segments = pathname.split("/").filter(Boolean);
+    const blacklist = ["", "movie", "show"];
+    const segments = pathname.split("/").filter((segment) => !blacklist.includes(segment));
 
     if (segments.length === 0) return null;
 
     return (
         <Breadcrumb>
             <BreadcrumbList>
-                <BreadcrumbItem>
-                    {pathname !== "/dashboard" && (
-                        <BreadcrumbLink
-                            href="/dashboard"
-                            className="text-foreground">
-                            Home
+                {pathname !== "/dashboard" && (
+                    <BreadcrumbItem>
+                        <BreadcrumbLink className="text-foreground" asChild>
+                            <Link href="/dashboard">Home</Link>
                         </BreadcrumbLink>
-                    )}
-                </BreadcrumbItem>
+                    </BreadcrumbItem>
+                )}
                 {segments.map((segment, index) => {
                     const isLast = index === segments.length - 1;
                     const href = "/" + segments.slice(0, index + 1).join("/");
@@ -61,10 +61,8 @@ export const Breadcrumbs = memo(function Breadcrumbs() {
                                 {isLast ? (
                                     <BreadcrumbPage>{label}</BreadcrumbPage>
                                 ) : (
-                                    <BreadcrumbLink
-                                        href={href}
-                                        className="text-foreground">
-                                        {label}
+                                    <BreadcrumbLink className="text-foreground" asChild>
+                                        <Link href={href}>{label}</Link>
                                     </BreadcrumbLink>
                                 )}
                             </BreadcrumbItem>

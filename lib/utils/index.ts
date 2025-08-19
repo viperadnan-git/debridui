@@ -4,6 +4,7 @@ import { AccountType } from "../schemas";
 import { formatDistanceToNow } from "date-fns";
 import { DebridLinkInfo, FileType, MediaPlayer } from "../types";
 import { ACCOUNT_TYPE_LABELS, EXTENSION_TO_FILE_TYPE } from "../constants";
+import { useSettingsStore } from "../stores/settings";
 
 export const cn = (...inputs: ClassValue[]) => {
     return twMerge(clsx(inputs));
@@ -29,8 +30,10 @@ export const formatRelativeTime = (date: Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true });
 };
 
-export const playUrl = (url: string, player: MediaPlayer) => {
-    switch (player) {
+export const playUrl = (url: string, player?: MediaPlayer) => {
+    const selectedPlayer = player || useSettingsStore.getState().mediaPlayer;
+
+    switch (selectedPlayer) {
         case MediaPlayer.IINA:
             return `iina://weblink?url=${encodeURIComponent(url)}`;
         case MediaPlayer.VLC:
@@ -46,9 +49,7 @@ export const playUrl = (url: string, player: MediaPlayer) => {
         case MediaPlayer.MX_PLAYER_PRO:
             return `intent:${url}#Intent;package=com.mxtech.videoplayer.pro;S.title=undefined;end`;
         default:
-            return `https://embed-player.com/video/?source=${encodeURIComponent(
-                url
-            )}&color=%23a1c2c3&preload=metadata`;
+            return `https://embed-player.com/video/?source=${encodeURIComponent(url)}&color=%23a1c2c3&preload=metadata`;
     }
 };
 

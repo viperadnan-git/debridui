@@ -5,10 +5,7 @@ import { Toaster } from "sonner";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { useState, useEffect } from "react";
-import {
-    queryClient,
-    initializeQueryClientPersistence,
-} from "@/lib/query-client";
+import { queryClient, initializeQueryClientPersistence } from "@/lib/query-client";
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
     const [isClient, setIsClient] = useState(false);
@@ -23,19 +20,9 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
     }
 
     return (
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange>
-            <ProgressProvider
-                height="4px"
-                color="var(--foreground)"
-                options={{ showSpinner: false }}
-                shallowRouting>
-                <QueryClientProvider client={queryClient}>
-                    {children}
-                </QueryClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+            <ProgressProvider height="4px" color="var(--primary)" options={{ showSpinner: false }} shallowRouting>
+                <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
                 <Toaster position="top-right" closeButton />
             </ProgressProvider>
         </ThemeProvider>

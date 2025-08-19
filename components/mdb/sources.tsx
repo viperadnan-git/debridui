@@ -21,14 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { toast } from "sonner";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
-    DialogTrigger,
-} from "../ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 
 interface SourcesProps {
     imdbId?: string;
@@ -42,11 +35,14 @@ interface SourcesDialogProps extends SourcesProps {
     children: React.ReactNode;
 }
 
+interface SourcesSkeletonProps {
+    count?: number;
+    className?: string;
+}
+
 function AddHashButton({ magnet }: { magnet: string }) {
     const { client } = useAuthContext();
-    const [status, setStatus] = useState<
-        "added" | "cached" | "failed" | "loading" | null
-    >(null);
+    const [status, setStatus] = useState<"added" | "cached" | "failed" | "loading" | null>(null);
     const [torrentId, setTorrentId] = useState<number | null>(null);
 
     const handleAdd = async () => {
@@ -60,9 +56,7 @@ function AddHashButton({ magnet }: { magnet: string }) {
             setStatus(magnetStatus.is_cached ? "cached" : "added");
             setTorrentId(magnetStatus.id as number);
         } catch (error) {
-            toast.error(
-                `Failed to add magnet: ${error instanceof Error ? error.message : "Unknown error"}`
-            );
+            toast.error(`Failed to add magnet: ${error instanceof Error ? error.message : "Unknown error"}`);
             setStatus("failed");
         }
     };
@@ -108,10 +102,7 @@ function AddHashButton({ magnet }: { magnet: string }) {
             size="icon"
             onClick={() => handleAdd()}
             disabled={status === "loading"}
-            className={cn(
-                "text-xs gap-0.5",
-                status === "failed" && "bg-yellow-400 hover:bg-yellow-500"
-            )}>
+            className={cn("text-xs gap-0.5", status === "failed" && "bg-yellow-400 hover:bg-yellow-500")}>
             {status === "failed" ? (
                 <RotateCcwIcon className="size-4" />
             ) : status === "loading" ? (
@@ -129,9 +120,7 @@ export function SourceCard({ source }: { source: TorrentioSource }) {
             <CardContent className="h-full">
                 <div className="flex items-start justify-between gap-2 h-full w-full">
                     <div className="min-w-0 flex flex-col gap-1 h-full w-full">
-                        <p className="text-xs sm:text-sm font-medium leading-tight break-words">
-                            {source.title}
-                        </p>
+                        <p className="text-xs sm:text-sm font-medium leading-tight break-words">{source.title}</p>
 
                         {source.folder && (
                             <div className="flex items-center gap-1">
@@ -144,17 +133,13 @@ export function SourceCard({ source }: { source: TorrentioSource }) {
                         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mt-auto w-full">
                             <div className="flex items-center gap-0.5">
                                 <HardDrive className="size-3 md:size-4 text-muted-foreground flex-shrink-0" />
-                                <span className="text-xs sm:text-sm text-muted-foreground">
-                                    {source.size}
-                                </span>
+                                <span className="text-xs sm:text-sm text-muted-foreground">{source.size}</span>
                             </div>
 
                             {source.peers && (
                                 <div className="flex items-center gap-0.5">
                                     <Users className="size-3 md:size-4 text-muted-foreground flex-shrink-0" />
-                                    <span className="text-xs sm:text-sm text-muted-foreground">
-                                        {source.peers}
-                                    </span>
+                                    <span className="text-xs sm:text-sm text-muted-foreground">{source.peers}</span>
                                 </div>
                             )}
 
@@ -169,18 +154,8 @@ export function SourceCard({ source }: { source: TorrentioSource }) {
     );
 }
 
-export function Sources({
-    imdbId,
-    mediaType = "movie",
-    tvParams,
-    className,
-    singleColumn = false,
-}: SourcesProps) {
-    const {
-        data: sources,
-        isLoading,
-        error,
-    } = useTorrentioSources(imdbId, mediaType, tvParams);
+export function Sources({ imdbId, mediaType = "movie", tvParams, className, singleColumn = false }: SourcesProps) {
+    const { data: sources, isLoading, error } = useTorrentioSources(imdbId, mediaType, tvParams);
 
     if (error) {
         return (
@@ -188,9 +163,7 @@ export function Sources({
                 <CardContent className="pt-6">
                     <div className="flex items-center gap-2 text-destructive">
                         <AlertCircle className="h-4 w-4" />
-                        <p className="text-sm">
-                            Failed to load sources: {error.message}
-                        </p>
+                        <p className="text-sm">Failed to load sources: {error.message}</p>
                     </div>
                 </CardContent>
             </Card>
@@ -211,9 +184,7 @@ export function Sources({
         return (
             <Card className={className}>
                 <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground text-center">
-                        No sources available
-                    </p>
+                    <p className="text-sm text-muted-foreground text-center">No sources available</p>
                 </CardContent>
             </Card>
         );
@@ -234,15 +205,7 @@ export function Sources({
     );
 }
 
-interface SourcesSkeletonProps {
-    count?: number;
-    className?: string;
-}
-
-export function SourcesSkeleton({
-    count = 3,
-    className,
-}: SourcesSkeletonProps) {
+export function SourcesSkeleton({ count = 3, className }: SourcesSkeletonProps) {
     return (
         <div className={cn("space-y-1", className)}>
             {Array.from({ length: count }).map((_, i) => (
@@ -252,12 +215,7 @@ export function SourcesSkeleton({
     );
 }
 
-export function SourcesDialog({
-    imdbId,
-    mediaType = "movie",
-    tvParams,
-    children,
-}: SourcesDialogProps) {
+export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, children }: SourcesDialogProps) {
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>
@@ -265,13 +223,11 @@ export function SourcesDialog({
                 <div className="flex-none">
                     <DialogTitle>
                         Available Sources
-                        {tvParams &&
-                            ` - Season ${tvParams.season} Episode ${tvParams.episode}`}
+                        {tvParams && ` - Season ${tvParams.season} Episode ${tvParams.episode}`}
                     </DialogTitle>
                     <DialogDescription>
-                        Sources are the locations where the media can be
-                        downloaded from. You can add them to your queue by
-                        clicking the + button.
+                        Sources are the locations where the media can be downloaded from. You can add them to your queue
+                        by clicking the + button.
                     </DialogDescription>
                 </div>
                 <div className="flex-1 overflow-y-auto min-h-0 mt-4">
