@@ -73,7 +73,7 @@ function AddHashButton({ magnet }: { magnet: string }) {
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="size-8 hover:text-destructive"
+                    className="size-8 text-destructive/80 hover:text-destructive"
                     onClick={() => handleRemove()}>
                     <Trash2Icon className="size-4" />
                 </Button>
@@ -86,7 +86,7 @@ function AddHashButton({ magnet }: { magnet: string }) {
         return (
             <div className="flex items-center gap-1">
                 <Button
-                    variant="ghost"
+                    // variant="ghost"
                     size="icon"
                     className="size-8 hover:text-destructive"
                     onClick={() => handleRemove()}>
@@ -124,7 +124,7 @@ export function SourceCard({ source }: { source: TorrentioSource }) {
 
                         {source.folder && (
                             <div className="flex items-center gap-1">
-                                <span className="text-xs sm:text-sm text-muted-foreground font-mono leading-tight break-words">
+                                <span className="text-xs sm:text-sm text-muted-foreground font-mono leading-tight break-words line-clamp-3">
                                     {source.folder}
                                 </span>
                             </div>
