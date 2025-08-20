@@ -2,6 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 interface FileListProps {
     children: React.ReactNode;
@@ -38,6 +39,14 @@ export function FileListEmpty({ message = "No results.", className }: FileListEm
                 className
             )}>
             {message}
+        </div>
+    );
+}
+
+export function FileListLoading() {
+    return (
+        <div className="flex items-center justify-center py-8 sm:py-12 md:py-16 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
         </div>
     );
 }
