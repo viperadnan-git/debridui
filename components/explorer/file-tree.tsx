@@ -1,34 +1,13 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, CSSProperties } from "react";
 import { DebridFileNode, DebridLinkInfo } from "@/lib/types";
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import {
-    ChevronRight,
-    Copy,
-    Download,
-    CirclePlay,
-    Loader2,
-} from "lucide-react";
+import { ChevronRight, Copy, Download, CirclePlay, Loader2 } from "lucide-react";
 import { cn, getFileType } from "@/lib/utils";
-import {
-    formatSize,
-    playUrl,
-    downloadLinks,
-    copyLinksToClipboard,
-} from "@/lib/utils";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-    TooltipProvider,
-} from "@/components/ui/tooltip";
+import { formatSize, playUrl, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { toast } from "sonner";
@@ -36,43 +15,81 @@ import { FileType } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { QUERY_CACHE_MAX_AGE } from "@/lib/constants";
+import { useSelectionStore } from "@/lib/stores/selection";
+import { FixedSizeList as List } from "react-window";
 
 interface FileTreeProps {
     nodes: DebridFileNode[];
-    selectedFiles: Set<string>; // Set of file IDs
-    onSelectionChange: (files: Set<string>) => void;
     fileId: string;
 }
 
-interface FileNodeProps {
+interface FlatNode {
     node: DebridFileNode;
-    selectedFiles: Set<string>; // Set of file IDs
-    onSelectionChange: (files: Set<string>) => void;
-    fileId: string;
     depth: number;
+    hasChildren: boolean;
+    path: string;
 }
 
-function getAllFileIds(node: DebridFileNode): string[] {
-    // If it's a file and has an ID, return it
+// Helper to flatten tree for virtualization
+function flattenNodes(nodes: DebridFileNode[], expandedPaths: Set<string>, depth = 0): FlatNode[] {
+    const flat: FlatNode[] = [];
+
+    for (const node of nodes) {
+        const path = `${depth}-${node.id || node.name}`;
+        flat.push({
+            node,
+            depth,
+            hasChildren: node.type === "folder" && node.children.length > 0,
+            path,
+        });
+
+        // Add children if expanded
+        if (node.type === "folder" && node.children.length > 0 && expandedPaths.has(path)) {
+            flat.push(...flattenNodes(node.children, expandedPaths, depth + 1));
+        }
+    }
+
+    return flat;
+}
+
+// Helper to collect all node IDs
+function collectNodeIds(node: DebridFileNode): string[] {
     if (node.type === "file") {
         return node.id ? [node.id] : [];
     }
 
-    // If it's a folder, recursively collect all file IDs from children
-    const fileIds: string[] = [];
-    for (const child of node.children) {
-        fileIds.push(...getAllFileIds(child));
+    const ids: string[] = [];
+    const stack = [node];
+
+    while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (current.type === "file" && current.id) {
+            ids.push(current.id);
+        } else if (current.children) {
+            stack.push(...current.children);
+        }
     }
-    return fileIds;
+
+    return ids;
 }
 
-function FileActionButton({
-    node,
-    action,
-}: {
-    node: DebridFileNode;
-    action: "copy" | "download" | "play";
-}) {
+// Count total nodes recursively
+function countTotalNodes(nodes: DebridFileNode[]): number {
+    let count = 0;
+    const stack = [...nodes];
+
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        count++;
+        if (node.children) {
+            stack.push(...node.children);
+        }
+    }
+
+    return count;
+}
+
+function FileActionButton({ node, action }: { node: DebridFileNode; action: "copy" | "download" | "play" }) {
     const { client, currentUser } = useAuthContext();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const mediaPlayer = useSettingsStore((state) => state.mediaPlayer);
@@ -80,7 +97,7 @@ function FileActionButton({
     const { data: linkInfo, refetch } = useQuery({
         queryKey: [currentUser.id, "getDownloadLink", node.id],
         queryFn: () => client.getDownloadLink(node.id!),
-        enabled: false, // Don't auto-fetch
+        enabled: false,
         staleTime: QUERY_CACHE_MAX_AGE,
     });
 
@@ -104,7 +121,6 @@ function FileActionButton({
     const handleClick = async (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        // If we don't have linkInfo yet, fetch it
         if (!linkInfo) {
             setIsButtonLoading(true);
             try {
@@ -122,9 +138,7 @@ function FileActionButton({
 
     const icon = useMemo(() => {
         if (isButtonLoading) {
-            return (
-                <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
-            );
+            return <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />;
         }
 
         return {
@@ -146,178 +160,189 @@ function FileActionButton({
     );
 }
 
-function FileNode({
-    node,
-    selectedFiles,
-    onSelectionChange,
-    fileId,
-    depth,
-    isFirst = false,
-}: FileNodeProps & { isFirst?: boolean }) {
+interface VirtualizedNodeProps {
+    flatNode: FlatNode;
+    fileId: string;
+    expandedPaths: Set<string>;
+    onToggleExpand: (path: string) => void;
+}
+
+function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand }: VirtualizedNodeProps) {
+    const { node, depth, hasChildren, path } = flatNode;
+    const isExpanded = expandedPaths.has(path);
     const isMobile = useIsMobile();
     const [showActions, setShowActions] = useState(false);
 
-    const [isOpen, setIsOpen] = useState(
-        depth === 0 && isFirst && node.type === "folder"
-    );
+    const selectedNodes = useSelectionStore((state) => state.selectedNodesByFile.get(fileId));
+    const updateNodeSelection = useSelectionStore((state) => state.updateNodeSelection);
+    const selectedFiles = useMemo(() => selectedNodes || new Set<string>(), [selectedNodes]);
 
-    const allFileIds = useMemo(() => {
-        return getAllFileIds(node);
-    }, [node]);
-
-    const isSelected =
-        allFileIds.length > 0 &&
-        allFileIds.every((id) => selectedFiles.has(id));
-    const isIndeterminate =
-        !isSelected && allFileIds.some((id) => selectedFiles.has(id));
+    const allFileIds = useMemo(() => collectNodeIds(node), [node]);
+    const isSelected = allFileIds.length > 0 && allFileIds.every((id) => selectedFiles.has(id));
+    const isIndeterminate = !isSelected && allFileIds.some((id) => selectedFiles.has(id));
 
     const handleCheckboxChange = useCallback(
         (checked: boolean) => {
-            const newSelection = new Set(selectedFiles);
-
+            const newSelection = new Set<string>(selectedFiles);
             if (checked) {
                 allFileIds.forEach((id) => newSelection.add(id));
             } else {
                 allFileIds.forEach((id) => newSelection.delete(id));
             }
-
-            onSelectionChange(newSelection);
+            updateNodeSelection(fileId, newSelection);
         },
-        [allFileIds, selectedFiles, onSelectionChange]
+        [allFileIds, selectedFiles, updateNodeSelection, fileId]
     );
 
-    if (node.type === "file") {
-        return (
-            <div
-                className={cn(
-                    "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 hover:bg-muted",
-                    "text-xs sm:text-sm"
-                )}
-                style={{ paddingLeft: `${depth * 12}px` }}>
-                <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={handleCheckboxChange}
-                    className="size-3 sm:size-4"
-                />
+    const isFile = node.type === "file";
 
-                <TooltipProvider>
-                    <Tooltip delayDuration={2000}>
-                        <TooltipTrigger asChild>
-                            <span
-                                className="flex-1 cursor-pointer truncate"
-                                onClick={() => {
+    return (
+        <div
+            className={cn(
+                "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 hover:bg-muted",
+                "text-xs sm:text-sm",
+                hasChildren && "cursor-pointer"
+            )}
+            style={{ paddingLeft: `${depth * 12 + 8}px` }}
+            onClick={() => hasChildren && onToggleExpand(path)}>
+            {hasChildren && (
+                <ChevronRight
+                    className={cn(
+                        "h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground transition-transform flex-shrink-0",
+                        isExpanded && "rotate-90"
+                    )}
+                />
+            )}
+
+            <Checkbox
+                checked={isIndeterminate ? "indeterminate" : isSelected}
+                onCheckedChange={(checked) => handleCheckboxChange(checked === true)}
+                onClick={(e) => e.stopPropagation()}
+                className="size-3 sm:size-4"
+            />
+
+            <TooltipProvider>
+                <Tooltip delayDuration={2000}>
+                    <TooltipTrigger asChild>
+                        <span
+                            className="flex-1 cursor-pointer truncate"
+                            onClick={(e) => {
+                                if (isFile) {
+                                    e.stopPropagation();
                                     if (isMobile) {
                                         setShowActions(!showActions);
                                     } else {
                                         handleCheckboxChange(!isSelected);
                                     }
-                                }}>
-                                {node.name}
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{node.name}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <span className="text-[10px] sm:text-xs text-muted-foreground">
-                    {formatSize(node.size)}
-                </span>
-                {(!isMobile || showActions) && (
-                    <div className="flex gap-1 md:gap-0.5">
-                        {getFileType(node.name) === FileType.VIDEO && (
-                            <FileActionButton node={node} action="play" />
-                        )}
-                        <FileActionButton node={node} action="copy" />
-                        <FileActionButton node={node} action="download" />
-                    </div>
-                )}
+                                }
+                            }}>
+                            {node.name}
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{node.name}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+
+            {isFile ? (
+                <>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground">{formatSize(node.size)}</span>
+                    {(!isMobile || showActions) && (
+                        <div className="flex gap-1 md:gap-0.5">
+                            {getFileType(node.name) === FileType.VIDEO && (
+                                <FileActionButton node={node} action="play" />
+                            )}
+                            <FileActionButton node={node} action="copy" />
+                            <FileActionButton node={node} action="download" />
+                        </div>
+                    )}
+                </>
+            ) : (
+                <span className="text-[10px] sm:text-xs text-muted-foreground">{node.children.length} items</span>
+            )}
+        </div>
+    );
+}
+
+const ITEM_HEIGHT = 32; // Height of each item in pixels
+const VIRTUALIZATION_THRESHOLD = 100; // Use virtualization above this many nodes
+
+export function FileTree({ nodes, fileId }: FileTreeProps) {
+    const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => {
+        // Auto-expand first folder if it's the only top-level item
+        if (nodes.length === 1 && nodes[0].type === "folder") {
+            return new Set([`0-${nodes[0].id || nodes[0].name}`]);
+        }
+        return new Set();
+    });
+
+    const listRef = useRef<List>(null);
+
+    // Count total nodes to decide if virtualization is needed
+    const totalNodeCount = useMemo(() => countTotalNodes(nodes), [nodes]);
+    const useVirtualization = totalNodeCount > VIRTUALIZATION_THRESHOLD;
+
+    // Flatten nodes for virtualization
+    const flatNodes = useMemo(() => {
+        return flattenNodes(nodes, expandedPaths);
+    }, [nodes, expandedPaths]);
+
+    const toggleExpanded = useCallback((path: string) => {
+        setExpandedPaths((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(path)) {
+                newSet.delete(path);
+            } else {
+                newSet.add(path);
+            }
+            return newSet;
+        });
+    }, []);
+
+    // Row renderer for react-window
+    const rowRenderer = useCallback(
+        ({ index, style }: { index: number; style: CSSProperties }) => {
+            const flatNode = flatNodes[index];
+            if (!flatNode) return null;
+
+            return (
+                <div style={style}>
+                    <VirtualizedNode
+                        flatNode={flatNode}
+                        fileId={fileId}
+                        expandedPaths={expandedPaths}
+                        onToggleExpand={toggleExpanded}
+                    />
+                </div>
+            );
+        },
+        [flatNodes, fileId, expandedPaths, toggleExpanded]
+    );
+
+    // Regular rendering for small trees
+    if (!useVirtualization) {
+        return (
+            <div className="flex flex-col px-0.5 md:px-4 p-2 sm:p-3 md:mt-0">
+                {flatNodes.map((flatNode, index) => (
+                    <VirtualizedNode
+                        key={flatNode.node.id || `${flatNode.path}-${index}`}
+                        flatNode={flatNode}
+                        fileId={fileId}
+                        expandedPaths={expandedPaths}
+                        onToggleExpand={toggleExpanded}
+                    />
+                ))}
             </div>
         );
     }
 
+    // Virtualized rendering with react-window for large trees
     return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <div className="flex flex-col">
-                <CollapsibleTrigger asChild>
-                    <div
-                        className={cn(
-                            "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 cursor-pointer hover:bg-muted",
-                            "text-xs sm:text-sm"
-                        )}
-                        style={{ paddingLeft: `${depth * 12}px` }}>
-                        <ChevronRight
-                            className={cn(
-                                "h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground transition-transform flex-shrink-0",
-                                isOpen && "rotate-90"
-                            )}
-                        />
-                        <Checkbox
-                            checked={
-                                isIndeterminate ? "indeterminate" : isSelected
-                            }
-                            onCheckedChange={handleCheckboxChange}
-                            onClick={(e) => e.stopPropagation()}
-                            className="h-3 w-3 sm:h-4 sm:w-4"
-                        />
-                        <TooltipProvider>
-                            <Tooltip delayDuration={2000}>
-                                <TooltipTrigger asChild>
-                                    <span className="flex-1 cursor-pointer truncate">
-                                        {node.name}
-                                    </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{node.name}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground">
-                            {node.children.length} items
-                        </span>
-                    </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                    <div className="flex flex-col">
-                        {node.children.map((child, index) => (
-                            <FileNode
-                                key={
-                                    child.id ||
-                                    `${node.name}/${child.name}-${index}`
-                                }
-                                node={child}
-                                selectedFiles={selectedFiles}
-                                onSelectionChange={onSelectionChange}
-                                fileId={fileId}
-                                depth={depth + 1}
-                            />
-                        ))}
-                    </div>
-                </CollapsibleContent>
-            </div>
-        </Collapsible>
-    );
-}
-
-export function FileTree({
-    nodes,
-    selectedFiles,
-    onSelectionChange,
-    fileId,
-}: FileTreeProps) {
-    return (
-        <div className="flex flex-col">
-            {nodes.map((node, index) => (
-                <FileNode
-                    key={node.id || `${node.name}-${index}`}
-                    node={node}
-                    selectedFiles={selectedFiles}
-                    onSelectionChange={onSelectionChange}
-                    fileId={fileId}
-                    depth={0}
-                    isFirst={index === 0}
-                />
-            ))}
+        <div className="px-0.5 md:px-4 p-2 sm:p-3 md:mt-0">
+            <List ref={listRef} height={600} itemCount={flatNodes.length} itemSize={ITEM_HEIGHT} width="100%">
+                {rowRenderer}
+            </List>
         </div>
     );
 }

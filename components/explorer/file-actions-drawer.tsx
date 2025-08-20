@@ -11,20 +11,34 @@ import { cn } from "@/lib/utils";
 import { useFileStore } from "@/lib/stores/files";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { useShallow } from "zustand/react/shallow";
+import { useSelectionStore } from "@/lib/stores/selection";
 
 interface FileActionsDrawerProps {
-    selectedFileIds: Set<string>;
-    selectedNodeIds: Set<string>;
-    fullySelectedFileIds: string[];
     files: DebridFile[];
 }
 
-export function FileActionsDrawer({
-    selectedFileIds,
-    selectedNodeIds,
-    fullySelectedFileIds,
-    files,
-}: FileActionsDrawerProps) {
+export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
+    const selectedFileIds = useSelectionStore((state) => state.selectedFileIds);
+    const selectedNodesByFile = useSelectionStore((state) => state.selectedNodesByFile);
+    const totalNodesByFile = useSelectionStore((state) => state.totalNodesByFile);
+
+    const selectedNodeIds = useMemo(() => {
+        const allNodes = new Set<string>();
+        for (const nodeSet of selectedNodesByFile.values()) {
+            for (const id of nodeSet) {
+                allNodes.add(id);
+            }
+        }
+        return allNodes;
+    }, [selectedNodesByFile]);
+
+    const fullySelectedFileIds = useMemo(() => {
+        return Array.from(selectedFileIds).filter((fileId) => {
+            const selectedNodes = selectedNodesByFile.get(fileId);
+            const totalNodes = totalNodesByFile.get(fileId) || 0;
+            return totalNodes === 0 || (selectedNodes && selectedNodes.size === totalNodes);
+        });
+    }, [selectedFileIds, selectedNodesByFile, totalNodesByFile]);
     const { client } = useAuthContext();
     const { removeTorrent, retryFiles } = useFileStore(
         useShallow((state) => ({
@@ -33,20 +47,15 @@ export function FileActionsDrawer({
         }))
     );
 
-    // Check if drawer should be shown
-    const hasAnySelection =
-        selectedFileIds.size > 0 || selectedNodeIds.size > 0;
+    const hasAnySelection = selectedFileIds.size > 0 || selectedNodeIds.size > 0;
 
     // Get fully selected files for file actions
     const { fullySelectedFiles, canRetry } = useMemo(() => {
-        const fullySelectedFiles = files.filter((file) =>
-            fullySelectedFileIds.includes(file.id)
-        );
+        const fullySelectedFiles = files.filter((file) => fullySelectedFileIds.includes(file.id));
 
         // Can retry only when ALL selected files have failed status
         const allSelectedAreFailed =
-            fullySelectedFiles.length > 0 &&
-            fullySelectedFiles.every((file) => file.status === "failed");
+            fullySelectedFiles.length > 0 && fullySelectedFiles.every((file) => file.status === "failed");
 
         return {
             fullySelectedFiles,
@@ -106,12 +115,7 @@ export function FileActionsDrawer({
     return (
         <>
             {/* Spacer to prevent content from being hidden behind the drawer */}
-            <div
-                className={cn(
-                    "transition-all duration-300 ease-in-out",
-                    isAnimating ? "h-20" : "h-0"
-                )}
-            />
+            <div className={cn("transition-all duration-300 ease-in-out", isAnimating ? "h-20" : "h-0")} />
 
             {/* Custom Bottom Drawer */}
             <div
@@ -123,40 +127,29 @@ export function FileActionsDrawer({
                     <div className="flex flex-col items-center gap-3 p-4">
                         <div className="flex gap-2 flex-wrap justify-center">
                             {/* Node Actions: Copy, Download, Play - Show when any nodes selected */}
-                            {selectedNodeIds.size > 0 && (
-                                <FileActions selectedFiles={selectedNodeIds} />
-                            )}
+                            {selectedNodeIds.size > 0 && <FileActions selectedFiles={selectedNodeIds} />}
 
                             {/* File Actions: Delete, Retry - Show only when files are fully selected */}
-                            {fullySelectedFiles.length > 0 && (
-                                <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() =>
-                                        deleteMutation.mutate(
-                                            fullySelectedFiles.map((f) => f.id)
-                                        )
-                                    }
-                                    disabled={deleteMutation.isPending}
-                                    className="text-xs sm:text-sm h-7 sm:h-8">
-                                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                                    Delete ({fullySelectedFiles.length})
-                                </Button>
-                            )}
-
                             {canRetry.length > 0 && (
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() =>
-                                        retryMutation.mutate(
-                                            canRetry.map((f) => f.id)
-                                        )
-                                    }
+                                    onClick={() => retryMutation.mutate(canRetry.map((f) => f.id))}
                                     disabled={retryMutation.isPending}
                                     className="text-xs sm:text-sm h-7 sm:h-8">
                                     <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                     Retry ({canRetry.length})
+                                </Button>
+                            )}
+                            {fullySelectedFiles.length > 0 && (
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => deleteMutation.mutate(fullySelectedFiles.map((f) => f.id))}
+                                    disabled={deleteMutation.isPending}
+                                    className="text-xs sm:text-sm h-7 sm:h-8">
+                                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                    Delete ({fullySelectedFiles.length})
                                 </Button>
                             )}
                         </div>

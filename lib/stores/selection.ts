@@ -1,212 +1,151 @@
 import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
 
-interface SelectionState {
-    // Track file selections
+export interface SelectionState {
     selectedFileIds: Set<string>;
-    // Track node selections per file: Map<fileId, Set<nodeId>>
     selectedNodesByFile: Map<string, Set<string>>;
-    // Track total nodes per file for calculating selection state
     totalNodesByFile: Map<string, number>;
+    registeredNodesByFile: Map<string, string[]>; // Store all node IDs when registered
 
     // Actions
     registerFileNodes: (fileId: string, nodeIds: string[]) => void;
     toggleFileSelection: (fileId: string, allNodeIds?: string[]) => void;
     updateNodeSelection: (fileId: string, selectedNodeIds: Set<string>) => void;
-    getFileSelectionState: (fileId: string) => boolean | "indeterminate";
-    isFileFullySelected: (fileId: string) => boolean;
-    getAllSelectedNodeIds: () => Set<string>;
-    getFullySelectedFileIds: () => string[];
     selectAll: (fileIds: string[]) => void;
     clearAll: () => void;
     removeFileSelection: (fileId: string) => void;
 }
 
-export const useSelectionStore = create<SelectionState>((set, get) => ({
-    selectedFileIds: new Set(),
-    selectedNodesByFile: new Map(),
-    totalNodesByFile: new Map(),
+export const useSelectionStore = create<SelectionState>()(
+    subscribeWithSelector((set) => ({
+        selectedFileIds: new Set(),
+        selectedNodesByFile: new Map(),
+        totalNodesByFile: new Map(),
+        registeredNodesByFile: new Map(),
 
-    registerFileNodes: (fileId: string, nodeIds: string[]) => {
-        set((state) => {
-            const newTotalNodesByFile = new Map(state.totalNodesByFile);
-            newTotalNodesByFile.set(fileId, nodeIds.length);
-
-            // If file was already selected but had no nodes, select all nodes now
-            if (state.selectedFileIds.has(fileId) && nodeIds.length > 0) {
-                const currentNodes =
-                    state.selectedNodesByFile.get(fileId) || new Set();
-                if (currentNodes.size === 0) {
-                    const newSelectedNodesByFile = new Map(
-                        state.selectedNodesByFile
-                    );
-                    newSelectedNodesByFile.set(fileId, new Set(nodeIds));
-                    return {
-                        totalNodesByFile: newTotalNodesByFile,
-                        selectedNodesByFile: newSelectedNodesByFile,
-                    };
-                }
-            }
-
-            return { totalNodesByFile: newTotalNodesByFile };
-        });
-    },
-
-    toggleFileSelection: (fileId: string, allNodeIds?: string[]) => {
-        const state = get();
-        const currentNodes = state.selectedNodesByFile.get(fileId) || new Set();
-        const totalNodes = state.totalNodesByFile.get(fileId) || 0;
-        const isIndeterminate =
-            totalNodes > 0 &&
-            currentNodes.size > 0 &&
-            currentNodes.size < totalNodes;
-        const isFullySelected =
-            (totalNodes === 0 && state.selectedFileIds.has(fileId)) ||
-            (totalNodes > 0 && currentNodes.size === totalNodes);
-
-        if (isIndeterminate || !state.selectedFileIds.has(fileId)) {
-            // If indeterminate or not selected, select all nodes (or just the file if no nodes)
+        registerFileNodes: (fileId, nodeIds) =>
             set((state) => {
-                const newSelectedFileIds = new Set(state.selectedFileIds);
-                newSelectedFileIds.add(fileId);
+                const prevTotal = state.totalNodesByFile.get(fileId) || 0;
 
-                if (allNodeIds && allNodeIds.length > 0) {
-                    const newSelectedNodesByFile = new Map(
-                        state.selectedNodesByFile
-                    );
-                    newSelectedNodesByFile.set(fileId, new Set(allNodeIds));
-                    const newTotalNodesByFile = new Map(state.totalNodesByFile);
-                    newTotalNodesByFile.set(fileId, allNodeIds.length);
-                    return {
-                        selectedFileIds: newSelectedFileIds,
-                        selectedNodesByFile: newSelectedNodesByFile,
-                        totalNodesByFile: newTotalNodesByFile,
-                    };
+                // Quick check for unchanged data
+                const needsSelectionUpdate =
+                    state.selectedFileIds.has(fileId) && !state.selectedNodesByFile.has(fileId) && nodeIds.length > 0;
+
+                if (prevTotal === nodeIds.length && !needsSelectionUpdate) {
+                    return state;
                 }
 
-                return { selectedFileIds: newSelectedFileIds };
-            });
-        } else if (isFullySelected) {
-            // If fully selected, deselect everything
+                const totalNodesByFile = new Map(state.totalNodesByFile);
+                const registeredNodesByFile = new Map(state.registeredNodesByFile);
+
+                totalNodesByFile.set(fileId, nodeIds.length);
+                registeredNodesByFile.set(fileId, nodeIds);
+
+                // If file is selected, ensure its nodes are selected
+                if (state.selectedFileIds.has(fileId) && nodeIds.length > 0) {
+                    const selectedNodesByFile = new Map(state.selectedNodesByFile);
+
+                    // For very large files, we could defer but it's better to just optimize the tree rendering
+                    selectedNodesByFile.set(fileId, new Set(nodeIds));
+
+                    return { totalNodesByFile, selectedNodesByFile, registeredNodesByFile };
+                }
+
+                return { totalNodesByFile, registeredNodesByFile };
+            }),
+
+        toggleFileSelection: (fileId, allNodeIds) =>
             set((state) => {
-                const newSelectedFileIds = new Set(state.selectedFileIds);
-                newSelectedFileIds.delete(fileId);
-                const newSelectedNodesByFile = new Map(
-                    state.selectedNodesByFile
-                );
-                newSelectedNodesByFile.delete(fileId);
-                return {
-                    selectedFileIds: newSelectedFileIds,
-                    selectedNodesByFile: newSelectedNodesByFile,
-                };
-            });
-        }
-    },
+                const currentNodes = state.selectedNodesByFile.get(fileId) || new Set();
+                const totalNodes = state.totalNodesByFile.get(fileId) || 0;
+                const isIndeterminate = totalNodes > 0 && currentNodes.size > 0 && currentNodes.size < totalNodes;
+                const isFullySelected =
+                    (totalNodes === 0 && state.selectedFileIds.has(fileId)) ||
+                    (totalNodes > 0 && currentNodes.size === totalNodes);
 
-    updateNodeSelection: (fileId: string, selectedNodeIds: Set<string>) => {
-        set((state) => {
-            const newSelectedNodesByFile = new Map(state.selectedNodesByFile);
-            const newSelectedFileIds = new Set(state.selectedFileIds);
+                const selectedFileIds = new Set(state.selectedFileIds);
+                const selectedNodesByFile = new Map(state.selectedNodesByFile);
 
-            if (selectedNodeIds.size === 0) {
-                newSelectedNodesByFile.delete(fileId);
-                // No nodes selected, remove file selection
-                newSelectedFileIds.delete(fileId);
-            } else {
-                newSelectedNodesByFile.set(fileId, selectedNodeIds);
-                // Some or all nodes selected, ensure file is selected
-                newSelectedFileIds.add(fileId);
-            }
+                if (isIndeterminate || !state.selectedFileIds.has(fileId)) {
+                    selectedFileIds.add(fileId);
+                    if (allNodeIds?.length) {
+                        selectedNodesByFile.set(fileId, new Set(allNodeIds));
+                        const totalNodesByFile = new Map(state.totalNodesByFile);
+                        const registeredNodesByFile = new Map(state.registeredNodesByFile);
+                        totalNodesByFile.set(fileId, allNodeIds.length);
+                        registeredNodesByFile.set(fileId, allNodeIds);
+                        return { selectedFileIds, selectedNodesByFile, totalNodesByFile, registeredNodesByFile };
+                    }
+                    return { selectedFileIds };
+                } else if (isFullySelected) {
+                    selectedFileIds.delete(fileId);
+                    selectedNodesByFile.delete(fileId);
+                    return { selectedFileIds, selectedNodesByFile };
+                }
+                return state;
+            }),
 
-            return {
-                selectedNodesByFile: newSelectedNodesByFile,
-                selectedFileIds: newSelectedFileIds,
-            };
-        });
-    },
+        updateNodeSelection: (fileId, selectedNodeIds) =>
+            set((state) => {
+                const selectedNodesByFile = new Map(state.selectedNodesByFile);
+                const selectedFileIds = new Set(state.selectedFileIds);
 
-    getFileSelectionState: (fileId: string): boolean | "indeterminate" => {
-        const state = get();
-        if (!state.selectedFileIds.has(fileId)) {
-            return false;
-        }
+                if (selectedNodeIds.size === 0) {
+                    selectedNodesByFile.delete(fileId);
+                    selectedFileIds.delete(fileId);
+                } else {
+                    selectedNodesByFile.set(fileId, selectedNodeIds);
+                    selectedFileIds.add(fileId);
+                }
 
-        const selectedNodes =
-            state.selectedNodesByFile.get(fileId) || new Set();
+                return { selectedNodesByFile, selectedFileIds };
+            }),
+
+        selectAll: (fileIds) =>
+            set((state) => {
+                const selectedFileIds = new Set(fileIds);
+                const selectedNodesByFile = new Map();
+
+                // For each file, if we have registered nodes, select them all
+                fileIds.forEach((fileId) => {
+                    const registeredNodes = state.registeredNodesByFile.get(fileId);
+                    if (registeredNodes && registeredNodes.length > 0) {
+                        selectedNodesByFile.set(fileId, new Set(registeredNodes));
+                    }
+                });
+
+                return { selectedFileIds, selectedNodesByFile };
+            }),
+
+        clearAll: () =>
+            set({
+                selectedFileIds: new Set(),
+                selectedNodesByFile: new Map(),
+            }),
+
+        removeFileSelection: (fileId) =>
+            set((state) => {
+                const selectedFileIds = new Set(state.selectedFileIds);
+                selectedFileIds.delete(fileId);
+                const selectedNodesByFile = new Map(state.selectedNodesByFile);
+                selectedNodesByFile.delete(fileId);
+                const totalNodesByFile = new Map(state.totalNodesByFile);
+                totalNodesByFile.delete(fileId);
+                const registeredNodesByFile = new Map(state.registeredNodesByFile);
+                registeredNodesByFile.delete(fileId);
+                return { selectedFileIds, selectedNodesByFile, totalNodesByFile, registeredNodesByFile };
+            }),
+    }))
+);
+
+// Stable selector that returns selection state for a file
+export const useFileSelectionState = (fileId: string) =>
+    useSelectionStore((state) => {
+        if (!state.selectedFileIds.has(fileId)) return false;
+        const selectedNodes = state.selectedNodesByFile.get(fileId);
         const totalNodes = state.totalNodesByFile.get(fileId) || 0;
-
-        // If no nodes are registered (not loaded or don't exist), treat as fully selected
-        if (totalNodes === 0) {
-            return true;
-        }
-
-        // If all nodes are selected, fully selected
-        if (selectedNodes.size === totalNodes) {
-            return true;
-        }
-
-        // Some nodes selected but not all
-        if (selectedNodes.size > 0) {
-            return "indeterminate";
-        }
-
-        // File selected but no nodes selected (edge case)
+        if (!selectedNodes || totalNodes === 0) return true;
+        if (selectedNodes.size === totalNodes) return true;
+        if (selectedNodes.size > 0) return "indeterminate";
         return true;
-    },
-
-    isFileFullySelected: (fileId: string): boolean => {
-        const state = get().getFileSelectionState(fileId);
-        return state === true;
-    },
-
-    getAllSelectedNodeIds: (): Set<string> => {
-        const allNodes = new Set<string>();
-        get().selectedNodesByFile.forEach((nodeSet) => {
-            nodeSet.forEach((id) => allNodes.add(id));
-        });
-        return allNodes;
-    },
-
-    getFullySelectedFileIds: (): string[] => {
-        const state = get();
-        return Array.from(state.selectedFileIds).filter((fileId) => {
-            const selectedNodes =
-                state.selectedNodesByFile.get(fileId) || new Set();
-            const totalNodes = state.totalNodesByFile.get(fileId) || 0;
-
-            // Files with no nodes are considered fully selected
-            if (totalNodes === 0) {
-                return true;
-            }
-
-            // Files with all nodes selected are fully selected
-            return selectedNodes.size === totalNodes;
-        });
-    },
-
-    selectAll: (fileIds: string[]) => {
-        set({ selectedFileIds: new Set(fileIds) });
-    },
-
-    clearAll: () => {
-        set({
-            selectedFileIds: new Set(),
-            selectedNodesByFile: new Map(),
-        });
-    },
-
-    removeFileSelection: (fileId: string) => {
-        set((state) => {
-            const newSelectedFileIds = new Set(state.selectedFileIds);
-            newSelectedFileIds.delete(fileId);
-            const newSelectedNodesByFile = new Map(state.selectedNodesByFile);
-            newSelectedNodesByFile.delete(fileId);
-            const newTotalNodesByFile = new Map(state.totalNodesByFile);
-            newTotalNodesByFile.delete(fileId);
-            return {
-                selectedFileIds: newSelectedFileIds,
-                selectedNodesByFile: newSelectedNodesByFile,
-                totalNodesByFile: newTotalNodesByFile,
-            };
-        });
-    },
-}));
+    });
