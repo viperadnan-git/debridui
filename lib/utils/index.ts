@@ -90,3 +90,41 @@ export const getFileType = (name: string): FileType => {
 export const getTextFromClipboard = async (): Promise<string> => {
     return await navigator.clipboard.readText();
 };
+
+export async function chunkedPromise<T>({
+    promises,
+    chunkSize,
+    delay,
+}: {
+    promises: (() => Promise<T>)[];
+    chunkSize: number;
+    delay: number;
+}): Promise<T[]> {
+    const results: T[] = [];
+
+    // Process promises in chunks
+    for (let i = 0; i < promises.length; i += chunkSize) {
+        // Get the current chunk
+        const chunk = promises.slice(i, i + chunkSize);
+
+        // Start timer to track chunk processing time
+        const startTime = Date.now();
+
+        // Execute all promises in the current chunk concurrently
+        const chunkResults = await Promise.all(chunk.map((promiseFn) => promiseFn()));
+
+        // Add chunk results to the overall results
+        results.push(...chunkResults);
+
+        // Calculate time elapsed and remaining delay needed
+        const elapsedTime = Date.now() - startTime;
+        const remainingDelay = Math.max(0, delay - elapsedTime);
+
+        // If not the last chunk, wait for the remaining delay
+        if (i + chunkSize < promises.length && remainingDelay > 0) {
+            await new Promise((resolve) => setTimeout(resolve, remainingDelay));
+        }
+    }
+
+    return results;
+}

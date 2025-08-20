@@ -1,5 +1,5 @@
 import { DebridFileNode, DebridLinkInfo, DebridFile, FileType } from "@/lib/types";
-import { getFileType } from ".";
+import { getFileType, chunkedPromise } from ".";
 import { TRASH_SIZE_THRESHOLD } from "../constants";
 import { format } from "date-fns";
 import { queryClient } from "../query-client";
@@ -115,17 +115,20 @@ export const processFileNodes = ({
     smartOrder,
 }: {
     fileNodes: DebridFileNode[];
-    hideTrash: boolean;
-    smartOrder: boolean;
+    hideTrash?: boolean;
+    smartOrder?: boolean;
 }): DebridFileNode[] => {
     let processedNodes = fileNodes;
-    // Apply trash filtering if enabled
-    if (hideTrash) {
+    const shouldHideTrash = hideTrash || useSettingsStore.getState().hideTrash;
+    const shouldSmartOrder = smartOrder || useSettingsStore.getState().smartOrder;
+
+    if (!shouldHideTrash && !shouldSmartOrder) return processedNodes;
+
+    if (shouldHideTrash) {
         processedNodes = filterTrashFiles(processedNodes);
     }
 
-    // Apply smart ordering if enabled
-    if (smartOrder) {
+    if (shouldSmartOrder) {
         processedNodes = sortFileNodesByPriority(processedNodes);
     }
 
@@ -255,19 +258,26 @@ export async function collectDownloadLinks(
 ): Promise<DebridLinkInfo[]> {
     const collectedLinks: DebridLinkInfo[] = [];
 
-    const processFileNode = async (fileNode: DebridFileNode): Promise<void> => {
+    const collectFileNodeLinks = async (fileNode: DebridFileNode): Promise<void> => {
         if (fileNode.type === "file" && fileNode.id) {
             collectedLinks.push(await getDownloadLinkWithCache({ fileId: fileNode.id, client: debridClient, userId }));
         }
 
         // Recursively process children
         if (fileNode.children?.length) {
-            await Promise.all(fileNode.children.map(processFileNode));
+            await chunkedPromise({
+                promises: fileNode.children.map((fileNode) => () => collectFileNodeLinks(fileNode)),
+                chunkSize: 10,
+                delay: 1000,
+            });
         }
     };
 
-    // Process all root nodes in parallel
-    await Promise.all(fileNodes.map(processFileNode));
+    await chunkedPromise({
+        promises: fileNodes.map((fileNode) => () => collectFileNodeLinks(fileNode)),
+        chunkSize: 10,
+        delay: 1000,
+    });
 
     return collectedLinks;
 }
@@ -281,11 +291,8 @@ export async function fetchTorrentDownloadLinks(
     userId: string
 ): Promise<DebridLinkInfo[]> {
     const torrentFileNodes = await getTorrentFilesWithCache({ fileId: torrentFileId, client: debridClient, userId });
-    const hideTrash = useSettingsStore.getState().hideTrash;
-    const smartOrder = useSettingsStore.getState().smartOrder;
     // Process nodes with specified options
-    const processedFileNodes = processFileNodes({ fileNodes: torrentFileNodes, hideTrash, smartOrder });
-
+    const processedFileNodes = processFileNodes({ fileNodes: torrentFileNodes });
     // Collect all download links
     const downloadLinks = await collectDownloadLinks(processedFileNodes, debridClient, userId);
 
@@ -297,7 +304,7 @@ export async function fetchTorrentDownloadLinks(
 }
 
 /**
- * Fetches download links for multiple selected file IDs
+ * Fetches download links for multiple selected file IDs preserving the input order
  */
 export async function fetchSelectedDownloadLinks(
     selectedFileIds: string[],
@@ -308,9 +315,13 @@ export async function fetchSelectedDownloadLinks(
         return [];
     }
 
-    const downloadLinks = await Promise.all(
-        selectedFileIds.map((fileId) => getDownloadLinkWithCache({ fileId, client: debridClient, userId }))
-    );
+    const results = await chunkedPromise({
+        promises: selectedFileIds.map(
+            (fileId) => () => getDownloadLinkWithCache({ fileId, client: debridClient, userId })
+        ),
+        chunkSize: 10,
+        delay: 1000,
+    });
 
-    return downloadLinks.filter(Boolean); // Remove any null/undefined values
+    return results.filter(Boolean);
 }

@@ -13,6 +13,8 @@ import { FileListItem } from "./file-list-item";
 import { ExpandedRow } from "./expanded-row";
 import { FileActionsDrawer } from "./file-actions-drawer";
 import { useSelectionStore, useFileSelectionState } from "@/lib/stores/selection";
+import { getTorrentFilesCacheKey } from "@/lib/utils/cache-keys";
+import { processFileNodes } from "@/lib/utils/file";
 
 interface DataTableProps {
     data: DebridFile[];
@@ -102,8 +104,9 @@ export function DataTable({ data, hasMore = false, onLoadMore }: DataTableProps)
     };
 
     const handleSelectFile = (fileId: string) => {
-        const fileNodes = queryClient.getQueryData<DebridFileNode[]>([currentUser.id, "getTorrentFiles", fileId]);
-        toggleFileSelection(fileId, fileNodes ? collectNodeIds(fileNodes) : []);
+        const fileNodes = queryClient.getQueryData<DebridFileNode[]>(getTorrentFilesCacheKey(currentUser.id, fileId));
+        const processedFileNodes = processFileNodes({ fileNodes: fileNodes || [] });
+        toggleFileSelection(fileId, processedFileNodes ? collectNodeIds(processedFileNodes) : []);
     };
 
     const handleToggleExpand = (fileId: string) => {

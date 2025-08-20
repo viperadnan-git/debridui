@@ -52,24 +52,27 @@ function flattenNodes(nodes: DebridFileNode[], expandedPaths: Set<string>, depth
     return flat;
 }
 
-// Helper to collect all node IDs
+// Helper to collect all node IDs in the correct order
 function collectNodeIds(node: DebridFileNode): string[] {
     if (node.type === "file") {
         return node.id ? [node.id] : [];
     }
 
     const ids: string[] = [];
-    const stack = [node];
 
-    while (stack.length > 0) {
-        const current = stack.pop()!;
-        if (current.type === "file" && current.id) {
-            ids.push(current.id);
-        } else if (current.children) {
-            stack.push(...current.children);
+    // Use a recursive approach to preserve order instead of stack
+    const collectRecursively = (currentNode: DebridFileNode) => {
+        if (currentNode.type === "file" && currentNode.id) {
+            ids.push(currentNode.id);
+        } else if (currentNode.children) {
+            // Process children in order
+            for (const child of currentNode.children) {
+                collectRecursively(child);
+            }
         }
-    }
+    };
 
+    collectRecursively(node);
     return ids;
 }
 
