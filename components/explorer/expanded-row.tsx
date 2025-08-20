@@ -23,10 +23,9 @@ export function ExpandedRow({
     onNodesLoaded,
 }: ExpandedRowProps) {
     const { client, currentUser } = useAuthContext();
-    const [selectedFiles, setSelectedFiles] = useState<Set<string>>(
-        externalSelectedNodes || new Set()
-    );
+    const [selectedFiles, setSelectedFiles] = useState<Set<string>>(externalSelectedNodes || new Set());
     const hideTrash = useSettingsStore((state) => state.hideTrash);
+    const smartOrder = useSettingsStore((state) => state.smartOrder);
 
     // Sync with external selection when it changes
     useEffect(() => {
@@ -54,18 +53,14 @@ export function ExpandedRow({
     // Process nodes with smart order and trash filtering
     const processedNodes = useMemo(() => {
         if (!nodes) return [];
-        return processFileNodes(nodes);
-    }, [nodes]);
+        return processFileNodes({ fileNodes: nodes, hideTrash, smartOrder });
+    }, [nodes, hideTrash, smartOrder]);
 
     // Notify parent about loaded nodes (only once when nodes first load)
     const hasNotifiedNodes = useRef(false);
 
     useEffect(() => {
-        if (
-            processedNodes.length > 0 &&
-            onNodesLoaded &&
-            !hasNotifiedNodes.current
-        ) {
+        if (processedNodes.length > 0 && onNodesLoaded && !hasNotifiedNodes.current) {
             const nodeIds: string[] = [];
             const collectNodeIds = (nodeList: DebridFileNode[]) => {
                 nodeList.forEach((node) => {
@@ -91,9 +86,7 @@ export function ExpandedRow({
                         <Loader2 className="size-4 animate-spin text-muted-foreground" />
                     </div>
                 ) : error ? (
-                    <div className="text-center py-4 text-xs text-red-500">
-                        Error loading files
-                    </div>
+                    <div className="text-center py-4 text-xs text-red-500">Error loading files</div>
                 ) : processedNodes && processedNodes.length > 0 ? (
                     <FileTree
                         nodes={processedNodes}

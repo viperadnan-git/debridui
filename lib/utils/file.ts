@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { queryClient } from "../query-client";
 import { DebridClient } from "../clients";
 import { useSettingsStore } from "../stores/settings";
+import { getTorrentFilesCacheKey, getDownloadLinkCacheKey } from "./cache-keys";
 
 export type SortOption = {
     value: string;
@@ -108,15 +109,23 @@ export const filterTrashFiles = (fileNodes: DebridFileNode[]): DebridFileNode[] 
 /**
  * Processes file nodes with optional smart ordering and trash filtering
  */
-export const processFileNodes = (fileNodes: DebridFileNode[]): DebridFileNode[] => {
+export const processFileNodes = ({
+    fileNodes,
+    hideTrash,
+    smartOrder,
+}: {
+    fileNodes: DebridFileNode[];
+    hideTrash: boolean;
+    smartOrder: boolean;
+}): DebridFileNode[] => {
     let processedNodes = fileNodes;
     // Apply trash filtering if enabled
-    if (useSettingsStore.getState().hideTrash) {
+    if (hideTrash) {
         processedNodes = filterTrashFiles(processedNodes);
     }
 
     // Apply smart ordering if enabled
-    if (useSettingsStore.getState().smartOrder) {
+    if (smartOrder) {
         processedNodes = sortFileNodesByPriority(processedNodes);
     }
 
@@ -125,7 +134,7 @@ export const processFileNodes = (fileNodes: DebridFileNode[]): DebridFileNode[] 
         if (fileNode.type === "folder" && fileNode.children?.length) {
             return {
                 ...fileNode,
-                children: processFileNodes(fileNode.children),
+                children: processFileNodes({ fileNodes: fileNode.children, hideTrash, smartOrder }),
             };
         }
         return fileNode;
@@ -195,10 +204,6 @@ export const sortTorrentFiles = (
         return sortDirection === "desc" ? -stringComparison : stringComparison;
     });
 };
-
-const getDownloadLinkCacheKey = (userId: string, nodeId: string): string[] => [userId, "getDownloadLink", nodeId];
-
-const getTorrentFilesCacheKey = (userId: string, fileId: string): string[] => [userId, "getTorrentFiles", fileId];
 
 export const getTorrentFilesWithCache = async ({
     fileId,
@@ -276,9 +281,10 @@ export async function fetchTorrentDownloadLinks(
     userId: string
 ): Promise<DebridLinkInfo[]> {
     const torrentFileNodes = await getTorrentFilesWithCache({ fileId: torrentFileId, client: debridClient, userId });
-
+    const hideTrash = useSettingsStore.getState().hideTrash;
+    const smartOrder = useSettingsStore.getState().smartOrder;
     // Process nodes with specified options
-    const processedFileNodes = processFileNodes(torrentFileNodes);
+    const processedFileNodes = processFileNodes({ fileNodes: torrentFileNodes, hideTrash, smartOrder });
 
     // Collect all download links
     const downloadLinks = await collectDownloadLinks(processedFileNodes, debridClient, userId);
