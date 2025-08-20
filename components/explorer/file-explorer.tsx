@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, Fragment } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { SearchBar } from "./search-bar";
 import { SortControls } from "./sort-controls";
@@ -109,28 +108,21 @@ export function FileExplorer() {
                     <FileList className="max-sm:-mx-4">
                         <FileListHeader isAllSelected={headerCheckboxState} onSelectAll={handleSelectAll} />
                         <FileListBody>
-                            {isSearching || isLoading ? (
+                            {activeData.length > 0 && !isSearching && (
+                                <Fragment>
+                                    {activeData.map((file) => (
+                                        <FileListRow key={file.id} file={file} />
+                                    ))}
+                                    <span ref={loadMoreTriggerRef} />
+                                </Fragment>
+                            )}
+                            {isLoading || isSearching ? (
                                 <FileListLoading />
-                            ) : activeData.length > 0 ? (
-                                activeData.map((file) => <FileListRow key={file.id} file={file} />)
                             ) : (
-                                <FileListEmpty />
+                                activeData.length === 0 && <FileListEmpty />
                             )}
                         </FileListBody>
                     </FileList>
-
-                    {/* Infinite scroll trigger */}
-                    {hasMore && !debouncedSearchQuery && (
-                        <div ref={loadMoreTriggerRef} className="flex items-center justify-center py-2 sm:py-4">
-                            {isLoadingMore && (
-                                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                                    Loading more...
-                                </div>
-                            )}
-                        </div>
-                    )}
-
                     <FileActionsDrawer files={activeData} />
                 </div>
             </div>
