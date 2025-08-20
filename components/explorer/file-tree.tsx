@@ -199,11 +199,11 @@ function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand }: Vi
     return (
         <div
             className={cn(
-                "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded px-1 sm:px-2 hover:bg-muted",
+                "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded hover:bg-muted",
                 "text-xs sm:text-sm",
                 hasChildren && "cursor-pointer"
             )}
-            style={{ paddingLeft: `${depth * 12 + 8}px` }}
+            style={{ paddingLeft: `${(depth - 1) * 12 + 8}px` }}
             onClick={() => hasChildren && onToggleExpand(path)}>
             {hasChildren && (
                 <ChevronRight
@@ -265,10 +265,10 @@ function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand }: Vi
     );
 }
 
-const ITEM_HEIGHT = 32; // Height of each item in pixels
-const VIRTUALIZATION_THRESHOLD = 100; // Use virtualization above this many nodes
+const VIRTUALIZATION_THRESHOLD = 200; // Use virtualization above this many nodes
 
 export function FileTree({ nodes, fileId }: FileTreeProps) {
+    const isMobile = useIsMobile();
     const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => {
         // Auto-expand first folder if it's the only top-level item
         if (nodes.length === 1 && nodes[0].type === "folder") {
@@ -307,7 +307,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
             if (!flatNode) return null;
 
             return (
-                <div style={style}>
+                <div style={style} className="px-3 md:px-4">
                     <VirtualizedNode
                         flatNode={flatNode}
                         fileId={fileId}
@@ -323,7 +323,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
     // Regular rendering for small trees
     if (!useVirtualization) {
         return (
-            <div className="flex flex-col px-0.5 md:px-4 p-2 sm:p-3 md:mt-0">
+            <div className="flex flex-col px-0.5 md:px-4 p-2 sm:p-3">
                 {flatNodes.map((flatNode, index) => (
                     <VirtualizedNode
                         key={flatNode.node.id || `${flatNode.path}-${index}`}
@@ -339,8 +339,14 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
 
     // Virtualized rendering with react-window for large trees
     return (
-        <div className="px-0.5 md:px-4 p-2 sm:p-3 md:mt-0">
-            <List ref={listRef} height={600} itemCount={flatNodes.length} itemSize={ITEM_HEIGHT} width="100%">
+        <div className="py-2 sm:py-3">
+            <List
+                ref={listRef}
+                height={600}
+                itemCount={flatNodes.length}
+                itemSize={isMobile ? 22 : 32}
+                width="100%"
+                overscanCount={10}>
                 {rowRenderer}
             </List>
         </div>

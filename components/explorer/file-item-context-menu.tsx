@@ -144,7 +144,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                             ) : (
                                 <Copy className="mr-2 h-4 w-4" />
                             )}
-                            Copy Link
+                            Copy Links
                         </ContextMenuItem>
                         <ContextMenuItem onClick={() => downloadMutation.mutate()} disabled={isAnyActionPending}>
                             {downloadMutation.isPending ? (
