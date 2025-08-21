@@ -3,11 +3,11 @@ import { traktClient } from "@/lib/trakt";
 
 // Cache times
 const CACHE_TIMES = {
-    trending: 30 * 60 * 1000, // 30 minutes
-    popular: 30 * 60 * 1000, // 30 minutes
-    watched: 60 * 60 * 1000, // 1 hour
-    anticipated: 60 * 60 * 1000, // 1 hour
-    boxoffice: 60 * 60 * 1000, // 1 hour
+    trending: 6 * 60 * 60 * 1000, // 6 hours
+    popular: 6 * 60 * 60 * 1000, // 6 hours
+    watched: 6 * 60 * 60 * 1000, // 6 hours
+    anticipated: 6 * 60 * 60 * 1000, // 6 hours
+    boxoffice: 6 * 60 * 60 * 1000, // 6 hours
     details: 24 * 60 * 60 * 1000, // 24 hours
     search: 5 * 60 * 1000, // 5 minutes
 };
@@ -140,10 +140,7 @@ export function useTraktMostPlayedShows(period = "weekly", limit = 20) {
 export function useTraktMedia(id: string | undefined, type: "movie" | "show") {
     return useQuery({
         queryKey: ["trakt", type, id],
-        queryFn: () =>
-            type === "movie"
-                ? traktClient.getMovie(id!)
-                : traktClient.getShow(id!),
+        queryFn: () => (type === "movie" ? traktClient.getMovie(id!) : traktClient.getShow(id!)),
         enabled: !!id,
         staleTime: CACHE_TIMES.details,
         gcTime: CACHE_TIMES.details * 2,
@@ -162,10 +159,7 @@ export function useTraktShowSeasons(showId: string | undefined) {
 }
 
 // Get show episodes for a season
-export function useTraktShowEpisodes(
-    showId: string | undefined,
-    season: number | undefined
-) {
+export function useTraktShowEpisodes(showId: string | undefined, season: number | undefined) {
     return useQuery({
         queryKey: ["trakt", "show", showId, "season", season, "episodes"],
         queryFn: () => traktClient.getShowEpisodes(showId!, season!),
@@ -176,10 +170,7 @@ export function useTraktShowEpisodes(
 }
 
 // Get cast and crew
-export function useTraktPeople(
-    id: string | undefined,
-    type: "movies" | "shows"
-) {
+export function useTraktPeople(id: string | undefined, type: "movies" | "shows") {
     return useQuery({
         queryKey: ["trakt", type, id, "people"],
         queryFn: () => traktClient.getPeople(id!, type),
@@ -198,10 +189,9 @@ export function useTraktTrendingMixed(limit = 10) {
         data: {
             movies: moviesQuery.data || [],
             shows: showsQuery.data || [],
-            mixed: [
-                ...(moviesQuery.data || []),
-                ...(showsQuery.data || []),
-            ].sort(() => Math.random() - 0.5),
+            mixed: [...(moviesQuery.data || []), ...(showsQuery.data || [])].sort(
+                (a, b) => (a.plays || 0) - (b.plays || 0)
+            ),
         },
         isLoading: moviesQuery.isLoading || showsQuery.isLoading,
         error: moviesQuery.error || showsQuery.error,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useMemo } from "react";
 import { type TraktMediaItem } from "@/lib/trakt";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTraktTrendingMixed } from "@/hooks/use-trakt";
+import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 
 interface DesktopHeroCarouselProps {
     item: TraktMediaItem;
@@ -216,6 +217,16 @@ export function HeroCarousel() {
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
     const [count, setCount] = useState(0);
+    const autoplay = useMemo(
+        () =>
+            Autoplay({
+                delay: 5000,
+                stopOnInteraction: false,
+                stopOnMouseEnter: true,
+                playOnInit: false,
+            }),
+        []
+    );
 
     const { data: items, isLoading } = useTraktTrendingMixed(10);
 
@@ -228,7 +239,11 @@ export function HeroCarousel() {
         api.on("select", () => {
             setCurrent(api.selectedScrollSnap() + 1);
         });
-    }, [api]);
+
+        if (!isLoading) {
+            autoplay.play();
+        }
+    }, [api, autoplay, isLoading]);
 
     if (isLoading) {
         return (
@@ -260,12 +275,7 @@ export function HeroCarousel() {
                     align: "start",
                     loop: true,
                 }}
-                plugins={[
-                    Autoplay({
-                        delay: 5000,
-                        stopOnMouseEnter: true,
-                    }),
-                ]}>
+                plugins={[autoplay, WheelGesturesPlugin()]}>
                 <CarouselContent>
                     {mixed.map((item, index) => {
                         return (

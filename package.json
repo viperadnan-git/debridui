@@ -49,6 +49,7 @@
         "date-fns": "^4.1.0",
         "embla-carousel-autoplay": "^8.6.0",
         "embla-carousel-react": "^8.6.0",
+        "embla-carousel-wheel-gestures": "^8.1.0",
         "idb-keyval": "^6.2.2",
         "lucide-react": "^0.539.0",
         "next": "15.4.6",
