@@ -54,7 +54,7 @@ export function FileListItem({
     const getDesktopSecondRow = useMemo(() => {
         const elements = [];
 
-        if (file.peers !== undefined) {
+        if (file.status !== "completed" && file.peers !== undefined) {
             elements.push(<span key="peers">Peers: {file.peers}</span>);
         }
 
