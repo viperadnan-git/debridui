@@ -326,7 +326,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
     // Regular rendering for small trees
     if (!useVirtualization) {
         return (
-            <div className="flex flex-col px-0.5 md:px-4 p-2 sm:p-3">
+            <div className="flex flex-col px-3 md:px-4 p-2 sm:p-3">
                 {flatNodes.map((flatNode, index) => (
                     <VirtualizedNode
                         key={flatNode.node.id || `${flatNode.path}-${index}`}
