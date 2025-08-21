@@ -1,10 +1,6 @@
 "use client";
 
-import {
-    SidebarProvider,
-    SidebarInset,
-    SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SearchProvider } from "@/components/mdb/search-provider";
@@ -31,12 +27,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }
     }, [currentUser, isHydrated, router]);
 
-    if (!isHydrated) {
+    if (!isHydrated || !currentUser) {
         return (
             <div className="flex h-screen items-center justify-center">
-                <div className="animate-pulse text-muted-foreground">
-                    Loading...
-                </div>
+                <div className="animate-pulse text-muted-foreground">Loading...</div>
             </div>
         );
     }
@@ -54,16 +48,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <header className="flex h-16 shrink-0 z-50 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
                             <div className="flex items-center gap-2 px-4">
                                 <SidebarTrigger className="-ml-1" />
-                                <Separator
-                                    orientation="vertical"
-                                    className="mr-2 data-[orientation=vertical]:h-4"
-                                />
+                                <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
                                 <Breadcrumbs />
                             </div>
                         </header>
-                        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                            {children}
-                        </div>
+                        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
                     </SidebarInset>
                 </SidebarProvider>
             </SearchProvider>
