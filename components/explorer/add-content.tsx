@@ -25,13 +25,14 @@ export function AddContent() {
             return;
         }
 
-        setIsAddingLinks(true);
-        try {
-            const uris = trimmedLinks
-                .split("\n")
-                .map((link) => link.trim())
-                .filter((link) => link.length > 0);
+        const uris = trimmedLinks
+            .split("\n")
+            .map((link) => link.trim())
+            .filter((link) => link.length > 0);
 
+        setIsAddingLinks(true);
+        const toastId = toast.loading(`Adding ${uris.length} link${uris.length > 1 ? "s" : ""}`);
+        try {
             const results = await client.addDownloads(uris);
 
             let successCount = 0;
@@ -46,21 +47,20 @@ export function AddContent() {
                 }
             });
 
+            const toastfn = successCount > 0 ? toast.success : toast.error;
+            let message = `Successfully added ${successCount} link${successCount > 1 ? "s" : ""}`;
+            if (errorCount > 0) {
+                message += `, ${errorCount} link${errorCount > 1 ? "s" : ""} failed.`;
+            }
+
+            toastfn(message, { id: toastId });
+
             if (successCount > 0) {
-                toast.success(
-                    `Successfully added ${successCount} link${successCount > 1 ? "s" : ""}`
-                );
-                setLinks("");
                 queryClient.invalidateQueries({
                     queryKey: [currentUser.id, "getTorrentList"],
                 });
             }
-
-            if (errorCount > 0) {
-                toast.error(
-                    `Failed to add ${errorCount} link${errorCount > 1 ? "s" : ""}`
-                );
-            }
+            setLinks("");
         } catch (error) {
             toast.error("Failed to add links");
             console.error(error);
@@ -73,6 +73,7 @@ export function AddContent() {
         if (!files || files.length === 0) return;
 
         setIsUploadingFiles(true);
+        const toastId = toast.loading(`Uploading ${files.length} file${files.length > 1 ? "s" : ""}`);
         try {
             const fileArray = Array.from(files);
             const results = await client.uploadTorrentFiles(fileArray);
@@ -89,26 +90,25 @@ export function AddContent() {
                 }
             });
 
+            const toastfn = successCount > 0 ? toast.success : toast.error;
+            let message = `Successfully uploaded ${successCount} file${successCount > 1 ? "s" : ""}`;
+            if (errorCount > 0) {
+                message += `, ${errorCount} file${errorCount > 1 ? "s" : ""} failed.`;
+            }
+
+            toastfn(message, { id: toastId });
+
             if (successCount > 0) {
-                toast.success(
-                    `Successfully uploaded ${successCount} file${successCount > 1 ? "s" : ""}`
-                );
                 queryClient.invalidateQueries({
                     queryKey: [currentUser.id, "getTorrentList"],
                 });
-            }
-
-            if (errorCount > 0) {
-                toast.error(
-                    `Failed to upload ${errorCount} file${errorCount > 1 ? "s" : ""}`
-                );
             }
 
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
         } catch (error) {
-            toast.error("Failed to upload files");
+            toast.error("Failed to upload files", { id: toastId });
             console.error(error);
         } finally {
             setIsUploadingFiles(false);
@@ -136,20 +136,17 @@ export function AddContent() {
             <CardContent className="space-y-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                     <div className="flex flex-col space-y-1 md:space-y-2">
-                        <label className="text-sm font-bold">
-                            Upload Torrent Files
-                        </label>
+                        <label className="text-sm font-bold">Upload Torrent Files</label>
                         <Dropzone
                             onDropAccepted={handleFileSelect}
                             disabled={isUploadingFiles}
+                            maxFiles={100}
                             accept={{
                                 "application/x-bittorrent": [".torrent"],
                             }}
                             className="max-sm:h-24">
                             <FileUp className="size-5 md:size-8 text-gray-400" />
-                            <h3 className="font-bold text-sm md:text-md">
-                                Upload Torrent Files
-                            </h3>
+                            <h3 className="font-bold text-sm md:text-md">Upload Torrent Files</h3>
                             <p className="text-xs md:text-sm font-medium text-muted-foreground">
                                 Drag and drop or click to upload torrent files
                             </p>
@@ -157,9 +154,7 @@ export function AddContent() {
                     </div>
 
                     <div className="flex flex-col space-y-2">
-                        <label className="text-sm font-bold">
-                            Add Links (HTTP/Magnet)
-                        </label>
+                        <label className="text-sm font-bold">Add Links (HTTP/Magnet)</label>
                         <Textarea
                             placeholder="Enter links (one per line)"
                             value={links}
@@ -184,10 +179,7 @@ export function AddContent() {
                                     </>
                                 )}
                             </Button>
-                            <Button
-                                variant="outline"
-                                disabled={isAddingLinks}
-                                onClick={handlePaste}>
+                            <Button variant="outline" disabled={isAddingLinks} onClick={handlePaste}>
                                 <ClipboardIcon className="mr-2 size-4" />
                                 Paste
                             </Button>
