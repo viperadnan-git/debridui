@@ -190,7 +190,7 @@ export function useTraktTrendingMixed(limit = 10) {
             movies: moviesQuery.data || [],
             shows: showsQuery.data || [],
             mixed: [...(moviesQuery.data || []), ...(showsQuery.data || [])].sort(
-                (a, b) => (a.plays || 0) - (b.plays || 0)
+                (a, b) => (a.watchers || 0) - (b.watchers || 0)
             ),
         },
         isLoading: moviesQuery.isLoading || showsQuery.isLoading,
