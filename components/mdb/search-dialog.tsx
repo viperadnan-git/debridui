@@ -116,14 +116,14 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             open={open}
             onOpenChange={onOpenChange}
             shouldFilter={false}
-            className="rounded-lg shadow-md md:min-w-[450px] top-1/3 md:top-1/2">
+            className="md:min-w-[450px] top-1/3 md:top-1/2 h-[50vh]">
             <CommandInput
                 placeholder="Search movies and TV shows... (⌘K)"
                 value={query}
                 onValueChange={setQuery}
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            <CommandList className="max-h-[50vh] overflow-y-auto">
+            <CommandList className="max-h-full overflow-y-auto">
                 {isLoading && query.trim().length > 2 && (
                     <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
                         <Search className="h-8 w-8 animate-spin mb-3 opacity-50" />

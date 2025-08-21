@@ -101,7 +101,12 @@ export function FileExplorer() {
 
                     {/* Search and Sort Controls */}
                     <div className="flex flex-col items-end md:flex-row md:items-center gap-2 sm:gap-4 mb-2 sm:mb-4">
-                        <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search files..." />
+                        <SearchBar
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            onSubmit={setDebouncedSearchQuery}
+                            placeholder="Search files..."
+                        />
                         <SortControls />
                     </div>
 

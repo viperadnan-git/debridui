@@ -8,13 +8,10 @@ interface SearchBarProps {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
+    onSubmit?: (value: string) => void;
 }
 
-export function SearchBar({
-    value,
-    onChange,
-    placeholder = "Search files...",
-}: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = "Search files...", onSubmit }: SearchBarProps) {
     return (
         <div className="flex-1 relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground" />
@@ -23,6 +20,11 @@ export function SearchBar({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 className="pl-10 pr-10"
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        onSubmit?.(value);
+                    }
+                }}
             />
             {value && (
                 <Button
