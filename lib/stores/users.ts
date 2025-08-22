@@ -7,9 +7,9 @@ import { toast } from "sonner";
 
 interface UserStore {
     users: User[];
-    currentUser: User | null;
+    currentUser?: User;
     isHydrated: boolean;
-    client: DebridClient | null;
+    client?: DebridClient;
 
     addUser: (user: User) => void;
     removeUser: (userId: string) => void;
@@ -25,9 +25,9 @@ export const useUserStore = create<UserStore>()(
     persist(
         (set, get) => ({
             users: [],
-            currentUser: null,
+            currentUser: undefined,
             isHydrated: false,
-            client: null,
+            client: undefined,
 
             addUser: (user) => {
                 set((state) => {
@@ -55,13 +55,13 @@ export const useUserStore = create<UserStore>()(
                         isCurrentUser && filteredUsers.length > 0
                             ? filteredUsers[0]
                             : isCurrentUser
-                              ? null
+                              ? undefined
                               : state.currentUser;
 
                     return {
                         users: filteredUsers,
                         currentUser: newCurrentUser,
-                        client: newCurrentUser ? getClientInstance(newCurrentUser) : null,
+                        client: newCurrentUser ? getClientInstance(newCurrentUser) : undefined,
                     };
                 });
                 queryClient.invalidateQueries({ queryKey: [userId] });
@@ -86,14 +86,14 @@ export const useUserStore = create<UserStore>()(
 
                     return {
                         users: updatedUsers,
-                        currentUser: state.currentUser?.id === userId ? updatedUser || null : state.currentUser,
+                        currentUser: state.currentUser?.id === userId ? updatedUser || undefined : state.currentUser,
                     };
                 });
             },
 
             logout: () => {
                 set({
-                    currentUser: null,
+                    currentUser: undefined,
                     users: [],
                 });
             },

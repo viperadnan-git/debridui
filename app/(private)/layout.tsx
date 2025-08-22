@@ -25,6 +25,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         if (isHydrated && !currentUser) {
             router.push("/login");
         }
+        if (!currentUser) {
+            const hydrateKey = useUserStore.persist.getOptions().name;
+            if (hydrateKey && !localStorage.getItem(hydrateKey)) router.push("/login");
+        }
     }, [currentUser, isHydrated, router]);
 
     if (!isHydrated && !currentUser) {
