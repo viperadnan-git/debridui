@@ -12,6 +12,7 @@ import {
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
 import { useUserStore } from "../stores/users";
+import Fuse from "fuse.js";
 
 // Response type definitions
 interface FileNode {
@@ -229,14 +230,15 @@ export default class AllDebridClient extends BaseClient {
     async findTorrents(searchQuery: string): Promise<DebridFile[]> {
         await this.syncTorrentStatus();
 
-        const searchTerms = searchQuery.toLowerCase().split(/\s+/);
+        const fuse = new Fuse(Array.from(this.torrentsCache.values()), {
+            keys: ["filename"],
+            threshold: 0.3,
+            includeScore: true,
+            minMatchCharLength: 2,
+        });
+        const results = fuse.search(searchQuery);
 
-        return Array.from(this.torrentsCache.values())
-            .filter(
-                (torrent) =>
-                    torrent.filename && searchTerms.every((term) => torrent.filename!.toLowerCase().includes(term))
-            )
-            .map((torrent) => this.mapToDebridFile(torrent));
+        return results.map((result) => this.mapToDebridFile(result.item));
     }
 
     async getDownloadLink(fileId: string): Promise<DebridLinkInfo> {

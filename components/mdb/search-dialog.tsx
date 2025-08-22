@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "@bprogress/next/app";
 import { CommandDialog, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +9,10 @@ import { Search, Film, Tv, Star, Calendar, HardDrive } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type TraktSearchResult } from "@/lib/trakt";
 import { type DebridFile } from "@/lib/types";
-import { useFileStore } from "@/lib/stores/files";
-import Fuse from "fuse.js";
+import { getFindTorrentsCacheKey } from "@/lib/utils/cache-keys";
+import { useQuery } from "@tanstack/react-query";
+import { useAuthContext } from "@/lib/contexts/auth";
+import { FileItemContextMenu } from "../explorer/file-item-context-menu";
 
 interface SearchDialogProps {
     open: boolean;
@@ -18,36 +20,17 @@ interface SearchDialogProps {
 }
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
-    const [query, setQuery] = useState("");
     const router = useRouter();
+    const { client, currentUser } = useAuthContext();
+    const [query, setQuery] = useState("");
 
-    const { data: searchResults, isLoading } = useTraktSearch(query, open && query.trim().length > 2);
-
-    const fileResults = useMemo(() => {
-        if (!open || !query || query.trim().length < 3) {
-            return [];
-        }
-
-        // Get files from store
-        const files = useFileStore.getState().files;
-        if (files.length === 0) {
-            // Try to load from cache if not in store
-            useFileStore.getState().loadFiles();
-            return [];
-        }
-
-        const fuseOptions = {
-            keys: ["name"],
-            threshold: 0.3,
-            includeScore: true,
-            minMatchCharLength: 2,
-        };
-
-        const fuse = new Fuse(files, fuseOptions);
-        const results = fuse.search(query);
-
-        return results.slice(0, 10).map((result) => result.item);
-    }, [query, open]);
+    const { data: searchResults, isLoading: isTraktSearching } = useTraktSearch(query, open && query.trim().length > 2);
+    const { data: fileResults, isLoading: isFileSearching } = useQuery<DebridFile[]>({
+        queryKey: getFindTorrentsCacheKey(currentUser.id, query),
+        queryFn: () => (client.findTorrents ? client.findTorrents(query) : Promise.resolve([])),
+        enabled: open && query.trim().length > 2 && !!client.findTorrents,
+        staleTime: 5_000,
+    });
 
     const handleSelect = useCallback(
         (result: TraktSearchResult) => {
@@ -79,26 +62,29 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
             const sizeDisplay =
                 parseFloat(sizeInMB) >= 1024 ? `${(parseFloat(sizeInMB) / 1024).toFixed(2)} GB` : `${sizeInMB} MB`;
+            const key = `file-${file.id}-${file.name}`;
 
             return (
                 <CommandItem
-                    key={`file-${file.id}`}
-                    value={`file-${file.id}-${file.name}`}
+                    key={key}
+                    value={key}
                     onSelect={() => handleFileSelect(file)}
                     className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
-                    <div className="flex-1 min-w-0 px-2">
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium truncate text-sm">{file.name}</span>
-                        </div>
-
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                                <HardDrive className="h-3 w-3" />
-                                <span>{sizeDisplay}</span>
+                    <FileItemContextMenu file={file}>
+                        <div className="flex-1 min-w-0 px-2">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium truncate text-sm">{file.name}</span>
                             </div>
-                            {file.status && <span className="capitalize">{file.status}</span>}
+
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                    <HardDrive className="h-3 w-3" />
+                                    <span>{sizeDisplay}</span>
+                                </div>
+                                {file.status && <span className="capitalize">{file.status}</span>}
+                            </div>
                         </div>
-                    </div>
+                    </FileItemContextMenu>
                 </CommandItem>
             );
         },
@@ -182,6 +168,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         [handleSelect]
     );
 
+    const isLoading = isTraktSearching || isFileSearching;
+
     return (
         <CommandDialog
             open={open}
@@ -195,11 +183,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
             <CommandList className="max-h-full overflow-y-auto">
-                {fileResults.length > 0 && (
+                {!isFileSearching && fileResults && fileResults.length > 0 && (
                     <CommandGroup heading="Files">{fileResults.map(renderFileItem)}</CommandGroup>
                 )}
 
-                {!isLoading && searchResults && searchResults.length > 0 && (
+                {!isTraktSearching && searchResults && searchResults.length > 0 && (
                     <CommandGroup heading="Trakt Results">{searchResults.map(renderMediaItem)}</CommandGroup>
                 )}
 
@@ -210,7 +198,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     </div>
                 )}
 
-                {!isLoading && query.trim().length > 2 && !searchResults?.length && !fileResults.length && (
+                {!isLoading && query.trim().length > 2 && !searchResults?.length && !fileResults?.length && (
                     <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
                         <Search className="h-8 w-8 mb-3 opacity-50" />
                         <span className="font-medium">No results found</span>

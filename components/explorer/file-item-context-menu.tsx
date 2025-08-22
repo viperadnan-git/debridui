@@ -140,7 +140,10 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                     <Fragment>
                         <ContextMenuItem
                             className="cursor-pointer"
-                            onClick={() => copyMutation.mutate()}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                copyMutation.mutate();
+                            }}
                             disabled={isAnyActionPending}>
                             {copyMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -151,7 +154,10 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                         </ContextMenuItem>
                         <ContextMenuItem
                             className="cursor-pointer"
-                            onClick={() => downloadMutation.mutate()}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                downloadMutation.mutate();
+                            }}
                             disabled={isAnyActionPending}>
                             {downloadMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -162,7 +168,10 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                         </ContextMenuItem>
                         <ContextMenuItem
                             className="cursor-pointer"
-                            onClick={() => playlistMutation.mutate()}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                playlistMutation.mutate();
+                            }}
                             disabled={isAnyActionPending}>
                             {playlistMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -177,7 +186,10 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                 {file.status === "failed" && (
                     <ContextMenuItem
                         className="cursor-pointer"
-                        onClick={() => retryMutation.mutate()}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            retryMutation.mutate();
+                        }}
                         disabled={isAnyActionPending}>
                         {retryMutation.isPending ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -188,7 +200,10 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                     </ContextMenuItem>
                 )}
                 <ContextMenuItem
-                    onClick={() => deleteMutation.mutate()}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        deleteMutation.mutate();
+                    }}
                     disabled={isAnyActionPending}
                     className="cursor-pointer text-destructive focus:text-destructive">
                     {deleteMutation.isPending ? (
