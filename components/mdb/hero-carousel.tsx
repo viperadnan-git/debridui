@@ -14,7 +14,7 @@ import {
     CarouselApi,
 } from "@/components/ui/carousel";
 import Link from "next/link";
-import { Play, Plus, Info, Star, Calendar } from "lucide-react";
+import { StarIcon, CalendarIcon, InfoIcon, PlayIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -80,13 +80,13 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
                         <div className="flex items-center gap-4 text-white/80">
                             {media.rating && (
                                 <div className="flex items-center gap-1">
-                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                    <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                                     <span className="font-medium">{media.rating.toFixed(1)}</span>
                                 </div>
                             )}
                             {media.year && (
                                 <div className="flex items-center gap-1">
-                                    <Calendar className="h-4 w-4" />
+                                    <CalendarIcon className="h-4 w-4" />
                                     <span>{media.year}</span>
                                 </div>
                             )}
@@ -111,7 +111,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
                         <div className="flex items-center gap-3">
                             <Link href={`${linkHref}#sources`}>
                                 <Button size="lg" className="bg-white text-black hover:bg-white/90 font-semibold px-8">
-                                    <Play className="h-5 w-5 mr-2 fill-current" />
+                                    <PlayIcon className="h-5 w-5 mr-2 fill-current" />
                                     Play
                                 </Button>
                             </Link>
@@ -120,13 +120,10 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
                                     size="lg"
                                     variant="secondary"
                                     className="bg-white/20 text-white border-white/30 hover:bg-white/30 font-semibold px-6">
-                                    <Info className="h-5 w-5 mr-2" />
+                                    <InfoIcon className="h-5 w-5 mr-2" />
                                     More Info
                                 </Button>
                             </Link>
-                            <Button size="lg" variant="ghost" className="text-white hover:bg-white/20 p-2">
-                                <Plus className="h-6 w-6" />
-                            </Button>
                         </div>
                     </div>
                 </div>
@@ -148,66 +145,68 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
 
     return (
         <div className="md:hidden relative w-full aspect-[9/14] overflow-hidden">
-            <Link href={linkHref}>
-                {/* Background Image */}
-                <div className="absolute inset-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={mobileImage}
-                        alt={media.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                    />
-                    {/* Mobile gradients */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                </div>
+            {/* Background Image */}
+            <div className="absolute inset-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={mobileImage}
+                    alt={media.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                />
+                {/* Mobile gradients */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            </div>
 
-                {/* Mobile Content */}
-                <div className="absolute inset-0 flex flex-col justify-between p-4">
-                    {/* Bottom content */}
-                    <div className="space-y-3 mt-auto">
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="border-white/30 text-white bg-black/40 text-xs">
-                                {type === "movie" ? "Movie" : "Series"}
+            {/* Mobile Content */}
+            <div className="absolute inset-0 flex flex-col justify-between p-4">
+                {/* Bottom content */}
+                <div className="space-y-3 mt-auto">
+                    <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="border-white/30 text-white bg-black/40 text-xs">
+                            {type === "movie" ? "Movie" : "Series"}
+                        </Badge>
+                        {media.rating && (
+                            <Badge variant="outline" className="border-white/30 text-white bg-black/40">
+                                <StarIcon className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                                {media.rating.toFixed(1)}
                             </Badge>
-                            {media.rating && (
-                                <Badge variant="outline" className="border-white/30 text-white bg-black/40">
-                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-                                    {media.rating.toFixed(1)}
-                                </Badge>
-                            )}
-                            <Badge className="bg-red-600 text-white text-xs font-bold">#{index + 1}</Badge>
-                        </div>
-
-                        <h2 className="text-white font-bold text-xl leading-tight line-clamp-2">{media.title}</h2>
-
-                        <div className="flex items-center gap-2 text-xs text-white/80">
-                            {media.year && <span>{media.year}</span>}
-                            {media.runtime && (
-                                <span>
-                                    • {Math.floor(media.runtime / 60)}h {media.runtime % 60}m
-                                </span>
-                            )}
-                        </div>
-
-                        {media.overview && (
-                            <p className="text-white/80 text-sm line-clamp-3 leading-relaxed">{media.overview}</p>
                         )}
+                        <Badge className="bg-red-600 text-white text-xs font-bold">#{index + 1}</Badge>
+                    </div>
 
-                        {/* Mobile action buttons */}
-                        <div className="flex items-center gap-2">
+                    <h2 className="text-white font-bold text-xl leading-tight line-clamp-2">{media.title}</h2>
+
+                    <div className="flex items-center gap-2 text-xs text-white/80">
+                        {media.year && <span>{media.year}</span>}
+                        {media.runtime && (
+                            <span>
+                                • {Math.floor(media.runtime / 60)}h {media.runtime % 60}m
+                            </span>
+                        )}
+                    </div>
+
+                    {media.overview && (
+                        <p className="text-white/80 text-sm line-clamp-3 leading-relaxed">{media.overview}</p>
+                    )}
+
+                    {/* Mobile action buttons */}
+                    <div className="flex items-center gap-2">
+                        <Link href={`${linkHref}#sources`}>
                             <Button size="sm" className="bg-white text-black hover:bg-white/90 flex-1">
-                                <Play className="h-4 w-4 mr-1 fill-current" />
+                                <PlayIcon className="h-4 w-4 mr-1 fill-current" />
                                 Play
                             </Button>
+                        </Link>
+                        <Link href={linkHref}>
                             <Button size="sm" variant="ghost" className="text-white hover:bg-white/20 p-2">
-                                <Plus className="h-4 w-4" />
+                                <InfoIcon className="h-4 w-4" />
                             </Button>
-                        </div>
+                        </Link>
                     </div>
                 </div>
-            </Link>
+            </div>
         </div>
     );
 });

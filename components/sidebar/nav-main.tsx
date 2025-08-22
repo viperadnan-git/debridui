@@ -2,13 +2,9 @@
 
 import { type LucideIcon } from "lucide-react";
 
-import {
-    SidebarGroup,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { useSidebar } from "../ui/sidebar";
 
 export function NavMain({
     items,
@@ -27,6 +23,7 @@ export function NavMain({
     }[];
     onAction?: (action: string) => void;
 }) {
+    const { setOpenMobile } = useSidebar();
     return (
         <SidebarGroup>
             <SidebarMenu>
@@ -37,7 +34,10 @@ export function NavMain({
                             asChild={!item.action}
                             onClick={
                                 item.action
-                                    ? () => onAction?.(item.action!)
+                                    ? () => {
+                                          onAction?.(item.action!);
+                                          setOpenMobile(false);
+                                      }
                                     : undefined
                             }>
                             {item.action ? (
@@ -46,7 +46,7 @@ export function NavMain({
                                     <span>{item.title}</span>
                                 </>
                             ) : (
-                                <Link href={item.url}>
+                                <Link href={item.url} onClick={() => setOpenMobile(false)}>
                                     {item.icon && <item.icon />}
                                     <span>{item.title}</span>
                                 </Link>
