@@ -19,7 +19,7 @@ export function SearchBar({ value, onChange, placeholder = "Search files...", on
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="pl-10 pr-10"
+                className="px-10 text-sm"
                 onKeyDown={(e) => {
                     if (e.key === "Enter") {
                         onSubmit?.(value);

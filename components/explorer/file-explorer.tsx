@@ -61,7 +61,7 @@ export function FileExplorer() {
 
     return (
         <>
-            <div className="md:mx-auto md:w-full md:max-w-4xl">
+            <div className="md:mx-auto md:w-full md:max-w-4xl pb-24">
                 <div className="flex flex-col gap-4">
                     <h1 className="text-2xl font-bold">File Explorer</h1>
                     <AddContent />
