@@ -22,7 +22,8 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "prettier": "prettier --write . --ignore-path .gitignore"
+        "prettier": "prettier --write . --ignore-path .gitignore",
+        "typecheck": "tsc --noEmit"
     },
     "dependencies": {
         "@bprogress/next": "^3.2.12",
