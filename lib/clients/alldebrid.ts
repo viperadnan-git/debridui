@@ -78,22 +78,28 @@ interface RetryResponse {
     magnets: ({ magnet: string; message?: string } & ErrorResponse)[];
 }
 
+export class AuthError extends Error {
+    code: string;
+    constructor(message: string, code: string) {
+        super(message);
+        this.name = "AuthError";
+        this.code = code;
+    }
+}
+
 export default class AllDebridClient extends BaseClient {
     private readonly sessionId: number;
     private counter: number = 0;
     private readonly torrentsCache = new Map<number, TorrentStatus>();
     private torrentOrder: number[] = []; // Maintains order with newest first
 
-    constructor(private readonly account: User) {
-        super();
+    constructor(user: User) {
+        super(user);
         this.sessionId = Math.floor(Math.random() * 1000000);
     }
 
-    private async makeRequest<T>(
-        path: string,
-        options: RequestInit = {}
-    ): Promise<T> {
-        const { apiKey } = this.account;
+    private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+        const { apiKey } = this.user;
         const url = `https://api.alldebrid.com/v4.1/${path}?agent=${USER_AGENT}`;
 
         const response = await fetch(url, {
@@ -105,9 +111,7 @@ export default class AllDebridClient extends BaseClient {
         });
 
         if (!response.ok) {
-            throw new Error(
-                `API request failed for ${path}: ${response.statusText}`
-            );
+            throw new Error(`API request failed for ${path}: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -190,9 +194,7 @@ export default class AllDebridClient extends BaseClient {
             await this.delay(1000);
         }
 
-        throw new Error(
-            "Authentication timeout: PIN was not activated within the time limit"
-        );
+        throw new Error("Authentication timeout: PIN was not activated within the time limit");
     }
 
     async getTorrentList({
@@ -232,10 +234,7 @@ export default class AllDebridClient extends BaseClient {
         return Array.from(this.torrentsCache.values())
             .filter(
                 (torrent) =>
-                    torrent.filename &&
-                    searchTerms.every((term) =>
-                        torrent.filename!.toLowerCase().includes(term)
-                    )
+                    torrent.filename && searchTerms.every((term) => torrent.filename!.toLowerCase().includes(term))
             )
             .map((torrent) => this.mapToDebridFile(torrent));
     }
@@ -264,13 +263,10 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         formData.append("id[]", torrentId);
 
-        const response = await this.makeRequest<{ magnets: TorrentFile[] }>(
-            `magnet/files`,
-            {
-                method: "POST",
-                body: formData,
-            }
-        );
+        const response = await this.makeRequest<{ magnets: TorrentFile[] }>(`magnet/files`, {
+            method: "POST",
+            body: formData,
+        });
 
         const torrentFile = response.magnets[0];
         return this.convertFileNodes(torrentFile.files);
@@ -280,47 +276,34 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         formData.append("id", torrentId);
 
-        const response = await this.makeRequest<{ message: string }>(
-            `magnet/delete`,
-            {
-                method: "POST",
-                body: formData,
-            }
-        );
+        const response = await this.makeRequest<{ message: string }>(`magnet/delete`, {
+            method: "POST",
+            body: formData,
+        });
 
         this.removeTorrentFromCache(parseInt(torrentId));
         return response.message;
     }
 
-    async restartTorrents(
-        torrentIds: string[]
-    ): Promise<Record<string, string>> {
+    async restartTorrents(torrentIds: string[]): Promise<Record<string, string>> {
         const formData = new FormData();
         torrentIds.forEach((id) => formData.append("ids[]", id));
 
-        const response: RetryResponse = await this.makeRequest(
-            `magnet/restart`,
-            {
-                method: "POST",
-                body: formData,
-            }
-        );
+        const response: RetryResponse = await this.makeRequest(`magnet/restart`, {
+            method: "POST",
+            body: formData,
+        });
 
         return response.magnets.reduce(
             (results, torrent) => {
-                results[torrent.magnet] =
-                    torrent.message ||
-                    torrent.error?.message ||
-                    "Unknown error occurred";
+                results[torrent.magnet] = torrent.message || torrent.error?.message || "Unknown error occurred";
                 return results;
             },
             {} as Record<string, string>
         );
     }
 
-    async addDownloads(
-        uris: string[]
-    ): Promise<Record<string, DebridFileAddStatus>> {
+    async addDownloads(uris: string[]): Promise<Record<string, DebridFileAddStatus>> {
         const httpUris: string[] = [];
         const magnetUris: string[] = [];
 
@@ -334,41 +317,28 @@ export default class AllDebridClient extends BaseClient {
         }
 
         const [httpResults, magnetResults] = await Promise.allSettled([
-            httpUris.length > 0
-                ? this.addHttpDownloads(httpUris)
-                : Promise.resolve({}),
-            magnetUris.length > 0
-                ? this.addMagnetLinks(magnetUris)
-                : Promise.resolve({}),
+            httpUris.length > 0 ? this.addHttpDownloads(httpUris) : Promise.resolve({}),
+            magnetUris.length > 0 ? this.addMagnetLinks(magnetUris) : Promise.resolve({}),
         ]);
 
-        const httpData =
-            httpResults.status === "fulfilled" ? httpResults.value : {};
-        const magnetData =
-            magnetResults.status === "fulfilled" ? magnetResults.value : {};
+        const httpData = httpResults.status === "fulfilled" ? httpResults.value : {};
+        const magnetData = magnetResults.status === "fulfilled" ? magnetResults.value : {};
 
         return { ...httpData, ...magnetData };
     }
 
-    async addMagnetLinks(
-        magnetUris: string[]
-    ): Promise<Record<string, DebridFileAddStatus>> {
+    async addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
         const formData = new FormData();
         magnetUris.forEach((magnet) => formData.append("magnets[]", magnet));
 
-        const response: AddTorrentResponse = await this.makeRequest(
-            `magnet/upload`,
-            {
-                method: "POST",
-                body: formData,
-            }
-        );
+        const response: AddTorrentResponse = await this.makeRequest(`magnet/upload`, {
+            method: "POST",
+            body: formData,
+        });
 
         return response.magnets.reduce(
             (results, torrent) => {
-                const message =
-                    torrent.error?.message ||
-                    `Successfully added: ${torrent.name}`;
+                const message = torrent.error?.message || `Successfully added: ${torrent.name}`;
                 results[torrent.magnet] = {
                     id: torrent.id,
                     message,
@@ -381,25 +351,18 @@ export default class AllDebridClient extends BaseClient {
         );
     }
 
-    async uploadTorrentFiles(
-        files: File[]
-    ): Promise<Record<string, DebridFileAddStatus>> {
+    async uploadTorrentFiles(files: File[]): Promise<Record<string, DebridFileAddStatus>> {
         const formData = new FormData();
         files.forEach((file) => formData.append("files[]", file));
 
-        const response: AddFileResponse = await this.makeRequest(
-            `magnet/upload/file`,
-            {
-                method: "POST",
-                body: formData,
-            }
-        );
+        const response: AddFileResponse = await this.makeRequest(`magnet/upload/file`, {
+            method: "POST",
+            body: formData,
+        });
 
         return response.files.reduce(
             (results, file) => {
-                const message =
-                    file.error?.message ||
-                    `Successfully uploaded: ${file.name}`;
+                const message = file.error?.message || `Successfully uploaded: ${file.name}`;
                 results[file.file] = {
                     id: file.id,
                     message,
@@ -412,9 +375,7 @@ export default class AllDebridClient extends BaseClient {
         );
     }
 
-    private async addHttpDownloads(
-        httpUris: string[]
-    ): Promise<Record<string, DebridFileAddStatus>> {
+    private async addHttpDownloads(httpUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
         const results: Record<string, DebridFileAddStatus> = {};
         const downloadedFiles: File[] = [];
 
@@ -426,10 +387,7 @@ export default class AllDebridClient extends BaseClient {
                 } catch (error) {
                     results[uri] = {
                         message: `Failed to download ${uri}: ${error}`,
-                        error:
-                            error instanceof Error
-                                ? error.message
-                                : String(error),
+                        error: error instanceof Error ? error.message : String(error),
                         is_cached: false,
                     };
                 }
@@ -437,8 +395,7 @@ export default class AllDebridClient extends BaseClient {
         );
 
         if (downloadedFiles.length > 0) {
-            const uploadResults =
-                await this.uploadTorrentFiles(downloadedFiles);
+            const uploadResults = await this.uploadTorrentFiles(downloadedFiles);
             Object.assign(results, uploadResults);
         }
 
@@ -452,8 +409,7 @@ export default class AllDebridClient extends BaseClient {
         }
 
         const blob = await response.blob();
-        const contentType =
-            response.headers.get("content-type") || "application/x-bittorrent";
+        const contentType = response.headers.get("content-type") || "application/x-bittorrent";
 
         return new File([blob], uri, { type: contentType });
     }
@@ -483,9 +439,7 @@ export default class AllDebridClient extends BaseClient {
             downloaded: torrent.downloaded,
             peers: torrent.seeders,
             createdAt: new Date(torrent.uploadDate * 1000),
-            completedAt: torrent.completionDate
-                ? new Date(torrent.completionDate * 1000)
-                : undefined,
+            completedAt: torrent.completionDate ? new Date(torrent.completionDate * 1000) : undefined,
             error: status === "failed" ? torrent.status : undefined,
         };
     }
@@ -495,13 +449,10 @@ export default class AllDebridClient extends BaseClient {
         formData.append("session", this.sessionId.toString());
         formData.append("counter", this.counter.toString());
 
-        const response: LiveModeResponse = await this.makeRequest(
-            `magnet/status`,
-            {
-                method: "POST",
-                body: formData,
-            }
-        );
+        const response: LiveModeResponse = await this.makeRequest(`magnet/status`, {
+            method: "POST",
+            body: formData,
+        });
 
         this.counter = response.counter;
 
@@ -553,21 +504,15 @@ export default class AllDebridClient extends BaseClient {
 
     private removeTorrentFromCache(torrentId: number): void {
         if (this.torrentsCache.delete(torrentId)) {
-            this.torrentOrder = this.torrentOrder.filter(
-                (id) => id !== torrentId
-            );
+            this.torrentOrder = this.torrentOrder.filter((id) => id !== torrentId);
         }
     }
 
-    private convertFileNodes(
-        nodes: FileNode[] | FolderNode[]
-    ): DebridFileNode[] {
+    private convertFileNodes(nodes: FileNode[] | FolderNode[]): DebridFileNode[] {
         return nodes.map(this.convertSingleNode);
     }
 
-    private convertSingleNode = (
-        node: FileNode | FolderNode
-    ): DebridFileNode => {
+    private convertSingleNode = (node: FileNode | FolderNode): DebridFileNode => {
         if ("e" in node) {
             // Folder node
             return {
@@ -603,14 +548,14 @@ export default class AllDebridClient extends BaseClient {
         return statusMap[statusCode] || "unknown";
     }
 
-    private static validateResponse(data: {
-        status: string;
-        error?: { message?: string };
-    }): void {
+    private static validateResponse(data: { status: string; error?: { message?: string; code?: string } }): void {
         if (data.status !== "success") {
-            throw new Error(
-                data.error?.message || "API request failed with unknown error"
-            );
+            const message = data.error?.message || "API request failed";
+            const code = data.error?.code || "Unknown";
+            if (["AUTH_MISSING_APIKEY", "AUTH_BAD_APIKEY", "AUTH_BLOCKED", "AUTH_USER_BANNED"].includes(code)) {
+                throw new AuthError(message, code);
+            }
+            throw new Error(message);
         }
     }
 

@@ -11,10 +11,10 @@ interface UserStore {
     isHydrated: boolean;
     client: AllDebridClient | null;
 
-    addAccount: (user: User) => void;
-    removeAccount: (userId: string) => void;
-    switchAccount: (userId: string) => void;
-    updateAccount: (userId: string, user: Partial<User>) => void;
+    addUser: (user: User) => void;
+    removeUser: (userId: string) => void;
+    switchUser: (userId: string) => void;
+    updateUser: (userId: string, user: Partial<User>) => void;
     logout: () => void;
     setHydrated: () => void;
     login: (apiKey: string, type: string) => Promise<User | null>;
@@ -29,29 +29,27 @@ export const useUserStore = create<UserStore>()(
             isHydrated: false,
             client: null,
 
-            addAccount: (user) => {
+            addUser: (user) => {
                 set((state) => {
                     const exists = state.users.some((u) => u.id === user.id);
                     if (exists) {
                         return {
-                            users: state.users.map((u) =>
-                                u.id === user.id ? user : u
-                            ),
+                            users: state.users.map((u) => (u.id === user.id ? user : u)),
                             currentUser: user,
+                            client: getClientInstance(user),
                         };
                     }
                     return {
                         users: [...state.users, user],
                         currentUser: user,
+                        client: getClientInstance(user),
                     };
                 });
             },
 
-            removeAccount: (userId) => {
+            removeUser: (userId) => {
                 set((state) => {
-                    const filteredUsers = state.users.filter(
-                        (u) => u.id !== userId
-                    );
+                    const filteredUsers = state.users.filter((u) => u.id !== userId);
                     const isCurrentUser = state.currentUser?.id === userId;
                     const newCurrentUser =
                         isCurrentUser && filteredUsers.length > 0
@@ -63,37 +61,32 @@ export const useUserStore = create<UserStore>()(
                     return {
                         users: filteredUsers,
                         currentUser: newCurrentUser,
+                        client: newCurrentUser ? getClientInstance(newCurrentUser) : null,
                     };
                 });
                 queryClient.invalidateQueries({ queryKey: [userId] });
             },
 
-            switchAccount: (userId) => {
+            switchUser: (userId) => {
                 set((state) => {
                     const user = state.users.find((u) => u.id === userId);
                     if (!user) return state;
 
                     return {
                         currentUser: user,
+                        client: getClientInstance(user),
                     };
                 });
             },
 
-            updateAccount: (userId, updates) => {
+            updateUser: (userId, updates) => {
                 set((state) => {
-                    const updatedUsers = state.users.map((u) =>
-                        u.id === userId ? { ...u, ...updates } : u
-                    );
-                    const updatedUser = updatedUsers.find(
-                        (u) => u.id === userId
-                    );
+                    const updatedUsers = state.users.map((u) => (u.id === userId ? { ...u, ...updates } : u));
+                    const updatedUser = updatedUsers.find((u) => u.id === userId);
 
                     return {
                         users: updatedUsers,
-                        currentUser:
-                            state.currentUser?.id === userId
-                                ? updatedUser || null
-                                : state.currentUser,
+                        currentUser: state.currentUser?.id === userId ? updatedUser || null : state.currentUser,
                     };
                 });
             },
@@ -117,10 +110,7 @@ export const useUserStore = create<UserStore>()(
                 });
             },
 
-            login: async (
-                apiKey: string,
-                type: string
-            ): Promise<User | null> => {
+            login: async (apiKey: string, type: string): Promise<User | null> => {
                 try {
                     const ClientClass = getClient({ type });
                     if (!ClientClass) {
@@ -129,19 +119,17 @@ export const useUserStore = create<UserStore>()(
                     }
 
                     const user = await ClientClass.getUser(apiKey);
-                    get().addAccount(user);
+                    get().addUser(user);
                     toast.success(`Logged in as ${user.username}`);
                     return user;
                 } catch (error) {
-                    toast.error(
-                        (error as Error).message || "Failed to authenticate"
-                    );
+                    toast.error((error as Error).message || "Failed to authenticate");
                     return null;
                 }
             },
 
             refreshUser: async (userId: string) => {
-                const { users, updateAccount } = get();
+                const { users, updateUser: updateAccount } = get();
                 const user = users.find((u) => u.id === userId);
                 if (!user) return;
 
@@ -152,9 +140,7 @@ export const useUserStore = create<UserStore>()(
                     const updatedUser = await ClientClass.getUser(user.apiKey);
                     updateAccount(userId, updatedUser);
                 } catch (error) {
-                    toast.error(
-                        `Failed to refresh user: ${(error as Error).message}`
-                    );
+                    toast.error(`Failed to refresh user: ${(error as Error).message}`);
                 }
             },
         }),

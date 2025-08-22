@@ -1,4 +1,4 @@
-Run `git --no-pager diff` and analyze the current state of the code before and after the changes
+Run `git --no-pager diff --cached` and analyze the current state of the code before and after the changes
 
 - Focus on enhancing the functionality while maintaining or improving performance
 - Ensure that any modifications do not introduce new bugs and adhere to the coding standards

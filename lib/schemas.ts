@@ -15,7 +15,7 @@ export const userSchema = z.object({
     type: z.enum(Object.values(AccountType) as [string, ...string[]]),
 });
 
-export const addAccountSchema = z.object({
+export const addUserSchema = z.object({
     type: z.enum(Object.values(AccountType) as [string, ...string[]]),
     apiKey: z.string().trim().min(1),
 });

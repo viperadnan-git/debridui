@@ -9,7 +9,7 @@ import { useUserStore } from "@/lib/stores/users";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { AccountType, addAccountSchema } from "@/lib/schemas";
+import { AccountType, addUserSchema } from "@/lib/schemas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { toast } from "sonner";
 import { AllDebridClient, getClient } from "@/lib/clients";
@@ -20,9 +20,9 @@ import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
-    const { addAccount, currentUser: activeAccount } = useUserStore(
+    const { addUser, currentUser } = useUserStore(
         useShallow((state) => ({
-            addAccount: state.addAccount,
+            addUser: state.addUser,
             currentUser: state.currentUser,
         }))
     );
@@ -30,23 +30,23 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     const [isAllDebridLoading, setIsAllDebridLoading] = useState(false);
 
     useEffect(() => {
-        if (activeAccount) {
+        if (currentUser) {
             router.push("/dashboard");
         }
-    }, [activeAccount, router]);
+    }, [currentUser, router]);
 
-    const form = useForm<z.infer<typeof addAccountSchema>>({
-        resolver: zodResolver(addAccountSchema),
+    const form = useForm<z.infer<typeof addUserSchema>>({
+        resolver: zodResolver(addUserSchema),
         defaultValues: {
             apiKey: "",
             type: undefined,
         },
     });
 
-    async function onSubmit(values: z.infer<typeof addAccountSchema>) {
+    async function onSubmit(values: z.infer<typeof addUserSchema>) {
         try {
             const user = await getClient({ type: values.type }).getUser(values.apiKey);
-            addAccount(user);
+            addUser(user);
             toast.success(`Logged in as ${user.username} (${user.type})`);
         } catch (error) {
             toast.error((error as Error).message);
@@ -65,7 +65,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 const user = await getClient({
                     type: AccountType.ALLDEBRID,
                 }).getUser(apiKey!);
-                addAccount(user);
+                addUser(user);
                 toast.success(`Logged in as ${user.username} (${user.type})`);
             } else {
                 toast.error("Failed to login with AllDebrid");

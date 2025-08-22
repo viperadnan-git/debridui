@@ -15,42 +15,23 @@ import { useUserStore } from "@/lib/stores/users";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { AccountType, addAccountSchema } from "@/lib/schemas";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "../ui/form";
+import { AccountType, addUserSchema } from "@/lib/schemas";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { formatAccountType } from "@/lib/utils";
 
-export function AddAccount({
-    isOpen,
-    onOpenChange,
-}: {
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
-}) {
+export function AddAccount({ isOpen, onOpenChange }: { isOpen: boolean; onOpenChange: (open: boolean) => void }) {
     const login = useUserStore((state) => state.login);
 
-    const form = useForm<z.infer<typeof addAccountSchema>>({
-        resolver: zodResolver(addAccountSchema),
+    const form = useForm<z.infer<typeof addUserSchema>>({
+        resolver: zodResolver(addUserSchema),
         defaultValues: {
             apiKey: "",
             type: undefined,
         },
     });
 
-    async function onSubmit(values: z.infer<typeof addAccountSchema>) {
+    async function onSubmit(values: z.infer<typeof addUserSchema>) {
         const success = await login(values.apiKey, values.type);
         if (success) {
             form.reset();
@@ -65,9 +46,7 @@ export function AddAccount({
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <DialogHeader>
                             <DialogTitle>Add Account</DialogTitle>
-                            <DialogDescription>
-                                Add a new account to your account list.
-                            </DialogDescription>
+                            <DialogDescription>Add a new account to your account list.</DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 mt-4">
                             <FormField
@@ -75,26 +54,18 @@ export function AddAccount({
                                 name="type"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select an account type" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {Object.values(AccountType).map(
-                                                    (type) => (
-                                                        <SelectItem
-                                                            key={type}
-                                                            value={type}>
-                                                            {formatAccountType(
-                                                                type
-                                                            )}
-                                                        </SelectItem>
-                                                    )
-                                                )}
+                                                {Object.values(AccountType).map((type) => (
+                                                    <SelectItem key={type} value={type}>
+                                                        {formatAccountType(type)}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -118,15 +89,8 @@ export function AddAccount({
                                 <DialogClose asChild>
                                     <Button variant="outline">Cancel</Button>
                                 </DialogClose>
-                                <Button
-                                    type="submit"
-                                    disabled={
-                                        form.formState.isSubmitting ||
-                                        !form.formState.isValid
-                                    }>
-                                    {form.formState.isSubmitting
-                                        ? "Adding..."
-                                        : "Add Account"}
+                                <Button type="submit" disabled={form.formState.isSubmitting || !form.formState.isValid}>
+                                    {form.formState.isSubmitting ? "Adding..." : "Add Account"}
                                 </Button>
                             </DialogFooter>
                         </div>

@@ -5,13 +5,14 @@ import { AppSidebar } from "@/components/sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SearchProvider } from "@/components/mdb/search-provider";
 import { useRouter } from "@bprogress/next/app";
-import { useEffect } from "react";
 import { AuthContext } from "@/lib/contexts/auth";
 import { useUserStore } from "@/lib/stores/users";
 import { useShallow } from "zustand/react/shallow";
 import { Separator } from "@/components/ui/separator";
+import { useEffect } from "react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+    const router = useRouter();
     const { isHydrated, currentUser, client } = useUserStore(
         useShallow((state) => ({
             isHydrated: state.isHydrated,
@@ -19,7 +20,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             client: state.client,
         }))
     );
-    const router = useRouter();
 
     useEffect(() => {
         if (isHydrated && !currentUser) {
@@ -27,7 +27,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }
     }, [currentUser, isHydrated, router]);
 
-    if (!isHydrated || !currentUser) {
+    if (!isHydrated && !currentUser) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <div className="animate-pulse text-muted-foreground">Loading...</div>

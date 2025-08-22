@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-    ChevronsUpDown,
-    Plus,
-    User,
-    Check,
-    Trash2,
-    LogOut,
-} from "lucide-react";
+import { ChevronsUpDown, Plus, User, Check, Trash2, LogOut } from "lucide-react";
 
 import {
     DropdownMenu,
@@ -18,12 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    useSidebar,
-} from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -43,16 +31,15 @@ import { useUserStore } from "@/lib/stores/users";
 import { useShallow } from "zustand/react/shallow";
 
 export function AccountSwitcher() {
-    const { users, currentUser, switchAccount, removeAccount, logout } =
-        useUserStore(
-            useShallow((state) => ({
-                users: state.users,
-                currentUser: state.currentUser,
-                switchAccount: state.switchAccount,
-                removeAccount: state.removeAccount,
-                logout: state.logout,
-            }))
-        );
+    const { users, currentUser, switchAccount, removeAccount, logout } = useUserStore(
+        useShallow((state) => ({
+            users: state.users,
+            currentUser: state.currentUser,
+            switchAccount: state.switchUser,
+            removeAccount: state.removeUser,
+            logout: state.logout,
+        }))
+    );
     const { isMobile } = useSidebar();
     const router = useRouter();
     const [isAddAccountOpen, setIsAddAccountOpen] = React.useState(false);
@@ -90,12 +77,8 @@ export function AccountSwitcher() {
                                     className="size-7"
                                 />
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-bold">
-                                        {currentUser.username}
-                                    </span>
-                                    <span className="truncate text-xs">
-                                        {formatAccountType(currentUser.type)}
-                                    </span>
+                                    <span className="truncate font-bold">{currentUser.username}</span>
+                                    <span className="truncate text-xs">{formatAccountType(currentUser.type)}</span>
                                 </div>
                                 <ChevronsUpDown className="ml-auto" />
                             </SidebarMenuButton>
@@ -105,9 +88,7 @@ export function AccountSwitcher() {
                             align="start"
                             side={isMobile ? "bottom" : "right"}
                             sideOffset={4}>
-                            <DropdownMenuLabel className="text-muted-foreground text-xs">
-                                Accounts
-                            </DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-muted-foreground text-xs">Accounts</DropdownMenuLabel>
                             {users.map((user) => (
                                 <DropdownMenuItem
                                     key={user.id}
@@ -118,52 +99,39 @@ export function AccountSwitcher() {
                                             <User className="size-3.5 shrink-0" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-sm font-medium">
-                                                {user.username}
-                                            </span>
+                                            <span className="text-sm font-medium">{user.username}</span>
                                             <span className="text-xs text-muted-foreground">
                                                 {formatAccountType(user.type)}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        {user.id === currentUser.id && (
-                                            <Check className="size-3" />
+                                        {user.id === currentUser.id && <Check className="size-3" />}
+                                        {users.length > 1 && user.id !== currentUser.id && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="size-5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setDeleteUserId(user.id);
+                                                }}>
+                                                <Trash2 className="size-3" />
+                                            </Button>
                                         )}
-                                        {users.length > 1 &&
-                                            user.id !== currentUser.id && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="size-5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setDeleteUserId(
-                                                            user.id
-                                                        );
-                                                    }}>
-                                                    <Trash2 className="size-3" />
-                                                </Button>
-                                            )}
                                     </div>
                                 </DropdownMenuItem>
                             ))}
                             <DropdownMenuSeparator />
 
-                            <DropdownMenuItem
-                                className="gap-2 p-2"
-                                onClick={() => setIsAddAccountOpen(true)}>
+                            <DropdownMenuItem className="gap-2 p-2" onClick={() => setIsAddAccountOpen(true)}>
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                     <Plus className="size-4" />
                                 </div>
-                                <div className="text-muted-foreground font-medium">
-                                    Add account
-                                </div>
+                                <div className="text-muted-foreground font-medium">Add account</div>
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem
-                                className="gap-2 p-2 text-red-600"
-                                onClick={handleLogout}>
+                            <DropdownMenuItem className="gap-2 p-2 text-red-600" onClick={handleLogout}>
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                     <LogOut className="size-4" />
                                 </div>
@@ -174,30 +142,21 @@ export function AccountSwitcher() {
                 </SidebarMenuItem>
             </SidebarMenu>
 
-            <AddAccount
-                isOpen={isAddAccountOpen}
-                onOpenChange={setIsAddAccountOpen}
-            />
+            <AddAccount isOpen={isAddAccountOpen} onOpenChange={setIsAddAccountOpen} />
 
-            <AlertDialog
-                open={!!deleteUserId}
-                onOpenChange={() => setDeleteUserId(null)}>
+            <AlertDialog open={!!deleteUserId} onOpenChange={() => setDeleteUserId(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Remove Account</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to remove this account?
-                            You&apos;ll need to login again with your API key to
-                            access it.
+                            Are you sure you want to remove this account? You&apos;ll need to login again with your API
+                            key to access it.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={() =>
-                                deleteUserId &&
-                                handleRemoveAccount(deleteUserId)
-                            }
+                            onClick={() => deleteUserId && handleRemoveAccount(deleteUserId)}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                             Remove
                         </AlertDialogAction>
