@@ -21,10 +21,8 @@ interface FileStoreState {
     setSortBy: (sortBy: string) => void;
     setSortOrder: (sortOrder: "asc" | "desc") => void;
     removeTorrent: (client: AllDebridClient, fileId: string) => Promise<string>;
-    retryFiles: (
-        client: AllDebridClient,
-        fileIds: string[]
-    ) => Promise<Record<string, string>>;
+    retryFiles: (client: AllDebridClient, fileIds: string[]) => Promise<Record<string, string>>;
+    loadFiles: () => DebridFile[];
 }
 
 const initialState = {
@@ -62,7 +60,6 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
     sortAndSetFiles: (files: DebridFile[]) => {
         const { sortBy, sortOrder, sortChanged } = get();
         if (sortBy === "date" && sortOrder === "desc" && !sortChanged) {
-            console.log("skipping sort");
             set({ files });
             return;
         }
@@ -107,5 +104,16 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
             queryKey: [currentUser?.id, "findTorrents"],
         });
         return message;
+    },
+    loadFiles: () => {
+        const currentUser = useUserStore.getState().currentUser;
+        const cachedFiles = queryClient.getQueryData([currentUser?.id, "getTorrentList", 0]) as
+            | { files?: DebridFile[] }
+            | undefined;
+        if (cachedFiles?.files) {
+            get().addFiles(cachedFiles.files);
+            return cachedFiles.files;
+        }
+        return [];
     },
 }));

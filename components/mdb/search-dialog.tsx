@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "@bprogress/next/app";
 import { CommandDialog, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { useTraktSearch } from "@/hooks/use-trakt";
-import { Search, Film, Tv, Star, Calendar } from "lucide-react";
+import { Search, Film, Tv, Star, Calendar, HardDrive } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type TraktSearchResult } from "@/lib/trakt";
+import { type DebridFile } from "@/lib/types";
+import { useFileStore } from "@/lib/stores/files";
+import Fuse from "fuse.js";
 
 interface SearchDialogProps {
     open: boolean;
@@ -20,6 +23,32 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
     const { data: searchResults, isLoading } = useTraktSearch(query, open && query.trim().length > 2);
 
+    const fileResults = useMemo(() => {
+        if (!open || !query || query.trim().length < 3) {
+            return [];
+        }
+
+        // Get files from store
+        const files = useFileStore.getState().files;
+        if (files.length === 0) {
+            // Try to load from cache if not in store
+            useFileStore.getState().loadFiles();
+            return [];
+        }
+
+        const fuseOptions = {
+            keys: ["name"],
+            threshold: 0.3,
+            includeScore: true,
+            minMatchCharLength: 2,
+        };
+
+        const fuse = new Fuse(files, fuseOptions);
+        const results = fuse.search(query);
+
+        return results.slice(0, 10).map((result) => result.item);
+    }, [query, open]);
+
     const handleSelect = useCallback(
         (result: TraktSearchResult) => {
             const media = result.movie || result.show;
@@ -31,7 +60,49 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             onOpenChange(false);
             setQuery("");
         },
-        [router, onOpenChange, setQuery]
+        [router, onOpenChange]
+    );
+
+    const handleFileSelect = useCallback(
+        (file: DebridFile) => {
+            const searchParams = new URLSearchParams();
+            searchParams.set("q", file.name);
+            router.push(`/files?${searchParams.toString()}`);
+            onOpenChange(false);
+            setQuery("");
+        },
+        [router, onOpenChange]
+    );
+
+    const renderFileItem = useCallback(
+        (file: DebridFile) => {
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            const sizeDisplay =
+                parseFloat(sizeInMB) >= 1024 ? `${(parseFloat(sizeInMB) / 1024).toFixed(2)} GB` : `${sizeInMB} MB`;
+
+            return (
+                <CommandItem
+                    key={`file-${file.id}`}
+                    value={`file-${file.id}-${file.name}`}
+                    onSelect={() => handleFileSelect(file)}
+                    className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
+                    <div className="flex-1 min-w-0 px-2">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium truncate text-sm">{file.name}</span>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                                <HardDrive className="h-3 w-3" />
+                                <span>{sizeDisplay}</span>
+                            </div>
+                            {file.status && <span className="capitalize">{file.status}</span>}
+                        </div>
+                    </div>
+                </CommandItem>
+            );
+        },
+        [handleFileSelect]
     );
 
     const renderMediaItem = useCallback(
@@ -124,6 +195,14 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
             <CommandList className="max-h-full overflow-y-auto">
+                {fileResults.length > 0 && (
+                    <CommandGroup heading="Files">{fileResults.map(renderFileItem)}</CommandGroup>
+                )}
+
+                {!isLoading && searchResults && searchResults.length > 0 && (
+                    <CommandGroup heading="Trakt Results">{searchResults.map(renderMediaItem)}</CommandGroup>
+                )}
+
                 {isLoading && query.trim().length > 2 && (
                     <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
                         <Search className="h-8 w-8 animate-spin mb-3 opacity-50" />
@@ -131,7 +210,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     </div>
                 )}
 
-                {!isLoading && query.trim().length > 2 && (!searchResults || searchResults.length === 0) && (
+                {!isLoading && query.trim().length > 2 && !searchResults?.length && !fileResults.length && (
                     <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
                         <Search className="h-8 w-8 mb-3 opacity-50" />
                         <span className="font-medium">No results found</span>
@@ -145,10 +224,6 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         <span className="font-medium">Start typing to search</span>
                         <span className="text-xs mt-1">Type at least 3 characters</span>
                     </div>
-                )}
-
-                {!isLoading && searchResults && searchResults.length > 0 && (
-                    <CommandGroup heading="Trakt Results">{searchResults.map(renderMediaItem)}</CommandGroup>
                 )}
             </CommandList>
         </CommandDialog>
