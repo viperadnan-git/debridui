@@ -86,9 +86,9 @@ function AddHashButton({ magnet }: { magnet: string }) {
         return (
             <div className="flex items-center gap-1">
                 <Button
-                    // variant="ghost"
+                    variant="ghost"
                     size="icon"
-                    className="size-8 hover:text-destructive"
+                    className="size-8 text-destructive/80 hover:text-destructive"
                     onClick={() => handleRemove()}>
                     <Trash2Icon className="size-4" />
                 </Button>
