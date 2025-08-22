@@ -2,7 +2,7 @@ import { DebridFile } from "@/lib/types";
 import { create } from "zustand";
 import { PAGE_SIZE } from "../constants";
 import { queryClient } from "../query-client";
-import AllDebridClient from "../clients/alldebrid";
+import { DebridClient } from "../clients";
 import { useSelectionStore } from "./selection";
 import { sortTorrentFiles } from "../utils/file";
 import { useUserStore } from "./users";
@@ -20,8 +20,8 @@ interface FileStoreState {
     setOffset: (offset: number) => void;
     setSortBy: (sortBy: string) => void;
     setSortOrder: (sortOrder: "asc" | "desc") => void;
-    removeTorrent: (client: AllDebridClient, fileId: string) => Promise<string>;
-    retryFiles: (client: AllDebridClient, fileIds: string[]) => Promise<Record<string, string>>;
+    removeTorrent: (client: DebridClient, fileId: string) => Promise<string>;
+    retryFiles: (client: DebridClient, fileIds: string[]) => Promise<Record<string, string>>;
     loadFiles: () => DebridFile[];
 }
 
@@ -80,7 +80,7 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
         set({ sortOrder });
         get().sortAndSetFiles(get().files);
     },
-    removeTorrent: async (client: AllDebridClient, fileId: string) => {
+    removeTorrent: async (client: DebridClient, fileId: string) => {
         const currentUser = useUserStore.getState().currentUser;
         const message = await client.removeTorrent(fileId);
         get().removeFile(fileId);
@@ -94,7 +94,7 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
         });
         return message;
     },
-    retryFiles: async (client: AllDebridClient, fileIds: string[]) => {
+    retryFiles: async (client: DebridClient, fileIds: string[]) => {
         const currentUser = useUserStore.getState().currentUser;
         const message = await client.restartTorrents(fileIds);
         queryClient.invalidateQueries({

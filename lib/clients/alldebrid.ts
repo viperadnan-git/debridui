@@ -7,9 +7,11 @@ import {
     DebridFileAddStatus,
     AccountType,
     User,
+    AuthError,
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
+import { useUserStore } from "../stores/users";
 
 // Response type definitions
 interface FileNode {
@@ -78,15 +80,6 @@ interface RetryResponse {
     magnets: ({ magnet: string; message?: string } & ErrorResponse)[];
 }
 
-export class AuthError extends Error {
-    code: string;
-    constructor(message: string, code: string) {
-        super(message);
-        this.name = "AuthError";
-        this.code = code;
-    }
-}
-
 export default class AllDebridClient extends BaseClient {
     private readonly sessionId: number;
     private counter: number = 0;
@@ -115,8 +108,15 @@ export default class AllDebridClient extends BaseClient {
         }
 
         const data = await response.json();
-        AllDebridClient.validateResponse(data);
-        return data.data;
+        try {
+            AllDebridClient.validateResponse(data);
+            return data.data;
+        } catch (error) {
+            if (error instanceof AuthError) {
+                useUserStore.getState().removeUser(this.user.id);
+            }
+            throw error;
+        }
     }
 
     static async getUser(apiKey: string): Promise<User> {

@@ -80,3 +80,32 @@ export type DebridFileAddStatus = {
     error?: string;
     is_cached: boolean;
 };
+
+export class DebridError extends Error {
+    code: string;
+    statusCode?: number;
+
+    constructor(message: string, code: string, statusCode?: number) {
+        super(message);
+        this.name = "DebridError";
+        this.code = code;
+        this.statusCode = statusCode;
+    }
+}
+
+export class AuthError extends DebridError {
+    constructor(message: string, code: string, statusCode?: number) {
+        super(message, code, statusCode);
+        this.name = "AuthError";
+    }
+}
+
+export class RateLimitError extends DebridError {
+    retryAfter?: number;
+
+    constructor(message: string, code: string, retryAfter?: number) {
+        super(message, code, 429);
+        this.name = "RateLimitError";
+        this.retryAfter = retryAfter;
+    }
+}

@@ -2,11 +2,11 @@
 
 import { createContext, useContext } from "react";
 import { User } from "@/lib/types";
-import AllDebridClient from "@/lib/clients/alldebrid";
+import { DebridClient } from "@/lib/clients";
 
 type AuthContextType = {
     currentUser: User;
-    client: AllDebridClient;
+    client: DebridClient;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -14,9 +14,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function useAuthContext() {
     const context = useContext(AuthContext);
     if (!context) {
-        throw new Error(
-            "useAuthContext must be used within AuthContext.Provider"
-        );
+        throw new Error("useAuthContext must be used within AuthContext.Provider");
     }
     return context;
 }

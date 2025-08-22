@@ -2,14 +2,14 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { User } from "@/lib/types";
 import { queryClient } from "../query-client";
-import { AllDebridClient, getClient, getClientInstance } from "@/lib/clients";
+import { DebridClient, getClient, getClientInstance } from "@/lib/clients";
 import { toast } from "sonner";
 
 interface UserStore {
     users: User[];
     currentUser: User | null;
     isHydrated: boolean;
-    client: AllDebridClient | null;
+    client: DebridClient | null;
 
     addUser: (user: User) => void;
     removeUser: (userId: string) => void;
