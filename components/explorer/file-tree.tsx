@@ -326,7 +326,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
     // Regular rendering for small trees
     if (!useVirtualization) {
         return (
-            <div className="flex flex-col px-3 md:px-4 p-2 sm:p-3">
+            <div className="flex flex-col px-3 md:px-4 p-2 md:p-3 gap-1">
                 {flatNodes.map((flatNode, index) => (
                     <VirtualizedNode
                         key={flatNode.node.id || `${flatNode.path}-${index}`}
@@ -347,7 +347,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
                 ref={listRef}
                 height={600}
                 itemCount={flatNodes.length}
-                itemSize={isMobile ? 22 : 32}
+                itemSize={isMobile ? 26 : 32}
                 width="100%"
                 overscanCount={10}>
                 {rowRenderer}

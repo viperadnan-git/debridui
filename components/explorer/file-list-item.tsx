@@ -138,7 +138,7 @@ export function FileListItem({
                     />
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 pe-2">
                     <div className="flex flex-col gap-0.5">
                         <div className="flex justify-between gap-1">
                             <div

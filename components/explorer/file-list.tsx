@@ -10,11 +10,7 @@ interface FileListProps {
 }
 
 export function FileList({ children, className }: FileListProps) {
-    return (
-        <div className={cn("md:rounded-md md:border md:border-border", "overflow-hidden", "mx-0.5 sm:mx-0", className)}>
-            {children}
-        </div>
-    );
+    return <div className={cn("md:rounded-md md:border md:border-border overflow-hidden", className)}>{children}</div>;
 }
 
 interface FileListBodyProps {
