@@ -59,7 +59,7 @@ export default function SettingsPage() {
                 <p className="text-muted-foreground mt-2">Manage your application preferences and settings.</p>
             </div>
 
-            <div className="grid gap-6">
+            <div className="flex flex-col gap-6">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export default function SettingsPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-4">
                                 <Button
                                     onClick={() => handleClearCache([currentUser.id, "getDownloadLink"])}
                                     disabled={isClearing}
@@ -146,7 +146,7 @@ export default function SettingsPage() {
                                     Remove all cached download links from browser.
                                 </p>
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-4">
                                 <Button onClick={() => handleClearCache()} disabled={isClearing} variant="destructive">
                                     Clear All Cache
                                 </Button>

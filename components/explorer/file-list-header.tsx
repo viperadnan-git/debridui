@@ -11,20 +11,11 @@ interface FileListHeaderProps {
     className?: string;
 }
 
-export function FileListHeader({
-    isAllSelected,
-    onSelectAll,
-    className,
-}: FileListHeaderProps) {
+export function FileListHeader({ isAllSelected, onSelectAll, className }: FileListHeaderProps) {
     return (
         <div
             className={cn(
-                "flex items-center gap-1 sm:gap-2 md:gap-3",
-                "px-1 sm:px-2 md:px-4",
-                "py-1 sm:py-1.5 md:py-2",
-                "border-b border-border",
-                "bg-muted/30",
-                "text-xs sm:text-sm font-medium text-muted-foreground",
+                "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1 sm:py-1.5 md:py-2 border-b border-border bg-muted/30 text-xs sm:text-sm font-medium text-muted-foreground",
                 className
             )}>
             <div className="flex-shrink-0 px-1">
@@ -40,7 +31,7 @@ export function FileListHeader({
                 />
             </div>
 
-            <div className="flex flex-1 items-center min-w-0 justify-between">
+            <div className="flex flex-1 items-center min-w-0 justify-between pr-2">
                 <span>Files</span>
                 <QuickSettings />
             </div>

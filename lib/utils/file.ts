@@ -268,7 +268,7 @@ export async function collectDownloadLinks(
             await chunkedPromise({
                 promises: fileNode.children.map((fileNode) => () => collectFileNodeLinks(fileNode)),
                 chunkSize: 10,
-                delay: 1000,
+                delay: 1500,
             });
         }
     };
@@ -276,7 +276,7 @@ export async function collectDownloadLinks(
     await chunkedPromise({
         promises: fileNodes.map((fileNode) => () => collectFileNodeLinks(fileNode)),
         chunkSize: 10,
-        delay: 1000,
+        delay: 1500,
     });
 
     return collectedLinks;
@@ -320,7 +320,7 @@ export async function fetchSelectedDownloadLinks(
             (fileId) => () => getDownloadLinkWithCache({ fileId, client: debridClient, userId })
         ),
         chunkSize: 10,
-        delay: 1000,
+        delay: 1500,
     });
 
     return results.filter(Boolean);
