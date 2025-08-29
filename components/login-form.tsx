@@ -12,7 +12,7 @@ import { z } from "zod";
 import { AccountType, addUserSchema } from "@/lib/schemas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { toast } from "sonner";
-import { AllDebridClient, getClient } from "@/lib/clients";
+import { AllDebridClient, TorBoxClient, getClient } from "@/lib/clients";
 import Link from "next/link";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "@bprogress/next/app";
@@ -28,6 +28,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     );
     const router = useRouter();
     const [isAllDebridLoading, setIsAllDebridLoading] = useState(false);
+    const [isTorBoxLoading, setIsTorBoxLoading] = useState(false);
 
     useEffect(() => {
         if (currentUser) {
@@ -50,6 +51,22 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             toast.success(`Logged in as ${user.username} (${user.type})`);
         } catch (error) {
             toast.error((error as Error).message);
+        }
+    }
+
+    async function handleTorBoxLogin() {
+        setIsTorBoxLoading(true);
+        try {
+            const { redirect_url } = await TorBoxClient.getAuthPin();
+            // For TorBox, direct the user to get their API key
+            window.open(redirect_url, "_blank", "noreferrer");
+            
+            // Show a toast message instructing the user what to do
+            toast.info("Please copy your TorBox API key and paste it in the form above");
+        } catch (error) {
+            toast.error((error as Error).message);
+        } finally {
+            setIsTorBoxLoading(false);
         }
     }
 
@@ -142,7 +159,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                             <Button
                                 type="submit"
                                 className="w-full"
-                                disabled={form.formState.isSubmitting || !form.formState.isValid || isAllDebridLoading}>
+                                disabled={form.formState.isSubmitting || !form.formState.isValid || isAllDebridLoading || isTorBoxLoading}>
                                 {form.formState.isSubmitting ? "Logging in..." : "Login"}
                             </Button>
                         </div>
@@ -155,12 +172,26 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                                 type="button"
                                 className="w-full"
                                 onClick={handleAllDebridLogin}
-                                disabled={isAllDebridLoading}>
+                                disabled={isAllDebridLoading || isTorBoxLoading}>
                                 {isAllDebridLoading ? (
                                     <Loader2 className="size-4 animate-spin" />
                                 ) : (
                                     <>
                                         Continue with <span className="font-bold">AllDebrid</span>
+                                    </>
+                                )}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                type="button"
+                                className="w-full"
+                                onClick={handleTorBoxLogin}
+                                disabled={isAllDebridLoading || isTorBoxLoading}>
+                                {isTorBoxLoading ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    <>
+                                        Continue with <span className="font-bold">TorBox</span>
                                     </>
                                 )}
                             </Button>
