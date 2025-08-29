@@ -13,6 +13,7 @@ export const MEDIA_PLAYER_LABELS = [
 
 export const ACCOUNT_TYPE_LABELS = {
     [AccountType.ALLDEBRID]: "AllDebrid",
+    [AccountType.TORBOX]: "TorBox",
 };
 
 export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {
