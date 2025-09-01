@@ -48,7 +48,7 @@ function AddHashButton({ magnet }: { magnet: string }) {
     const handleAdd = async () => {
         setStatus("loading");
         try {
-            const result = await client.addDownloads([magnet]);
+            const result = await client.addTorrent([magnet]);
             const magnetStatus = result[magnet];
             if (magnetStatus.error) {
                 throw new Error(magnetStatus.error);

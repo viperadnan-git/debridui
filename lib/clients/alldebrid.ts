@@ -305,30 +305,6 @@ export default class AllDebridClient extends BaseClient {
         );
     }
 
-    async addDownloads(uris: string[]): Promise<Record<string, DebridFileAddStatus>> {
-        const httpUris: string[] = [];
-        const magnetUris: string[] = [];
-
-        for (const uri of uris) {
-            const trimmedUri = uri.trim();
-            if (trimmedUri.startsWith("http")) {
-                httpUris.push(trimmedUri);
-            } else {
-                magnetUris.push(trimmedUri);
-            }
-        }
-
-        const [httpResults, magnetResults] = await Promise.allSettled([
-            httpUris.length > 0 ? this.addHttpDownloads(httpUris) : Promise.resolve({}),
-            magnetUris.length > 0 ? this.addMagnetLinks(magnetUris) : Promise.resolve({}),
-        ]);
-
-        const httpData = httpResults.status === "fulfilled" ? httpResults.value : {};
-        const magnetData = magnetResults.status === "fulfilled" ? magnetResults.value : {};
-
-        return { ...httpData, ...magnetData };
-    }
-
     async addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
         const formData = new FormData();
         magnetUris.forEach((magnet) => formData.append("magnets[]", magnet));
@@ -377,55 +353,16 @@ export default class AllDebridClient extends BaseClient {
         );
     }
 
-    private async addHttpDownloads(httpUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
-        const results: Record<string, DebridFileAddStatus> = {};
-        const downloadedFiles: File[] = [];
-
-        await Promise.allSettled(
-            httpUris.map(async (uri) => {
-                try {
-                    const file = await this.downloadFile(uri);
-                    downloadedFiles.push(file);
-                } catch (error) {
-                    results[uri] = {
-                        message: `Failed to download ${uri}: ${error}`,
-                        error: error instanceof Error ? error.message : String(error),
-                        is_cached: false,
-                    };
-                }
-            })
-        );
-
-        if (downloadedFiles.length > 0) {
-            const uploadResults = await this.uploadTorrentFiles(downloadedFiles);
-            Object.assign(results, uploadResults);
-        }
-
-        return results;
-    }
-
-    private async downloadFile(uri: string): Promise<File> {
-        const response = await fetch(uri);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const blob = await response.blob();
-        const contentType = response.headers.get("content-type") || "application/x-bittorrent";
-
-        return new File([blob], uri, { type: contentType });
-    }
-
     private mapToDebridFile(torrent: TorrentStatus): DebridFile {
         const status = this.mapStatusCode(torrent.statusCode);
-        let progress: string | number | undefined;
+        let progress: number | undefined;
 
         if (status === "downloading" || status === "uploading") {
             const processed = torrent.uploaded || torrent.downloaded || 0;
             const total = torrent.size || 0;
             if (total > 0) {
                 const percentage = (processed / total) * 100;
-                progress = percentage > 0 ? percentage.toFixed(2) : "0";
+                progress = percentage || 0;
             }
         }
 
@@ -443,6 +380,7 @@ export default class AllDebridClient extends BaseClient {
             createdAt: new Date(torrent.uploadDate * 1000),
             completedAt: torrent.completionDate ? new Date(torrent.completionDate * 1000) : undefined,
             error: status === "failed" ? torrent.status : undefined,
+            files: undefined, // AllDebrid requires a separate request to get files
         };
     }
 

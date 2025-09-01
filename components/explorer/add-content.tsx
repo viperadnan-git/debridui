@@ -33,7 +33,7 @@ export function AddContent() {
         setIsAddingLinks(true);
         const toastId = toast.loading(`Adding ${uris.length} link${uris.length > 1 ? "s" : ""}`);
         try {
-            const results = await client.addDownloads(uris);
+            const results = await client.addTorrent(uris);
 
             let successCount = 0;
             let errorCount = 0;

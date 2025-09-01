@@ -64,6 +64,12 @@ const getStatusConfig = cache((status: DebridFileStatus) => {
                 color: "bg-red-500/80 text-primary-foreground",
                 name: "Failed",
             };
+        case "processing":
+            return {
+                icon: ClockIcon,
+                color: "bg-yellow-500/80 text-primary-foreground",
+                name: "Processing",
+            };
         case "unknown":
             return {
                 icon: InfoIcon,
@@ -73,13 +79,7 @@ const getStatusConfig = cache((status: DebridFileStatus) => {
     }
 });
 
-export function StatusBadge({
-    status,
-    hide,
-}: {
-    status: DebridFileStatus;
-    hide?: DebridFileStatus;
-}) {
+export function StatusBadge({ status, hide }: { status: DebridFileStatus; hide?: DebridFileStatus }) {
     const config = getStatusConfig(status);
     if (!config) return null;
     if (hide && status === hide) return null;
@@ -88,10 +88,7 @@ export function StatusBadge({
     return (
         <Badge
             variant="outline"
-            className={cn(
-                "px-1 md:px-1.5 py-0.2 border-0 rounded-sm text-xs md:text-sm",
-                config.color
-            )}>
+            className={cn("px-1 md:px-1.5 py-0.2 border-0 rounded-sm text-xs md:text-sm", config.color)}>
             <Icon className="size-3" />
             {config.name}
         </Badge>

@@ -13,6 +13,7 @@ export const MEDIA_PLAYER_LABELS = [
 
 export const ACCOUNT_TYPE_LABELS = {
     [AccountType.ALLDEBRID]: "AllDebrid",
+    [AccountType.TORBOX]: "TorBox",
 };
 
 export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {
@@ -70,6 +71,6 @@ export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {
 export const TRASH_SIZE_THRESHOLD = 1024 * 1024; // 1MB in bytes
 export const QUERY_CACHE_MAX_AGE = 1000 * 60 * 60 * 24; // 24 hours
 export const QUERY_CACHE_STALE_TIME = 1000 * 60 * 5; // 5 minutes
-export const PAGE_SIZE = 50;
+export const PAGE_SIZE = 20;
 export const USER_AGENT = "DebridUI";
 export const CAROUSEL_AUTO_DELAY = 3000; // 3 seconds
