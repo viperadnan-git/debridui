@@ -212,11 +212,21 @@ export const getTorrentFilesWithCache = async ({
     fileId,
     client,
     userId,
+    files,
 }: {
     fileId: string;
     client: DebridClient;
     userId: string;
+    files?: DebridFileNode[];
 }): Promise<DebridFileNode[]> => {
+    // If files are already provided (e.g., from TorBox), use them
+    if (files) {
+        const cacheKey = getTorrentFilesCacheKey(userId, fileId);
+        queryClient.setQueryData(cacheKey, files);
+        return files;
+    }
+
+    // Otherwise check cache or fetch
     const cacheKey = getTorrentFilesCacheKey(userId, fileId);
     let node = queryClient.getQueryData(cacheKey) as DebridFileNode[] | undefined;
 

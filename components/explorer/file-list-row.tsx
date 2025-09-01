@@ -32,7 +32,9 @@ export function FileListRow({ file }: FileListRowProps) {
     const toggleFileSelection = useSelectionStore((state) => state.toggleFileSelection);
 
     const handleSelectFile = () => {
-        const fileNodes = queryClient.getQueryData<DebridFileNode[]>(getTorrentFilesCacheKey(currentUser.id, file.id));
+        // Use files from DebridFile if available, otherwise check cache
+        const fileNodes =
+            file.files || queryClient.getQueryData<DebridFileNode[]>(getTorrentFilesCacheKey(currentUser.id, file.id));
         const processedFileNodes = processFileNodes({ fileNodes: fileNodes || [] });
         toggleFileSelection(file.id, processedFileNodes ? collectNodeIds(processedFileNodes) : []);
     };

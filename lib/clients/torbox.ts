@@ -56,6 +56,7 @@ interface TorBoxTorrent {
     download_finished: boolean;
     auth_id: string;
     files?: TorBoxFile[];
+    cached_at?: string;
 }
 
 interface TorBoxFile {
@@ -82,7 +83,10 @@ export default class TorBoxClient extends BaseClient {
         super(user);
     }
 
-    private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+    private async makeRequest<T>(
+        path: string,
+        options: RequestInit & { returnRaw?: boolean } = { returnRaw: false }
+    ): Promise<T> {
         const { apiKey } = this.user;
         const url = `${this.baseUrl}/${path}`;
 
@@ -122,7 +126,7 @@ export default class TorBoxClient extends BaseClient {
             throw new DebridError(errorMessage, "API_ERROR");
         }
 
-        return data.data as T;
+        return (options.returnRaw ? data : data.data) as T;
     }
 
     static async getUser(apiKey: string): Promise<User> {
@@ -173,11 +177,7 @@ export default class TorBoxClient extends BaseClient {
         };
     }
 
-    static async validateAuthPin(
-        pin: string,
-        check: string,
-        _timeoutMs: number = 600000
-    ): Promise<{ success: boolean; apiKey?: string }> {
+    static async validateAuthPin(pin: string, check: string): Promise<{ success: boolean; apiKey?: string }> {
         // Since TorBox uses direct API key authentication, we treat the "pin" as the API key
         if (check === "direct_api_key") {
             try {
@@ -196,12 +196,14 @@ export default class TorBoxClient extends BaseClient {
     async getTorrentList({
         offset = 0,
         limit = 20,
+        bypass_cache = true,
     }: {
         offset?: number;
         limit?: number;
+        bypass_cache?: boolean;
     } = {}): Promise<DebridFileList> {
         const data = await this.makeRequest<TorBoxTorrent[]>(
-            `torrents/mylist?bypass_cache=true&offset=${offset}&limit=${limit}`
+            `torrents/mylist?bypass_cache=${bypass_cache}&offset=${offset}&limit=${limit}&files=true`
         );
 
         const paginatedTorrents = Array.isArray(data) ? data : [];
@@ -217,7 +219,7 @@ export default class TorBoxClient extends BaseClient {
     }
 
     async findTorrents(searchQuery: string): Promise<DebridFile[]> {
-        const { files } = await this.getTorrentList({ limit: 100 });
+        const { files } = await this.getTorrentList({ limit: 1000 });
 
         if (!searchQuery.trim()) {
             return files;
@@ -237,18 +239,17 @@ export default class TorBoxClient extends BaseClient {
         const url = `torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}`;
         const downloadUrl = await this.makeRequest<string>(url);
 
-        // Get file info for name and size
-        const torrentInfo = await this.makeRequest<TorBoxTorrent>(`torrents/torrentinfo?id=${torrentId}`);
-        const file = torrentInfo.files?.find((f) => f.id.toString() === targetFileId);
-
         return {
             link: downloadUrl,
-            name: file?.name || "Unknown",
-            size: file?.size || 0,
+            name: "Unknown",
+            size: 0,
         };
     }
 
     async getTorrentFiles(torrentId: string): Promise<DebridFileNode[]> {
+        // For TorBox, files should already be available in DebridFile.files
+        // This method exists only for backward compatibility
+        // Make direct API request as fallback since this should rarely be called
         const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/torrentinfo?id=${torrentId}`);
 
         if (!torrent.files) {
@@ -258,7 +259,7 @@ export default class TorBoxClient extends BaseClient {
         return torrent.files.map(
             (file): DebridFileNode => ({
                 id: `${torrentId}:${file.id}`,
-                name: file.name,
+                name: file.short_name || file.name,
                 size: file.size,
                 type: "file",
                 children: [],
@@ -288,13 +289,17 @@ export default class TorBoxClient extends BaseClient {
 
         for (const torrentId of torrentIds) {
             try {
-                const formData = new FormData();
-                formData.append("torrent_id", torrentId);
-                formData.append("operation", "reannounce");
+                const payload = {
+                    torrent_id: torrentId,
+                    operation: "resume",
+                };
 
                 await this.makeRequest<Record<string, unknown>>("torrents/controltorrent", {
                     method: "POST",
-                    body: formData,
+                    body: JSON.stringify(payload),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                 });
 
                 results[torrentId] = "Torrent restarted successfully";
@@ -313,21 +318,22 @@ export default class TorBoxClient extends BaseClient {
             try {
                 const formData = new FormData();
                 formData.append("magnet", magnet);
-                formData.append("seed", "1");
+                formData.append("seed", "0");
                 formData.append("allow_zip", "true");
 
-                const response = await this.makeRequest<{ torrent_id?: number; id?: number; cached?: boolean }>(
-                    "torrents/createtorrent",
-                    {
-                        method: "POST",
-                        body: formData,
-                    }
-                );
+                const response = await this.makeRequest<{
+                    data: { torrent_id?: number; hash?: string; auth_id?: string };
+                    detail: string;
+                }>("torrents/createtorrent", {
+                    method: "POST",
+                    body: formData,
+                    returnRaw: true,
+                });
 
                 results[magnet] = {
-                    id: response.torrent_id || response.id,
+                    id: response.data.torrent_id,
                     message: "Torrent added successfully",
-                    is_cached: response.cached || false,
+                    is_cached: response.detail.toLowerCase().includes("cached"),
                 };
             } catch (error) {
                 results[magnet] = {
@@ -348,7 +354,7 @@ export default class TorBoxClient extends BaseClient {
             try {
                 const formData = new FormData();
                 formData.append("file", file);
-                formData.append("seed", "1");
+                formData.append("seed", "0");
                 formData.append("allow_zip", "true");
 
                 const response = await this.makeRequest<{ torrent_id?: number; id?: number; cached?: boolean }>(
@@ -379,6 +385,19 @@ export default class TorBoxClient extends BaseClient {
     private mapToDebridFile(torrent: TorBoxTorrent): DebridFile {
         const status: DebridFileStatus = this.mapTorrentStatus(torrent);
 
+        // Map files if they exist in the torrent response
+        const files: DebridFileNode[] | undefined = torrent.files
+            ? torrent.files.map(
+                  (file): DebridFileNode => ({
+                      id: `${torrent.id}:${file.id}`,
+                      name: file.short_name || file.name,
+                      size: file.size,
+                      type: "file",
+                      children: [],
+                  })
+              )
+            : undefined;
+
         return {
             id: torrent.id.toString(),
             name: torrent.name,
@@ -389,30 +408,34 @@ export default class TorBoxClient extends BaseClient {
             uploadSpeed: torrent.upload_speed,
             peers: torrent.peers + torrent.seeds,
             createdAt: new Date(torrent.created_at),
-            completedAt: torrent.download_finished ? new Date(torrent.updated_at) : undefined,
+            completedAt: torrent.cached_at ? new Date(torrent.cached_at) : undefined,
+            files,
         };
     }
 
     private mapTorrentStatus(torrent: TorBoxTorrent): DebridFileStatus {
         const downloadState = torrent.download_state.toLowerCase();
 
-        switch (downloadState.toLowerCase()) {
+        switch (downloadState) {
             case "downloading":
             case "metaDL":
                 return "downloading";
             case "seeding":
             case "uploading":
             case "uploading (no peers)":
-                return torrent.active ? "seeding" : "completed";
+                if (torrent.active) {
+                    return torrent.download_present ? "seeding" : "processing";
+                } else {
+                    return "completed";
+                }
             case "cached":
                 return "completed";
             case "paused":
                 return "paused";
             case "error":
-            case "failed":
+            case "reported missing":
                 return "failed";
-            case "queued":
-            case "waiting":
+            case "stalled (no seeds)":
                 return "waiting";
             default:
                 console.log("Unknown download state:", downloadState);

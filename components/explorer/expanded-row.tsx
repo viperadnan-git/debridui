@@ -20,15 +20,19 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
     const smartOrder = useSettingsStore((state) => state.smartOrder);
     const registerFileNodes = useSelectionStore((state) => state.registerFileNodes);
 
+    // Use files from DebridFile if available, otherwise fetch them
     const {
-        data: nodes,
+        data: fetchedNodes,
         isLoading,
         error,
     } = useQuery<DebridFileNode[]>({
         queryKey: [currentUser.id, "getTorrentFiles", file.id],
         queryFn: () => client.getTorrentFiles(file.id),
-        enabled: file.status === "completed",
+        enabled: file.status === "completed" && !file.files, // Only fetch if files not already available
     });
+
+    // Use files from DebridFile or fetched nodes
+    const nodes = file.files || fetchedNodes;
 
     const processedNodes = useMemo(() => {
         if (!nodes) return [];
@@ -40,20 +44,19 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
 
         // Collect IDs more efficiently for large files
         const ids: string[] = [];
-        const stack = processedNodes.slice();
 
-        while (stack.length > 0) {
-            // Process in batches to avoid creating too many temporary arrays
-            const batch = stack.splice(0, 100);
-            for (const node of batch) {
+        const collectIds = (nodes: DebridFileNode[]) => {
+            for (const node of nodes) {
                 if (node.type === "file" && node.id) {
                     ids.push(node.id);
-                } else if (node.children?.length) {
-                    stack.push(...node.children);
+                }
+                if (node.children?.length) {
+                    collectIds(node.children);
                 }
             }
-        }
+        };
 
+        collectIds(processedNodes);
         return ids;
     }, [processedNodes]);
 
@@ -63,14 +66,17 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
         }
     }, [nodeIds, registerFileNodes, file.id]);
 
+    // Show loading only if we're fetching and don't have files already
+    const showLoading = isLoading && !file.files;
+
     return (
         <div>
             {/* File Tree */}
-            {isLoading ? (
+            {showLoading ? (
                 <div className="flex items-center justify-center py-4 px-0.5 md:px-4">
                     <Loader2 className="size-4 animate-spin text-muted-foreground" />
                 </div>
-            ) : error ? (
+            ) : error && !file.files ? (
                 <div className="text-center py-4 text-xs text-red-500 px-0.5 md:px-4">Error loading files</div>
             ) : processedNodes && processedNodes.length > 0 ? (
                 <FileTree nodes={processedNodes} fileId={file.id} />

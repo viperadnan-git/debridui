@@ -380,6 +380,7 @@ export default class AllDebridClient extends BaseClient {
             createdAt: new Date(torrent.uploadDate * 1000),
             completedAt: torrent.completionDate ? new Date(torrent.completionDate * 1000) : undefined,
             error: status === "failed" ? torrent.status : undefined,
+            files: undefined, // AllDebrid requires a separate request to get files
         };
     }
 

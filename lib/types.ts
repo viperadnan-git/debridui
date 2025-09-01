@@ -49,6 +49,7 @@ export type DebridFile = {
     completedAt?: Date;
 
     error?: string;
+    files?: DebridFileNode[];
 };
 
 export type DebridFileList = {
@@ -65,8 +66,9 @@ export type DebridFileStatus =
     | "paused"
     | "completed"
     | "failed"
-    | "unknown"
-    | "waiting";
+    | "processing"
+    | "waiting"
+    | "unknown";
 
 export type DebridLinkInfo = {
     link: string;
