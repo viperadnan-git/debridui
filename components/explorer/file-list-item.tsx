@@ -149,8 +149,8 @@ export function FileListItem({
                                 {file.name}
                             </div>
                             <div className="flex items-center gap-1">
-                                {file.progress !== undefined && (
-                                    <span className="text-sm">{file.progress || "0"}%</span>
+                                {file.progress !== undefined && file.status !== "completed" && (
+                                    <span className="text-sm">{(file.progress || 0).toFixed(2)}%</span>
                                 )}
                                 &nbsp;
                                 <StatusBadge status={file.status} hide={"completed"} />

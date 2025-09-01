@@ -38,7 +38,7 @@ export type DebridFile = {
     size: number;
 
     status: DebridFileStatus;
-    progress?: number | string;
+    progress?: number;
     downloadSpeed?: number;
     uploadSpeed?: number;
     uploaded?: number;

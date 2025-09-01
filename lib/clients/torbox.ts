@@ -108,11 +108,7 @@ export default class TorBoxClient extends BaseClient {
                     retryAfter ? parseInt(retryAfter) : undefined
                 );
             }
-            throw new DebridError(
-                `API request failed: ${response.statusText}`,
-                "API_REQUEST_FAILED",
-                response.status
-            );
+            throw new DebridError(`API request failed: ${response.statusText}`, "API_REQUEST_FAILED", response.status);
         }
 
         const data: TorBoxResponse<T> = await response.json();
@@ -142,7 +138,7 @@ export default class TorBoxClient extends BaseClient {
         }
 
         const data: TorBoxResponse<TorBoxUser> = await response.json();
-        
+
         if (!data.success || !data.data) {
             throw new Error("Failed to get user information");
         }
@@ -155,7 +151,7 @@ export default class TorBoxClient extends BaseClient {
             id: crypto.randomUUID(),
             apiKey,
             type: AccountType.TORBOX,
-            username: user.email.split('@')[0], // Use email prefix as username
+            username: user.email.split("@")[0], // Use email prefix as username
             email: user.email,
             language: "en", // Default language
             isPremium,
@@ -173,7 +169,7 @@ export default class TorBoxClient extends BaseClient {
         return {
             pin: "TORBOX_API_KEY",
             check: "direct_api_key",
-            redirect_url: "https://torbox.app/settings/api",
+            redirect_url: "https://corsproxy.io/?url=https://torbox.app/settings/api",
         };
     }
 
@@ -204,37 +200,36 @@ export default class TorBoxClient extends BaseClient {
         offset?: number;
         limit?: number;
     } = {}): Promise<DebridFileList> {
-        const data = await this.makeRequest<TorBoxTorrent[]>("torrents/mylist?bypass_cache=true");
-        
-        const torrents = Array.isArray(data) ? data : [];
-        const paginatedTorrents = torrents.slice(offset, offset + limit);
-        
+        const data = await this.makeRequest<TorBoxTorrent[]>(
+            `torrents/mylist?bypass_cache=true&offset=${offset}&limit=${limit}`
+        );
+
+        const paginatedTorrents = Array.isArray(data) ? data : [];
+
         const files: DebridFile[] = paginatedTorrents.map((torrent) => this.mapToDebridFile(torrent));
 
         return {
             files,
             offset,
             limit,
-            hasMore: offset + limit < torrents.length,
+            hasMore: offset + limit < paginatedTorrents.length,
         };
     }
 
     async findTorrents(searchQuery: string): Promise<DebridFile[]> {
         const { files } = await this.getTorrentList({ limit: 100 });
-        
+
         if (!searchQuery.trim()) {
             return files;
         }
 
-        return files.filter((file) =>
-            file.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        return files.filter((file) => file.name.toLowerCase().includes(searchQuery.toLowerCase()));
     }
 
     async getDownloadLink(fileId: string): Promise<DebridLinkInfo> {
         // For TorBox, fileId should be in format "torrentId:fileId"
-        const [torrentId, targetFileId] = fileId.split(':');
-        
+        const [torrentId, targetFileId] = fileId.split(":");
+
         if (!torrentId || !targetFileId) {
             throw new DebridError("Invalid file ID format. Expected 'torrentId:fileId'", "INVALID_FILE_ID");
         }
@@ -244,7 +239,7 @@ export default class TorBoxClient extends BaseClient {
 
         // Get file info for name and size
         const torrentInfo = await this.makeRequest<TorBoxTorrent>(`torrents/torrentinfo?id=${torrentId}`);
-        const file = torrentInfo.files?.find(f => f.id.toString() === targetFileId);
+        const file = torrentInfo.files?.find((f) => f.id.toString() === targetFileId);
 
         return {
             link: downloadUrl,
@@ -255,27 +250,34 @@ export default class TorBoxClient extends BaseClient {
 
     async getTorrentFiles(torrentId: string): Promise<DebridFileNode[]> {
         const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/torrentinfo?id=${torrentId}`);
-        
+
         if (!torrent.files) {
             return [];
         }
 
-        return torrent.files.map((file): DebridFileNode => ({
-            id: `${torrentId}:${file.id}`,
-            name: file.name,
-            size: file.size,
-            type: "file",
-            children: [],
-        }));
+        return torrent.files.map(
+            (file): DebridFileNode => ({
+                id: `${torrentId}:${file.id}`,
+                name: file.name,
+                size: file.size,
+                type: "file",
+                children: [],
+            })
+        );
     }
 
     async removeTorrent(torrentId: string): Promise<string> {
-        const formData = new FormData();
-        formData.append("torrent_id", torrentId);
+        const payload = {
+            torrent_id: torrentId,
+            operation: "delete",
+        };
 
         await this.makeRequest<Record<string, unknown>>("torrents/controltorrent", {
             method: "POST",
-            body: formData,
+            body: JSON.stringify(payload),
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
 
         return "Torrent removed successfully";
@@ -304,12 +306,6 @@ export default class TorBoxClient extends BaseClient {
         return results;
     }
 
-    async addDownloads(_uris: string[]): Promise<Record<string, DebridFileAddStatus>> {
-        // TorBox doesn't support web downloads in the same way
-        // This would need to be implemented differently or throw an error
-        throw new DebridError("Web downloads not supported by TorBox client", "NOT_SUPPORTED");
-    }
-
     async addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
         const results: Record<string, DebridFileAddStatus> = {};
 
@@ -320,10 +316,13 @@ export default class TorBoxClient extends BaseClient {
                 formData.append("seed", "1");
                 formData.append("allow_zip", "true");
 
-                const response = await this.makeRequest<{ torrent_id?: number; id?: number; cached?: boolean }>("torrents/createtorrent", {
-                    method: "POST",
-                    body: formData,
-                });
+                const response = await this.makeRequest<{ torrent_id?: number; id?: number; cached?: boolean }>(
+                    "torrents/createtorrent",
+                    {
+                        method: "POST",
+                        body: formData,
+                    }
+                );
 
                 results[magnet] = {
                     id: response.torrent_id || response.id,
@@ -352,10 +351,13 @@ export default class TorBoxClient extends BaseClient {
                 formData.append("seed", "1");
                 formData.append("allow_zip", "true");
 
-                const response = await this.makeRequest<{ torrent_id?: number; id?: number; cached?: boolean }>("torrents/createtorrent", {
-                    method: "POST",
-                    body: formData,
-                });
+                const response = await this.makeRequest<{ torrent_id?: number; id?: number; cached?: boolean }>(
+                    "torrents/createtorrent",
+                    {
+                        method: "POST",
+                        body: formData,
+                    }
+                );
 
                 results[file.name] = {
                     id: response.torrent_id || response.id,
@@ -375,14 +377,14 @@ export default class TorBoxClient extends BaseClient {
     }
 
     private mapToDebridFile(torrent: TorBoxTorrent): DebridFile {
-        const status: DebridFileStatus = this.mapTorrentStatus(torrent.download_state);
-        
+        const status: DebridFileStatus = this.mapTorrentStatus(torrent);
+
         return {
             id: torrent.id.toString(),
             name: torrent.name,
             size: torrent.size,
             status,
-            progress: torrent.progress,
+            progress: torrent.progress * 100,
             downloadSpeed: torrent.download_speed,
             uploadSpeed: torrent.upload_speed,
             peers: torrent.peers + torrent.seeds,
@@ -391,15 +393,18 @@ export default class TorBoxClient extends BaseClient {
         };
     }
 
-    private mapTorrentStatus(downloadState: string): DebridFileStatus {
+    private mapTorrentStatus(torrent: TorBoxTorrent): DebridFileStatus {
+        const downloadState = torrent.download_state.toLowerCase();
+
         switch (downloadState.toLowerCase()) {
             case "downloading":
             case "metaDL":
                 return "downloading";
-            case "uploading":
-                return "uploading";
-            case "completed":
             case "seeding":
+            case "uploading":
+            case "uploading (no peers)":
+                return torrent.active ? "seeding" : "completed";
+            case "cached":
                 return "completed";
             case "paused":
                 return "paused";
@@ -410,6 +415,7 @@ export default class TorBoxClient extends BaseClient {
             case "waiting":
                 return "waiting";
             default:
+                console.log("Unknown download state:", downloadState);
                 return "unknown";
         }
     }
