@@ -77,7 +77,7 @@ interface TorBoxResponse<T> {
 }
 
 export default class TorBoxClient extends BaseClient {
-    private readonly baseUrl = "https://torbox.bustcors.workers.dev/?url=https://api.torbox.app/v1/api";
+    private readonly baseUrl = `https://torbox.bustcors.workers.dev/?url=${encodeURIComponent("https://api.torbox.app/v1/api")}`;
 
     constructor(user: User) {
         super(user);
@@ -88,7 +88,7 @@ export default class TorBoxClient extends BaseClient {
         options: RequestInit & { returnRaw?: boolean } = { returnRaw: false }
     ): Promise<T> {
         const { apiKey } = this.user;
-        const url = `${this.baseUrl}/${path}`;
+        const url = `${this.baseUrl}${encodeURIComponent(`/${path}`)}`;
 
         const response = await fetch(url, {
             ...options,
