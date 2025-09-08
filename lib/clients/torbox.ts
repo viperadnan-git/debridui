@@ -429,6 +429,7 @@ export default class TorBoxClient extends BaseClient {
                     return "completed";
                 }
             case "cached":
+            case "completed":
                 return "completed";
             case "paused":
                 return "paused";
