@@ -437,6 +437,8 @@ export default class TorBoxClient extends BaseClient {
                 return "failed";
             case "stalled (no seeds)":
                 return "waiting";
+            case "processing":
+                return "processing";
             default:
                 console.log("Unknown download state:", downloadState);
                 return "unknown";
