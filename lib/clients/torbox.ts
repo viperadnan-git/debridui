@@ -419,7 +419,7 @@ export default class TorBoxClient extends BaseClient {
         switch (downloadState) {
             case "downloading":
             case "metaDL":
-                return "downloading";
+                return torrent.cached ? "completed" : "downloading";
             case "seeding":
             case "uploading":
             case "uploading (no peers)":
