@@ -236,8 +236,7 @@ export default class TorBoxClient extends BaseClient {
             throw new DebridError("Invalid file ID format. Expected 'torrentId:fileId'", "INVALID_FILE_ID");
         }
 
-        const url = `torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}`;
-        const downloadUrl = await this.makeRequest<string>(url);
+        const downloadUrl = `https://api.torbox.app/v1/api/torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=true`;
 
         return {
             link: downloadUrl,
