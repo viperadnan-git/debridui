@@ -68,6 +68,7 @@ export type DebridFileStatus =
     | "failed"
     | "processing"
     | "waiting"
+    | "inactive"
     | "unknown";
 
 export type DebridLinkInfo = {

@@ -76,6 +76,7 @@
         "eslint": "^9",
         "eslint-config-next": "15.4.6",
         "prettier": "^3.6.2",
+        "shadcn": "^3.4.0",
         "tailwindcss": "^4",
         "tw-animate-css": "^1.3.6",
         "typescript": "^5"

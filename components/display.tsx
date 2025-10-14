@@ -8,6 +8,7 @@ import {
     CircleCheckIcon,
     ClockIcon,
     OctagonAlertIcon,
+    CircleXIcon,
 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { cache } from "react";
@@ -69,6 +70,12 @@ const getStatusConfig = cache((status: DebridFileStatus) => {
                 icon: ClockIcon,
                 color: "bg-yellow-500/80 text-primary-foreground",
                 name: "Processing",
+            };
+        case "inactive":
+            return {
+                icon: CircleXIcon,
+                color: "bg-gray-500/80 text-primary-foreground",
+                name: "Inactive",
             };
         case "unknown":
             return {

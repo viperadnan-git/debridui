@@ -439,6 +439,8 @@ export default class TorBoxClient extends BaseClient {
                 return "waiting";
             case "processing":
                 return "processing";
+            case "expired":
+                return "inactive";
             default:
                 console.log("Unknown download state:", downloadState);
                 return "unknown";
