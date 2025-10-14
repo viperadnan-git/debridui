@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, Fragment } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { SortControls } from "./sort-controls";
 import { FileList, FileListBody, FileListEmpty, FileListLoading } from "./file-list";
 import { FileListHeader } from "./file-list-header";
@@ -10,17 +10,19 @@ import { useSelectionStore } from "@/lib/stores/selection";
 import { AddContent } from "./add-content";
 import { useFileExplorer } from "@/hooks/use-file-explorer";
 import { SearchSection } from "./search-section";
-import { LoadMoreSection } from "./load-more-section";
+import { FilePagination } from "./pagination";
 import { useSearchParams } from "next/navigation";
 import { DebridFile } from "@/lib/types";
+import { PAGE_SIZE } from "@/lib/constants";
 
 export function FileExplorer() {
-    const { files, isLoading, hasMore, loadMore } = useFileExplorer();
+    const { files, isLoading, currentPage, totalPages, setPage } = useFileExplorer();
     const searchParams = useSearchParams();
     const queryParam = searchParams.get("q") || "";
 
     const [searchResults, setSearchResults] = useState<DebridFile[] | null>(null);
     const [isSearching, setIsSearching] = useState(false);
+    const [searchPage, setSearchPage] = useState(1);
 
     const selectedFileIds = useSelectionStore((state) => state.selectedFileIds);
     const selectAll = useSelectionStore((state) => state.selectAll);
@@ -30,13 +32,25 @@ export function FileExplorer() {
     const handleSearchResults = useCallback((results: DebridFile[] | null, searching: boolean) => {
         setSearchResults(results);
         setIsSearching(searching);
+        setSearchPage(1); // Reset to first page on new search
     }, []);
 
-    // Determine active data based on search state
+    // Determine active data based on search state with pagination
     const activeData = useMemo((): DebridFile[] => {
         if (!queryParam) return files;
-        return searchResults ?? [];
-    }, [queryParam, searchResults, files]);
+        if (!searchResults) return [];
+
+        // Apply pagination to search results
+        const startIndex = (searchPage - 1) * PAGE_SIZE;
+        const endIndex = startIndex + PAGE_SIZE;
+        return searchResults.slice(startIndex, endIndex);
+    }, [queryParam, searchResults, files, searchPage]);
+
+    // Calculate total pages for search results
+    const searchTotalPages = useMemo(() => {
+        if (!searchResults) return 0;
+        return Math.ceil(searchResults.length / PAGE_SIZE);
+    }, [searchResults]);
 
     // Selection handling
     const handleSelectAll = useCallback(
@@ -76,18 +90,11 @@ export function FileExplorer() {
                         <FileListHeader isAllSelected={headerCheckboxState} onSelectAll={handleSelectAll} />
                         <FileListBody>
                             {activeData.length > 0 && !isSearching && (
-                                <Fragment>
+                                <>
                                     {activeData.map((file) => (
                                         <FileListRow key={file.id} file={file} />
                                     ))}
-                                    {!queryParam && (
-                                        <LoadMoreSection
-                                            hasMore={hasMore}
-                                            dataLength={activeData.length}
-                                            onLoadMore={loadMore}
-                                        />
-                                    )}
-                                </Fragment>
+                                </>
                             )}
                             {isLoading || isSearching ? (
                                 <FileListLoading />
@@ -96,6 +103,27 @@ export function FileExplorer() {
                             )}
                         </FileListBody>
                     </FileList>
+
+                    {/* Pagination */}
+                    {!isLoading && !isSearching && (
+                        <>
+                            {queryParam && searchTotalPages > 1 && (
+                                <FilePagination
+                                    currentPage={searchPage}
+                                    totalPages={searchTotalPages}
+                                    onPageChange={setSearchPage}
+                                />
+                            )}
+                            {!queryParam && totalPages > 1 && (
+                                <FilePagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                />
+                            )}
+                        </>
+                    )}
+
                     <FileActionsDrawer files={activeData} />
                 </div>
             </div>

@@ -214,7 +214,7 @@ export default class TorBoxClient extends BaseClient {
             files,
             offset,
             limit,
-            hasMore: offset + limit < paginatedTorrents.length,
+            hasMore: limit == paginatedTorrents.length,
         };
     }
 

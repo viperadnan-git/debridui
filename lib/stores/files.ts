@@ -1,6 +1,5 @@
 import { DebridFile } from "@/lib/types";
 import { create } from "zustand";
-import { PAGE_SIZE } from "../constants";
 import { queryClient } from "../query-client";
 import { DebridClient } from "../clients";
 import { useSelectionStore } from "./selection";
@@ -9,26 +8,26 @@ import { useUserStore } from "./users";
 
 interface FileStoreState {
     files: DebridFile[];
-    offset: number;
-    hasMore: boolean;
+    currentPage: number;
+    totalCount: number | null;
     sortBy: string;
     sortOrder: "asc" | "desc";
     sortChanged: boolean;
-    addFiles: (files: DebridFile[]) => void;
+    setFiles: (files: DebridFile[]) => void;
+    setCurrentPage: (page: number) => void;
+    setTotalCount: (count: number | null) => void;
     removeFile: (fileId: string) => void;
     sortAndSetFiles: (files: DebridFile[]) => void;
-    setOffset: (offset: number) => void;
     setSortBy: (sortBy: string) => void;
     setSortOrder: (sortOrder: "asc" | "desc") => void;
     removeTorrent: (client: DebridClient, fileId: string) => Promise<string>;
     retryFiles: (client: DebridClient, fileIds: string[]) => Promise<Record<string, string>>;
-    loadFiles: () => DebridFile[];
 }
 
 const initialState = {
     files: [],
-    offset: 0,
-    hasMore: true,
+    currentPage: 1,
+    totalCount: null as number | null,
     sortBy: "date",
     sortOrder: "desc" as const,
     sortChanged: false,
@@ -36,21 +35,14 @@ const initialState = {
 
 export const useFileStore = create<FileStoreState>((set, get) => ({
     ...initialState,
-    addFiles: (files: DebridFile[]) => {
-        const { offset } = get();
-        if (offset === 0) {
-            get().sortAndSetFiles(files);
-        } else {
-            const existingIds = new Set(get().files.map((f) => f.id));
-            const newFiles = files.filter((f) => !existingIds.has(f.id));
-            if (newFiles.length > 0) {
-                set((state) => ({
-                    files: [...state.files, ...newFiles],
-                    hasMore: files.length === PAGE_SIZE + offset,
-                }));
-                get().sortAndSetFiles(files);
-            }
-        }
+    setFiles: (files: DebridFile[]) => {
+        get().sortAndSetFiles(files);
+    },
+    setCurrentPage: (page: number) => {
+        set({ currentPage: page });
+    },
+    setTotalCount: (count: number | null) => {
+        set({ totalCount: count });
     },
     removeFile: (fileId: string) => {
         set((state) => ({
@@ -68,9 +60,6 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
             files: sortedFiles,
             sortChanged: sortBy !== "date" || sortOrder !== "desc",
         });
-    },
-    setOffset: (offset: number) => {
-        set({ offset });
     },
     setSortBy: (sortBy: string) => {
         set({ sortBy });
@@ -104,16 +93,5 @@ export const useFileStore = create<FileStoreState>((set, get) => ({
             queryKey: [currentUser?.id, "findTorrents"],
         });
         return message;
-    },
-    loadFiles: () => {
-        const currentUser = useUserStore.getState().currentUser;
-        const cachedFiles = queryClient.getQueryData([currentUser?.id, "getTorrentList", 0]) as
-            | { files?: DebridFile[] }
-            | undefined;
-        if (cachedFiles?.files) {
-            get().addFiles(cachedFiles.files);
-            return cachedFiles.files;
-        }
-        return [];
     },
 }));
