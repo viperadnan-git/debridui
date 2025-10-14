@@ -16,8 +16,9 @@ interface ExpandedRowProps {
 
 export function ExpandedRow({ file }: ExpandedRowProps) {
     const { client, currentUser } = useAuthContext();
-    const hideTrash = useSettingsStore((state) => state.hideTrash);
-    const smartOrder = useSettingsStore((state) => state.smartOrder);
+    const { get } = useSettingsStore();
+    const hideTrash = get("hideTrash");
+    const smartOrder = get("smartOrder");
     const registerFileNodes = useSelectionStore((state) => state.registerFileNodes);
 
     // Use files from DebridFile if available, otherwise fetch them

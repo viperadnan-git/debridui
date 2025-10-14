@@ -119,8 +119,8 @@ export const processFileNodes = ({
     smartOrder?: boolean;
 }): DebridFileNode[] => {
     let processedNodes = fileNodes;
-    const shouldHideTrash = hideTrash || useSettingsStore.getState().hideTrash;
-    const shouldSmartOrder = smartOrder || useSettingsStore.getState().smartOrder;
+    const shouldHideTrash = hideTrash || useSettingsStore.getState().get("hideTrash");
+    const shouldSmartOrder = smartOrder || useSettingsStore.getState().get("smartOrder");
 
     if (!shouldHideTrash && !shouldSmartOrder) return processedNodes;
 

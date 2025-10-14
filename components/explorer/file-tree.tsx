@@ -14,7 +14,6 @@ import { toast } from "sonner";
 import { FileType } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { QUERY_CACHE_MAX_AGE } from "@/lib/constants";
 import { useSelectionStore } from "@/lib/stores/selection";
 import { FixedSizeList as List } from "react-window";
 
@@ -95,13 +94,15 @@ function countTotalNodes(nodes: DebridFileNode[]): number {
 function FileActionButton({ node, action }: { node: DebridFileNode; action: "copy" | "download" | "play" }) {
     const { client, currentUser } = useAuthContext();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
-    const mediaPlayer = useSettingsStore((state) => state.mediaPlayer);
+    const { get } = useSettingsStore();
+    const mediaPlayer = get("mediaPlayer");
+    const downloadLinkMaxAge = get("downloadLinkMaxAge");
 
     const { data: linkInfo, refetch } = useQuery({
         queryKey: [currentUser.id, "getDownloadLink", node.id],
         queryFn: () => client.getDownloadLink(node.id!),
         enabled: false,
-        staleTime: QUERY_CACHE_MAX_AGE,
+        gcTime: downloadLinkMaxAge,
     });
 
     const handleAction = async (linkInfo: DebridLinkInfo) => {

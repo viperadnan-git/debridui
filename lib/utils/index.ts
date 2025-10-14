@@ -31,7 +31,7 @@ export const formatRelativeTime = (date: Date) => {
 };
 
 export const playUrl = (url: string, player?: MediaPlayer) => {
-    const selectedPlayer = player || useSettingsStore.getState().mediaPlayer;
+    const selectedPlayer = player || useSettingsStore.getState().get("mediaPlayer");
 
     switch (selectedPlayer) {
         case MediaPlayer.IINA:

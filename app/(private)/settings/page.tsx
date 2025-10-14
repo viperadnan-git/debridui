@@ -4,27 +4,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2 } from "lucide-react";
+import { Monitor, Moon, Sun, Play, Trash2, Clock } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
-import { MEDIA_PLAYER_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { del } from "idb-keyval";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
-import { useShallow } from "zustand/react/shallow";
 import { useAuthContext } from "@/lib/contexts/auth";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
     const { currentUser } = useAuthContext();
-    const { mediaPlayer, setMediaPlayer } = useSettingsStore(
-        useShallow((state) => ({
-            mediaPlayer: state.mediaPlayer,
-            setMediaPlayer: state.setMediaPlayer,
-        }))
-    );
+    const { get, set, getPresets } = useSettingsStore();
+    const mediaPlayer = get("mediaPlayer");
+    const mediaPlayerPresets = getPresets("mediaPlayer") || [];
+    const downloadLinkMaxAge = get("downloadLinkMaxAge");
+    const downloadLinkMaxAgePresets = getPresets("downloadLinkMaxAge") || [];
     const [isClearing, setIsClearing] = useState(false);
 
     const handleClearCache = async (key?: string[]) => {
@@ -105,14 +102,16 @@ export default function SettingsPage() {
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="media-player">Default Player</Label>
-                            <Select value={mediaPlayer} onValueChange={(value) => setMediaPlayer(value as MediaPlayer)}>
+                            <Select
+                                value={mediaPlayer}
+                                onValueChange={(value) => set("mediaPlayer", value as MediaPlayer)}>
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Select media player" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {MEDIA_PLAYER_LABELS.map((player) => (
-                                        <SelectItem key={player.value} value={player.value}>
-                                            {player.label}
+                                    {mediaPlayerPresets.map((preset) => (
+                                        <SelectItem key={preset.value} value={preset.value} title={preset.description}>
+                                            {preset.label}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -120,6 +119,42 @@ export default function SettingsPage() {
                             <p className="text-sm text-muted-foreground">
                                 Videos will open in your selected player. External players require the application to be
                                 installed.
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Clock className="h-5 w-5" />
+                            Download Link Cache
+                        </CardTitle>
+                        <CardDescription>Configure how long download links are kept in memory cache.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="download-link-max-age">Cache Retention</Label>
+                            <Select
+                                value={String(downloadLinkMaxAge)}
+                                onValueChange={(value) => set("downloadLinkMaxAge", Number(value))}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select duration" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {downloadLinkMaxAgePresets.map((preset) => (
+                                        <SelectItem
+                                            key={preset.value}
+                                            value={String(preset.value)}
+                                            title={preset.description}>
+                                            {preset.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-sm text-muted-foreground">
+                                Cached download links will be kept in memory for this duration. After this time, they
+                                will be garbage collected to free memory.
                             </p>
                         </div>
                     </CardContent>

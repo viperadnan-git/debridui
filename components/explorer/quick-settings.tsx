@@ -10,25 +10,18 @@ import {
     DialogTrigger,
 } from "../ui/dialog";
 import { useSettingsStore } from "@/lib/stores/settings";
-import { useShallow } from "zustand/react/shallow";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 
 export function QuickSettings() {
-    const { smartOrder, hideTrash, setSmartOrder, setHideTrash } =
-        useSettingsStore(
-            useShallow((state) => ({
-                smartOrder: state.smartOrder,
-                hideTrash: state.hideTrash,
-                setSmartOrder: state.setSmartOrder,
-                setHideTrash: state.setHideTrash,
-            }))
-        );
+    const { get, set, resetKey } = useSettingsStore();
+    const smartOrder = get("smartOrder");
+    const hideTrash = get("hideTrash");
 
     const handleReset = () => {
-        setSmartOrder(false);
-        setHideTrash(false);
+        resetKey("smartOrder");
+        resetKey("hideTrash");
     };
 
     return (
@@ -43,28 +36,24 @@ export function QuickSettings() {
                 <DialogDescription asChild>
                     <div className="flex flex-col gap-4 py-4">
                         <div className="flex items-center justify-between">
-                            <Label
-                                htmlFor="smart-order"
-                                className="text-sm text-foreground">
+                            <Label htmlFor="smart-order" className="text-sm text-foreground">
                                 Smart Order
                             </Label>
                             <Switch
                                 id="smart-order"
                                 checked={smartOrder}
-                                onCheckedChange={setSmartOrder}
+                                onCheckedChange={(checked) => set("smartOrder", checked)}
                                 className="data-[state=checked]:bg-primary/50"
                             />
                         </div>
                         <div className="flex items-center justify-between">
-                            <Label
-                                htmlFor="hide-trash"
-                                className="text-sm text-foreground">
+                            <Label htmlFor="hide-trash" className="text-sm text-foreground">
                                 Hide Trash
                             </Label>
                             <Switch
                                 id="hide-trash"
                                 checked={hideTrash}
-                                onCheckedChange={setHideTrash}
+                                onCheckedChange={(checked) => set("hideTrash", checked)}
                                 className="data-[state=checked]:bg-primary/50"
                             />
                         </div>
