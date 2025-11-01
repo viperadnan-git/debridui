@@ -241,6 +241,12 @@ export default class AllDebridClient extends BaseClient {
         return results.map((result) => this.mapToDebridFile(result.item));
     }
 
+    async findTorrentById(torrentId: string): Promise<DebridFile | null> {
+        await this.syncTorrentStatus();
+        const torrent = this.torrentsCache.get(parseInt(torrentId));
+        return torrent ? this.mapToDebridFile(torrent) : null;
+    }
+
     async getDownloadLink(fileId: string): Promise<DebridLinkInfo> {
         const formData = new FormData();
         formData.append("link", fileId);

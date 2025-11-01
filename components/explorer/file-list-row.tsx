@@ -13,6 +13,7 @@ import { useAuthContext } from "@/lib/contexts/auth";
 
 interface FileListRowProps {
     file: DebridFile;
+    autoExpand?: boolean;
 }
 
 const collectNodeIds = (nodes: DebridFileNode[], result: string[] = []): string[] => {
@@ -25,10 +26,10 @@ const collectNodeIds = (nodes: DebridFileNode[], result: string[] = []): string[
     return result;
 };
 
-export function FileListRow({ file }: FileListRowProps) {
+export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
     const { currentUser } = useAuthContext();
     const isSelected = useFileSelectionState(file.id);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(autoExpand && file.status === "completed");
     const toggleFileSelection = useSelectionStore((state) => state.toggleFileSelection);
 
     const handleSelectFile = () => {

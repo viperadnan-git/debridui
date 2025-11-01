@@ -228,6 +228,15 @@ export default class TorBoxClient extends BaseClient {
         return files.filter((file) => file.name.toLowerCase().includes(searchQuery.toLowerCase()));
     }
 
+    async findTorrentById(torrentId: string): Promise<DebridFile | null> {
+        try {
+            const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/torrentinfo?id=${torrentId}`);
+            return this.mapToDebridFile(torrent);
+        } catch {
+            return null;
+        }
+    }
+
     async getDownloadLink(fileId: string): Promise<DebridLinkInfo> {
         // For TorBox, fileId should be in format "torrentId:fileId"
         const [torrentId, targetFileId] = fileId.split(":");

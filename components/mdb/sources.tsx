@@ -11,17 +11,18 @@ import {
     HardDrive,
     AlertCircle,
     Users,
-    CheckCircle2Icon,
     RotateCcwIcon,
     Loader2,
     X,
     HardDriveDownloadIcon,
     Trash2Icon,
+    DownloadIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { toast } from "sonner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { useRouter } from "next/navigation";
 
 interface SourcesProps {
     imdbId?: string;
@@ -42,8 +43,9 @@ interface SourcesSkeletonProps {
 
 function AddHashButton({ magnet }: { magnet: string }) {
     const { client } = useAuthContext();
+    const router = useRouter();
     const [status, setStatus] = useState<"added" | "cached" | "failed" | "loading" | null>(null);
-    const [torrentId, setTorrentId] = useState<number | null>(null);
+    const [torrentId, setTorrentId] = useState<number | string | null>(null);
 
     const handleAdd = async () => {
         setStatus("loading");
@@ -54,7 +56,7 @@ function AddHashButton({ magnet }: { magnet: string }) {
                 throw new Error(magnetStatus.error);
             }
             setStatus(magnetStatus.is_cached ? "cached" : "added");
-            setTorrentId(magnetStatus.id as number);
+            setTorrentId(magnetStatus.id as number | string);
         } catch (error) {
             toast.error(`Failed to add magnet: ${error instanceof Error ? error.message : "Unknown error"}`);
             setStatus("failed");
@@ -77,7 +79,17 @@ function AddHashButton({ magnet }: { magnet: string }) {
                     onClick={() => handleRemove()}>
                     <Trash2Icon className="size-4" />
                 </Button>
-                <CheckCircle2Icon className="size-8 text-green-500 flex-shrink-0" />
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-8 text-green-500 hover:text-green-600"
+                    onClick={() => {
+                        if (torrentId) {
+                            router.push(`/files?q=id:${torrentId}`);
+                        }
+                    }}>
+                    <DownloadIcon className="size-4" />
+                </Button>
             </div>
         );
     }

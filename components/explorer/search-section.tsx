@@ -18,11 +18,21 @@ export const SearchSection = memo(function SearchSection({ onSearchResults }: Se
     const [searchQuery, setSearchQuery] = useState<string>(queryParam);
     const { client, currentUser } = useAuthContext();
 
+    // Check if this is an ID search
+    const isIdSearch = queryParam.trim().startsWith("id:");
+    const torrentId = isIdSearch ? queryParam.trim().substring(3) : null;
+
     // Search files query
     const { data: searchResults, isLoading: isSearching } = useQuery<DebridFile[]>({
-        queryKey: [currentUser.id, "findTorrents", queryParam],
-        queryFn: () => (client.findTorrents ? client.findTorrents(queryParam) : Promise.resolve([])),
-        enabled: !!queryParam && !!client.findTorrents,
+        queryKey: [currentUser.id, isIdSearch ? "findTorrentById" : "findTorrents", queryParam],
+        queryFn: async () => {
+            if (isIdSearch && torrentId && client.findTorrentById) {
+                const result = await client.findTorrentById(torrentId);
+                return result ? [result] : [];
+            }
+            return client.findTorrents ? client.findTorrents(queryParam) : Promise.resolve([]);
+        },
+        enabled: !!queryParam && (isIdSearch ? !!client.findTorrentById : !!client.findTorrents),
         staleTime: 5_000,
     });
 

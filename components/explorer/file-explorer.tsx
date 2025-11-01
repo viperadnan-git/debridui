@@ -19,6 +19,7 @@ export function FileExplorer() {
     const { files, isLoading, currentPage, totalPages, setPage } = useFileExplorer();
     const searchParams = useSearchParams();
     const queryParam = searchParams.get("q") || "";
+    const isIdSearch = queryParam.trim().startsWith("id:");
 
     const [searchResults, setSearchResults] = useState<DebridFile[] | null>(null);
     const [isSearching, setIsSearching] = useState(false);
@@ -92,7 +93,7 @@ export function FileExplorer() {
                             {activeData.length > 0 && !isSearching && (
                                 <>
                                     {activeData.map((file) => (
-                                        <FileListRow key={file.id} file={file} />
+                                        <FileListRow key={file.id} file={file} autoExpand={isIdSearch} />
                                     ))}
                                 </>
                             )}
