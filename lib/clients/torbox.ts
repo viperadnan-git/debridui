@@ -230,7 +230,7 @@ export default class TorBoxClient extends BaseClient {
 
     async findTorrentById(torrentId: string): Promise<DebridFile | null> {
         try {
-            const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/torrentinfo?id=${torrentId}`);
+            const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/mylist?id=${torrentId}`);
             return this.mapToDebridFile(torrent);
         } catch {
             return null;
