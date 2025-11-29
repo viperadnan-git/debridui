@@ -29,7 +29,9 @@ const collectNodeIds = (nodes: DebridFileNode[], result: string[] = []): string[
 export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
     const { currentUser } = useAuthContext();
     const isSelected = useFileSelectionState(file.id);
-    const [isExpanded, setIsExpanded] = useState(autoExpand && file.status === "completed");
+    const [isExpanded, setIsExpanded] = useState(
+        autoExpand && (file.status === "completed" || file.status === "seeding")
+    );
     const toggleFileSelection = useSelectionStore((state) => state.toggleFileSelection);
 
     const handleSelectFile = () => {
@@ -45,7 +47,7 @@ export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
             <FileListItem
                 file={file}
                 isSelected={isSelected}
-                canExpand={file.status === "completed"}
+                canExpand={file.status === "completed" || file.status === "seeding"}
                 onToggleSelect={handleSelectFile}
                 onToggleExpand={() => setIsExpanded(!isExpanded)}
             />
