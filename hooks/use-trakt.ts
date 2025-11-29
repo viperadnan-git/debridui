@@ -85,23 +85,9 @@ export const useTraktBoxOfficeMovies = createTraktHook(
 );
 
 // Details hooks
-export const useTraktMovieDetails = createTraktHook(
-    ["movie"],
-    (slug: string) => traktClient.getMovieDetails(slug),
-    "details"
-);
+export const useTraktMovieDetails = createTraktHook(["movie"], (slug: string) => traktClient.getMovie(slug), "details");
 
-export const useTraktMovieSeasons = createTraktHook(
-    ["movie", "seasons"],
-    (slug: string) => traktClient.getMovieSeasons(slug),
-    "details"
-);
-
-export const useTraktShowDetails = createTraktHook(
-    ["show"],
-    (slug: string) => traktClient.getShowDetails(slug),
-    "details"
-);
+export const useTraktShowDetails = createTraktHook(["show"], (slug: string) => traktClient.getShow(slug), "details");
 
 export const useTraktShowSeasons = createTraktHook(
     ["show", "seasons"],
@@ -111,26 +97,20 @@ export const useTraktShowSeasons = createTraktHook(
 
 export const useTraktSeasonEpisodes = createTraktHook(
     ["season", "episodes"],
-    (slug: string, season: number) => traktClient.getSeasonEpisodes(slug, season),
+    (slug: string, season: number) => traktClient.getShowEpisodes(slug, season),
     "details"
 );
 
 // Search hooks
 export const useTraktSearchMovies = createTraktHook(
     ["search", "movies"],
-    (query: string) => traktClient.searchMovies(query),
+    (query: string) => traktClient.search(query, ["movie"]),
     "search"
 );
 
 export const useTraktSearchShows = createTraktHook(
     ["search", "shows"],
-    (query: string) => traktClient.searchShows(query),
-    "search"
-);
-
-export const useTraktSearchId = createTraktHook(
-    ["search", "id"],
-    (id: string, type?: "imdb" | "tmdb" | "tvdb") => traktClient.searchId(id, type),
+    (query: string) => traktClient.search(query, ["show"]),
     "search"
 );
 
@@ -149,13 +129,14 @@ export function useTraktTrendingMixed(limit = 20) {
     });
 }
 
-export function useTraktSearch(query: string, type?: "movie" | "show") {
+export function useTraktSearch(query: string, type?: "movie" | "show", enabled = true) {
     const cache = CACHE_TIMES.search;
     return useQuery({
         queryKey: ["trakt", "search", query, type],
-        queryFn: () => traktClient.search(query, type),
+        queryFn: () => traktClient.search(query, type ? [type] : ["movie", "show"]),
         staleTime: cache,
         gcTime: cache * 2,
+        enabled: enabled && query.trim().length > 0,
     });
 }
 
@@ -163,7 +144,7 @@ export function useTraktMedia(slug: string, type: "movie" | "show") {
     const cache = CACHE_TIMES.details;
     return useQuery({
         queryKey: ["trakt", "media", slug, type],
-        queryFn: () => (type === "movie" ? traktClient.getMovieDetails(slug) : traktClient.getShowDetails(slug)),
+        queryFn: () => (type === "movie" ? traktClient.getMovie(slug) : traktClient.getShow(slug)),
         staleTime: cache,
         gcTime: cache * 2,
     });
@@ -171,11 +152,11 @@ export function useTraktMedia(slug: string, type: "movie" | "show") {
 
 export const useTraktShowEpisodes = useTraktSeasonEpisodes;
 
-export function useTraktPeople(id: string) {
+export function useTraktPeople(id: string, type: "movies" | "shows" = "movies") {
     const cache = CACHE_TIMES.details;
     return useQuery({
-        queryKey: ["trakt", "people", id],
-        queryFn: () => traktClient.getPeople(id),
+        queryKey: ["trakt", "people", id, type],
+        queryFn: () => traktClient.getPeople(id, type),
         staleTime: cache,
         gcTime: cache * 2,
     });

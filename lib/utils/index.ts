@@ -39,14 +39,13 @@ const PLAYER_URLS: Record<MediaPlayer, (url: string) => string> = {
     [MediaPlayer.MX_PLAYER]: (url) => `intent:${url}#Intent;package=com.mxtech.videoplayer.ad;S.title=undefined;end`,
     [MediaPlayer.MX_PLAYER_PRO]: (url) =>
         `intent:${url}#Intent;package=com.mxtech.videoplayer.pro;S.title=undefined;end`,
+    [MediaPlayer.EMBED]: (url) =>
+        `https://embed-player.com/video/?source=${encodeURIComponent(url)}&color=%23a1c2c3&preload=metadata`,
 };
 
 export const playUrl = (url: string, player?: MediaPlayer) => {
     const selectedPlayer = player || useSettingsStore.getState().get("mediaPlayer");
-    const formatter = PLAYER_URLS[selectedPlayer];
-    return formatter
-        ? formatter(url)
-        : `https://embed-player.com/video/?source=${encodeURIComponent(url)}&color=%23a1c2c3&preload=metadata`;
+    return PLAYER_URLS[selectedPlayer](url);
 };
 
 export const downloadLinks = (downloads: DebridLinkInfo[]) => {

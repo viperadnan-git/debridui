@@ -60,7 +60,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
     const episodesQuery = useTraktShowEpisodes(mediaId, selectedSeason);
 
     // Fetch people data
-    const peopleQuery = useTraktPeople(mediaId);
+    const peopleQuery = useTraktPeople(mediaId, type === "movie" ? "movies" : "shows");
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
@@ -291,13 +291,11 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
                         <h2 className="text-lg sm:text-xl font-bold">Seasons & Episodes</h2>
 
                         {/* Seasons */}
-                        {type === "show" && (
-                            <SeasonsSection
-                                seasonsData={seasonsQuery.data}
-                                selectedSeason={selectedSeason}
-                                setSelectedSeason={setSelectedSeason}
-                            />
-                        )}
+                        <SeasonsSection
+                            seasonsData={seasonsQuery.data}
+                            selectedSeason={selectedSeason}
+                            setSelectedSeason={setSelectedSeason}
+                        />
 
                         {/* Episodes */}
                         {episodesQuery.data && episodesQuery.data.length > 0 && (

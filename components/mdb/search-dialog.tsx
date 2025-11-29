@@ -24,7 +24,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     const { client, currentUser } = useAuthContext();
     const [query, setQuery] = useState("");
 
-    const { data: searchResults, isLoading: isTraktSearching } = useTraktSearch(query, open && query.trim().length > 2);
+    const { data: searchResults, isLoading: isTraktSearching } = useTraktSearch(
+        query,
+        undefined,
+        open && query.trim().length > 2
+    );
     const { data: fileResults, isLoading: isFileSearching } = useQuery<DebridFile[]>({
         queryKey: getFindTorrentsCacheKey(currentUser.id, query),
         queryFn: () => (client.findTorrents ? client.findTorrents(query) : Promise.resolve([])),
