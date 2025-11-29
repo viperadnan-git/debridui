@@ -130,7 +130,7 @@ export function FileListItem({
                     className
                 )}
                 onClick={canExpand ? onToggleExpand : undefined}>
-                <div className="flex-shrink-0 px-1">
+                <div className="shrink-0 px-1">
                     <Checkbox
                         checked={isSelected}
                         onCheckedChange={onToggleSelect}

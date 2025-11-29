@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, CSSProperties } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { DebridFileNode, DebridLinkInfo } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { FileType } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSelectionStore } from "@/lib/stores/selection";
-import { FixedSizeList as List } from "react-window";
+import { FixedSizeList as List, ListChildComponentProps } from "react-window";
 
 interface FileTreeProps {
     nodes: DebridFileNode[];
@@ -212,7 +212,7 @@ function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand }: Vi
             {hasChildren && (
                 <ChevronRight
                     className={cn(
-                        "h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground transition-transform flex-shrink-0",
+                        "h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground transition-transform shrink-0",
                         isExpanded && "rotate-90"
                     )}
                 />
@@ -306,12 +306,12 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
 
     // Row renderer for react-window
     const rowRenderer = useCallback(
-        ({ index, style }: { index: number; style: CSSProperties }) => {
+        ({ index, style }: ListChildComponentProps) => {
             const flatNode = flatNodes[index];
             if (!flatNode) return null;
 
             return (
-                <div style={style} className="px-3 md:px-4">
+                <div style={style as React.CSSProperties} className="px-3 md:px-4">
                     <VirtualizedNode
                         flatNode={flatNode}
                         fileId={fileId}
