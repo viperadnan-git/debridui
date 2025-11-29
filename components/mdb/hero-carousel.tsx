@@ -276,7 +276,7 @@ export function HeroCarousel() {
                 }}
                 plugins={[autoplay, WheelGesturesPlugin()]}>
                 <CarouselContent>
-                    {mixed.map((item, index) => {
+                    {mixed.map((item: TraktMediaItem, index: number) => {
                         return (
                             <CarouselItem key={`carousel-item-${index}`}>
                                 {isMobile ? (

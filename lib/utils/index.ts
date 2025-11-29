@@ -30,27 +30,23 @@ export const formatRelativeTime = (date: Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true });
 };
 
+const PLAYER_URLS: Record<MediaPlayer, (url: string) => string> = {
+    [MediaPlayer.IINA]: (url) => `iina://weblink?url=${encodeURIComponent(url)}`,
+    [MediaPlayer.VLC]: (url) => `vlc://${url}`,
+    [MediaPlayer.MPV]: (url) => `mpv://${encodeURIComponent(url)}`,
+    [MediaPlayer.POTPLAYER]: (url) => `potplayer://${encodeURIComponent(url)}`,
+    [MediaPlayer.KODI]: (url) => `kodi://${encodeURIComponent(url)}`,
+    [MediaPlayer.MX_PLAYER]: (url) => `intent:${url}#Intent;package=com.mxtech.videoplayer.ad;S.title=undefined;end`,
+    [MediaPlayer.MX_PLAYER_PRO]: (url) =>
+        `intent:${url}#Intent;package=com.mxtech.videoplayer.pro;S.title=undefined;end`,
+};
+
 export const playUrl = (url: string, player?: MediaPlayer) => {
     const selectedPlayer = player || useSettingsStore.getState().get("mediaPlayer");
-
-    switch (selectedPlayer) {
-        case MediaPlayer.IINA:
-            return `iina://weblink?url=${encodeURIComponent(url)}`;
-        case MediaPlayer.VLC:
-            return `vlc://${url}`;
-        case MediaPlayer.MPV:
-            return `mpv://${encodeURIComponent(url)}`;
-        case MediaPlayer.POTPLAYER:
-            return `potplayer://${encodeURIComponent(url)}`;
-        case MediaPlayer.KODI:
-            return `kodi://${encodeURIComponent(url)}`;
-        case MediaPlayer.MX_PLAYER:
-            return `intent:${url}#Intent;package=com.mxtech.videoplayer.ad;S.title=undefined;end`;
-        case MediaPlayer.MX_PLAYER_PRO:
-            return `intent:${url}#Intent;package=com.mxtech.videoplayer.pro;S.title=undefined;end`;
-        default:
-            return `https://embed-player.com/video/?source=${encodeURIComponent(url)}&color=%23a1c2c3&preload=metadata`;
-    }
+    const formatter = PLAYER_URLS[selectedPlayer];
+    return formatter
+        ? formatter(url)
+        : `https://embed-player.com/video/?source=${encodeURIComponent(url)}&color=%23a1c2c3&preload=metadata`;
 };
 
 export const downloadLinks = (downloads: DebridLinkInfo[]) => {

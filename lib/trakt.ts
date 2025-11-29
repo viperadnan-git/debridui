@@ -290,9 +290,7 @@ export class TraktClient {
 
         if (requiresAuth) {
             if (!this.accessToken) {
-                throw new TraktError(
-                    "Access token is required for this operation"
-                );
+                throw new TraktError("Access token is required for this operation");
             }
             headers["Authorization"] = `Bearer ${this.accessToken}`;
         }
@@ -327,11 +325,7 @@ export class TraktClient {
             });
 
             if (!response.ok) {
-                throw new TraktError(
-                    `API request failed: ${response.statusText}`,
-                    response.status,
-                    endpoint
-                );
+                throw new TraktError(`API request failed: ${response.statusText}`, response.status, endpoint);
             }
 
             // Handle empty responses (204 No Content)
@@ -367,22 +361,13 @@ export class TraktClient {
 
         while (true) {
             const searchParams = new URLSearchParams({
-                ...Object.fromEntries(
-                    Object.entries(params).map(([key, value]) => [
-                        key,
-                        String(value),
-                    ])
-                ),
+                ...Object.fromEntries(Object.entries(params).map(([key, value]) => [key, String(value)])),
                 page: String(page),
                 limit: String(limit),
             });
 
             const paginatedEndpoint = `${endpoint}?${searchParams}`;
-            const items = await this.makeRequest<T[]>(
-                paginatedEndpoint,
-                {},
-                requiresAuth
-            );
+            const items = await this.makeRequest<T[]>(paginatedEndpoint, {}, requiresAuth);
 
             if (items.length === 0) break;
 
@@ -411,19 +396,10 @@ export class TraktClient {
         const typeParam = types.join(",");
         const endpoint = `search/${typeParam}?query=${encodeURIComponent(query)}`;
 
-        const results = await this.makeRequest<TraktSearchResult[]>(
-            endpoint,
-            {},
-            false,
-            extended
-        );
+        const results = await this.makeRequest<TraktSearchResult[]>(endpoint, {}, false, extended);
 
         return results
-            .filter(
-                (result) =>
-                    (result.type === "movie" && result.movie) ||
-                    (result.type === "show" && result.show)
-            )
+            .filter((result) => (result.type === "movie" && result.movie) || (result.type === "show" && result.show))
             .sort((a, b) => b.score - a.score);
     }
 
@@ -438,11 +414,7 @@ export class TraktClient {
     /**
      * Get trending media by genre
      */
-    public async getTrendingByGenre(
-        genre: string,
-        type: MediaTypeEndpoint,
-        limit = 20
-    ): Promise<TraktMediaItem[]> {
+    public async getTrendingByGenre(genre: string, type: MediaTypeEndpoint, limit = 20): Promise<TraktMediaItem[]> {
         const endpoint = `${type}/trending?genres=${genre}&limit=${limit}`;
         return this.makeRequest<TraktMediaItem[]>(endpoint);
     }
@@ -450,11 +422,7 @@ export class TraktClient {
     /**
      * Get popular media by genre
      */
-    public async getPopularByGenre(
-        genre: string,
-        type: MediaTypeEndpoint,
-        limit = 20
-    ): Promise<TraktMediaItem[]> {
+    public async getPopularByGenre(genre: string, type: MediaTypeEndpoint, limit = 20): Promise<TraktMediaItem[]> {
         const endpoint = `${type}/popular?genres=${genre}&limit=${limit}`;
         const response = await this.makeRequest<TraktMedia[]>(endpoint);
 
@@ -480,34 +448,20 @@ export class TraktClient {
      * Get user's personal lists
      */
     public async getUserLists(userSlug: string): Promise<TraktList[]> {
-        return this.makePaginatedRequest<TraktList>(
-            `users/${userSlug}/lists`,
-            {},
-            true
-        );
+        return this.makePaginatedRequest<TraktList>(`users/${userSlug}/lists`, {}, true);
     }
 
     /**
      * Get user's liked lists
      */
-    public async getLikedLists(
-        userSlug: string
-    ): Promise<TraktListContainer[]> {
-        return this.makePaginatedRequest<TraktListContainer>(
-            `users/${userSlug}/likes/lists`,
-            {},
-            true
-        );
+    public async getLikedLists(userSlug: string): Promise<TraktListContainer[]> {
+        return this.makePaginatedRequest<TraktListContainer>(`users/${userSlug}/likes/lists`, {}, true);
     }
 
     /**
      * Get items from a specific list
      */
-    public async getListItems(
-        userSlug: string,
-        listId: number,
-        type?: MediaType
-    ): Promise<TraktMediaItem[]> {
+    public async getListItems(userSlug: string, listId: number, type?: MediaType): Promise<TraktMediaItem[]> {
         const endpoint = type
             ? `users/${userSlug}/lists/${listId}/items/${type}`
             : `users/${userSlug}/lists/${listId}/items`;
@@ -520,22 +474,14 @@ export class TraktClient {
      * Get watchlist movies
      */
     public async getWatchlistMovies(): Promise<TraktWatchlistItem[]> {
-        return this.makeRequest<TraktWatchlistItem[]>(
-            "sync/watchlist/movies/added",
-            {},
-            true
-        );
+        return this.makeRequest<TraktWatchlistItem[]>("sync/watchlist/movies/added", {}, true);
     }
 
     /**
      * Get watchlist shows
      */
     public async getWatchlistShows(): Promise<TraktWatchlistItem[]> {
-        return this.makeRequest<TraktWatchlistItem[]>(
-            "sync/watchlist/shows/added",
-            {},
-            true
-        );
+        return this.makeRequest<TraktWatchlistItem[]>("sync/watchlist/shows/added", {}, true);
     }
 
     /**
@@ -545,10 +491,7 @@ export class TraktClient {
         movies: TraktWatchlistItem[];
         shows: TraktWatchlistItem[];
     }> {
-        const [movies, shows] = await Promise.all([
-            this.getWatchlistMovies(),
-            this.getWatchlistShows(),
-        ]);
+        const [movies, shows] = await Promise.all([this.getWatchlistMovies(), this.getWatchlistShows()]);
 
         return { movies, shows };
     }
@@ -558,22 +501,14 @@ export class TraktClient {
      * Get collection movies
      */
     public async getCollectionMovies(): Promise<TraktCollectionItem[]> {
-        return this.makeRequest<TraktCollectionItem[]>(
-            "sync/collection/movies",
-            {},
-            true
-        );
+        return this.makeRequest<TraktCollectionItem[]>("sync/collection/movies", {}, true);
     }
 
     /**
      * Get collection shows
      */
     public async getCollectionShows(): Promise<TraktCollectionItem[]> {
-        return this.makeRequest<TraktCollectionItem[]>(
-            "sync/collection/shows",
-            {},
-            true
-        );
+        return this.makeRequest<TraktCollectionItem[]>("sync/collection/shows", {}, true);
     }
 
     /**
@@ -583,10 +518,7 @@ export class TraktClient {
         movies: TraktCollectionItem[];
         shows: TraktCollectionItem[];
     }> {
-        const [movies, shows] = await Promise.all([
-            this.getCollectionMovies(),
-            this.getCollectionShows(),
-        ]);
+        const [movies, shows] = await Promise.all([this.getCollectionMovies(), this.getCollectionShows()]);
 
         return { movies, shows };
     }
@@ -595,62 +527,51 @@ export class TraktClient {
     /**
      * Get trending movies
      */
-    public async getTrendingMovies(
-        limit = 20,
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `movies/trending?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+    public async getTrendingMovies(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
+        return this.makeRequest<TraktMediaItem[]>(`movies/trending?limit=${limit}`, {}, false, extended);
     }
 
     /**
      * Get trending shows
      */
-    public async getTrendingShows(
-        limit = 20,
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `shows/trending?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+    public async getTrendingShows(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
+        return this.makeRequest<TraktMediaItem[]>(`shows/trending?limit=${limit}`, {}, false, extended);
+    }
+
+    /**
+     * Get trending mixed (movies and shows)
+     */
+    public async getTrendingMixed(limit = 20, extended = "full,images"): Promise<{ mixed: TraktMediaItem[] }> {
+        const [movies, shows] = await Promise.all([
+            this.getTrendingMovies(Math.ceil(limit / 2), extended),
+            this.getTrendingShows(Math.ceil(limit / 2), extended),
+        ]);
+
+        // Interleave movies and shows
+        const mixed: TraktMediaItem[] = [];
+        const maxLength = Math.max(movies.length, shows.length);
+
+        for (let i = 0; i < maxLength && mixed.length < limit; i++) {
+            if (i < movies.length) mixed.push(movies[i]);
+            if (i < shows.length && mixed.length < limit) mixed.push(shows[i]);
+        }
+
+        return { mixed };
     }
 
     /**
      * Get popular movies
      */
-    public async getPopularMovies(
-        limit = 20,
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        const movies = await this.makeRequest<TraktMedia[]>(
-            `movies/popular?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+    public async getPopularMovies(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
+        const movies = await this.makeRequest<TraktMedia[]>(`movies/popular?limit=${limit}`, {}, false, extended);
         return movies.map((movie) => ({ movie }));
     }
 
     /**
      * Get popular shows
      */
-    public async getPopularShows(
-        limit = 20,
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        const shows = await this.makeRequest<TraktMedia[]>(
-            `shows/popular?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+    public async getPopularShows(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
+        const shows = await this.makeRequest<TraktMedia[]>(`shows/popular?limit=${limit}`, {}, false, extended);
         return shows.map((show) => ({ show }));
     }
 
@@ -662,12 +583,7 @@ export class TraktClient {
         limit = 20,
         extended = "full,images"
     ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `movies/watched/${period}?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+        return this.makeRequest<TraktMediaItem[]>(`movies/watched/${period}?limit=${limit}`, {}, false, extended);
     }
 
     /**
@@ -678,159 +594,78 @@ export class TraktClient {
         limit = 20,
         extended = "full,images"
     ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `shows/watched/${period}?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+        return this.makeRequest<TraktMediaItem[]>(`shows/watched/${period}?limit=${limit}`, {}, false, extended);
     }
 
     /**
      * Get anticipated movies
      */
-    public async getAnticipatedMovies(
-        limit = 20,
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `movies/anticipated?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+    public async getAnticipatedMovies(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
+        return this.makeRequest<TraktMediaItem[]>(`movies/anticipated?limit=${limit}`, {}, false, extended);
     }
 
     /**
      * Get anticipated shows
      */
-    public async getAnticipatedShows(
-        limit = 20,
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `shows/anticipated?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+    public async getAnticipatedShows(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
+        return this.makeRequest<TraktMediaItem[]>(`shows/anticipated?limit=${limit}`, {}, false, extended);
     }
 
     /**
      * Get box office movies
      */
-    public async getBoxOfficeMovies(
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `movies/boxoffice`,
-            {},
-            false,
-            extended
-        );
+    public async getBoxOfficeMovies(extended = "full,images"): Promise<TraktMediaItem[]> {
+        return this.makeRequest<TraktMediaItem[]>(`movies/boxoffice`, {}, false, extended);
     }
 
     /**
      * Get movie by ID
      */
-    public async getMovie(
-        id: string,
-        extended = "full,images"
-    ): Promise<TraktMedia> {
-        return this.makeRequest<TraktMedia>(
-            `movies/${id}`,
-            {},
-            false,
-            extended
-        );
+    public async getMovie(id: string, extended = "full,images"): Promise<TraktMedia> {
+        return this.makeRequest<TraktMedia>(`movies/${id}`, {}, false, extended);
     }
 
     /**
      * Get show by ID
      */
-    public async getShow(
-        id: string,
-        extended = "full,images"
-    ): Promise<TraktMedia> {
+    public async getShow(id: string, extended = "full,images"): Promise<TraktMedia> {
         return this.makeRequest<TraktMedia>(`shows/${id}`, {}, false, extended);
     }
 
     /**
      * Get show seasons
      */
-    public async getShowSeasons(
-        id: string,
-        extended = "full,images"
-    ): Promise<TraktSeason[]> {
-        return this.makeRequest<TraktSeason[]>(
-            `shows/${id}/seasons`,
-            {},
-            false,
-            extended
-        );
+    public async getShowSeasons(id: string, extended = "full,images"): Promise<TraktSeason[]> {
+        return this.makeRequest<TraktSeason[]>(`shows/${id}/seasons`, {}, false, extended);
     }
 
     /**
      * Get show episodes
      */
-    public async getShowEpisodes(
-        id: string,
-        season: number,
-        extended = "full,images"
-    ): Promise<TraktEpisode[]> {
-        return this.makeRequest<TraktEpisode[]>(
-            `shows/${id}/seasons/${season}/episodes`,
-            {},
-            false,
-            extended
-        );
+    public async getShowEpisodes(id: string, season: number, extended = "full,images"): Promise<TraktEpisode[]> {
+        return this.makeRequest<TraktEpisode[]>(`shows/${id}/seasons/${season}/episodes`, {}, false, extended);
     }
 
     /**
      * Get cast and crew for a movie or show
      */
-    public async getPeople(
-        id: string,
-        type: "movies" | "shows",
-        extended = "full,images"
-    ): Promise<TraktCastAndCrew> {
-        return this.makeRequest<TraktCastAndCrew>(
-            `${type}/${id}/people`,
-            {},
-            false,
-            extended
-        );
+    public async getPeople(id: string, type: "movies" | "shows", extended = "full,images"): Promise<TraktCastAndCrew> {
+        return this.makeRequest<TraktCastAndCrew>(`${type}/${id}/people`, {}, false, extended);
     }
 
     /**
      * Get recommended movies
      */
-    public async getRecommendedMovies(
-        limit = 20,
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        const movies = await this.makeRequest<TraktMedia[]>(
-            `movies/recommended?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+    public async getRecommendedMovies(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
+        const movies = await this.makeRequest<TraktMedia[]>(`movies/recommended?limit=${limit}`, {}, false, extended);
         return movies.map((movie) => ({ movie }));
     }
 
     /**
      * Get recommended shows
      */
-    public async getRecommendedShows(
-        limit = 20,
-        extended = "full,images"
-    ): Promise<TraktMediaItem[]> {
-        const shows = await this.makeRequest<TraktMedia[]>(
-            `shows/recommended?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+    public async getRecommendedShows(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
+        const shows = await this.makeRequest<TraktMedia[]>(`shows/recommended?limit=${limit}`, {}, false, extended);
         return shows.map((show) => ({ show }));
     }
 
@@ -842,12 +677,7 @@ export class TraktClient {
         limit = 20,
         extended = "full,images"
     ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `movies/played/${period}?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+        return this.makeRequest<TraktMediaItem[]>(`movies/played/${period}?limit=${limit}`, {}, false, extended);
     }
 
     /**
@@ -858,12 +688,7 @@ export class TraktClient {
         limit = 20,
         extended = "full,images"
     ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(
-            `shows/played/${period}?limit=${limit}`,
-            {},
-            false,
-            extended
-        );
+        return this.makeRequest<TraktMediaItem[]>(`shows/played/${period}?limit=${limit}`, {}, false, extended);
     }
 }
 

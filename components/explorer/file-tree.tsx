@@ -306,12 +306,15 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
 
     // Row renderer for react-window
     const rowRenderer = useCallback(
-        ({ index, style }: ListChildComponentProps) => {
-            const flatNode = flatNodes[index];
+        (props: ListChildComponentProps) => {
+            const flatNode = flatNodes[props.index];
             if (!flatNode) return null;
 
+            // Type workaround for react-window style conflicts
+            const divStyle = props.style as React.CSSProperties;
+
             return (
-                <div style={style as React.CSSProperties} className="px-3 md:px-4">
+                <div style={divStyle} className="px-3 md:px-4">
                     <VirtualizedNode
                         flatNode={flatNode}
                         fileId={fileId}

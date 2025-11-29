@@ -4,6 +4,7 @@ import { User } from "@/lib/types";
 import { queryClient } from "../query-client";
 import { DebridClient, getClient, getClientInstance } from "@/lib/clients";
 import { toast } from "sonner";
+import { handleError } from "@/lib/utils/error-handling";
 
 interface UserStore {
     users: User[];
@@ -123,7 +124,7 @@ export const useUserStore = create<UserStore>()(
                     toast.success(`Logged in as ${user.username}`);
                     return user;
                 } catch (error) {
-                    toast.error((error as Error).message || "Failed to authenticate");
+                    handleError(error, "Failed to authenticate");
                     return null;
                 }
             },
@@ -140,7 +141,7 @@ export const useUserStore = create<UserStore>()(
                     const updatedUser = await ClientClass.getUser(user.apiKey);
                     updateAccount(userId, updatedUser);
                 } catch (error) {
-                    toast.error(`Failed to refresh user: ${(error as Error).message}`);
+                    handleError(error, "Failed to refresh user");
                 }
             },
         }),

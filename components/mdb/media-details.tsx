@@ -1,31 +1,48 @@
 "use client";
 
-import { type TraktMedia } from "@/lib/trakt";
+import { type TraktMedia, type TraktSeason } from "@/lib/trakt";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-    Star,
-    Calendar,
-    Clock,
-    Globe,
-    Film,
-    Tv,
-    ExternalLink,
-    Home,
-} from "lucide-react";
+import { Star, Calendar, Clock, Globe, Film, Tv, ExternalLink, Home } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-    useTraktShowSeasons,
-    useTraktShowEpisodes,
-    useTraktPeople,
-} from "@/hooks/use-trakt";
+import { useTraktShowSeasons, useTraktShowEpisodes, useTraktPeople } from "@/hooks/use-trakt";
 import { SeasonCard } from "./season-card";
 import { EpisodeCard } from "@/components/mdb/episode-card";
 import { PeopleSection } from "./people-section";
 import { MediaStats } from "./media-stats";
 import { useState, memo } from "react";
 import { Sources } from "./sources";
+
+// Seasons section component to avoid complex conditional rendering
+function SeasonsSection({
+    seasonsData,
+    selectedSeason,
+    setSelectedSeason,
+}: {
+    seasonsData: unknown;
+    selectedSeason: number;
+    setSelectedSeason: (season: number) => void;
+}): React.ReactElement | null {
+    const seasons = seasonsData as Array<{ number: number; [key: string]: unknown }>;
+    if (!seasons || seasons.length === 0) return null;
+
+    return (
+        <div>
+            <h3 className="text-base sm:text-lg font-semibold mb-3">Seasons</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                {seasons.map((season) => (
+                    <SeasonCard
+                        key={season.number}
+                        season={season as unknown as TraktSeason}
+                        isSelected={selectedSeason === season.number}
+                        onClick={() => setSelectedSeason(season.number)}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
 
 interface MediaDetailsProps {
     media?: TraktMedia;
@@ -35,36 +52,20 @@ interface MediaDetailsProps {
     error?: Error | null;
 }
 
-export const MediaDetails = memo(function MediaDetails({
-    media,
-    mediaId,
-    type,
-    isLoading,
-    error,
-}: MediaDetailsProps) {
+export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, isLoading, error }: MediaDetailsProps) {
     const [selectedSeason, setSelectedSeason] = useState<number>(1);
 
     // Fetch additional data for shows
-    const seasonsQuery = useTraktShowSeasons(
-        type === "show" ? mediaId : undefined
-    );
-    const episodesQuery = useTraktShowEpisodes(
-        type === "show" ? mediaId : undefined,
-        selectedSeason
-    );
+    const seasonsQuery = useTraktShowSeasons(mediaId);
+    const episodesQuery = useTraktShowEpisodes(mediaId, selectedSeason);
 
     // Fetch people data
-    const peopleQuery = useTraktPeople(
-        mediaId,
-        type === "movie" ? "movies" : "shows"
-    );
+    const peopleQuery = useTraktPeople(mediaId);
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
                 <div className="text-center space-y-2">
-                    <p className="text-2xl font-semibold">
-                        Failed to load details
-                    </p>
+                    <p className="text-2xl font-semibold">Failed to load details</p>
                     <p className="text-muted-foreground">{error.message}</p>
                 </div>
             </div>
@@ -141,13 +142,8 @@ export const MediaDetails = memo(function MediaDetails({
 
                         <div className="flex flex-col gap-2">
                             {media.homepage && (
-                                <Link
-                                    href={media.homepage}
-                                    target="_blank"
-                                    rel="noopener">
-                                    <Button
-                                        variant="outline"
-                                        className="w-full gap-2">
+                                <Link href={media.homepage} target="_blank" rel="noopener">
+                                    <Button variant="outline" className="w-full gap-2">
                                         <Home className="h-4 w-4" />
                                         Official Website
                                     </Button>
@@ -155,13 +151,8 @@ export const MediaDetails = memo(function MediaDetails({
                             )}
 
                             {media.trailer && (
-                                <Link
-                                    href={media.trailer}
-                                    target="_blank"
-                                    rel="noopener">
-                                    <Button
-                                        variant="outline"
-                                        className="w-full gap-2">
+                                <Link href={media.trailer} target="_blank" rel="noopener">
+                                    <Button variant="outline" className="w-full gap-2">
                                         <ExternalLink className="h-4 w-4" />
                                         Watch Trailer
                                     </Button>
@@ -172,9 +163,7 @@ export const MediaDetails = memo(function MediaDetails({
 
                     <div className="space-y-4 md:space-y-6">
                         <div>
-                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
-                                {media.title}
-                            </h1>
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{media.title}</h1>
 
                             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                                 {media.year && (
@@ -187,16 +176,11 @@ export const MediaDetails = memo(function MediaDetails({
                                 {media.rating && (
                                     <div className="flex items-center gap-1 text-xs sm:text-sm">
                                         <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-500 text-yellow-500" />
-                                        <span className="font-semibold">
-                                            {media.rating.toFixed(1)}
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            /10
-                                        </span>
+                                        <span className="font-semibold">{media.rating.toFixed(1)}</span>
+                                        <span className="text-muted-foreground">/10</span>
                                         {media.votes && (
                                             <span className="text-muted-foreground text-xs sm:text-sm">
-                                                ({media.votes.toLocaleString()}{" "}
-                                                votes)
+                                                ({media.votes.toLocaleString()} votes)
                                             </span>
                                         )}
                                     </div>
@@ -210,9 +194,7 @@ export const MediaDetails = memo(function MediaDetails({
                                 )}
 
                                 {media.certification && (
-                                    <Badge
-                                        variant="outline"
-                                        className="text-xs">
+                                    <Badge variant="outline" className="text-xs">
                                         {media.certification}
                                     </Badge>
                                 )}
@@ -240,12 +222,8 @@ export const MediaDetails = memo(function MediaDetails({
 
                         {media.overview && (
                             <div>
-                                <h2 className="text-xl font-semibold mb-2">
-                                    Overview
-                                </h2>
-                                <p className="text-muted-foreground leading-relaxed">
-                                    {media.overview}
-                                </p>
+                                <h2 className="text-xl font-semibold mb-2">Overview</h2>
+                                <p className="text-muted-foreground leading-relaxed">{media.overview}</p>
                             </div>
                         )}
 
@@ -253,17 +231,11 @@ export const MediaDetails = memo(function MediaDetails({
 
                         {media.ids && (
                             <div>
-                                <h2 className="text-xl font-semibold mb-2">
-                                    External IDs
-                                </h2>
+                                <h2 className="text-xl font-semibold mb-2">External IDs</h2>
                                 <div className="flex flex-wrap gap-2">
                                     {media.ids.imdb && (
-                                        <Link
-                                            href={`https://www.imdb.com/title/${media.ids.imdb}`}
-                                            target="_blank">
-                                            <Badge
-                                                variant="secondary"
-                                                className="cursor-pointer hover:bg-secondary/80">
+                                        <Link href={`https://www.imdb.com/title/${media.ids.imdb}`} target="_blank">
+                                            <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
                                                 <Globe className="h-3 w-3 mr-1" />
                                                 IMDb
                                             </Badge>
@@ -273,9 +245,7 @@ export const MediaDetails = memo(function MediaDetails({
                                         <Link
                                             href={`https://www.themoviedb.org/${type}/${media.ids.tmdb}`}
                                             target="_blank">
-                                            <Badge
-                                                variant="secondary"
-                                                className="cursor-pointer hover:bg-secondary/80">
+                                            <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
                                                 <Globe className="h-3 w-3 mr-1" />
                                                 TMDB
                                             </Badge>
@@ -285,18 +255,14 @@ export const MediaDetails = memo(function MediaDetails({
                                         <Link
                                             href={`https://trakt.tv/${type === "movie" ? "movies" : "shows"}/${media.ids.trakt}`}
                                             target="_blank">
-                                            <Badge
-                                                variant="secondary"
-                                                className="cursor-pointer hover:bg-secondary/80">
+                                            <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
                                                 <Globe className="h-3 w-3 mr-1" />
                                                 Trakt
                                             </Badge>
                                         </Link>
                                     )}
                                     {type === "show" && (
-                                        <Link
-                                            href={`https://tvcharts.co/show/${media.ids.imdb}`}
-                                            target="_blank">
+                                        <Link href={`https://tvcharts.co/show/${media.ids.imdb}`} target="_blank">
                                             <Badge variant="secondary">
                                                 <Globe className="h-3 w-3 mr-1" />
                                                 TV Charts
@@ -312,9 +278,7 @@ export const MediaDetails = memo(function MediaDetails({
                 {/* Sources Section for Movies */}
                 {type === "movie" && media?.ids?.imdb && (
                     <div className="space-y-4">
-                        <h2
-                            className="text-lg sm:text-xl font-bold"
-                            id="sources">
+                        <h2 className="text-lg sm:text-xl font-bold" id="sources">
                             Available Sources
                         </h2>
                         <Sources imdbId={media.ids.imdb} mediaType="movie" />
@@ -324,68 +288,37 @@ export const MediaDetails = memo(function MediaDetails({
                 {/* Seasons & Episodes for TV Shows */}
                 {type === "show" && (
                     <div className="space-y-4">
-                        <h2 className="text-lg sm:text-xl font-bold">
-                            Seasons & Episodes
-                        </h2>
+                        <h2 className="text-lg sm:text-xl font-bold">Seasons & Episodes</h2>
 
                         {/* Seasons */}
-                        {seasonsQuery.data && seasonsQuery.data.length > 0 && (
+                        {type === "show" && (
+                            <SeasonsSection
+                                seasonsData={seasonsQuery.data}
+                                selectedSeason={selectedSeason}
+                                setSelectedSeason={setSelectedSeason}
+                            />
+                        )}
+
+                        {/* Episodes */}
+                        {episodesQuery.data && episodesQuery.data.length > 0 && (
                             <div>
-                                <h3 className="text-base sm:text-lg font-semibold mb-3">
-                                    Seasons
+                                <h3 className="text-base sm:text-lg font-semibold mb-3" id="sources">
+                                    {selectedSeason === 0 ? "Specials" : `Season ${selectedSeason}`} Episodes
                                 </h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-                                    {seasonsQuery.data.map((season) => (
-                                        <SeasonCard
-                                            key={season.number}
-                                            season={season}
-                                            isSelected={
-                                                selectedSeason === season.number
-                                            }
-                                            onClick={() =>
-                                                setSelectedSeason(season.number)
-                                            }
-                                        />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+                                    {episodesQuery.data.map((episode) => (
+                                        <EpisodeCard key={episode.number} episode={episode} imdbId={media.ids?.imdb} />
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {/* Episodes */}
-                        {episodesQuery.data &&
-                            episodesQuery.data.length > 0 && (
-                                <div>
-                                    <h3
-                                        className="text-base sm:text-lg font-semibold mb-3"
-                                        id="sources">
-                                        {selectedSeason === 0
-                                            ? "Specials"
-                                            : `Season ${selectedSeason}`}{" "}
-                                        Episodes
-                                    </h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
-                                        {episodesQuery.data.map((episode) => (
-                                            <EpisodeCard
-                                                key={episode.number}
-                                                episode={episode}
-                                                imdbId={media.ids?.imdb}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
                         {seasonsQuery.isLoading && (
                             <div className="space-y-3">
-                                <h3 className="text-base sm:text-lg font-semibold">
-                                    Seasons
-                                </h3>
+                                <h3 className="text-base sm:text-lg font-semibold">Seasons</h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
                                     {Array.from({ length: 5 }).map((_, i) => (
-                                        <Skeleton
-                                            key={i}
-                                            className="aspect-[2/3] rounded-lg"
-                                        />
+                                        <Skeleton key={i} className="aspect-[2/3] rounded-lg" />
                                     ))}
                                 </div>
                             </div>
@@ -394,11 +327,7 @@ export const MediaDetails = memo(function MediaDetails({
                 )}
 
                 {/* Cast Section */}
-                <PeopleSection
-                    people={peopleQuery.data}
-                    isLoading={peopleQuery.isLoading}
-                    error={peopleQuery.error}
-                />
+                <PeopleSection people={peopleQuery.data} isLoading={peopleQuery.isLoading} error={peopleQuery.error} />
             </div>
         </div>
     );

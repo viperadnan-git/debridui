@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { GitHubIcon } from "@/components/icons";
-import { BookIcon, InfoIcon } from "lucide-react";
+import { BookIcon, InfoIcon, Github } from "lucide-react";
 
 export default function Home() {
     return (
@@ -21,7 +20,7 @@ export default function Home() {
                         target="_blank"
                         rel="noopener noreferrer">
                         <div className="flex items-center gap-2">
-                            <GitHubIcon className="size-4" />
+                            <Github className="size-4" />
                             <span>See on GitHub</span>
                         </div>
                     </a>

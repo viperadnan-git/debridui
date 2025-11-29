@@ -1,210 +1,182 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { traktClient } from "@/lib/trakt";
 
-// Cache times
+// Cache configuration
 const CACHE_TIMES = {
-    trending: 6 * 60 * 60 * 1000, // 6 hours
-    popular: 6 * 60 * 60 * 1000, // 6 hours
-    watched: 6 * 60 * 60 * 1000, // 6 hours
-    anticipated: 6 * 60 * 60 * 1000, // 6 hours
-    boxoffice: 6 * 60 * 60 * 1000, // 6 hours
-    details: 24 * 60 * 60 * 1000, // 24 hours
-    search: 5 * 60 * 1000, // 5 minutes
+    trending: 6 * 60 * 60 * 1000,
+    popular: 6 * 60 * 60 * 1000,
+    watched: 6 * 60 * 60 * 1000,
+    anticipated: 6 * 60 * 60 * 1000,
+    boxoffice: 6 * 60 * 60 * 1000,
+    details: 24 * 60 * 60 * 1000,
+    search: 5 * 60 * 1000,
 };
 
-// Trending
-export function useTraktTrendingMovies(limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "movies", "trending", limit],
-        queryFn: () => traktClient.getTrendingMovies(limit),
-        staleTime: CACHE_TIMES.trending,
-        gcTime: CACHE_TIMES.trending * 2,
-    });
-}
-
-export function useTraktTrendingShows(limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "shows", "trending", limit],
-        queryFn: () => traktClient.getTrendingShows(limit),
-        staleTime: CACHE_TIMES.trending,
-        gcTime: CACHE_TIMES.trending * 2,
-    });
-}
-
-// Popular
-export function useTraktPopularMovies(limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "movies", "popular", limit],
-        queryFn: () => traktClient.getPopularMovies(limit),
-        staleTime: CACHE_TIMES.popular,
-        gcTime: CACHE_TIMES.popular * 2,
-    });
-}
-
-export function useTraktPopularShows(limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "shows", "popular", limit],
-        queryFn: () => traktClient.getPopularShows(limit),
-        staleTime: CACHE_TIMES.popular,
-        gcTime: CACHE_TIMES.popular * 2,
-    });
-}
-
-// Most Watched
-export function useTraktMostWatchedMovies(period = "weekly", limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "movies", "watched", period, limit],
-        queryFn: () => traktClient.getMostWatchedMovies(period, limit),
-        staleTime: CACHE_TIMES.watched,
-        gcTime: CACHE_TIMES.watched * 2,
-    });
-}
-
-export function useTraktMostWatchedShows(period = "weekly", limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "shows", "watched", period, limit],
-        queryFn: () => traktClient.getMostWatchedShows(period, limit),
-        staleTime: CACHE_TIMES.watched,
-        gcTime: CACHE_TIMES.watched * 2,
-    });
-}
-
-// Anticipated
-export function useTraktAnticipatedMovies(limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "movies", "anticipated", limit],
-        queryFn: () => traktClient.getAnticipatedMovies(limit),
-        staleTime: CACHE_TIMES.anticipated,
-        gcTime: CACHE_TIMES.anticipated * 2,
-    });
-}
-
-export function useTraktAnticipatedShows(limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "shows", "anticipated", limit],
-        queryFn: () => traktClient.getAnticipatedShows(limit),
-        staleTime: CACHE_TIMES.anticipated,
-        gcTime: CACHE_TIMES.anticipated * 2,
-    });
-}
-
-// Box Office
-export function useTraktBoxOfficeMovies() {
-    return useQuery({
-        queryKey: ["trakt", "movies", "boxoffice"],
-        queryFn: () => traktClient.getBoxOfficeMovies(),
-        staleTime: CACHE_TIMES.boxoffice,
-        gcTime: CACHE_TIMES.boxoffice * 2,
-    });
-}
-
-// Recommended
-export function useTraktRecommendedMovies(limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "movies", "recommended", limit],
-        queryFn: () => traktClient.getRecommendedMovies(limit),
-        staleTime: CACHE_TIMES.popular,
-        gcTime: CACHE_TIMES.popular * 2,
-    });
-}
-
-export function useTraktRecommendedShows(limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "shows", "recommended", limit],
-        queryFn: () => traktClient.getRecommendedShows(limit),
-        staleTime: CACHE_TIMES.popular,
-        gcTime: CACHE_TIMES.popular * 2,
-    });
-}
-
-// Most Played
-export function useTraktMostPlayedMovies(period = "weekly", limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "movies", "played", period, limit],
-        queryFn: () => traktClient.getMostPlayedMovies(period, limit),
-        staleTime: CACHE_TIMES.watched,
-        gcTime: CACHE_TIMES.watched * 2,
-    });
-}
-
-export function useTraktMostPlayedShows(period = "weekly", limit = 20) {
-    return useQuery({
-        queryKey: ["trakt", "shows", "played", period, limit],
-        queryFn: () => traktClient.getMostPlayedShows(period, limit),
-        staleTime: CACHE_TIMES.watched,
-        gcTime: CACHE_TIMES.watched * 2,
-    });
-}
-
-// Get details by ID (supports Trakt ID, Trakt slug, or IMDB ID)
-export function useTraktMedia(id: string | undefined, type: "movie" | "show") {
-    return useQuery({
-        queryKey: ["trakt", type, id],
-        queryFn: () => (type === "movie" ? traktClient.getMovie(id!) : traktClient.getShow(id!)),
-        enabled: !!id,
-        staleTime: CACHE_TIMES.details,
-        gcTime: CACHE_TIMES.details * 2,
-    });
-}
-
-// Get show seasons
-export function useTraktShowSeasons(showId: string | undefined) {
-    return useQuery({
-        queryKey: ["trakt", "show", showId, "seasons"],
-        queryFn: () => traktClient.getShowSeasons(showId!),
-        enabled: !!showId,
-        staleTime: CACHE_TIMES.details,
-        gcTime: CACHE_TIMES.details * 2,
-    });
-}
-
-// Get show episodes for a season
-export function useTraktShowEpisodes(showId: string | undefined, season: number | undefined) {
-    return useQuery({
-        queryKey: ["trakt", "show", showId, "season", season, "episodes"],
-        queryFn: () => traktClient.getShowEpisodes(showId!, season!),
-        enabled: !!showId && season !== undefined,
-        staleTime: CACHE_TIMES.details,
-        gcTime: CACHE_TIMES.details * 2,
-    });
-}
-
-// Get cast and crew
-export function useTraktPeople(id: string | undefined, type: "movies" | "shows") {
-    return useQuery({
-        queryKey: ["trakt", type, id, "people"],
-        queryFn: () => traktClient.getPeople(id!, type),
-        enabled: !!id,
-        staleTime: CACHE_TIMES.details,
-        gcTime: CACHE_TIMES.details * 2,
-    });
-}
-
-// Combined trending for carousel
-export function useTraktTrendingMixed(limit = 10) {
-    const moviesQuery = useTraktTrendingMovies(limit / 2);
-    const showsQuery = useTraktTrendingShows(limit / 2);
-
-    return {
-        data: {
-            movies: moviesQuery.data || [],
-            shows: showsQuery.data || [],
-            mixed: [...(moviesQuery.data || []), ...(showsQuery.data || [])].sort(
-                (a, b) => (a.watchers || 0) - (b.watchers || 0)
-            ),
-        },
-        isLoading: moviesQuery.isLoading || showsQuery.isLoading,
-        error: moviesQuery.error || showsQuery.error,
+// Generic Trakt query hook factory
+function createTraktHook<T extends any[], R>(
+    keyParts: string[],
+    fn: (...args: T) => Promise<R>,
+    cacheType: keyof typeof CACHE_TIMES
+) {
+    return (...args: T): UseQueryResult<R> => {
+        const cache = CACHE_TIMES[cacheType];
+        return useQuery({
+            queryKey: ["trakt", ...keyParts, ...args],
+            queryFn: () => fn(...args),
+            staleTime: cache,
+            gcTime: cache * 2,
+        });
     };
 }
 
-// Search
-export function useTraktSearch(query: string, enabled = true) {
+// List hooks - significantly reduced code
+export const useTraktTrendingMovies = createTraktHook(
+    ["movies", "trending"],
+    (limit = 20) => traktClient.getTrendingMovies(limit),
+    "trending"
+);
+
+export const useTraktTrendingShows = createTraktHook(
+    ["shows", "trending"],
+    (limit = 20) => traktClient.getTrendingShows(limit),
+    "trending"
+);
+
+export const useTraktPopularMovies = createTraktHook(
+    ["movies", "popular"],
+    (limit = 20) => traktClient.getPopularMovies(limit),
+    "popular"
+);
+
+export const useTraktPopularShows = createTraktHook(
+    ["shows", "popular"],
+    (limit = 20) => traktClient.getPopularShows(limit),
+    "popular"
+);
+
+export const useTraktMostWatchedMovies = createTraktHook(
+    ["movies", "watched"],
+    (period = "weekly", limit = 20) => traktClient.getMostWatchedMovies(period, limit),
+    "watched"
+);
+
+export const useTraktMostWatchedShows = createTraktHook(
+    ["shows", "watched"],
+    (period = "weekly", limit = 20) => traktClient.getMostWatchedShows(period, limit),
+    "watched"
+);
+
+export const useTraktAnticipatedMovies = createTraktHook(
+    ["movies", "anticipated"],
+    (limit = 20) => traktClient.getAnticipatedMovies(limit),
+    "anticipated"
+);
+
+export const useTraktAnticipatedShows = createTraktHook(
+    ["shows", "anticipated"],
+    (limit = 20) => traktClient.getAnticipatedShows(limit),
+    "anticipated"
+);
+
+export const useTraktBoxOfficeMovies = createTraktHook(
+    ["movies", "boxoffice"],
+    () => traktClient.getBoxOfficeMovies(),
+    "boxoffice"
+);
+
+// Details hooks
+export const useTraktMovieDetails = createTraktHook(
+    ["movie"],
+    (slug: string) => traktClient.getMovieDetails(slug),
+    "details"
+);
+
+export const useTraktMovieSeasons = createTraktHook(
+    ["movie", "seasons"],
+    (slug: string) => traktClient.getMovieSeasons(slug),
+    "details"
+);
+
+export const useTraktShowDetails = createTraktHook(
+    ["show"],
+    (slug: string) => traktClient.getShowDetails(slug),
+    "details"
+);
+
+export const useTraktShowSeasons = createTraktHook(
+    ["show", "seasons"],
+    (slug: string) => traktClient.getShowSeasons(slug),
+    "details"
+);
+
+export const useTraktSeasonEpisodes = createTraktHook(
+    ["season", "episodes"],
+    (slug: string, season: number) => traktClient.getSeasonEpisodes(slug, season),
+    "details"
+);
+
+// Search hooks
+export const useTraktSearchMovies = createTraktHook(
+    ["search", "movies"],
+    (query: string) => traktClient.searchMovies(query),
+    "search"
+);
+
+export const useTraktSearchShows = createTraktHook(
+    ["search", "shows"],
+    (query: string) => traktClient.searchShows(query),
+    "search"
+);
+
+export const useTraktSearchId = createTraktHook(
+    ["search", "id"],
+    (id: string, type?: "imdb" | "tmdb" | "tvdb") => traktClient.searchId(id, type),
+    "search"
+);
+
+// Aliases for backward compatibility
+export const useTraktMostPlayedMovies = useTraktMostWatchedMovies;
+export const useTraktMostPlayedShows = useTraktMostWatchedShows;
+
+// Combined hooks
+export function useTraktTrendingMixed(limit = 20) {
+    const cache = CACHE_TIMES.trending;
     return useQuery({
-        queryKey: ["trakt", "search", query],
-        queryFn: () => traktClient.search(query),
-        staleTime: CACHE_TIMES.search,
-        gcTime: CACHE_TIMES.search * 2,
-        enabled: enabled && query.trim().length > 0,
+        queryKey: ["trakt", "mixed", "trending", limit],
+        queryFn: () => traktClient.getTrendingMixed(limit),
+        staleTime: cache,
+        gcTime: cache * 2,
+    });
+}
+
+export function useTraktSearch(query: string, type?: "movie" | "show") {
+    const cache = CACHE_TIMES.search;
+    return useQuery({
+        queryKey: ["trakt", "search", query, type],
+        queryFn: () => traktClient.search(query, type),
+        staleTime: cache,
+        gcTime: cache * 2,
+    });
+}
+
+export function useTraktMedia(slug: string, type: "movie" | "show") {
+    const cache = CACHE_TIMES.details;
+    return useQuery({
+        queryKey: ["trakt", "media", slug, type],
+        queryFn: () => (type === "movie" ? traktClient.getMovieDetails(slug) : traktClient.getShowDetails(slug)),
+        staleTime: cache,
+        gcTime: cache * 2,
+    });
+}
+
+export const useTraktShowEpisodes = useTraktSeasonEpisodes;
+
+export function useTraktPeople(id: string) {
+    const cache = CACHE_TIMES.details;
+    return useQuery({
+        queryKey: ["trakt", "people", id],
+        queryFn: () => traktClient.getPeople(id),
+        staleTime: cache,
+        gcTime: cache * 2,
     });
 }
