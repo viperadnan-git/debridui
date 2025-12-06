@@ -102,6 +102,12 @@ export const useUserStore = create<UserStore>()(
             setHydrated: () => {
                 const { currentUser, users } = get();
                 const user = currentUser || users[0];
+
+                if (!user) {
+                    set({ isHydrated: true });
+                    return;
+                }
+
                 const client = getClientInstance(user);
                 console.log("Initializing client", user.type);
                 set({
