@@ -32,12 +32,16 @@ export const useUserStore = create<UserStore>()(
 
             addUser: (user) => {
                 set((state) => {
-                    const exists = state.users.some((u) => u.id === user.id);
-                    if (exists) {
+                    const existingUser = state.users.find(
+                        (u) => u.id === user.id || (u.type === user.type && u.apiKey === user.apiKey)
+                    );
+                    if (existingUser) {
+                        // Update existing user and switch to it
+                        const updatedUser = { ...existingUser, ...user };
                         return {
-                            users: state.users.map((u) => (u.id === user.id ? user : u)),
-                            currentUser: user,
-                            client: getClientInstance(user),
+                            users: state.users.map((u) => (u.id === existingUser.id ? updatedUser : u)),
+                            currentUser: updatedUser,
+                            client: getClientInstance(updatedUser),
                         };
                     }
                     return {

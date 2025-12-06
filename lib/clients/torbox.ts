@@ -152,10 +152,10 @@ export default class TorBoxClient extends BaseClient {
         const isPremium = user.is_subscribed && premiumExpiry > new Date();
 
         return {
-            id: crypto.randomUUID(),
+            id: `${AccountType.TORBOX}:${user.email}`,
             apiKey,
             type: AccountType.TORBOX,
-            username: user.email.split("@")[0], // Use email prefix as username
+            username: user.email,
             email: user.email,
             language: "en", // Default language
             isPremium,

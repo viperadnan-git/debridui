@@ -135,7 +135,7 @@ export default class AllDebridClient extends BaseClient {
         const isPremium = premiumExpiry && premiumExpiry > Date.now();
 
         return {
-            id: crypto.randomUUID(),
+            id: `${AccountType.ALLDEBRID}:${user.username}`,
             apiKey,
             type: AccountType.ALLDEBRID,
             username: user.username,
