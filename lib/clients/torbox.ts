@@ -258,21 +258,8 @@ export default class TorBoxClient extends BaseClient {
         // For TorBox, files should already be available in DebridFile.files
         // This method exists only for backward compatibility
         // Make direct API request as fallback since this should rarely be called
-        const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/torrentinfo?id=${torrentId}`);
-
-        if (!torrent.files) {
-            return [];
-        }
-
-        return torrent.files.map(
-            (file): DebridFileNode => ({
-                id: `${torrentId}:${file.id}`,
-                name: file.short_name || file.name,
-                size: file.size,
-                type: "file",
-                children: [],
-            })
-        );
+        const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/mylist?id=${torrentId}`);
+        return this.mapToDebridFile(torrent).files || [];
     }
 
     async removeTorrent(torrentId: string): Promise<string> {
