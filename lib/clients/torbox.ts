@@ -431,6 +431,7 @@ export default class TorBoxClient extends BaseClient {
             case "error":
             case "reported missing":
                 return "failed";
+            case "checking":
             case "stalled (no seeds)":
                 return "waiting";
             case "processing":
