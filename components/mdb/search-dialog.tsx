@@ -53,7 +53,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     const handleFileSelect = useCallback(
         (file: DebridFile) => {
             const searchParams = new URLSearchParams();
-            searchParams.set("q", file.name);
+            searchParams.set("q", `id:${file.id}`);
             router.push(`/files?${searchParams.toString()}`);
             onOpenChange(false);
             setQuery("");
@@ -119,7 +119,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     onSelect={() => handleSelect(result)}
                     className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
                     {/* Poster thumbnail or icon */}
-                    <div className="flex-shrink-0 w-16 h-20 bg-muted rounded overflow-hidden">
+                    <div className="shrink-0 w-16 h-20 bg-muted rounded overflow-hidden">
                         {posterImage ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={posterImage} alt={media.title} className="w-full h-full object-cover" />
