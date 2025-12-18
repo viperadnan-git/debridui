@@ -22,7 +22,12 @@ export default function Home() {
                         target="_blank"
                         rel="noopener noreferrer">
                         <div className="flex items-center gap-2">
-                            <Github className="size-4" />
+                            <img
+                                height="24"
+                                width="24"
+                                className="dark:invert"
+                                src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/github.svg"
+                            />
                             <span>See on GitHub</span>
                         </div>
                     </a>
