@@ -31,6 +31,7 @@ export const formatRelativeTime = (date: Date) => {
 };
 
 const PLAYER_URLS: Record<MediaPlayer, (url: string) => string> = {
+    [MediaPlayer.BROWSER]: (url) => url, // Browser preview uses the preview dialog, not external player
     [MediaPlayer.IINA]: (url) => `iina://weblink?url=${encodeURIComponent(url)}`,
     [MediaPlayer.VLC]: (url) => `vlc://${url}`,
     [MediaPlayer.MPV]: (url) => `mpv://${encodeURIComponent(url)}`,

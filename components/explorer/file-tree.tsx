@@ -11,11 +11,12 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { toast } from "sonner";
-import { FileType } from "@/lib/types";
+import { FileType, MediaPlayer } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSelectionStore } from "@/lib/stores/selection";
 import { FixedSizeList as List, ListChildComponentProps } from "react-window";
+import { PreviewButton } from "@/components/preview/preview-button";
 
 interface FileTreeProps {
     nodes: DebridFileNode[];
@@ -89,6 +90,26 @@ function countTotalNodes(nodes: DebridFileNode[]): number {
     }
 
     return count;
+}
+
+// Helper to collect all file nodes (not folders) from the tree in display order
+function collectAllFileNodes(nodes: DebridFileNode[]): DebridFileNode[] {
+    const files: DebridFileNode[] = [];
+    const stack: DebridFileNode[] = [...nodes].reverse();
+
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (node.type === "file") {
+            files.push(node);
+        } else if (node.children && node.children.length > 0) {
+            // Push children in reverse order to maintain display order when popped
+            for (let i = node.children.length - 1; i >= 0; i--) {
+                stack.push(node.children[i]);
+            }
+        }
+    }
+
+    return files;
 }
 
 function FileActionButton({ node, action }: { node: DebridFileNode; action: "copy" | "download" | "play" }) {
@@ -169,13 +190,15 @@ interface VirtualizedNodeProps {
     fileId: string;
     expandedPaths: Set<string>;
     onToggleExpand: (path: string) => void;
+    allFileNodes: DebridFileNode[];
 }
 
-function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand }: VirtualizedNodeProps) {
+function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand, allFileNodes }: VirtualizedNodeProps) {
     const { node, depth, hasChildren, path } = flatNode;
     const isExpanded = expandedPaths.has(path);
     const isMobile = useIsMobile();
     const [showActions, setShowActions] = useState(false);
+    const mediaPlayer = useSettingsStore((state) => state.get("mediaPlayer"));
 
     const selectedNodes = useSelectionStore((state) => state.selectedNodesByFile.get(fileId));
     const updateNodeSelection = useSelectionStore((state) => state.updateNodeSelection);
@@ -254,8 +277,14 @@ function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand }: Vi
                     <span className="text-[10px] sm:text-xs text-muted-foreground">{formatSize(node.size)}</span>
                     {(!isMobile || showActions) && (
                         <div className="flex gap-1 md:gap-0.5">
-                            {getFileType(node.name) === FileType.VIDEO && (
-                                <FileActionButton node={node} action="play" />
+                            {getFileType(node.name) === FileType.VIDEO &&
+                                (mediaPlayer === MediaPlayer.BROWSER ? (
+                                    <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />
+                                ) : (
+                                    <FileActionButton node={node} action="play" />
+                                ))}
+                            {getFileType(node.name) === FileType.IMAGE && (
+                                <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />
                             )}
                             <FileActionButton node={node} action="copy" />
                             <FileActionButton node={node} action="download" />
@@ -292,6 +321,11 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
         return flattenNodes(nodes, expandedPaths);
     }, [nodes, expandedPaths]);
 
+    // Collect all file nodes for preview navigation
+    const allFileNodes = useMemo(() => {
+        return collectAllFileNodes(nodes);
+    }, [nodes]);
+
     const toggleExpanded = useCallback((path: string) => {
         setExpandedPaths((prev) => {
             const newSet = new Set(prev);
@@ -320,11 +354,12 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
                         fileId={fileId}
                         expandedPaths={expandedPaths}
                         onToggleExpand={toggleExpanded}
+                        allFileNodes={allFileNodes}
                     />
                 </div>
             );
         },
-        [flatNodes, fileId, expandedPaths, toggleExpanded]
+        [flatNodes, fileId, expandedPaths, toggleExpanded, allFileNodes]
     );
 
     // Regular rendering for small trees
@@ -338,6 +373,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
                         fileId={fileId}
                         expandedPaths={expandedPaths}
                         onToggleExpand={toggleExpanded}
+                        allFileNodes={allFileNodes}
                     />
                 ))}
             </div>

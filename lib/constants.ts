@@ -1,6 +1,7 @@
 import { FileType, AccountType, MediaPlayer } from "./types";
 
 export const MEDIA_PLAYER_LABELS = [
+    { value: MediaPlayer.BROWSER, label: "Browser Preview" },
     { value: MediaPlayer.EMBED, label: "Embed Player" },
     { value: MediaPlayer.VLC, label: "VLC Media Player" },
     { value: MediaPlayer.IINA, label: "IINA" },

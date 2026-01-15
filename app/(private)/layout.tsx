@@ -10,6 +10,7 @@ import { useUserStore } from "@/lib/stores/users";
 import { useShallow } from "zustand/react/shallow";
 import { Separator } from "@/components/ui/separator";
 import { useEffect } from "react";
+import { FilePreviewDialog } from "@/components/preview/file-preview-dialog";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -60,6 +61,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     </SidebarInset>
                 </SidebarProvider>
             </SearchProvider>
+            <FilePreviewDialog />
         </AuthContext.Provider>
     );
 }

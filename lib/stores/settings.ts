@@ -30,8 +30,13 @@ const settingsConfig: SettingsConfig = {
         defaultValue: false,
     },
     mediaPlayer: {
-        defaultValue: MediaPlayer.EMBED,
+        defaultValue: MediaPlayer.BROWSER,
         presets: [
+            {
+                value: MediaPlayer.BROWSER,
+                label: "Browser Preview",
+                description: "Built-in browser preview with controls",
+            },
             { value: MediaPlayer.IINA, label: "IINA", description: "macOS media player" },
             { value: MediaPlayer.VLC, label: "VLC", description: "Cross-platform media player" },
             { value: MediaPlayer.MPV, label: "MPV", description: "Lightweight media player" },

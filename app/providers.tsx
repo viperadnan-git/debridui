@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { useState, useEffect } from "react";
 import { queryClient, initializeQueryClientPersistence } from "@/lib/query-client";
+import "@/lib/preview/register-renderers"; // Register preview renderers
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
     const [isClient, setIsClient] = useState(false);
