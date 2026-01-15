@@ -382,12 +382,12 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
 
     // Virtualized rendering with react-window for large trees
     return (
-        <div className="py-2 sm:py-3">
+        <div className="py-2 md:py-3">
             <List
                 ref={listRef}
                 height={600}
                 itemCount={flatNodes.length}
-                itemSize={isMobile ? 26 : 32}
+                itemSize={isMobile ? 30 : 36}
                 width="100%"
                 overscanCount={10}>
                 {rowRenderer}
