@@ -56,8 +56,8 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
                     decoding="async"
                 />
                 {/* Netflix-style gradients */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-r from-black via-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
             </div>
 
             {/* Content Overlay */}
@@ -144,7 +144,7 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
     const linkHref = media.ids?.slug ? `/${type}/${media.ids.slug}` : "#";
 
     return (
-        <div className="md:hidden relative w-full aspect-[9/14] overflow-hidden">
+        <div className="md:hidden relative w-full aspect-9/14 overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -156,7 +156,7 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
                     decoding="async"
                 />
                 {/* Mobile gradients */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent" />
             </div>
 
             {/* Mobile Content */}
@@ -253,7 +253,7 @@ export function HeroCarousel() {
                 </div>
                 {/* Mobile skeleton */}
                 <div className="md:hidden">
-                    <Skeleton className="w-full aspect-[9/16]" />
+                    <Skeleton className="w-full aspect-9/16" />
                 </div>
             </div>
         );

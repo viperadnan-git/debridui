@@ -83,7 +83,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
                 {/* Content skeleton */}
                 <div className="relative pt-[20vh] sm:pt-[22vh] md:pt-[25vh] pb-20 space-y-6">
                     <div className="grid md:grid-cols-[200px_1fr] lg:grid-cols-[300px_1fr] gap-3 md:gap-6">
-                        <Skeleton className="aspect-[2/3] rounded-lg w-full max-w-[50vw] sm:max-w-none" />
+                        <Skeleton className="aspect-2/3 rounded-lg w-full max-w-[50vw] sm:max-w-none" />
                         <div className="space-y-4">
                             <Skeleton className="h-8 sm:h-10 w-3/4" />
                             <div className="flex gap-3 sm:gap-4">
@@ -128,7 +128,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
                             loading="lazy"
                             decoding="async"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
                     </div>
                 </div>
             )}
@@ -142,7 +142,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
                 }>
                 <div className="grid md:grid-cols-[200px_1fr] lg:grid-cols-[300px_1fr] gap-3 md:gap-6">
                     <div className="space-y-2 md:space-y-4">
-                        <div className="max-sm:max-w-[50vw] aspect-[2/3] overflow-hidden rounded-lg">
+                        <div className="max-sm:max-w-[50vw] aspect-2/3 overflow-hidden rounded-lg">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={posterUrl}
@@ -244,7 +244,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
 
                         {media.ids && (
                             <div>
-                                <h2 className="text-xl font-semibold mb-2">External IDs</h2>
+                                <h2 className="text-xl font-semibold mb-2">External</h2>
                                 <div className="flex flex-wrap gap-2">
                                     {media.ids.imdb && (
                                         <Link href={`https://www.imdb.com/title/${media.ids.imdb}`} target="_blank">
@@ -329,7 +329,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
                                 <h3 className="text-base sm:text-lg font-semibold">Seasons</h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
                                     {Array.from({ length: 5 }).map((_, i) => (
-                                        <Skeleton key={i} className="aspect-[2/3] rounded-lg" />
+                                        <Skeleton key={i} className="aspect-2/3 rounded-lg" />
                                     ))}
                                 </div>
                             </div>

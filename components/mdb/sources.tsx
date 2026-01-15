@@ -29,7 +29,6 @@ interface SourcesProps {
     mediaType?: "movie" | "show";
     tvParams?: TvSearchParams;
     className?: string;
-    singleColumn?: boolean;
 }
 
 interface SourcesDialogProps extends SourcesProps {
@@ -71,24 +70,25 @@ function AddHashButton({ magnet }: { magnet: string }) {
 
     if (status === "cached") {
         return (
-            <div className="flex items-center gap-1">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 text-destructive/80 hover:text-destructive"
-                    onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-4" />
-                </Button>
+            <div className="flex items-center gap-1.5 justify-end">
                 <Button
                     variant="outline"
-                    size="icon"
-                    className="size-8 text-green-500 hover:text-green-600"
+                    size="sm"
+                    className="h-8 gap-1.5"
                     onClick={() => {
                         if (torrentId) {
                             router.push(`/files?q=id:${torrentId}`);
                         }
                     }}>
-                    <DownloadIcon className="size-4" />
+                    <DownloadIcon className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">View Files</span>
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => handleRemove()}>
+                    <Trash2Icon className="h-3.5 w-3.5" />
                 </Button>
             </div>
         );
@@ -96,86 +96,117 @@ function AddHashButton({ magnet }: { magnet: string }) {
 
     if (status === "added") {
         return (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 justify-end">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-blue-500/10 text-blue-600">
+                    <HardDriveDownloadIcon className="h-4 w-4 animate-pulse" />
+                    <span className="text-xs font-medium hidden sm:inline">Processing</span>
+                </div>
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="size-8 text-destructive/80 hover:text-destructive"
+                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-4" />
+                    <Trash2Icon className="h-3.5 w-3.5" />
                 </Button>
-                <HardDriveDownloadIcon className="size-8 text-blue-500 flex-shrink-0 animate-pulse" />
             </div>
         );
     }
 
     return (
         <Button
-            size="icon"
+            size="sm"
             onClick={() => handleAdd()}
             disabled={status === "loading"}
-            className={cn("text-xs gap-0.5", status === "failed" && "bg-yellow-400 hover:bg-yellow-500")}>
+            className={cn("h-8 gap-1.5", status === "failed" && "bg-yellow-500 hover:bg-yellow-600 text-white")}>
             {status === "failed" ? (
-                <RotateCcwIcon className="size-4" />
+                <>
+                    <RotateCcwIcon className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Retry</span>
+                </>
             ) : status === "loading" ? (
-                <Loader2 className="size-4 animate-spin" />
+                <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span className="hidden sm:inline">Adding...</span>
+                </>
             ) : (
-                <Plus className="size-4" />
+                <>
+                    <Plus className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Add</span>
+                </>
             )}
         </Button>
     );
 }
 
-export function SourceCard({ source }: { source: TorrentioSource }) {
+export function SourceRow({
+    source,
+    isFirst,
+    isLast,
+}: {
+    source: TorrentioSource;
+    isFirst?: boolean;
+    isLast?: boolean;
+}) {
     return (
-        <Card key={source.hash} className="overflow-hidden">
-            <CardContent className="h-full">
-                <div className="flex items-start justify-between gap-2 h-full w-full">
-                    <div className="min-w-0 flex flex-col gap-1 h-full w-full">
-                        <p className="text-xs sm:text-sm font-medium leading-tight break-words">{source.title}</p>
+        <div
+            key={source.hash}
+            className={cn(
+                "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-5 py-2.5 border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors",
+                isFirst && "pt-3 sm:pt-3.5 md:pt-4",
+                isLast && "pb-3 sm:pb-3.5 md:pb-4"
+            )}>
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
+                {/* Title */}
+                <div className="text-sm font-medium break-words leading-tight">{source.title}</div>
 
-                        {source.folder && (
-                            <div className="flex items-center gap-1">
-                                <span className="text-xs sm:text-sm text-muted-foreground font-mono leading-tight break-words line-clamp-3">
-                                    {source.folder}
-                                </span>
-                            </div>
-                        )}
-
-                        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mt-auto w-full">
-                            <div className="flex items-center gap-0.5">
-                                <HardDrive className="size-3 md:size-4 text-muted-foreground flex-shrink-0" />
-                                <span className="text-xs sm:text-sm text-muted-foreground">{source.size}</span>
-                            </div>
-
-                            {source.peers && (
-                                <div className="flex items-center gap-0.5">
-                                    <Users className="size-3 md:size-4 text-muted-foreground flex-shrink-0" />
-                                    <span className="text-xs sm:text-sm text-muted-foreground">{source.peers}</span>
-                                </div>
-                            )}
-
-                            <div className="ms-auto flex-shrink-0">
-                                <AddHashButton magnet={source.magnet} />
-                            </div>
-                        </div>
+                {/* Metadata Row - All inline */}
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                        <HardDrive className="size-3" />
+                        <span>{source.size}</span>
                     </div>
+
+                    {source.peers && (
+                        <>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                                <Users className="size-3" />
+                                <span>{source.peers}</span>
+                            </div>
+                        </>
+                    )}
+
+                    {source.folder && (
+                        <>
+                            <span>•</span>
+                            <span className="font-mono break-all">{source.folder}</span>
+                        </>
+                    )}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+
+            <div className="shrink-0">
+                <AddHashButton magnet={source.magnet} />
+            </div>
+        </div>
     );
 }
 
-export function Sources({ imdbId, mediaType = "movie", tvParams, className, singleColumn = false }: SourcesProps) {
+export function Sources({ imdbId, mediaType = "movie", tvParams, className }: SourcesProps) {
     const { data: sources, isLoading, error } = useTorrentioSources(imdbId, mediaType, tvParams);
 
     if (error) {
         return (
-            <Card className={cn("border-destructive", className)}>
-                <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 text-destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <p className="text-sm">Failed to load sources: {error.message}</p>
+            <Card className={cn("border-destructive/50 bg-destructive/5", className)}>
+                <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+                            <AlertCircle className="h-5 w-5 text-destructive" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="font-semibold text-sm sm:text-base">Failed to load sources</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{error.message}</p>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -184,9 +215,20 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, sing
 
     if (isLoading) {
         return (
-            <div className={cn("space-y-1", className)}>
-                {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 sm:h-14 w-full" />
+            <div className={cn("border rounded-lg overflow-hidden bg-card", className)}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className={cn(
+                            "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-5 py-2.5 border-b border-border/40 last:border-0",
+                            i === 0 && "pt-3 sm:pt-3.5 md:pt-4",
+                            i === 4 && "pb-3 sm:pb-3.5 md:pb-4"
+                        )}>
+                        <div className="flex-1">
+                            <Skeleton className="h-12 w-full" />
+                        </div>
+                        <Skeleton className="h-8 w-16 sm:w-24" />
+                    </div>
                 ))}
             </div>
         );
@@ -195,33 +237,53 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, sing
     if (!sources || sources.length === 0) {
         return (
             <Card className={className}>
-                <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground text-center">No sources available</p>
+                <CardContent className="p-6 sm:p-8">
+                    <div className="flex flex-col items-center justify-center text-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                            <AlertCircle className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <div>
+                            <p className="font-medium">No sources available</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                We couldn't find any sources for this content
+                            </p>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         );
     }
 
     return (
-        <div
-            className={cn(
-                singleColumn
-                    ? "grid grid-cols-1 gap-2"
-                    : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2",
-                className
-            )}>
-            {sources.map((source) => (
-                <SourceCard key={source.hash} source={source} />
+        <div className={cn("border rounded-lg overflow-hidden bg-card", className)}>
+            {sources.map((source, index) => (
+                <SourceRow
+                    key={source.hash}
+                    source={source}
+                    isFirst={index === 0}
+                    isLast={index === sources.length - 1}
+                />
             ))}
         </div>
     );
 }
 
-export function SourcesSkeleton({ count = 3, className }: SourcesSkeletonProps) {
+export function SourcesSkeleton({ count = 5, className }: SourcesSkeletonProps) {
     return (
-        <div className={cn("space-y-1", className)}>
+        <div className={cn("border rounded-lg overflow-hidden bg-card", className)}>
             {Array.from({ length: count }).map((_, i) => (
-                <Skeleton key={i} className="h-12 sm:h-14 w-full" />
+                <div
+                    key={i}
+                    className={cn(
+                        "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-5 py-2.5 border-b border-border/40 last:border-0",
+                        i === 0 && "pt-3 sm:pt-3.5 md:pt-4",
+                        i === count - 1 && "pb-3 sm:pb-3.5 md:pb-4"
+                    )}>
+                    <div className="flex-1">
+                        <Skeleton className="h-12 w-full" />
+                    </div>
+                    <Skeleton className="h-8 w-16 sm:w-24" />
+                </div>
             ))}
         </div>
     );
@@ -231,30 +293,28 @@ export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, children 
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
-                <div className="flex-none">
-                    <DialogTitle>
+            <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col gap-0">
+                <div className="flex-none px-6 pt-6 pb-4 border-b">
+                    <DialogTitle className="text-xl sm:text-2xl font-bold">
                         Available Sources
-                        {tvParams && ` - Season ${tvParams.season} Episode ${tvParams.episode}`}
+                        {tvParams && (
+                            <span className="text-muted-foreground font-normal">
+                                {" "}
+                                - S{tvParams.season}E{tvParams.episode}
+                            </span>
+                        )}
                     </DialogTitle>
-                    <DialogDescription>
-                        Sources are the locations where the media can be downloaded from. You can add them to your queue
-                        by clicking the + button.
+                    <DialogDescription className="mt-2">
+                        Select a source to add to your download queue. Higher peer count indicates better availability.
                     </DialogDescription>
                 </div>
-                <div className="flex-1 overflow-y-auto min-h-0 mt-4">
-                    <Sources
-                        imdbId={imdbId}
-                        mediaType={mediaType}
-                        tvParams={tvParams}
-                        className="pb-2"
-                        singleColumn={true}
-                    />
+                <div className="flex-1 overflow-y-auto min-h-0 px-6 py-4">
+                    <Sources imdbId={imdbId} mediaType={mediaType} tvParams={tvParams} />
                 </div>
-                <div className="pt-4 border-t flex justify-end">
+                <div className="flex-none px-6 py-4 border-t bg-muted/20">
                     <DialogClose asChild>
-                        <Button variant="outline" className="w-full sm:w-auto">
-                            <X className="size-4" />
+                        <Button variant="outline" className="w-full sm:w-auto sm:ml-auto sm:flex">
+                            <X className="size-4 mr-2" />
                             Close
                         </Button>
                     </DialogClose>

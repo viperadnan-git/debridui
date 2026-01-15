@@ -1,10 +1,6 @@
 "use client";
 
-import {
-    type TraktCastAndCrew,
-    type TraktCastMember,
-    type TraktCrewMember,
-} from "@/lib/trakt";
+import { type TraktCastAndCrew, type TraktCastMember, type TraktCrewMember } from "@/lib/trakt";
 import { Skeleton } from "@/components/ui/skeleton";
 import { User } from "lucide-react";
 
@@ -14,11 +10,7 @@ interface PeopleSectionProps {
     error?: Error | null;
 }
 
-export function PeopleSection({
-    people,
-    isLoading,
-    error,
-}: PeopleSectionProps) {
+export function PeopleSection({ people, isLoading, error }: PeopleSectionProps) {
     if (error) {
         return null;
     }
@@ -50,16 +42,10 @@ export function PeopleSection({
         <div className="space-y-4">
             {people.cast && people.cast.length > 0 && (
                 <div>
-                    <h3 className="text-base sm:text-lg font-semibold mb-3">
-                        Cast
-                    </h3>
+                    <h3 className="text-base sm:text-lg font-semibold mb-3">Cast</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
                         {people.cast.slice(0, 18).map((member, index) => (
-                            <PersonCard
-                                key={index}
-                                person={member}
-                                type="cast"
-                            />
+                            <PersonCard key={index} person={member} type="cast" />
                         ))}
                     </div>
                 </div>
@@ -74,15 +60,12 @@ interface PersonCardProps {
 }
 
 function PersonCard({ person, type }: PersonCardProps) {
-    const imageUrl = person.person.images?.headshot?.[0]
-        ? `https://${person.person.images.headshot[0]}`
-        : null;
+    const imageUrl = person.person.images?.headshot?.[0] ? `https://${person.person.images.headshot[0]}` : null;
 
     const role =
         type === "cast"
             ? (person as TraktCastMember).characters?.join(", ")
-            : (person as TraktCrewMember).jobs?.join(", ") ||
-              (person as TraktCrewMember).job?.join(", ");
+            : (person as TraktCrewMember).jobs?.join(", ") || (person as TraktCrewMember).job?.join(", ");
 
     return (
         <div className="group cursor-pointer text-center">
@@ -99,7 +82,7 @@ function PersonCard({ person, type }: PersonCardProps) {
                                 loading="lazy"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                            <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-muted to-muted/50">
                                 <User className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 xl:h-14 xl:w-14 text-muted-foreground" />
                             </div>
                         )}
@@ -110,7 +93,7 @@ function PersonCard({ person, type }: PersonCardProps) {
                 </div>
 
                 {/* Person Info */}
-                <div className="space-y-1 min-h-[3rem] sm:min-h-[3.5rem] flex flex-col justify-start">
+                <div className="space-y-1 min-h-12 sm:min-h-14 flex flex-col justify-start">
                     <h4 className="font-semibold text-xs sm:text-sm md:text-base lg:text-lg line-clamp-2 group-hover:text-primary transition-colors leading-tight">
                         {person.person.name}
                     </h4>

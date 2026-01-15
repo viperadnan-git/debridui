@@ -28,9 +28,7 @@ export const MediaSection = memo(function MediaSection({
         return (
             <section className="space-y-4">
                 <h2 className="text-2xl font-bold">{title}</h2>
-                <div className="text-muted-foreground">
-                    Failed to load {title.toLowerCase()}
-                </div>
+                <div className="text-muted-foreground">Failed to load {title.toLowerCase()}</div>
             </section>
         );
     }
@@ -38,9 +36,7 @@ export const MediaSection = memo(function MediaSection({
     return (
         <section className="space-y-2 sm:space-y-3 lg:space-y-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">
-                    {title}
-                </h2>
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">{title}</h2>
                 {viewAllHref && (
                     <Link
                         href={viewAllHref}
@@ -55,7 +51,7 @@ export const MediaSection = memo(function MediaSection({
                 {isLoading
                     ? Array.from({ length: 10 }).map((_, i) => (
                           <div key={i}>
-                              <Skeleton className="aspect-[2/3] rounded-md" />
+                              <Skeleton className="aspect-2/3 rounded-md" />
                           </div>
                       ))
                     : items?.slice(0, 20).map((item, index) => {
