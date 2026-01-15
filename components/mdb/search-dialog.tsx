@@ -66,26 +66,30 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
             const sizeDisplay =
                 parseFloat(sizeInMB) >= 1024 ? `${(parseFloat(sizeInMB) / 1024).toFixed(2)} GB` : `${sizeInMB} MB`;
-            const key = `file-${file.id}-${file.name}`;
 
             return (
                 <CommandItem
-                    key={key}
-                    value={key}
+                    key={`file-${file.id}`}
+                    value={`file-${file.id}`}
+                    keywords={[file.name, file.id.toString()]}
                     onSelect={() => handleFileSelect(file)}
-                    className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
+                    className="flex items-center gap-2 sm:gap-3 px-1 sm:px-3 py-2 sm:py-3 cursor-pointer">
                     <FileItemContextMenu file={file}>
-                        <div className="flex-1 min-w-0 px-2">
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium truncate text-sm">{file.name}</span>
+                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-md bg-muted">
+                                <HardDrive className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                             </div>
-
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                <div className="flex items-center gap-1">
-                                    <HardDrive className="h-3 w-3" />
+                            <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate text-xs sm:text-sm mb-0.5">{file.name}</div>
+                                <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground">
                                     <span>{sizeDisplay}</span>
+                                    {file.status && (
+                                        <>
+                                            <span>•</span>
+                                            <span className="capitalize">{file.status}</span>
+                                        </>
+                                    )}
                                 </div>
-                                {file.status && <span className="capitalize">{file.status}</span>}
                             </div>
                         </div>
                     </FileItemContextMenu>
@@ -114,54 +118,58 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
             return (
                 <CommandItem
-                    key={`${type}-${media.ids?.trakt}-${media.title}`}
+                    key={`${type}-${media.ids?.trakt}`}
                     value={`${type}-${media.ids?.trakt}-${media.title}`}
+                    keywords={[media.title, type, media.year?.toString() || ""]}
                     onSelect={() => handleSelect(result)}
-                    className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors">
+                    className="flex items-center gap-2 sm:gap-3 px-1 sm:px-3 py-2 sm:py-3 cursor-pointer">
                     {/* Poster thumbnail or icon */}
-                    <div className="shrink-0 w-16 h-20 bg-muted rounded overflow-hidden">
+                    <div className="shrink-0 w-10 h-14 sm:w-12 sm:h-16 bg-muted rounded-md overflow-hidden">
                         {posterImage ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={posterImage} alt={media.title} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                                <Icon className="h-6 w-6 text-muted-foreground" />
+                                <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                             </div>
                         )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium truncate text-sm">{media.title}</span>
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5">
+                            <span className="font-medium truncate text-xs sm:text-sm">{media.title}</span>
                             <Badge
-                                variant="outline"
+                                variant="secondary"
                                 className={cn(
-                                    "text-xs px-1.5 py-0.5",
+                                    "text-xs px-1 sm:px-1.5 py-0 h-3.5 sm:h-4 shrink-0",
                                     type === "movie"
-                                        ? "border-blue-200 text-blue-700 bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-950"
-                                        : "border-purple-200 text-purple-700 bg-purple-50 dark:border-purple-800 dark:text-purple-400 dark:bg-purple-950"
+                                        ? "bg-blue-500/10 text-blue-600"
+                                        : "bg-purple-500/10 text-purple-600"
                                 )}>
-                                {type === "movie" ? "Movie" : "TV Show"}
+                                {type === "movie" ? "Movie" : "Show"}
                             </Badge>
                         </div>
 
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-1">
+                        <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground">
                             {media.year && (
-                                <div className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
+                                <div className="flex items-center gap-0.5 sm:gap-1">
+                                    <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                     <span>{media.year}</span>
                                 </div>
                             )}
                             {media.rating && (
-                                <div className="flex items-center gap-1">
-                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                    <span>{media.rating.toFixed(1)}</span>
-                                </div>
+                                <>
+                                    {media.year && <span>•</span>}
+                                    <div className="flex items-center gap-0.5 sm:gap-1">
+                                        <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-yellow-400 text-yellow-400" />
+                                        <span>{media.rating.toFixed(1)}</span>
+                                    </div>
+                                </>
                             )}
                         </div>
 
                         {media.overview && (
-                            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            <p className="hidden sm:block text-xs text-muted-foreground line-clamp-1 leading-relaxed mt-1">
                                 {media.overview}
                             </p>
                         )}
@@ -173,48 +181,74 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     );
 
     const isLoading = isTraktSearching || isFileSearching;
+    const hasResults = (fileResults && fileResults.length > 0) || (searchResults && searchResults.length > 0);
 
     return (
         <CommandDialog
             open={open}
             onOpenChange={onOpenChange}
             shouldFilter={false}
-            className="md:min-w-[450px] top-1/3 md:top-1/2 h-[50vh]">
+            className="w-11/12 sm:w-5/6 sm:max-w-none md:max-w-2xl lg:max-w-4xl p-0">
             <CommandInput
-                placeholder="Search movies and TV shows... (⌘K)"
+                placeholder="Search movies, TV shows, and files..."
                 value={query}
                 onValueChange={setQuery}
-                className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-11 sm:h-12 text-sm sm:text-base"
             />
-            <CommandList className="max-h-full overflow-y-auto">
-                {!isFileSearching && fileResults && fileResults.length > 0 && (
-                    <CommandGroup heading="Files">{fileResults.map(renderFileItem)}</CommandGroup>
-                )}
+            <CommandList className="h-[70vh] sm:h-[75vh] overflow-y-auto">
+                {!isLoading && hasResults && (
+                    <>
+                        {fileResults && fileResults.length > 0 && (
+                            <CommandGroup
+                                heading="Your Files"
+                                className="**:[[cmdk-group-heading]]:px-1 sm:**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-1.5 sm:**:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-muted-foreground">
+                                {fileResults.map(renderFileItem)}
+                            </CommandGroup>
+                        )}
 
-                {!isTraktSearching && searchResults && searchResults.length > 0 && (
-                    <CommandGroup heading="Trakt Results">{searchResults.map(renderMediaItem)}</CommandGroup>
+                        {searchResults && searchResults.length > 0 && (
+                            <CommandGroup
+                                heading="Movies & TV Shows"
+                                className="**:[[cmdk-group-heading]]:px-1 sm:**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-1.5 sm:**:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-muted-foreground">
+                                {searchResults.map(renderMediaItem)}
+                            </CommandGroup>
+                        )}
+
+                        <div className="flex items-center justify-center py-6 text-xs text-muted-foreground border-t">
+                            <span>
+                                End of results • {(fileResults?.length || 0) + (searchResults?.length || 0)} item
+                                {(fileResults?.length || 0) + (searchResults?.length || 0) !== 1 ? "s" : ""} found
+                            </span>
+                        </div>
+                    </>
                 )}
 
                 {isLoading && query.trim().length > 2 && (
-                    <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
-                        <Search className="h-8 w-8 animate-spin mb-3 opacity-50" />
-                        <span>Searching...</span>
+                    <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-sm text-muted-foreground">
+                        <Search className="h-8 w-8 sm:h-10 sm:w-10 animate-spin mb-2 sm:mb-3 opacity-40" />
+                        <span className="font-medium text-sm sm:text-base">Searching...</span>
                     </div>
                 )}
 
-                {!isLoading && query.trim().length > 2 && !searchResults?.length && !fileResults?.length && (
-                    <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
-                        <Search className="h-8 w-8 mb-3 opacity-50" />
-                        <span className="font-medium">No results found</span>
-                        <span className="text-xs mt-1">Try searching with different keywords</span>
+                {!isLoading && query.trim().length > 2 && !hasResults && (
+                    <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-sm text-muted-foreground">
+                        <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-muted mb-2 sm:mb-3">
+                            <Search className="h-5 w-5 sm:h-6 sm:w-6" />
+                        </div>
+                        <span className="font-medium text-sm sm:text-base">No results found</span>
+                        <span className="text-xs mt-1 text-center px-4">
+                            Try different keywords or check your spelling
+                        </span>
                     </div>
                 )}
 
                 {query.trim().length <= 2 && (
-                    <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground">
-                        <Search className="h-8 w-8 mb-3 opacity-50" />
-                        <span className="font-medium">Start typing to search</span>
-                        <span className="text-xs mt-1">Type at least 3 characters</span>
+                    <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-sm text-muted-foreground">
+                        <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-muted mb-2 sm:mb-3">
+                            <Search className="h-5 w-5 sm:h-6 sm:w-6" />
+                        </div>
+                        <span className="font-medium text-sm sm:text-base">Start searching</span>
+                        <span className="text-xs mt-1 text-center px-4">Type at least 3 characters to see results</span>
                     </div>
                 )}
             </CommandList>
