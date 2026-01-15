@@ -25,5 +25,5 @@ export function PreviewContent({ file, downloadUrl }: PreviewContentProps) {
     }
 
     const RendererComponent = renderer.component;
-    return <RendererComponent key={downloadUrl} file={file} downloadUrl={downloadUrl} />;
+    return <RendererComponent key={file.id} file={file} downloadUrl={downloadUrl} />;
 }
