@@ -381,15 +381,21 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
     }
 
     // Virtualized rendering with react-window for large trees
+    const itemSize = isMobile ? 30 : 36;
+    const maxHeight = 600;
+    const totalContentHeight = flatNodes.length * itemSize;
+    const listHeight = Math.min(totalContentHeight, maxHeight);
+
     return (
-        <div className="py-2 md:py-3">
+        <div className="pt-2 md:pt-3">
             <List
                 ref={listRef}
-                height={600}
+                height={listHeight}
                 itemCount={flatNodes.length}
-                itemSize={isMobile ? 30 : 36}
+                itemSize={itemSize}
                 width="100%"
-                overscanCount={10}>
+                overscanCount={10}
+                className="outline-none!">
                 {rowRenderer}
             </List>
         </div>

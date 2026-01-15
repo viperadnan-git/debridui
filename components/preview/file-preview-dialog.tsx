@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { usePreviewStore } from "@/lib/stores/preview";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +17,9 @@ export function FilePreviewDialog() {
     const { client, currentUser } = useAuthContext();
     const { get } = useSettingsStore();
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
+
+    const previousButtonRef = useRef<HTMLButtonElement>(null);
+    const nextButtonRef = useRef<HTMLButtonElement>(null);
 
     const {
         isOpen,
@@ -46,10 +49,14 @@ export function FilePreviewDialog() {
                 case "ArrowLeft":
                     e.preventDefault();
                     navigatePrevious();
+                    // Focus the previous button for visual feedback
+                    previousButtonRef.current?.focus();
                     break;
                 case "ArrowRight":
                     e.preventDefault();
                     navigateNext();
+                    // Focus the next button for visual feedback
+                    nextButtonRef.current?.focus();
                     break;
                 case "Escape":
                     e.preventDefault();
@@ -76,7 +83,7 @@ export function FilePreviewDialog() {
     return (
         <Dialog open={isOpen} onOpenChange={closePreview}>
             <DialogContent
-                className="sm:max-w-[95vw] h-[95vh] p-0 gap-0 flex flex-col overflow-hidden"
+                className="sm:max-w-[95vw] h-[95vh] p-0 gap-0 flex flex-col overflow-hidden outline-none!"
                 showCloseButton={false}>
                 <DialogTitle className="sr-only">{currentFile.name}</DialogTitle>
                 {/* Header */}
@@ -135,6 +142,7 @@ export function FilePreviewDialog() {
                     {hasMultipleFiles && (
                         <>
                             <Button
+                                ref={previousButtonRef}
                                 variant="ghost"
                                 size="icon"
                                 className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-10 w-10 z-30"
@@ -144,6 +152,7 @@ export function FilePreviewDialog() {
                                 <ChevronLeft className="h-6 w-6" />
                             </Button>
                             <Button
+                                ref={nextButtonRef}
                                 variant="ghost"
                                 size="icon"
                                 className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-10 w-10 z-30"
