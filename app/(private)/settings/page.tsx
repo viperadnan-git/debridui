@@ -3,8 +3,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2, Clock } from "lucide-react";
+import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -50,26 +51,44 @@ export default function SettingsPage() {
     ];
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Settings</h1>
-                <p className="text-muted-foreground mt-2">Manage your application preferences and settings.</p>
+        <div className="mx-auto w-full max-w-5xl space-y-8 pb-16">
+            {/* Header */}
+            <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                        <SettingsIcon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+                        <p className="text-muted-foreground">Manage your application preferences</p>
+                    </div>
+                </div>
             </div>
 
-            <div className="flex flex-col gap-6">
-                <Card>
+            <Separator />
+
+            {/* Settings Grid */}
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Appearance */}
+                <Card className="md:col-span-2 lg:col-span-1">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Monitor className="h-5 w-5" />
-                            Appearance
-                        </CardTitle>
-                        <CardDescription>Customize the look and feel of your application.</CardDescription>
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
+                                <Monitor className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle>Appearance</CardTitle>
+                                <CardDescription>Customize how the app looks</CardDescription>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="theme">Theme</Label>
+                        <div className="space-y-3">
+                            <Label htmlFor="theme" className="text-sm font-medium">
+                                Theme
+                            </Label>
                             <Select value={theme} onValueChange={setTheme}>
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger id="theme" className="w-full">
                                     <SelectValue placeholder="Select theme" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -78,34 +97,43 @@ export default function SettingsPage() {
                                         return (
                                             <SelectItem key={themeOption.value} value={themeOption.value}>
                                                 <div className="flex items-center gap-2">
-                                                    <Icon className="size-4" />
-                                                    {themeOption.label}
+                                                    <Icon className="h-4 w-4" />
+                                                    <span>{themeOption.label}</span>
                                                 </div>
                                             </SelectItem>
                                         );
                                     })}
                                 </SelectContent>
                             </Select>
-                            <p className="text-sm text-muted-foreground">Choose how the application looks to you.</p>
+                            <p className="text-xs text-muted-foreground">
+                                Select your preferred color scheme for the interface
+                            </p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card>
+                {/* Media Player */}
+                <Card className="md:col-span-2 lg:col-span-1">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Play className="h-5 w-5" />
-                            Media Player
-                        </CardTitle>
-                        <CardDescription>Choose your preferred media player for video playback.</CardDescription>
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
+                                <Play className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle>Media Player</CardTitle>
+                                <CardDescription>Default video player</CardDescription>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="media-player">Default Player</Label>
+                        <div className="space-y-3">
+                            <Label htmlFor="media-player" className="text-sm font-medium">
+                                Default Player
+                            </Label>
                             <Select
                                 value={mediaPlayer}
                                 onValueChange={(value) => set("mediaPlayer", value as MediaPlayer)}>
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger id="media-player" className="w-full">
                                     <SelectValue placeholder="Select media player" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -116,29 +144,35 @@ export default function SettingsPage() {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <p className="text-sm text-muted-foreground">
-                                Videos will open in your selected player. External players require the application to be
-                                installed.
+                            <p className="text-xs text-muted-foreground">
+                                External players require the application to be installed
                             </p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card>
+                {/* Download Link Cache */}
+                <Card className="md:col-span-2">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Clock className="h-5 w-5" />
-                            Download Link Cache
-                        </CardTitle>
-                        <CardDescription>Configure how long download links are kept in memory cache.</CardDescription>
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
+                                <Clock className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle>Download Link Cache</CardTitle>
+                                <CardDescription>Control how long links are cached in memory</CardDescription>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="download-link-max-age">Cache Retention</Label>
+                        <div className="space-y-3">
+                            <Label htmlFor="download-link-max-age" className="text-sm font-medium">
+                                Cache Duration
+                            </Label>
                             <Select
                                 value={String(downloadLinkMaxAge)}
                                 onValueChange={(value) => set("downloadLinkMaxAge", Number(value))}>
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger id="download-link-max-age" className="w-full max-w-xs">
                                     <SelectValue placeholder="Select duration" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -152,40 +186,63 @@ export default function SettingsPage() {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <p className="text-sm text-muted-foreground">
-                                Cached download links will be kept in memory for this duration. After this time, they
-                                will be garbage collected to free memory.
+                            <p className="text-xs text-muted-foreground">
+                                Links will be kept in memory for this duration before being garbage collected
                             </p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card>
+                {/* Cache Management */}
+                <Card className="md:col-span-2">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Trash2 className="h-5 w-5" />
-                            Cache Management
-                        </CardTitle>
-                        <CardDescription>Manage application cache and stored data.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex flex-wrap items-center gap-4">
-                                <Button
-                                    onClick={() => handleClearCache([currentUser.id, "getDownloadLink"])}
-                                    disabled={isClearing}
-                                    variant="destructive">
-                                    Clear Download Links Cache
-                                </Button>
-                                <p className="text-sm text-muted-foreground">
-                                    Remove all cached download links from browser.
-                                </p>
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-destructive/10">
+                                <Trash2 className="h-5 w-5 text-destructive" />
                             </div>
-                            <div className="flex flex-wrap items-center gap-4">
-                                <Button onClick={() => handleClearCache()} disabled={isClearing} variant="destructive">
-                                    Clear All Cache
-                                </Button>
-                                <p className="text-sm text-muted-foreground">Remove all cached data from browser.</p>
+                            <div>
+                                <CardTitle>Cache Management</CardTitle>
+                                <CardDescription>Clear cached data to free up space</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="flex flex-col gap-3 rounded-lg border p-4">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p className="font-medium">Download Links Cache</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Remove all cached download links
+                                        </p>
+                                    </div>
+                                    <Button
+                                        onClick={() => handleClearCache([currentUser.id, "getDownloadLink"])}
+                                        disabled={isClearing}
+                                        variant="destructive"
+                                        size="sm"
+                                        className="w-full sm:w-auto">
+                                        Clear Links
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-3 rounded-lg border border-destructive/50 bg-destructive/5 p-4">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p className="font-medium">All Cached Data</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Remove all cached data from browser
+                                        </p>
+                                    </div>
+                                    <Button
+                                        onClick={() => handleClearCache()}
+                                        disabled={isClearing}
+                                        variant="destructive"
+                                        size="sm"
+                                        className="w-full sm:w-auto">
+                                        Clear All
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </CardContent>

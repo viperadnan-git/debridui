@@ -22,7 +22,9 @@ export function FileListHeader({ isAllSelected, onSelectAll, className }: FileLi
                 <Checkbox
                     checked={isAllSelected}
                     onCheckedChange={(checked) => {
-                        if (checked === "indeterminate") {
+                        // If some or all files are already selected, unselect all
+                        // Only select all when nothing is selected
+                        if (isAllSelected === "indeterminate" || isAllSelected === true) {
                             onSelectAll(false);
                         } else {
                             onSelectAll(checked);

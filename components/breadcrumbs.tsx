@@ -16,8 +16,6 @@ const pathLabels: Record<string, string> = {
     dashboard: "Dashboard",
     files: "Files",
     settings: "Settings",
-    movie: "Movie",
-    show: "Show",
 };
 
 const formatLabel = cache((label: string) => {
@@ -30,38 +28,62 @@ const formatLabel = cache((label: string) => {
 
 export const Breadcrumbs = memo(function Breadcrumbs() {
     const pathname = usePathname();
-    const blacklist = ["", "movie", "show"];
-    const segments = pathname.split("/").filter((segment) => !blacklist.includes(segment));
+    const segments = pathname.split("/").filter((segment) => segment !== "");
 
     if (segments.length === 0) return null;
+
+    // If on dashboard, just show "Home"
+    if (pathname === "/dashboard") {
+        return (
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>Home</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        );
+    }
+
+    // Check if it's a movie or show page (has 2 segments where first is movie/show)
+    const isMediaPage = segments.length === 2 && (segments[0] === "movie" || segments[0] === "show");
 
     return (
         <Breadcrumb>
             <BreadcrumbList>
-                {pathname !== "/dashboard" && (
-                    <BreadcrumbItem>
-                        <BreadcrumbLink className="text-foreground" asChild>
-                            <Link href="/dashboard">Home</Link>
-                        </BreadcrumbLink>
-                    </BreadcrumbItem>
-                )}
+                <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                        <Link href="/dashboard">Home</Link>
+                    </BreadcrumbLink>
+                </BreadcrumbItem>
                 {segments.map((segment, index) => {
                     const isLast = index === segments.length - 1;
                     const href = "/" + segments.slice(0, index + 1).join("/");
-                    const label = pathLabels[segment] || formatLabel(segment);
 
-                    if (segment === "dashboard" && index === 0) {
+                    // Skip dashboard segment if it appears in the path
+                    if (segment === "dashboard") {
                         return null;
                     }
 
+                    // For media pages, only show the type (movie/show), not the slug
+                    if (isMediaPage && index === 1) {
+                        return null;
+                    }
+
+                    let label = pathLabels[segment] || formatLabel(segment);
+
+                    // Capitalize movie/show for display
+                    if (segment === "movie") label = "Movie";
+                    if (segment === "show") label = "TV Show";
+
                     return (
                         <Fragment key={segment + index}>
-                            <BreadcrumbSeparator className="text-foreground" />
+                            <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                {isLast ? (
+                                {isLast || isMediaPage ? (
                                     <BreadcrumbPage>{label}</BreadcrumbPage>
                                 ) : (
-                                    <BreadcrumbLink className="text-foreground" asChild>
+                                    <BreadcrumbLink asChild>
                                         <Link href={href}>{label}</Link>
                                     </BreadcrumbLink>
                                 )}

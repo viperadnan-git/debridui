@@ -266,7 +266,7 @@ export function HeroCarousel() {
     }
 
     return (
-        <div className="-mx-4 -mt-16">
+        <div className="-mx-4 -mt-6">
             <Carousel
                 setApi={setApi}
                 className="w-full"
@@ -297,7 +297,7 @@ export function HeroCarousel() {
             </Carousel>
 
             {/* Dots Indicator */}
-            <div className="flex justify-center gap-2 mt-4">
+            <div className="flex justify-center gap-2 mt-4 px-4">
                 {Array.from({ length: count }, (_, index) => (
                     <button
                         key={index}

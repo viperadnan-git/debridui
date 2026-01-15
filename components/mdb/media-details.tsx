@@ -74,22 +74,30 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
 
     if (isLoading || !media) {
         return (
-            <div className="space-y-6">
-                <div className="grid md:grid-cols-[300px_1fr] gap-6">
-                    <Skeleton className="aspect-[2/3] rounded-lg" />
-                    <div className="space-y-4">
-                        <Skeleton className="h-10 w-3/4" />
-                        <div className="flex gap-4">
-                            <Skeleton className="h-6 w-20" />
-                            <Skeleton className="h-6 w-20" />
-                            <Skeleton className="h-6 w-20" />
-                        </div>
-                        <Skeleton className="h-24 w-full" />
-                        <div className="grid grid-cols-2 gap-4">
-                            <Skeleton className="h-20" />
-                            <Skeleton className="h-20" />
-                            <Skeleton className="h-20" />
-                            <Skeleton className="h-20" />
+            <div className="relative min-h-screen">
+                {/* Banner skeleton */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen -mt-6 h-[40vh] max-h-[600px]">
+                    <Skeleton className="w-full h-full" />
+                </div>
+
+                {/* Content skeleton */}
+                <div className="relative pt-[20vh] sm:pt-[22vh] md:pt-[25vh] pb-20 space-y-6">
+                    <div className="grid md:grid-cols-[200px_1fr] lg:grid-cols-[300px_1fr] gap-3 md:gap-6">
+                        <Skeleton className="aspect-[2/3] rounded-lg w-full max-w-[50vw] sm:max-w-none" />
+                        <div className="space-y-4">
+                            <Skeleton className="h-8 sm:h-10 w-3/4" />
+                            <div className="flex gap-3 sm:gap-4">
+                                <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
+                                <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
+                                <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
+                            </div>
+                            <Skeleton className="h-20 sm:h-24 w-full" />
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                <Skeleton className="h-16 sm:h-20" />
+                                <Skeleton className="h-16 sm:h-20" />
+                                <Skeleton className="h-16 sm:h-20" />
+                                <Skeleton className="h-16 sm:h-20" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -110,7 +118,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
     return (
         <div className="relative">
             {backdropUrl && (
-                <div className="relative -mx-20 -mt-16">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen -mt-6 pointer-events-none">
                     <div className="aspect-video overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -126,7 +134,12 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
             )}
 
             {/* Content Section */}
-            <div className="absolute top-[20vh] md:top-[40vh] pb-20 flex flex-col gap-8">
+            <div
+                className={
+                    backdropUrl
+                        ? "relative pt-[20vh] sm:pt-[22vh] md:pt-[25vh] pb-20 flex flex-col gap-8"
+                        : "flex flex-col gap-8"
+                }>
                 <div className="grid md:grid-cols-[200px_1fr] lg:grid-cols-[300px_1fr] gap-3 md:gap-6">
                     <div className="space-y-2 md:space-y-4">
                         <div className="max-sm:max-w-[50vw] aspect-[2/3] overflow-hidden rounded-lg">
@@ -300,10 +313,10 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
                         {/* Episodes */}
                         {episodesQuery.data && episodesQuery.data.length > 0 && (
                             <div>
-                                <h3 className="text-base sm:text-lg font-semibold mb-3" id="sources">
+                                <h3 className="text-base sm:text-lg font-semibold mb-4" id="sources">
                                     {selectedSeason === 0 ? "Specials" : `Season ${selectedSeason}`} Episodes
                                 </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+                                <div className="flex flex-col gap-3 sm:gap-4">
                                     {episodesQuery.data.map((episode) => (
                                         <EpisodeCard key={episode.number} episode={episode} imdbId={media.ids?.imdb} />
                                     ))}
