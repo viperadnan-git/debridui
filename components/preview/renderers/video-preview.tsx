@@ -39,9 +39,28 @@ export function VideoPreview({ file, downloadUrl, onLoad, onError }: VideoPrevie
 
     return (
         <div className="relative w-full h-full flex flex-col bg-black">
-            {/* Codec Warning Banner for Non-MP4 Videos */}
+            {error ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-white">
+                    <AlertCircle className="h-12 w-12 mb-2" />
+                    <p className="text-sm">Failed to load video</p>
+                    <p className="text-xs text-white/70 mt-1">{file.name}</p>
+                </div>
+            ) : (
+                <div className="flex-1 flex items-center justify-center overflow-hidden">
+                    <video
+                        src={downloadUrl}
+                        controls
+                        autoPlay
+                        className="w-full h-full object-contain"
+                        onLoadedData={handleLoad}
+                        onError={handleError}
+                    />
+                </div>
+            )}
+
+            {/* Codec Warning Banner for Non-MP4 Videos - Overlaid on top */}
             {isNonMP4Video && showCodecWarning && (
-                <div className="bg-yellow-500/90 text-black px-4 py-2 flex items-start gap-3 z-20">
+                <div className="absolute top-0 left-0 right-0 bg-yellow-500/90 text-black px-4 py-2 flex items-start gap-3 z-20">
                     <Info className="h-5 w-5 shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">This video format may have audio/codec issues in browser</p>
@@ -80,25 +99,6 @@ export function VideoPreview({ file, downloadUrl, onLoad, onError }: VideoPrevie
                         onClick={() => setShowCodecWarning(false)}>
                         <X className="h-4 w-4" />
                     </Button>
-                </div>
-            )}
-
-            {error ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-white">
-                    <AlertCircle className="h-12 w-12 mb-2" />
-                    <p className="text-sm">Failed to load video</p>
-                    <p className="text-xs text-white/70 mt-1">{file.name}</p>
-                </div>
-            ) : (
-                <div className="flex-1 flex items-center justify-center">
-                    <video
-                        src={downloadUrl}
-                        controls
-                        autoPlay
-                        className="max-w-full max-h-full"
-                        onLoadedData={handleLoad}
-                        onError={handleError}
-                    />
                 </div>
             )}
         </div>
