@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SearchProvider } from "@/components/mdb/search-provider";
 import { useRouter } from "@bprogress/next/app";

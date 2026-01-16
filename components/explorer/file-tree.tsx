@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, Copy, Download, CirclePlay, Loader2 } from "lucide-react";
 import { cn, getFileType } from "@/lib/utils";
 import { formatSize, playUrl, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { toast } from "sonner";
 import { FileType, MediaPlayer } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useSelectionStore } from "@/lib/stores/selection";
+import { useSelectionStore, useFileSelectedNodes } from "@/lib/stores/selection";
 import { FixedSizeList as List, ListChildComponentProps } from "react-window";
 import { PreviewButton } from "@/components/preview/preview-button";
 
@@ -200,9 +200,8 @@ function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand, allF
     const [showActions, setShowActions] = useState(false);
     const mediaPlayer = useSettingsStore((state) => state.get("mediaPlayer"));
 
-    const selectedNodes = useSelectionStore((state) => state.selectedNodesByFile.get(fileId));
+    const selectedFiles = useFileSelectedNodes(fileId);
     const updateNodeSelection = useSelectionStore((state) => state.updateNodeSelection);
-    const selectedFiles = useMemo(() => selectedNodes || new Set<string>(), [selectedNodes]);
 
     const allFileIds = useMemo(() => collectNodeIds(node), [node]);
     const isSelected = allFileIds.length > 0 && allFileIds.every((id) => selectedFiles.has(id));
@@ -248,29 +247,27 @@ function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand, allF
                 className="size-3 sm:size-4"
             />
 
-            <TooltipProvider>
-                <Tooltip delayDuration={2000}>
-                    <TooltipTrigger asChild>
-                        <span
-                            className="flex-1 cursor-pointer truncate"
-                            onClick={(e) => {
-                                if (isFile) {
-                                    e.stopPropagation();
-                                    if (isMobile) {
-                                        setShowActions(!showActions);
-                                    } else {
-                                        handleCheckboxChange(!isSelected);
-                                    }
+            <Tooltip delayDuration={2000}>
+                <TooltipTrigger asChild>
+                    <span
+                        className="flex-1 cursor-pointer truncate"
+                        onClick={(e) => {
+                            if (isFile) {
+                                e.stopPropagation();
+                                if (isMobile) {
+                                    setShowActions(!showActions);
+                                } else {
+                                    handleCheckboxChange(!isSelected);
                                 }
-                            }}>
-                            {node.name}
-                        </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{node.name}</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+                            }
+                        }}>
+                        {node.name}
+                    </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{node.name}</p>
+                </TooltipContent>
+            </Tooltip>
 
             {isFile ? (
                 <>

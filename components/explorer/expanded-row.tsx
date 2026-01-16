@@ -5,10 +5,20 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useEffect } from "react";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { Loader2 } from "lucide-react";
-import { FileTree } from "./file-tree";
+import dynamic from "next/dynamic";
 import { processFileNodes } from "@/lib/utils/file";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { useSelectionStore } from "@/lib/stores/selection";
+
+// Dynamic import for FileTree to reduce initial bundle size (~403 lines)
+const FileTree = dynamic(() => import("./file-tree").then((m) => ({ default: m.FileTree })), {
+    loading: () => (
+        <div className="flex items-center justify-center py-4 px-0.5 md:px-4">
+            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+        </div>
+    ),
+    ssr: false,
+});
 
 interface ExpandedRowProps {
     file: DebridFile;

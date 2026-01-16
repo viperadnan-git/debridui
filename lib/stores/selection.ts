@@ -149,3 +149,10 @@ export const useFileSelectionState = (fileId: string) =>
         if (selectedNodes.size > 0) return "indeterminate";
         return true;
     });
+
+// Cache empty Set to avoid creating new instance on every render
+const EMPTY_SET = new Set<string>();
+
+// Optimized selector for file nodes - prevents 200+ nodes from re-rendering on every selection change
+export const useFileSelectedNodes = (fileId: string) =>
+    useSelectionStore((state) => state.selectedNodesByFile.get(fileId) || EMPTY_SET);

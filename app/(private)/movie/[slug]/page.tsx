@@ -1,9 +1,22 @@
 "use client";
 
-import { MediaDetails } from "@/components/mdb/media-details";
+import dynamic from "next/dynamic";
 import { useTraktMedia } from "@/hooks/use-trakt";
 import { useParams } from "next/navigation";
 import { memo } from "react";
+
+// Dynamic import for MediaDetails to reduce initial bundle size (~345 lines)
+const MediaDetails = dynamic(
+    () => import("@/components/mdb/media-details").then((m) => ({ default: m.MediaDetails })),
+    {
+        loading: () => (
+            <div className="w-full space-y-4">
+                <div className="h-96 bg-muted/50 rounded animate-pulse" />
+                <div className="h-24 bg-muted/50 rounded animate-pulse" />
+            </div>
+        ),
+    }
+);
 
 const MoviePage = memo(function MoviePage() {
     const params = useParams();

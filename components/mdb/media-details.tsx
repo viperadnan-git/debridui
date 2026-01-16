@@ -19,10 +19,12 @@ function SeasonsSection({
     seasonsData,
     selectedSeason,
     setSelectedSeason,
+    mediaId,
 }: {
     seasonsData: unknown;
     selectedSeason: number;
     setSelectedSeason: (season: number) => void;
+    mediaId: string;
 }): React.ReactElement | null {
     const seasons = seasonsData as Array<{ number: number; [key: string]: unknown }>;
     if (!seasons || seasons.length === 0) return null;
@@ -37,6 +39,7 @@ function SeasonsSection({
                         season={season as unknown as TraktSeason}
                         isSelected={selectedSeason === season.number}
                         onClick={() => setSelectedSeason(season.number)}
+                        mediaId={mediaId}
                     />
                 ))}
             </div>
@@ -308,6 +311,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
                             seasonsData={seasonsQuery.data}
                             selectedSeason={selectedSeason}
                             setSelectedSeason={setSelectedSeason}
+                            mediaId={mediaId}
                         />
 
                         {/* Episodes */}

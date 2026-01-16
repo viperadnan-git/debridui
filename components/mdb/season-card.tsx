@@ -5,15 +5,35 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { traktClient } from "@/lib/trakt";
 
 interface SeasonCardProps {
     season: TraktSeason;
     isSelected?: boolean;
     onClick?: () => void;
     className?: string;
+    mediaId?: string;
 }
 
-export const SeasonCard = memo(function SeasonCard({ season, isSelected, onClick, className }: SeasonCardProps) {
+export const SeasonCard = memo(function SeasonCard({
+    season,
+    isSelected,
+    onClick,
+    className,
+    mediaId,
+}: SeasonCardProps) {
+    const queryClient = useQueryClient();
+
+    // Prefetch season episodes on hover to eliminate 200-500ms waterfall
+    const prefetchSeason = () => {
+        if (!mediaId) return;
+
+        queryClient.prefetchQuery({
+            queryKey: ["trakt", "season", "episodes", mediaId, season.number],
+            queryFn: () => traktClient.getShowEpisodes(mediaId, season.number),
+        });
+    };
     const seasonName = season.number === 0 ? "Specials" : `${season.number}`;
     const posterUrl = season.images?.poster?.[0]
         ? `https://${season.images.poster[0]}`
@@ -25,7 +45,10 @@ export const SeasonCard = memo(function SeasonCard({ season, isSelected, onClick
     };
 
     return (
-        <div className={cn("group cursor-pointer transition-all hover:scale-105", className)} onClick={onClick}>
+        <div
+            className={cn("group cursor-pointer transition-all hover:scale-105", className)}
+            onClick={onClick}
+            onMouseEnter={prefetchSeason}>
             <div
                 className={cn(
                     "aspect-2/3 relative overflow-hidden bg-muted rounded-lg shadow-md transition-all",

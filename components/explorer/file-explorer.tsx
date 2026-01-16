@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 import { SortControls } from "./sort-controls";
 import { FileList, FileListBody, FileListEmpty, FileListLoading } from "./file-list";
 import { FileListHeader } from "./file-list-header";
@@ -15,7 +15,7 @@ import { useSearchParams } from "next/navigation";
 import { DebridFile } from "@/lib/types";
 import { PAGE_SIZE } from "@/lib/constants";
 
-export function FileExplorer() {
+export const FileExplorer = memo(function FileExplorer() {
     const { files, isLoading, currentPage, totalPages, setPage } = useFileExplorer();
     const searchParams = useSearchParams();
     const queryParam = searchParams.get("q") || "";
@@ -157,4 +157,4 @@ export function FileExplorer() {
             </div>
         </>
     );
-}
+});

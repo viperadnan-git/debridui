@@ -5,7 +5,7 @@ import { DebridFile } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatSize, formatRelativeTime, formatSpeed, cn } from "@/lib/utils";
 import { StatusBadge } from "../display";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FileItemContextMenu } from "./file-item-context-menu";
 import { Badge } from "../ui/badge";
 
@@ -62,29 +62,25 @@ export function FileListItem({
         // Speed indicator for active transfers
         if (file.status === "downloading" && file.downloadSpeed) {
             elements.push(
-                <TooltipProvider key="dl-speed">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="text-blue-600">Speed: {formatSpeed(file.downloadSpeed)}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Download speed</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                <Tooltip key="dl-speed">
+                    <TooltipTrigger asChild>
+                        <span className="text-blue-600">Speed: {formatSpeed(file.downloadSpeed)}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Download speed</p>
+                    </TooltipContent>
+                </Tooltip>
             );
         } else if (file.status === "uploading" && file.uploadSpeed) {
             elements.push(
-                <TooltipProvider key="ul-speed">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="text-green-600">Speed: {formatSpeed(file.uploadSpeed)}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Upload speed</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                <Tooltip key="ul-speed">
+                    <TooltipTrigger asChild>
+                        <span className="text-green-600">Speed: {formatSpeed(file.uploadSpeed)}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Upload speed</p>
+                    </TooltipContent>
+                </Tooltip>
             );
         }
 
@@ -106,19 +102,17 @@ export function FileListItem({
 
     const getTimeDisplay = useMemo(() => {
         return (
-            <TooltipProvider key="completed">
-                <Tooltip delayDuration={2000}>
-                    <TooltipTrigger asChild>
-                        <span className="cursor-pointer">{formatRelativeTime(file.completedAt || file.createdAt)}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>
-                            {file.status === "completed" ? "Completed" : "Added"}{" "}
-                            {(file.completedAt || file.createdAt).toLocaleString()}
-                        </p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip key="completed" delayDuration={2000}>
+                <TooltipTrigger asChild>
+                    <span className="cursor-pointer">{formatRelativeTime(file.completedAt || file.createdAt)}</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>
+                        {file.status === "completed" ? "Completed" : "Added"}{" "}
+                        {(file.completedAt || file.createdAt).toLocaleString()}
+                    </p>
+                </TooltipContent>
+            </Tooltip>
         );
     }, [file.status, file.completedAt, file.createdAt]);
 

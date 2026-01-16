@@ -1,6 +1,6 @@
 "use client";
 
-import { HeroCarousel } from "@/components/mdb/hero-carousel";
+import dynamic from "next/dynamic";
 import { MediaSection } from "@/components/mdb/media-section";
 import { SearchDialog } from "@/components/mdb/search-dialog";
 import { memo, useState } from "react";
@@ -19,6 +19,14 @@ import {
 } from "@/hooks/use-trakt";
 import { CommandIcon, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// Dynamic import for HeroCarousel to reduce initial bundle size (~315 lines)
+const HeroCarousel = dynamic(
+    () => import("@/components/mdb/hero-carousel").then((m) => ({ default: m.HeroCarousel })),
+    {
+        loading: () => <div className="h-96 animate-pulse bg-muted rounded" />,
+    }
+);
 
 const DashboardPage = memo(function DashboardPage() {
     const [searchOpen, setSearchOpen] = useState(false);
