@@ -5,6 +5,7 @@ import { type LucideIcon } from "lucide-react";
 import { SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useSidebar } from "../ui/sidebar";
+import { usePathname } from "next/navigation";
 
 export function NavMain({
     items,
@@ -24,36 +25,43 @@ export function NavMain({
     onAction?: (action: string) => void;
 }) {
     const { setOpenMobile } = useSidebar();
+    const pathname = usePathname();
+
     return (
         <SidebarGroup>
             <SidebarMenu>
-                {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                            tooltip={item.title}
-                            asChild={!item.action}
-                            onClick={
-                                item.action
-                                    ? () => {
-                                          onAction?.(item.action!);
-                                          setOpenMobile(false);
-                                      }
-                                    : undefined
-                            }>
-                            {item.action ? (
-                                <>
-                                    {item.icon && <item.icon />}
-                                    <span>{item.title}</span>
-                                </>
-                            ) : (
-                                <Link href={item.url} onClick={() => setOpenMobile(false)}>
-                                    {item.icon && <item.icon />}
-                                    <span>{item.title}</span>
-                                </Link>
-                            )}
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
+                {items.map((item) => {
+                    const isActive = item.url !== "#" && pathname === item.url;
+
+                    return (
+                        <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton
+                                tooltip={item.title}
+                                asChild={!item.action}
+                                isActive={isActive}
+                                onClick={
+                                    item.action
+                                        ? () => {
+                                              onAction?.(item.action!);
+                                              setOpenMobile(false);
+                                          }
+                                        : undefined
+                                }>
+                                {item.action ? (
+                                    <>
+                                        {item.icon && <item.icon />}
+                                        <span>{item.title}</span>
+                                    </>
+                                ) : (
+                                    <Link href={item.url} onClick={() => setOpenMobile(false)}>
+                                        {item.icon && <item.icon />}
+                                        <span>{item.title}</span>
+                                    </Link>
+                                )}
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    );
+                })}
             </SidebarMenu>
         </SidebarGroup>
     );
