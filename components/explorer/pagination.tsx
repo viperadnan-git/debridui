@@ -15,9 +15,10 @@ interface PaginationProps {
     currentPage: number;
     totalPages: number;
     onPageChange: (page: number) => void;
+    disabled?: boolean;
 }
 
-export function FilePagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+export function FilePagination({ currentPage, totalPages, onPageChange, disabled = false }: PaginationProps) {
     const renderPageNumbers = () => {
         const pages = [];
         const maxVisible = 3;
@@ -61,7 +62,7 @@ export function FilePagination({ currentPage, totalPages, onPageChange }: Pagina
                         variant="ghost"
                         size="icon"
                         onClick={() => onPageChange(1)}
-                        disabled={currentPage === 1}
+                        disabled={disabled || currentPage === 1}
                         className="size-9"
                         aria-label="First page">
                         <ChevronsLeft className="size-4" />
@@ -73,7 +74,7 @@ export function FilePagination({ currentPage, totalPages, onPageChange }: Pagina
                         variant="ghost"
                         size="icon"
                         onClick={() => onPageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
+                        disabled={disabled || currentPage === 1}
                         className="size-9"
                         aria-label="Previous page">
                         <ChevronLeft className="size-4" />
@@ -86,9 +87,9 @@ export function FilePagination({ currentPage, totalPages, onPageChange }: Pagina
                             <PaginationEllipsis />
                         ) : (
                             <PaginationLink
-                                onClick={() => onPageChange(page as number)}
+                                onClick={() => !disabled && onPageChange(page as number)}
                                 isActive={currentPage === page}
-                                className="cursor-pointer">
+                                className={disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}>
                                 {page}
                             </PaginationLink>
                         )}
@@ -100,7 +101,7 @@ export function FilePagination({ currentPage, totalPages, onPageChange }: Pagina
                         variant="ghost"
                         size="icon"
                         onClick={() => onPageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
+                        disabled={disabled || currentPage === totalPages}
                         className="size-9"
                         aria-label="Next page">
                         <ChevronRight className="size-4" />
@@ -112,7 +113,7 @@ export function FilePagination({ currentPage, totalPages, onPageChange }: Pagina
                         variant="ghost"
                         size="icon"
                         onClick={() => onPageChange(totalPages)}
-                        disabled={currentPage === totalPages}
+                        disabled={disabled || currentPage === totalPages}
                         className="size-9"
                         aria-label="Last page">
                         <ChevronsRight className="size-4" />

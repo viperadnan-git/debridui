@@ -74,6 +74,31 @@ export function FileExplorer() {
         return false;
     }, [activeData, selectedFileIds]);
 
+    // Wrapped page change handlers that scroll to top
+    const handlePageChange = useCallback(
+        (page: number) => {
+            // Don't do anything if clicking the same page
+            if (page === currentPage) return;
+
+            // Scroll to top first for immediate feedback
+            window.scrollTo(0, 0);
+            setPage(page);
+        },
+        [currentPage, setPage]
+    );
+
+    const handleSearchPageChange = useCallback(
+        (page: number) => {
+            // Don't do anything if clicking the same page
+            if (page === searchPage) return;
+
+            // Scroll to top first for immediate feedback
+            window.scrollTo(0, 0);
+            setSearchPage(page);
+        },
+        [searchPage]
+    );
+
     return (
         <>
             <div className="md:mx-auto md:w-full md:max-w-4xl pb-24">
@@ -106,20 +131,22 @@ export function FileExplorer() {
                     </FileList>
 
                     {/* Pagination */}
-                    {!isLoading && !isSearching && (
+                    {!isSearching && (
                         <>
                             {queryParam && searchTotalPages > 1 && (
                                 <FilePagination
                                     currentPage={searchPage}
                                     totalPages={searchTotalPages}
-                                    onPageChange={setSearchPage}
+                                    onPageChange={handleSearchPageChange}
+                                    disabled={isLoading}
                                 />
                             )}
                             {!queryParam && totalPages > 1 && (
                                 <FilePagination
                                     currentPage={currentPage}
                                     totalPages={totalPages}
-                                    onPageChange={setPage}
+                                    onPageChange={handlePageChange}
+                                    disabled={isLoading}
                                 />
                             )}
                         </>
