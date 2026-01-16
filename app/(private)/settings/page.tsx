@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon } from "lucide-react";
+import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon, Info } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,17 @@ import { del } from "idb-keyval";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
 import { useAuthContext } from "@/lib/contexts/auth";
+import { formatDistanceToNow, format } from "date-fns";
+
+// Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
+const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
     const { currentUser } = useAuthContext();
+    const buildDate = new Date(BUILD_TIME);
+    const buildTimeFormatted = format(buildDate, "PPpp");
+    const buildTimeRelative = formatDistanceToNow(buildDate, { addSuffix: true });
     const { get, set, getPresets } = useSettingsStore();
     const mediaPlayer = get("mediaPlayer");
     const mediaPlayerPresets = getPresets("mediaPlayer") || [];
@@ -242,6 +249,34 @@ export default function SettingsPage() {
                                         className="w-full sm:w-auto">
                                         Clear All
                                     </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* About */}
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
+                                <Info className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle>About</CardTitle>
+                                <CardDescription>Application information</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-3 rounded-lg border p-4">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium">Last Updated</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        <Clock className="mr-1.5 inline-block h-3.5 w-3.5" />
+                                        {buildTimeFormatted} ({buildTimeRelative})
+                                    </p>
                                 </div>
                             </div>
                         </div>
