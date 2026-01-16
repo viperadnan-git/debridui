@@ -21,16 +21,8 @@ export function FilePreviewDialog() {
     const previousButtonRef = useRef<HTMLButtonElement>(null);
     const nextButtonRef = useRef<HTMLButtonElement>(null);
 
-    const {
-        isOpen,
-        currentFile,
-        currentIndex,
-        previewableFiles,
-        fileId,
-        closePreview,
-        navigateNext,
-        navigatePrevious,
-    } = usePreviewStore();
+    const { isOpen, currentFile, currentIndex, previewableFiles, closePreview, navigateNext, navigatePrevious } =
+        usePreviewStore();
 
     // Fetch download link for current file
     const { data: linkInfo, isLoading } = useQuery({

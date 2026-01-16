@@ -74,7 +74,6 @@ function PersonCard({ person, type }: PersonCardProps) {
                 <div className="relative mx-auto flex items-center justify-center">
                     <div className="size-28 xl:size-32 relative overflow-hidden bg-muted rounded-full shadow-md group-hover:shadow-lg transition-all">
                         {imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                                 src={imageUrl}
                                 alt={person.person.name}

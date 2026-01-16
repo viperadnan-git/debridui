@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BookIcon, InfoIcon, Github } from "lucide-react";
+import { BookIcon, InfoIcon } from "lucide-react";
 
 export default function Home() {
     return (
@@ -27,6 +27,7 @@ export default function Home() {
                                 width="24"
                                 className="dark:invert"
                                 src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/github.svg"
+                                alt="GitHub"
                             />
                             <span>See on GitHub</span>
                         </div>

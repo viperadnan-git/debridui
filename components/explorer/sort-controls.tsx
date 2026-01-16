@@ -1,19 +1,19 @@
 "use client";
 
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { SORT_OPTIONS } from "@/lib/utils/file";
 import { useShallow } from "zustand/react/shallow";
 import { useFileStore } from "@/lib/stores/files";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useCallback } from "react";
 
 export function SortControls() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
     const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore(
         useShallow((state) => ({
             sortBy: state.sortBy,
@@ -23,9 +23,25 @@ export function SortControls() {
         }))
     );
 
+    const updateURLParams = useCallback(
+        (newSortBy: string, newSortOrder: "asc" | "desc") => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("sort_by", newSortBy);
+            params.set("sort_order", newSortOrder);
+            router.push(`${pathname}?${params.toString()}`);
+        },
+        [searchParams, pathname, router]
+    );
+
     const handleSortChange = (newSortBy: string) => {
         setSortBy(newSortBy);
-        setSortOrder(newSortBy === "date" ? "desc" : "asc");
+        updateURLParams(newSortBy, sortOrder);
+    };
+
+    const handleOrderChange = () => {
+        const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+        setSortOrder(newSortOrder);
+        updateURLParams(sortBy, newSortOrder);
     };
 
     return (
@@ -42,18 +58,8 @@ export function SortControls() {
                     ))}
                 </SelectContent>
             </Select>
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                }
-                className="px-2">
-                {sortOrder === "desc" ? (
-                    <ChevronDown className="size-4" />
-                ) : (
-                    <ChevronUp className="size-4" />
-                )}
+            <Button variant="outline" size="sm" onClick={handleOrderChange} className="px-2">
+                {sortOrder === "desc" ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
             </Button>
         </div>
     );

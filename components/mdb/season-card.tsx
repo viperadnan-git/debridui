@@ -31,7 +31,7 @@ export const SeasonCard = memo(function SeasonCard({ season, isSelected, onClick
                     "aspect-2/3 relative overflow-hidden bg-muted rounded-lg shadow-md transition-all",
                     isSelected ? "ring-2 ring-primary shadow-lg" : "hover:shadow-lg"
                 )}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {}
                 <img
                     src={posterUrl}
                     alt={`Season ${season.number}`}

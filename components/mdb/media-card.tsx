@@ -26,7 +26,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
         <Link href={linkHref} className="block">
             <div className={cn("group relative overflow-hidden transition-all hover:scale-105", className)}>
                 <div className="aspect-2/3 relative overflow-hidden bg-muted rounded-md">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {}
                     <img src={posterUrl} alt={media.title} className="object-cover w-full h-full" loading="lazy" />
                     <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 

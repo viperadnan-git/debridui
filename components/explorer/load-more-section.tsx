@@ -18,6 +18,7 @@ export const LoadMoreSection = memo(function LoadMoreSection({
 
     // Reset loading state when data changes
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsLoadingMore(false);
     }, [dataLength]);
 

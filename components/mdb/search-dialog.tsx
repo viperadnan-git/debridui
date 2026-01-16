@@ -126,7 +126,6 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     {/* Poster thumbnail or icon */}
                     <div className="shrink-0 w-10 h-14 sm:w-12 sm:h-16 bg-muted rounded-md overflow-hidden">
                         {posterImage ? (
-                            // eslint-disable-next-line @next/next/no-img-element
                             <img src={posterImage} alt={media.title} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center">

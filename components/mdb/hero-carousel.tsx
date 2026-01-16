@@ -47,7 +47,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
         <div className="relative w-full aspect-video overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {}
                 <img
                     src={desktopImage}
                     alt={media.title}
@@ -147,7 +147,7 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
         <div className="md:hidden relative w-full aspect-9/14 overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {}
                 <img
                     src={mobileImage}
                     alt={media.title}

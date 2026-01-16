@@ -3,13 +3,35 @@ import { useEffect, useState, useMemo } from "react";
 import { PAGE_SIZE } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
 import { useFileStore } from "@/lib/stores/files";
+import { useSearchParams } from "next/navigation";
 
 export function useFileExplorer() {
     const { client, currentUser } = useAuthContext();
+    const searchParams = useSearchParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [totalEstimate, setTotalEstimate] = useState<number | null>(null);
+    const [initialized, setInitialized] = useState(false);
 
-    const { sortBy, sortOrder, sortChanged, setFiles, setSortBy, setSortOrder } = useFileStore();
+    const { files: sortedFiles, sortBy, sortOrder, sortChanged, setFiles, setSortBy, setSortOrder } = useFileStore();
+
+    // Initialize sort from URL params on mount
+    useEffect(() => {
+        if (initialized) return;
+
+        const urlSortBy = searchParams.get("sort_by");
+        const urlSortOrder = searchParams.get("sort_order") as "asc" | "desc" | null;
+
+        // If URL params exist, sync store with them
+        if (urlSortBy) {
+            setSortBy(urlSortBy);
+        }
+        if (urlSortOrder && (urlSortOrder === "asc" || urlSortOrder === "desc")) {
+            setSortOrder(urlSortOrder);
+        }
+
+        setInitialized(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Calculate pagination values
     const offset = useMemo(() => (currentPage - 1) * PAGE_SIZE, [currentPage]);
@@ -55,7 +77,7 @@ export function useFileExplorer() {
     };
 
     return {
-        files: data?.files || [],
+        files: sortedFiles,
         isLoading,
         currentPage,
         totalPages,

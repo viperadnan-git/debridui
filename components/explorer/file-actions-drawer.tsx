@@ -100,6 +100,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
     // Handle visibility with animation
     useEffect(() => {
         if (hasAnySelection) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsVisible(true);
             // Small delay to trigger animation
             setTimeout(() => setIsAnimating(true), 10);

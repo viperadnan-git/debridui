@@ -245,7 +245,7 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className }: So
                         <div>
                             <p className="font-medium">No sources available</p>
                             <p className="text-sm text-muted-foreground mt-1">
-                                We couldn't find any sources for this content
+                                We couldn&apos;t find any sources for this content
                             </p>
                         </div>
                     </div>

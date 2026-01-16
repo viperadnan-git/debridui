@@ -120,7 +120,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
             {backdropUrl && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen -mt-6 pointer-events-none">
                     <div className="aspect-video overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        {}
                         <img
                             src={backdropUrl}
                             alt={media.title}
@@ -143,7 +143,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
                 <div className="grid md:grid-cols-[200px_1fr] lg:grid-cols-[300px_1fr] gap-3 md:gap-6">
                     <div className="space-y-2 md:space-y-4">
                         <div className="max-sm:max-w-[50vw] aspect-2/3 overflow-hidden rounded-lg">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {}
                             <img
                                 src={posterUrl}
                                 alt={media.title}

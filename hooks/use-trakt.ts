@@ -13,7 +13,7 @@ const CACHE_TIMES = {
 };
 
 // Generic Trakt query hook factory
-function createTraktHook<T extends any[], R>(
+function createTraktHook<T extends unknown[], R>(
     keyParts: string[],
     fn: (...args: T) => Promise<R>,
     cacheType: keyof typeof CACHE_TIMES

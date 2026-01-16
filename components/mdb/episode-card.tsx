@@ -38,7 +38,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                         <div className="flex flex-col sm:flex-row gap-0 sm:gap-4">
                             {/* Episode thumbnail */}
                             <div className="relative w-full sm:w-56 md:w-64 shrink-0 aspect-video bg-muted overflow-hidden">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                {}
                                 <img
                                     src={screenshotUrl}
                                     alt={episode.title}
