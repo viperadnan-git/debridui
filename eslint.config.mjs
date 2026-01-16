@@ -1,18 +1,20 @@
 import { defineConfig, globalIgnores } from 'eslint/config'
 import nextVitals from 'eslint-config-next/core-web-vitals'
-import tseslint from 'typescript-eslint'
+import nextTs from 'eslint-config-next/typescript'
 
 const eslintConfig = defineConfig([
+  // Next.js Core Web Vitals rules (recommended)
   ...nextVitals,
-  // Override default ignores of eslint-config-next.
+  // TypeScript-specific rules from Next.js
+  ...nextTs,
+  // Global ignores
   globalIgnores([
-    // Default ignores of eslint-config-next:
     '.next/**',
     'out/**',
     'build/**',
     'next-env.d.ts',
   ]),
-  ...tseslint.configs.recommended,
+  // Custom rules
   {
     rules: {
       // Enforce no unused variables (catches unused imports too)
@@ -25,8 +27,8 @@ const eslintConfig = defineConfig([
           destructuredArrayIgnorePattern: '^_',
         },
       ],
-      // Also catch regular JS unused vars (fallback)
-      'no-unused-vars': 'off', // Turn off base rule as it conflicts with TypeScript rule
+      // Turn off base rule as it conflicts with TypeScript rule
+      'no-unused-vars': 'off',
       // Suppress next/image warnings - we intentionally use <img> in some cases
       '@next/next/no-img-element': 'off',
     },

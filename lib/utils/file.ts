@@ -228,7 +228,7 @@ export const getTorrentFilesWithCache = async ({
 
     // Otherwise check cache or fetch
     const cacheKey = getTorrentFilesCacheKey(userId, fileId);
-    let node = queryClient.getQueryData(cacheKey) as DebridFileNode[] | undefined;
+    let node = queryClient.getQueryData<DebridFileNode[]>(cacheKey);
 
     if (!node) {
         node = await client.getTorrentFiles(fileId);
@@ -248,7 +248,7 @@ export const getDownloadLinkWithCache = async ({
     userId: string;
 }): Promise<DebridLinkInfo> => {
     const cacheKey = getDownloadLinkCacheKey(userId, fileId);
-    let linkInfo = queryClient.getQueryData(cacheKey) as DebridLinkInfo | undefined;
+    let linkInfo = queryClient.getQueryData<DebridLinkInfo>(cacheKey);
 
     if (!linkInfo) {
         linkInfo = await client.getDownloadLink(fileId);

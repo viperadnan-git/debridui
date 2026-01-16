@@ -345,7 +345,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
             if (!flatNode) return null;
 
             // Type workaround for react-window style conflicts
-            const divStyle = props.style as React.CSSProperties;
+            const divStyle = props.style;
 
             return (
                 <div style={divStyle} className="px-3 md:px-4">
