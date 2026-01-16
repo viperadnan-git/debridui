@@ -14,7 +14,7 @@ import {
 import { AccountSwitcher } from "./account-switcher";
 import { ServerIcon, SearchIcon, HomeIcon, SettingsIcon } from "lucide-react";
 import { useSearch } from "@/components/mdb/search-provider";
-import Image from "next/image";
+import { SidebarFooterContent } from "./sidebar-footer";
 
 // This is sample data.
 const data = {
@@ -68,20 +68,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarContent>
             {/* <NavUser user={data.user} /> */}
             {(open || isMobile) && (
-                <SidebarFooter className="flex flex-col items-center gap-3">
-                    <Image
-                        className="dark:invert w-2/3 opacity-80 transition-opacity hover:opacity-100"
-                        src="/logo.svg"
-                        alt="DebridUI logo"
-                        width={160}
-                        height={38}
-                        priority
-                    />
-                    <a
-                        className="flex items-center justify-center text-muted-foreground text-xs font-medium tracking-wide uppercase hover:text-foreground transition-colors"
-                        href="https://github.com/viperadnan-git/debridui/issues">
-                        Report a bug
-                    </a>
+                <SidebarFooter className="border-t border-sidebar-border/50">
+                    <SidebarFooterContent />
                 </SidebarFooter>
             )}
             <SidebarRail />
