@@ -15,9 +15,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
-const SIDEBAR_WIDTH = "17rem";
-const SIDEBAR_WIDTH_MOBILE = "20rem";
-const SIDEBAR_WIDTH_ICON = "4.5rem";
+const SIDEBAR_WIDTH = "15rem";
+const SIDEBAR_WIDTH_MOBILE = "18rem";
+const SIDEBAR_WIDTH_ICON = "4rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
 type SidebarContextProps = {
