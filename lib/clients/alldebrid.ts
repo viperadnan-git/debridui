@@ -1,6 +1,7 @@
 import {
     DebridFile,
     DebridFileStatus,
+    DebridNode,
     DebridFileNode,
     DebridLinkInfo,
     DebridFileList,
@@ -247,9 +248,9 @@ export default class AllDebridClient extends BaseClient {
         return torrent ? this.mapToDebridFile(torrent) : null;
     }
 
-    async getDownloadLink(fileId: string): Promise<DebridLinkInfo> {
+    async getDownloadLink(fileNode: DebridFileNode): Promise<DebridLinkInfo> {
         const formData = new FormData();
-        formData.append("link", fileId);
+        formData.append("link", fileNode.id);
 
         const response = await this.makeRequest<{
             link: string;
@@ -260,14 +261,15 @@ export default class AllDebridClient extends BaseClient {
             body: formData,
         });
 
+        // Use file node's properties as fallback if API doesn't provide them
         return {
             link: response.link,
-            name: response.filename,
-            size: response.filesize,
+            name: response.filename || fileNode.name,
+            size: response.filesize || fileNode.size || 0,
         };
     }
 
-    async getTorrentFiles(torrentId: string): Promise<DebridFileNode[]> {
+    async getTorrentFiles(torrentId: string): Promise<DebridNode[]> {
         const formData = new FormData();
         formData.append("id[]", torrentId);
 
@@ -454,11 +456,11 @@ export default class AllDebridClient extends BaseClient {
         }
     }
 
-    private convertFileNodes(nodes: FileNode[] | FolderNode[]): DebridFileNode[] {
+    private convertFileNodes(nodes: FileNode[] | FolderNode[]): DebridNode[] {
         return nodes.map(this.convertSingleNode);
     }
 
-    private convertSingleNode = (node: FileNode | FolderNode): DebridFileNode => {
+    private convertSingleNode = (node: FileNode | FolderNode): DebridNode => {
         if ("e" in node) {
             // Folder node
             return {

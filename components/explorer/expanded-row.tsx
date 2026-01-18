@@ -1,6 +1,6 @@
 "use client";
 
-import { DebridFile, DebridFileNode } from "@/lib/types";
+import { DebridFile, DebridNode } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useEffect } from "react";
 import { useAuthContext } from "@/lib/contexts/auth";
@@ -36,7 +36,7 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
         data: fetchedNodes,
         isLoading,
         error,
-    } = useQuery<DebridFileNode[]>({
+    } = useQuery<DebridNode[]>({
         queryKey: [currentUser.id, "getTorrentFiles", file.id],
         queryFn: () => client.getTorrentFiles(file.id),
         enabled: file.status === "completed" && !file.files, // Only fetch if files not already available
@@ -56,7 +56,7 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
         // Collect IDs more efficiently for large files
         const ids: string[] = [];
 
-        const collectIds = (nodes: DebridFileNode[]) => {
+        const collectIds = (nodes: DebridNode[]) => {
             for (const node of nodes) {
                 if (node.type === "file" && node.id) {
                     ids.push(node.id);
@@ -72,10 +72,10 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
     }, [processedNodes]);
 
     useEffect(() => {
-        if (nodeIds.length > 0) {
-            registerFileNodes(file.id, nodeIds);
+        if (nodeIds.length > 0 && processedNodes.length > 0) {
+            registerFileNodes(file.id, nodeIds, processedNodes);
         }
-    }, [nodeIds, registerFileNodes, file.id]);
+    }, [nodeIds, processedNodes, registerFileNodes, file.id]);
 
     // Show loading only if we're fetching and don't have files already
     const showLoading = isLoading && !file.files;

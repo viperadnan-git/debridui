@@ -27,7 +27,7 @@ export function FilePreviewDialog() {
     // Fetch download link for current file
     const { data: linkInfo, isLoading } = useQuery({
         queryKey: [currentUser.id, "getDownloadLink", currentFile?.id],
-        queryFn: () => client.getDownloadLink(currentFile!.id!),
+        queryFn: () => client.getDownloadLink(currentFile!),
         enabled: isOpen && !!currentFile?.id,
         gcTime: downloadLinkMaxAge,
     });

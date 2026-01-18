@@ -25,13 +25,38 @@ export enum MediaPlayer {
     EMBED = "embed",
 }
 
-export type DebridFileNode = {
-    id?: string;
+// Base type for common properties
+type BaseDebridNode = {
     name: string;
-    size: number | undefined;
-    type: "file" | "folder";
-    children: DebridFileNode[];
+    children: DebridNode[];
 };
+
+// File node - always has an ID (for download links)
+export type DebridFileNode = BaseDebridNode & {
+    id: string;
+    size: number | undefined;
+    type: "file";
+};
+
+// Folder node - never has an ID (organizational only)
+export type DebridFolderNode = BaseDebridNode & {
+    id?: never;
+    size: undefined;
+    type: "folder";
+};
+
+// Discriminated union for type safety
+export type DebridNode = DebridFileNode | DebridFolderNode;
+
+// Type guard to check if a node is a file
+export function isFileNode(node: DebridNode): node is DebridFileNode {
+    return node.type === "file";
+}
+
+// Type guard to check if a node is a folder
+export function isFolderNode(node: DebridNode): node is DebridFolderNode {
+    return node.type === "folder";
+}
 
 export type DebridFile = {
     id: string;
@@ -50,7 +75,7 @@ export type DebridFile = {
     completedAt?: Date;
 
     error?: string;
-    files?: DebridFileNode[];
+    files?: DebridNode[];
 };
 
 export type DebridFileList = {

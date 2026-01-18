@@ -73,7 +73,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
             const toastId = toast.loading("Loading file links...");
             try {
                 const links = await fetchTorrentDownloadLinks(file.id, client, currentUser.id);
-                downloadM3UPlaylist(links);
+                downloadM3UPlaylist(links, file.name);
                 toast.success("Playlist downloaded", { id: toastId });
                 return links;
             } catch (error: unknown) {

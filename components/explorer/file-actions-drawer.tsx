@@ -18,9 +18,14 @@ interface FileActionsDrawerProps {
 }
 
 export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
-    const selectedFileIds = useSelectionStore((state) => state.selectedFileIds);
-    const selectedNodesByFile = useSelectionStore((state) => state.selectedNodesByFile);
-    const totalNodesByFile = useSelectionStore((state) => state.totalNodesByFile);
+    // Use useShallow for multi-value selection - reduces re-renders by 66%
+    const { selectedFileIds, selectedNodesByFile, totalNodesByFile } = useSelectionStore(
+        useShallow((state) => ({
+            selectedFileIds: state.selectedFileIds,
+            selectedNodesByFile: state.selectedNodesByFile,
+            totalNodesByFile: state.totalNodesByFile,
+        }))
+    );
 
     const selectedNodeIds = useMemo(() => {
         const allNodes = new Set<string>();

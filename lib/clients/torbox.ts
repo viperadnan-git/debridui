@@ -1,6 +1,7 @@
 import {
     DebridFile,
     DebridFileStatus,
+    DebridNode,
     DebridFileNode,
     DebridLinkInfo,
     DebridFileList,
@@ -252,9 +253,8 @@ export default class TorBoxClient extends BaseClient {
         }
     }
 
-    async getDownloadLink(fileId: string): Promise<DebridLinkInfo> {
-        // For TorBox, fileId should be in format "torrentId:fileId"
-        const [torrentId, targetFileId] = fileId.split(":");
+    async getDownloadLink(fileNode: DebridFileNode): Promise<DebridLinkInfo> {
+        const [torrentId, targetFileId] = fileNode.id.split(":");
 
         if (!torrentId || !targetFileId) {
             throw new DebridError("Invalid file ID format. Expected 'torrentId:fileId'", "INVALID_FILE_ID");
@@ -262,14 +262,15 @@ export default class TorBoxClient extends BaseClient {
 
         const downloadUrl = `https://api.torbox.app/v1/api/torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=true`;
 
+        // Use file node's properties directly - no API call needed!
         return {
             link: downloadUrl,
-            name: "Unknown",
-            size: 0,
+            name: fileNode.name,
+            size: fileNode.size || 0,
         };
     }
 
-    async getTorrentFiles(torrentId: string): Promise<DebridFileNode[]> {
+    async getTorrentFiles(torrentId: string): Promise<DebridNode[]> {
         // For TorBox, files should already be available in DebridFile.files
         // This method exists only for backward compatibility
         // Make direct API request as fallback since this should rarely be called

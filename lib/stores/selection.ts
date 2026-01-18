@@ -1,141 +1,167 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
+import { enableMapSet } from "immer";
+import { DebridNode } from "../types";
+
+// Enable Immer's MapSet plugin for Map and Set support
+enableMapSet();
+
+export interface NodeMetadata {
+    id: string;
+    name: string;
+    size: number | undefined;
+}
 
 export interface SelectionState {
     selectedFileIds: Set<string>;
     selectedNodesByFile: Map<string, Set<string>>;
     totalNodesByFile: Map<string, number>;
-    registeredNodesByFile: Map<string, string[]>; // Store all node IDs when registered
+    registeredNodesByFile: Map<string, string[]>;
+    nodeMetadata: Map<string, NodeMetadata>;
 
     // Actions
-    registerFileNodes: (fileId: string, nodeIds: string[]) => void;
-    toggleFileSelection: (fileId: string, allNodeIds?: string[]) => void;
-    updateNodeSelection: (fileId: string, selectedNodeIds: Set<string>) => void;
+    registerFileNodes: (fileId: string, nodeIds: string[], nodes?: DebridNode[]) => void;
+    toggleFileSelection: (fileId: string, allNodeIds?: string[], nodes?: DebridNode[]) => void;
+    updateNodeSelection: (fileId: string, selectedNodeIds: Set<string>, nodes?: DebridNode[]) => void;
     selectAll: (fileIds: string[]) => void;
     clearAll: () => void;
     removeFileSelection: (fileId: string) => void;
+    getNodeMetadata: (nodeId: string) => NodeMetadata | undefined;
+}
+
+// Optimized metadata extraction - only extract new entries (O(1) check per node)
+function extractNodeMetadata(nodes: DebridNode[], state: SelectionState): void {
+    const stack = nodes.slice();
+
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (node.type === "file" && !state.nodeMetadata.has(node.id)) {
+            state.nodeMetadata.set(node.id, {
+                id: node.id,
+                name: node.name,
+                size: node.size,
+            });
+        }
+        if (node.children) {
+            stack.push(...node.children);
+        }
+    }
 }
 
 export const useSelectionStore = create<SelectionState>()(
-    subscribeWithSelector((set) => ({
-        selectedFileIds: new Set(),
-        selectedNodesByFile: new Map(),
-        totalNodesByFile: new Map(),
-        registeredNodesByFile: new Map(),
+    subscribeWithSelector(
+        immer((set, get) => ({
+            selectedFileIds: new Set(),
+            selectedNodesByFile: new Map(),
+            totalNodesByFile: new Map(),
+            registeredNodesByFile: new Map(),
+            nodeMetadata: new Map(),
 
-        registerFileNodes: (fileId, nodeIds) =>
-            set((state) => {
-                const prevTotal = state.totalNodesByFile.get(fileId) || 0;
+            // Immer handles immutability - we can "mutate" directly
+            registerFileNodes: (fileId, nodeIds, nodes) =>
+                set((state) => {
+                    const prevTotal = state.totalNodesByFile.get(fileId) || 0;
+                    const needsSelectionUpdate =
+                        state.selectedFileIds.has(fileId) &&
+                        !state.selectedNodesByFile.has(fileId) &&
+                        nodeIds.length > 0;
 
-                // Quick check for unchanged data
-                const needsSelectionUpdate =
-                    state.selectedFileIds.has(fileId) && !state.selectedNodesByFile.has(fileId) && nodeIds.length > 0;
-
-                if (prevTotal === nodeIds.length && !needsSelectionUpdate) {
-                    return state;
-                }
-
-                const totalNodesByFile = new Map(state.totalNodesByFile);
-                const registeredNodesByFile = new Map(state.registeredNodesByFile);
-
-                totalNodesByFile.set(fileId, nodeIds.length);
-                registeredNodesByFile.set(fileId, nodeIds);
-
-                // If file is selected, ensure its nodes are selected
-                if (state.selectedFileIds.has(fileId) && nodeIds.length > 0) {
-                    const selectedNodesByFile = new Map(state.selectedNodesByFile);
-
-                    // For very large files, we could defer but it's better to just optimize the tree rendering
-                    selectedNodesByFile.set(fileId, new Set(nodeIds));
-
-                    return { totalNodesByFile, selectedNodesByFile, registeredNodesByFile };
-                }
-
-                return { totalNodesByFile, registeredNodesByFile };
-            }),
-
-        toggleFileSelection: (fileId, allNodeIds) =>
-            set((state) => {
-                const currentNodes = state.selectedNodesByFile.get(fileId) || new Set();
-                const totalNodes = state.totalNodesByFile.get(fileId) || 0;
-                const isIndeterminate = totalNodes > 0 && currentNodes.size > 0 && currentNodes.size < totalNodes;
-                const isFullySelected =
-                    (totalNodes === 0 && state.selectedFileIds.has(fileId)) ||
-                    (totalNodes > 0 && currentNodes.size === totalNodes);
-
-                const selectedFileIds = new Set(state.selectedFileIds);
-                const selectedNodesByFile = new Map(state.selectedNodesByFile);
-
-                if (isIndeterminate || !state.selectedFileIds.has(fileId)) {
-                    selectedFileIds.add(fileId);
-                    if (allNodeIds?.length) {
-                        selectedNodesByFile.set(fileId, new Set(allNodeIds));
-                        const totalNodesByFile = new Map(state.totalNodesByFile);
-                        const registeredNodesByFile = new Map(state.registeredNodesByFile);
-                        totalNodesByFile.set(fileId, allNodeIds.length);
-                        registeredNodesByFile.set(fileId, allNodeIds);
-                        return { selectedFileIds, selectedNodesByFile, totalNodesByFile, registeredNodesByFile };
+                    // Skip update if nothing changed and no nodes to extract
+                    if (prevTotal === nodeIds.length && !needsSelectionUpdate && !nodes) {
+                        return;
                     }
-                    return { selectedFileIds };
-                } else if (isFullySelected) {
-                    selectedFileIds.delete(fileId);
-                    selectedNodesByFile.delete(fileId);
-                    return { selectedFileIds, selectedNodesByFile };
-                }
-                return state;
-            }),
 
-        updateNodeSelection: (fileId, selectedNodeIds) =>
-            set((state) => {
-                const selectedNodesByFile = new Map(state.selectedNodesByFile);
-                const selectedFileIds = new Set(state.selectedFileIds);
+                    state.totalNodesByFile.set(fileId, nodeIds.length);
+                    state.registeredNodesByFile.set(fileId, nodeIds);
 
-                if (selectedNodeIds.size === 0) {
-                    selectedNodesByFile.delete(fileId);
-                    selectedFileIds.delete(fileId);
-                } else {
-                    selectedNodesByFile.set(fileId, selectedNodeIds);
-                    selectedFileIds.add(fileId);
-                }
-
-                return { selectedNodesByFile, selectedFileIds };
-            }),
-
-        selectAll: (fileIds) =>
-            set((state) => {
-                const selectedFileIds = new Set(fileIds);
-                const selectedNodesByFile = new Map();
-
-                // For each file, if we have registered nodes, select them all
-                fileIds.forEach((fileId) => {
-                    const registeredNodes = state.registeredNodesByFile.get(fileId);
-                    if (registeredNodes && registeredNodes.length > 0) {
-                        selectedNodesByFile.set(fileId, new Set(registeredNodes));
+                    // Extract metadata only if nodes provided
+                    if (nodes) {
+                        extractNodeMetadata(nodes, state);
                     }
-                });
 
-                return { selectedFileIds, selectedNodesByFile };
-            }),
+                    // Auto-select nodes if file is selected
+                    if (state.selectedFileIds.has(fileId) && nodeIds.length > 0) {
+                        state.selectedNodesByFile.set(fileId, new Set(nodeIds));
+                    }
+                }),
 
-        clearAll: () =>
-            set({
-                selectedFileIds: new Set(),
-                selectedNodesByFile: new Map(),
-            }),
+            toggleFileSelection: (fileId, allNodeIds, nodes) =>
+                set((state) => {
+                    // Extract metadata if nodes provided
+                    if (nodes) {
+                        extractNodeMetadata(nodes, state);
+                    }
 
-        removeFileSelection: (fileId) =>
-            set((state) => {
-                const selectedFileIds = new Set(state.selectedFileIds);
-                selectedFileIds.delete(fileId);
-                const selectedNodesByFile = new Map(state.selectedNodesByFile);
-                selectedNodesByFile.delete(fileId);
-                const totalNodesByFile = new Map(state.totalNodesByFile);
-                totalNodesByFile.delete(fileId);
-                const registeredNodesByFile = new Map(state.registeredNodesByFile);
-                registeredNodesByFile.delete(fileId);
-                return { selectedFileIds, selectedNodesByFile, totalNodesByFile, registeredNodesByFile };
-            }),
-    }))
+                    const currentNodes = state.selectedNodesByFile.get(fileId) || new Set();
+                    const totalNodes = state.totalNodesByFile.get(fileId) || 0;
+                    const isIndeterminate = totalNodes > 0 && currentNodes.size > 0 && currentNodes.size < totalNodes;
+                    const isFullySelected =
+                        (totalNodes === 0 && state.selectedFileIds.has(fileId)) ||
+                        (totalNodes > 0 && currentNodes.size === totalNodes);
+
+                    if (isIndeterminate || !state.selectedFileIds.has(fileId)) {
+                        state.selectedFileIds.add(fileId);
+                        if (allNodeIds?.length) {
+                            state.selectedNodesByFile.set(fileId, new Set(allNodeIds));
+                            state.totalNodesByFile.set(fileId, allNodeIds.length);
+                            state.registeredNodesByFile.set(fileId, allNodeIds);
+                        }
+                    } else if (isFullySelected) {
+                        state.selectedFileIds.delete(fileId);
+                        state.selectedNodesByFile.delete(fileId);
+                    }
+                }),
+
+            updateNodeSelection: (fileId, selectedNodeIds, nodes) =>
+                set((state) => {
+                    // Extract metadata if provided
+                    if (nodes) {
+                        extractNodeMetadata(nodes, state);
+                    }
+
+                    if (selectedNodeIds.size === 0) {
+                        state.selectedFileIds.delete(fileId);
+                        state.selectedNodesByFile.delete(fileId);
+                    } else {
+                        state.selectedFileIds.add(fileId);
+                        state.selectedNodesByFile.set(fileId, selectedNodeIds);
+                    }
+                }),
+
+            selectAll: (fileIds) =>
+                set((state) => {
+                    state.selectedFileIds = new Set(fileIds);
+                    state.selectedNodesByFile.clear();
+
+                    // For each file, if we have registered nodes, select them all
+                    fileIds.forEach((fileId) => {
+                        const registeredNodes = state.registeredNodesByFile.get(fileId);
+                        if (registeredNodes && registeredNodes.length > 0) {
+                            state.selectedNodesByFile.set(fileId, new Set(registeredNodes));
+                        }
+                    });
+                }),
+
+            clearAll: () =>
+                set((state) => {
+                    state.selectedFileIds.clear();
+                    state.selectedNodesByFile.clear();
+                }),
+
+            removeFileSelection: (fileId) =>
+                set((state) => {
+                    state.selectedFileIds.delete(fileId);
+                    state.selectedNodesByFile.delete(fileId);
+                    state.totalNodesByFile.delete(fileId);
+                    state.registeredNodesByFile.delete(fileId);
+                }),
+
+            getNodeMetadata: (nodeId) => {
+                return get().nodeMetadata.get(nodeId);
+            },
+        }))
+    )
 );
 
 // Stable selector that returns selection state for a file

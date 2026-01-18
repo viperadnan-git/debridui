@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { DebridFile, DebridFileNode } from "@/lib/types";
+import { DebridFile, DebridNode } from "@/lib/types";
 import { FileListItem } from "./file-list-item";
 import { ExpandedRow } from "./expanded-row";
 import { useFileSelectionState, useSelectionStore } from "@/lib/stores/selection";
@@ -16,7 +16,7 @@ interface FileListRowProps {
     autoExpand?: boolean;
 }
 
-const collectNodeIds = (nodes: DebridFileNode[], result: string[] = []): string[] => {
+const collectNodeIds = (nodes: DebridNode[], result: string[] = []): string[] => {
     for (const node of nodes) {
         if (node.type === "file" && node.id) {
             result.push(node.id);
@@ -37,7 +37,7 @@ export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
     const handleSelectFile = () => {
         // Use files from DebridFile if available, otherwise check cache
         const fileNodes =
-            file.files || queryClient.getQueryData<DebridFileNode[]>(getTorrentFilesCacheKey(currentUser.id, file.id));
+            file.files || queryClient.getQueryData<DebridNode[]>(getTorrentFilesCacheKey(currentUser.id, file.id));
         const processedFileNodes = processFileNodes({ fileNodes: fileNodes || [] });
         toggleFileSelection(file.id, processedFileNodes ? collectNodeIds(processedFileNodes) : []);
     };

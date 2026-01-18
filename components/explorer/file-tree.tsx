@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useRef } from "react";
-import { DebridFileNode, DebridLinkInfo } from "@/lib/types";
+import { DebridNode, DebridFileNode, DebridLinkInfo } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Copy, Download, CirclePlay, Loader2 } from "lucide-react";
@@ -19,19 +19,19 @@ import { FixedSizeList as List, ListChildComponentProps } from "react-window";
 import { PreviewButton } from "@/components/preview/preview-button";
 
 interface FileTreeProps {
-    nodes: DebridFileNode[];
+    nodes: DebridNode[];
     fileId: string;
 }
 
 interface FlatNode {
-    node: DebridFileNode;
+    node: DebridNode;
     depth: number;
     hasChildren: boolean;
     path: string;
 }
 
 // Helper to flatten tree for virtualization
-function flattenNodes(nodes: DebridFileNode[], expandedPaths: Set<string>, depth = 0): FlatNode[] {
+function flattenNodes(nodes: DebridNode[], expandedPaths: Set<string>, depth = 0): FlatNode[] {
     const flat: FlatNode[] = [];
 
     for (const node of nodes) {
@@ -53,19 +53,16 @@ function flattenNodes(nodes: DebridFileNode[], expandedPaths: Set<string>, depth
 }
 
 // Helper to collect all node IDs in the correct order
-function collectNodeIds(node: DebridFileNode): string[] {
+function collectNodeIds(node: DebridNode): string[] {
     if (node.type === "file") {
-        return node.id ? [node.id] : [];
+        return [node.id];
     }
 
     const ids: string[] = [];
-
-    // Use a recursive approach to preserve order instead of stack
-    const collectRecursively = (currentNode: DebridFileNode) => {
-        if (currentNode.type === "file" && currentNode.id) {
+    const collectRecursively = (currentNode: DebridNode) => {
+        if (currentNode.type === "file") {
             ids.push(currentNode.id);
         } else if (currentNode.children) {
-            // Process children in order
             for (const child of currentNode.children) {
                 collectRecursively(child);
             }
@@ -77,7 +74,7 @@ function collectNodeIds(node: DebridFileNode): string[] {
 }
 
 // Count total nodes recursively
-function countTotalNodes(nodes: DebridFileNode[]): number {
+function countTotalNodes(nodes: DebridNode[]): number {
     let count = 0;
     const stack = [...nodes];
 
@@ -93,9 +90,9 @@ function countTotalNodes(nodes: DebridFileNode[]): number {
 }
 
 // Helper to collect all file nodes (not folders) from the tree in display order
-function collectAllFileNodes(nodes: DebridFileNode[]): DebridFileNode[] {
+function collectAllFileNodes(nodes: DebridNode[]): DebridFileNode[] {
     const files: DebridFileNode[] = [];
-    const stack: DebridFileNode[] = [...nodes].reverse();
+    const stack: DebridNode[] = [...nodes].reverse();
 
     while (stack.length > 0) {
         const node = stack.pop()!;
@@ -121,7 +118,7 @@ function FileActionButton({ node, action }: { node: DebridFileNode; action: "cop
 
     const { data: linkInfo, refetch } = useQuery({
         queryKey: [currentUser.id, "getDownloadLink", node.id],
-        queryFn: () => client.getDownloadLink(node.id!),
+        queryFn: () => client.getDownloadLink(node),
         enabled: false,
         gcTime: downloadLinkMaxAge,
     });
@@ -191,9 +188,17 @@ interface VirtualizedNodeProps {
     expandedPaths: Set<string>;
     onToggleExpand: (path: string) => void;
     allFileNodes: DebridFileNode[];
+    allNodes: DebridNode[];
 }
 
-function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand, allFileNodes }: VirtualizedNodeProps) {
+function VirtualizedNode({
+    flatNode,
+    fileId,
+    expandedPaths,
+    onToggleExpand,
+    allFileNodes,
+    allNodes,
+}: VirtualizedNodeProps) {
     const { node, depth, hasChildren, path } = flatNode;
     const isExpanded = expandedPaths.has(path);
     const isMobile = useIsMobile();
@@ -215,9 +220,9 @@ function VirtualizedNode({ flatNode, fileId, expandedPaths, onToggleExpand, allF
             } else {
                 allFileIds.forEach((id) => newSelection.delete(id));
             }
-            updateNodeSelection(fileId, newSelection);
+            updateNodeSelection(fileId, newSelection, allNodes);
         },
-        [allFileIds, selectedFiles, updateNodeSelection, fileId]
+        [allFileIds, selectedFiles, updateNodeSelection, fileId, allNodes]
     );
 
     const isFile = node.type === "file";
@@ -352,11 +357,12 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
                         expandedPaths={expandedPaths}
                         onToggleExpand={toggleExpanded}
                         allFileNodes={allFileNodes}
+                        allNodes={nodes}
                     />
                 </div>
             );
         },
-        [flatNodes, fileId, expandedPaths, toggleExpanded, allFileNodes]
+        [flatNodes, fileId, expandedPaths, toggleExpanded, allFileNodes, nodes]
     );
 
     // Regular rendering for small trees
@@ -371,6 +377,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
                         expandedPaths={expandedPaths}
                         onToggleExpand={toggleExpanded}
                         allFileNodes={allFileNodes}
+                        allNodes={nodes}
                     />
                 ))}
             </div>

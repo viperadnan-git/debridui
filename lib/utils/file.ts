@@ -1,4 +1,4 @@
-import { DebridFileNode, DebridLinkInfo, DebridFile, FileType } from "@/lib/types";
+import { DebridNode, DebridFileNode, DebridLinkInfo, DebridFile, FileType } from "@/lib/types";
 import { getFileType, chunkedPromise } from ".";
 import { TRASH_SIZE_THRESHOLD } from "../constants";
 import { format } from "date-fns";
@@ -66,7 +66,7 @@ const PRESERVED_FILE_TYPES = new Set([
 /**
  * Sorts file nodes with folders first, videos second, then alphabetically
  */
-export const sortFileNodesByPriority = (fileNodes: DebridFileNode[]): DebridFileNode[] => {
+export const sortFileNodesByPriority = (fileNodes: DebridNode[]): DebridNode[] => {
     return [...fileNodes].sort((nodeA, nodeB) => {
         // Folders have highest priority
         if (nodeA.type === "folder" && nodeB.type !== "folder") return -1;
@@ -92,7 +92,7 @@ export const sortFileNodesByPriority = (fileNodes: DebridFileNode[]): DebridFile
 /**
  * Filters out small/trash files while preserving folders and media files
  */
-export const filterTrashFiles = (fileNodes: DebridFileNode[]): DebridFileNode[] => {
+export const filterTrashFiles = (fileNodes: DebridNode[]): DebridNode[] => {
     return fileNodes.filter((fileNode) => {
         // Always preserve folders
         if (fileNode.type === "folder") return true;
@@ -114,10 +114,10 @@ export const processFileNodes = ({
     hideTrash,
     smartOrder,
 }: {
-    fileNodes: DebridFileNode[];
+    fileNodes: DebridNode[];
     hideTrash?: boolean;
     smartOrder?: boolean;
-}): DebridFileNode[] => {
+}): DebridNode[] => {
     let processedNodes = fileNodes;
     const shouldHideTrash = hideTrash || useSettingsStore.getState().get("hideTrash");
     const shouldSmartOrder = smartOrder || useSettingsStore.getState().get("smartOrder");
@@ -145,28 +145,22 @@ export const processFileNodes = ({
 };
 
 /**
- * Downloads an M3U playlist file from debrid link nodes
+ * Downloads an M3U8 playlist file from debrid link nodes
  */
-export const downloadM3UPlaylist = (linkNodes: DebridLinkInfo[]): void => {
-    const timestamp = format(new Date(), "yyyy-MM-dd-HH-mm-ss");
-
+export const downloadM3UPlaylist = (linkNodes: DebridLinkInfo[], playlistName?: string): void => {
+    const filename = playlistName || `Playlist-${format(new Date(), "yyyy-MM-dd-HH-mm-ss")}`;
     const playlistContent = [
         "#EXTM3U",
         "",
         ...linkNodes.map((linkNode) => `#EXTINF:-1,${linkNode.name}\n${linkNode.link}`),
     ].join("\n");
 
-    const playlistBlob = new Blob([playlistContent], {
-        type: "application/x-mpegurl",
-    });
-    const downloadUrl = URL.createObjectURL(playlistBlob);
+    const downloadUrl = URL.createObjectURL(new Blob([playlistContent], { type: "application/vnd.apple.mpegurl" }));
 
-    const downloadLink = document.createElement("a");
-    downloadLink.href = downloadUrl;
-    downloadLink.download = `Playlist-${timestamp}.m3u`;
-    downloadLink.click();
-
-    // Clean up the object URL
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `${filename}.m3u8`;
+    link.click();
     URL.revokeObjectURL(downloadUrl);
 };
 
@@ -217,8 +211,8 @@ export const getTorrentFilesWithCache = async ({
     fileId: string;
     client: DebridClient;
     userId: string;
-    files?: DebridFileNode[];
-}): Promise<DebridFileNode[]> => {
+    files?: DebridNode[];
+}): Promise<DebridNode[]> => {
     // If files are already provided (e.g., from TorBox), use them
     if (files) {
         const cacheKey = getTorrentFilesCacheKey(userId, fileId);
@@ -228,7 +222,7 @@ export const getTorrentFilesWithCache = async ({
 
     // Otherwise check cache or fetch
     const cacheKey = getTorrentFilesCacheKey(userId, fileId);
-    let node = queryClient.getQueryData<DebridFileNode[]>(cacheKey);
+    let node = queryClient.getQueryData<DebridNode[]>(cacheKey);
 
     if (!node) {
         node = await client.getTorrentFiles(fileId);
@@ -239,19 +233,19 @@ export const getTorrentFilesWithCache = async ({
 };
 
 export const getDownloadLinkWithCache = async ({
-    fileId,
+    fileNode,
     client,
     userId,
 }: {
-    fileId: string;
+    fileNode: DebridFileNode;
     client: DebridClient;
     userId: string;
 }): Promise<DebridLinkInfo> => {
-    const cacheKey = getDownloadLinkCacheKey(userId, fileId);
+    const cacheKey = getDownloadLinkCacheKey(userId, fileNode.id);
     let linkInfo = queryClient.getQueryData<DebridLinkInfo>(cacheKey);
 
     if (!linkInfo) {
-        linkInfo = await client.getDownloadLink(fileId);
+        linkInfo = await client.getDownloadLink(fileNode);
         queryClient.setQueryData(cacheKey, linkInfo);
     }
 
@@ -262,18 +256,17 @@ export const getDownloadLinkWithCache = async ({
  * Recursively collects download links from file nodes with caching
  */
 export async function collectDownloadLinks(
-    fileNodes: DebridFileNode[],
+    fileNodes: DebridNode[],
     debridClient: DebridClient,
     userId: string
 ): Promise<DebridLinkInfo[]> {
     const collectedLinks: DebridLinkInfo[] = [];
 
-    const collectFileNodeLinks = async (fileNode: DebridFileNode): Promise<void> => {
-        if (fileNode.type === "file" && fileNode.id) {
-            collectedLinks.push(await getDownloadLinkWithCache({ fileId: fileNode.id, client: debridClient, userId }));
+    const collectFileNodeLinks = async (fileNode: DebridNode): Promise<void> => {
+        if (fileNode.type === "file") {
+            collectedLinks.push(await getDownloadLinkWithCache({ fileNode, client: debridClient, userId }));
         }
 
-        // Recursively process children
         if (fileNode.children?.length) {
             await chunkedPromise({
                 promises: fileNode.children.map((fileNode) => () => collectFileNodeLinks(fileNode)),
@@ -315,6 +308,7 @@ export async function fetchTorrentDownloadLinks(
 
 /**
  * Fetches download links for multiple selected file IDs preserving the input order
+ * Uses O(1) metadata lookup from selection store to construct file nodes
  */
 export async function fetchSelectedDownloadLinks(
     selectedFileIds: string[],
@@ -325,10 +319,22 @@ export async function fetchSelectedDownloadLinks(
         return [];
     }
 
+    const { useSelectionStore } = await import("../stores/selection");
+    const getNodeMetadata = useSelectionStore.getState().getNodeMetadata;
+
     const results = await chunkedPromise({
-        promises: selectedFileIds.map(
-            (fileId) => () => getDownloadLinkWithCache({ fileId, client: debridClient, userId })
-        ),
+        promises: selectedFileIds.map((fileId) => async () => {
+            const metadata = getNodeMetadata(fileId);
+            if (!metadata) {
+                throw new Error(`No metadata found for file ID: ${fileId}`);
+            }
+
+            return getDownloadLinkWithCache({
+                fileNode: { ...metadata, type: "file", children: [] },
+                client: debridClient,
+                userId,
+            });
+        }),
         chunkSize: 10,
         delay: 1500,
     });
