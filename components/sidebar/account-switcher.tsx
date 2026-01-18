@@ -31,15 +31,17 @@ import { useUserStore } from "@/lib/stores/users";
 import { useShallow } from "zustand/react/shallow";
 
 export function AccountSwitcher() {
-    const { users, currentUser, switchAccount, removeAccount, logout } = useUserStore(
+    // Split selectors: primitive values with useShallow, stable functions separately
+    const { users, currentUser } = useUserStore(
         useShallow((state) => ({
             users: state.users,
             currentUser: state.currentUser,
-            switchAccount: state.switchUser,
-            removeAccount: state.removeUser,
-            logout: state.logout,
         }))
     );
+    const switchAccount = useUserStore((state) => state.switchUser);
+    const removeAccount = useUserStore((state) => state.removeUser);
+    const logout = useUserStore((state) => state.logout);
+
     const { isMobile } = useSidebar();
     const router = useRouter();
     const [isAddAccountOpen, setIsAddAccountOpen] = React.useState(false);
@@ -73,9 +75,10 @@ export function AccountSwitcher() {
                                     <Image
                                         src="/icon.svg"
                                         alt="DebridUI logo"
-                                        width={32}
-                                        height={32}
+                                        width={20}
+                                        height={20}
                                         className="size-5"
+                                        priority
                                     />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
