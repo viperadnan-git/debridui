@@ -71,7 +71,7 @@ export function AccountSwitcher() {
                             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
                                 <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-accent/50 ring-1 ring-sidebar-border/50 shrink-0">
                                     <Image
-                                        src="/square-logo.svg"
+                                        src="/icon.svg"
                                         alt="DebridUI logo"
                                         width={32}
                                         height={32}

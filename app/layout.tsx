@@ -73,8 +73,8 @@ export const metadata: Metadata = {
         },
     },
     icons: {
-        icon: "/square-logo.svg",
-        apple: "/square-logo.svg",
+        icon: "/icon.svg",
+        apple: "/icon.svg",
     },
 };
 
