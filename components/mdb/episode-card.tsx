@@ -34,8 +34,8 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn("group", className)}>
             <div className="bg-card rounded-lg border overflow-hidden hover:border-primary/50 transition-all hover:shadow-md">
                 <CollapsibleTrigger asChild>
-                    <button className="w-full text-left p-0 border-0 bg-transparent">
-                        <div className="flex flex-col sm:flex-row gap-0 sm:gap-4">
+                    <button className="w-full text-left block cursor-pointer">
+                        <div className="flex flex-col sm:flex-row sm:gap-4">
                             {/* Episode thumbnail */}
                             <div className="relative w-full sm:w-56 md:w-64 shrink-0 aspect-video bg-muted overflow-hidden">
                                 {}

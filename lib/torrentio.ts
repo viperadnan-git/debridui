@@ -55,7 +55,7 @@ export class TorrentioClient {
 
     constructor(config: TorrentioClientConfig = {}) {
         this.baseUrl = config.baseUrl || "https://torrentio.strem.fun";
-        this.timeout = config.timeout || 10000;
+        this.timeout = config.timeout || 1000 * 60 * 3; // 3 minutes
         this.userAgent = config.userAgent || userAgent;
         this.qualityFilter = config.qualityFilter || "480p,other,scr,cam";
         this.limit = config.limit || 4;
@@ -83,16 +83,12 @@ export class TorrentioClient {
 
         // Find the first line with emoji metadata (👤 💾 ⚙️)
         const metadataPattern = /👤|💾|⚙️/;
-        const metadataLineIndex = lines.findIndex((line) =>
-            metadataPattern.test(line)
-        );
+        const metadataLineIndex = lines.findIndex((line) => metadataPattern.test(line));
 
         // Get all content lines before the metadata
         const contentLines =
             metadataLineIndex >= 0
-                ? lines
-                      .slice(0, metadataLineIndex)
-                      .filter((line) => line.trim())
+                ? lines.slice(0, metadataLineIndex).filter((line) => line.trim())
                 : lines.filter((line) => line.trim());
 
         if (contentLines.length === 0) {
@@ -163,25 +159,18 @@ export class TorrentioClient {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new TorrentioError(
-                    `HTTP ${response.status}: ${response.statusText}`,
-                    response.status
-                );
+                throw new TorrentioError(`HTTP ${response.status}: ${response.statusText}`, response.status);
             }
 
             const contentType = response.headers.get("content-type");
             if (!contentType?.includes("application/json")) {
-                throw new TorrentioError(
-                    "Invalid response format: expected JSON"
-                );
+                throw new TorrentioError("Invalid response format: expected JSON");
             }
 
             const data = (await response.json()) as TorrentioResponse;
 
             if (!data.streams || !Array.isArray(data.streams)) {
-                throw new TorrentioError(
-                    "Invalid response structure: missing streams array"
-                );
+                throw new TorrentioError("Invalid response structure: missing streams array");
             }
 
             return data;
@@ -194,9 +183,7 @@ export class TorrentioClient {
 
             if (error instanceof Error) {
                 if (error.name === "AbortError") {
-                    throw new TorrentioError(
-                        `Request timeout after ${this.timeout}ms`
-                    );
+                    throw new TorrentioError(`Request timeout after ${this.timeout}ms`);
                 }
                 throw new TorrentioError(`Network error: ${error.message}`);
             }
@@ -223,35 +210,24 @@ export class TorrentioClient {
             if (error instanceof TorrentioError) {
                 throw error;
             }
-            throw new TorrentioError(
-                `Failed to search movie ${imdbId}`,
-                undefined,
-                imdbId
-            );
+            throw new TorrentioError(`Failed to search movie ${imdbId}`, undefined, imdbId);
         }
     }
 
     /**
      * Search for TV show torrents
      */
-    async searchTvShow(
-        imdbId: string,
-        params: TvSearchParams = { season: 1, episode: 1 }
-    ): Promise<TorrentioSource[]> {
+    async searchTvShow(imdbId: string, params: TvSearchParams = { season: 1, episode: 1 }): Promise<TorrentioSource[]> {
         if (!imdbId?.trim()) {
             throw new TorrentioError("IMDB ID is required");
         }
 
         if (params.season < 1 || params.episode < 1) {
-            throw new TorrentioError(
-                "Season and episode must be positive numbers"
-            );
+            throw new TorrentioError("Season and episode must be positive numbers");
         }
 
         try {
-            const url = this.buildUrl(
-                `series/${imdbId}:${params.season}:${params.episode}.json`
-            );
+            const url = this.buildUrl(`series/${imdbId}:${params.season}:${params.episode}.json`);
             const response = await this.makeRequest(url);
 
             return response.streams.map((stream) => this.processStream(stream));
@@ -260,22 +236,14 @@ export class TorrentioClient {
             if (error instanceof TorrentioError) {
                 throw error;
             }
-            throw new TorrentioError(
-                `Failed to search TV show ${imdbId}`,
-                undefined,
-                imdbId
-            );
+            throw new TorrentioError(`Failed to search TV show ${imdbId}`, undefined, imdbId);
         }
     }
 
     /**
      * Universal search method that handles both movies and TV shows
      */
-    async search(
-        imdbId: string,
-        mediaType: "show" | "movie",
-        tvParams?: TvSearchParams
-    ): Promise<TorrentioSource[]> {
+    async search(imdbId: string, mediaType: "show" | "movie", tvParams?: TvSearchParams): Promise<TorrentioSource[]> {
         switch (mediaType) {
             case "movie":
                 return this.searchMovie(imdbId);
@@ -284,9 +252,7 @@ export class TorrentioClient {
                 return this.searchTvShow(imdbId, tvParams);
 
             default:
-                throw new TorrentioError(
-                    `Unsupported media type: ${mediaType}`
-                );
+                throw new TorrentioError(`Unsupported media type: ${mediaType}`);
         }
     }
 

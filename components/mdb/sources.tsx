@@ -157,7 +157,7 @@ export function SourceRow({
             )}>
             <div className="flex-1 min-w-0 flex flex-col gap-1">
                 {/* Title */}
-                <div className="text-sm font-medium break-words leading-tight">{source.title}</div>
+                <div className="text-sm font-medium wrap-break-word leading-tight">{source.title}</div>
 
                 {/* Metadata Row - All inline */}
                 <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
@@ -193,7 +193,7 @@ export function SourceRow({
 }
 
 export function Sources({ imdbId, mediaType = "movie", tvParams, className }: SourcesProps) {
-    const { data: sources, isLoading, error } = useTorrentioSources(imdbId, mediaType, tvParams);
+    const { data: sources, isLoading, error, refetch } = useTorrentioSources(imdbId, mediaType, tvParams);
 
     if (error) {
         return (
@@ -207,6 +207,10 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className }: So
                             <p className="font-semibold text-sm sm:text-base">Failed to load sources</p>
                             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{error.message}</p>
                         </div>
+                        <Button size="sm" variant="outline" onClick={() => refetch()} className="gap-1.5 shrink-0">
+                            <RotateCcwIcon className="h-3.5 w-3.5" />
+                            <span>Retry</span>
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
