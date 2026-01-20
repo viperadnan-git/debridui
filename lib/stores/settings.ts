@@ -20,6 +20,7 @@ type SettingsConfig = {
     hideTrash: SettingConfig<boolean>;
     mediaPlayer: SettingConfig<MediaPlayer>;
     downloadLinkMaxAge: SettingConfig<number>;
+    torrentioUrlPrefix: SettingConfig<string>;
 };
 
 const settingsConfig: SettingsConfig = {
@@ -58,6 +59,10 @@ const settingsConfig: SettingsConfig = {
             { value: 43200000, label: "12 hours", description: "Keep cached links for 12 hours" },
         ],
     },
+    torrentioUrlPrefix: {
+        defaultValue:
+            "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4",
+    },
 };
 
 type SettingsData = {
@@ -81,6 +86,7 @@ const getDefaultSettings = (): SettingsData => {
         hideTrash: settingsConfig.hideTrash.defaultValue,
         mediaPlayer: settingsConfig.mediaPlayer.defaultValue,
         downloadLinkMaxAge: settingsConfig.downloadLinkMaxAge.defaultValue,
+        torrentioUrlPrefix: settingsConfig.torrentioUrlPrefix.defaultValue,
     };
 };
 

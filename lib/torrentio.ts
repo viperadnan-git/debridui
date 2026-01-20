@@ -25,12 +25,9 @@ export interface TvSearchParams {
 }
 
 export interface TorrentioClientConfig {
-    baseUrl?: string;
+    urlPrefix: string;
     timeout?: number;
     userAgent?: string;
-    qualityFilter?: string;
-    limit?: number;
-    providers?: string;
 }
 
 // Custom error classes
@@ -46,30 +43,28 @@ export class TorrentioError extends Error {
 }
 
 export class TorrentioClient {
-    private readonly baseUrl: string;
+    private readonly urlPrefix: string;
     private readonly timeout: number;
     private readonly userAgent: string;
-    private readonly qualityFilter: string;
-    private readonly limit: number;
-    private readonly providers: string;
 
-    constructor(config: TorrentioClientConfig = {}) {
-        this.baseUrl = config.baseUrl || "https://torrentio.strem.fun";
+    constructor(config: TorrentioClientConfig) {
+        let urlPrefix = config.urlPrefix;
+
+        // Trim /manifest.json if present
+        if (urlPrefix.endsWith("/manifest.json")) {
+            urlPrefix = urlPrefix.slice(0, -"/manifest.json".length);
+        }
+
+        this.urlPrefix = urlPrefix;
         this.timeout = config.timeout || 1000 * 60 * 3; // 3 minutes
         this.userAgent = config.userAgent || userAgent;
-        this.qualityFilter = config.qualityFilter || "480p,other,scr,cam";
-        this.limit = config.limit || 4;
-        this.providers =
-            config.providers ||
-            "yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex";
     }
 
     /**
      * Build the API URL for requests
      */
     private buildUrl(path: string): string {
-        const filterParams = `providers=${this.providers}%7Cqualityfilter=${this.qualityFilter}%7Climit=${this.limit}`;
-        return `${this.baseUrl}/${filterParams}/stream/${path}`;
+        return `${this.urlPrefix}/stream/${path}`;
     }
 
     /**
@@ -261,15 +256,9 @@ export class TorrentioClient {
      */
     getConfig(): Required<TorrentioClientConfig> {
         return {
-            baseUrl: this.baseUrl,
+            urlPrefix: this.urlPrefix,
             timeout: this.timeout,
             userAgent: this.userAgent,
-            qualityFilter: this.qualityFilter,
-            limit: this.limit,
-            providers: this.providers,
         };
     }
 }
-
-const torrentio = new TorrentioClient();
-export default torrentio;

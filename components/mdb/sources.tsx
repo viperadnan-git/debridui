@@ -159,7 +159,12 @@ export function SourceRow({
                 {/* Title */}
                 <div className="text-sm font-medium wrap-break-word leading-tight">{source.title}</div>
 
-                {/* Metadata Row - All inline */}
+                {/* Subtitle - Folder name */}
+                {source.folder && (
+                    <div className="text-xs text-muted-foreground font-mono break-all">{source.folder}</div>
+                )}
+
+                {/* Metadata Row */}
                 <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                         <HardDrive className="size-3" />
@@ -173,13 +178,6 @@ export function SourceRow({
                                 <Users className="size-3" />
                                 <span>{source.peers}</span>
                             </div>
-                        </>
-                    )}
-
-                    {source.folder && (
-                        <>
-                            <span>•</span>
-                            <span className="font-mono break-all">{source.folder}</span>
                         </>
                     )}
                 </div>
