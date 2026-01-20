@@ -18,7 +18,7 @@ import Link from "next/link";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "@bprogress/next/app";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLoadingState } from "@/hooks/use-loading-state";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
@@ -92,18 +92,21 @@ export function LoginForm({
         },
     });
 
-    async function onSubmit(values: z.infer<typeof addUserSchema>) {
-        try {
-            const user = await getClient({ type: values.type }).getUser(values.apiKey);
-            addUser(user);
-            toast.success(`Logged in as ${user.username} (${user.type})`);
-            if (onSuccessCallback) {
-                onSuccessCallback();
+    const onSubmit = useCallback(
+        async (values: z.infer<typeof addUserSchema>) => {
+            try {
+                const user = await getClient({ type: values.type }).getUser(values.apiKey);
+                addUser(user);
+                toast.success(`Logged in as ${user.username} (${user.type})`);
+                if (onSuccessCallback) {
+                    onSuccessCallback();
+                }
+            } catch (error) {
+                handleError(error);
             }
-        } catch (error) {
-            handleError(error);
-        }
-    }
+        },
+        [addUser, onSuccessCallback]
+    );
 
     // Auto-submit form when shared account data is present
     useEffect(() => {
