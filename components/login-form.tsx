@@ -46,6 +46,7 @@ export function LoginForm({
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isLoading, setLoading } = useLoadingState<"alldebrid" | "torbox">();
+    const hasAutoSubmitted = useRef(false);
     const hasProcessedSharedAccount = useRef(false);
 
     // Decode shared account data from URL if present
@@ -62,27 +63,31 @@ export function LoginForm({
         }
     }, [searchParams]);
 
-    // If user is already logged in and there's shared account data, add it directly
+    // If user is already logged in with no shared data, redirect to dashboard
     useEffect(() => {
-        if (disableAutoRedirect) return;
+        if (disableAutoRedirect || !currentUser || sharedAccountData) return;
+        router.push("/dashboard");
+    }, [currentUser, sharedAccountData, router, disableAutoRedirect]);
 
-        if (currentUser && sharedAccountData && !hasProcessedSharedAccount.current) {
-            hasProcessedSharedAccount.current = true;
-            const addSharedAccount = async () => {
-                try {
-                    const user = await getClient({ type: sharedAccountData.type }).getUser(sharedAccountData.apiKey);
-                    addUser(user);
-                    router.push("/accounts");
-                } catch (error) {
-                    handleError(error);
-                    router.push("/accounts");
-                }
-            };
-            addSharedAccount();
-        } else if (currentUser) {
-            router.push("/dashboard");
-        }
-    }, [currentUser, sharedAccountData, addUser, router, disableAutoRedirect]);
+    // If user is already logged in and clicks a share URL, add the shared account
+    useEffect(() => {
+        if (disableAutoRedirect || !currentUser || !sharedAccountData || hasProcessedSharedAccount.current) return;
+
+        hasProcessedSharedAccount.current = true;
+        const addSharedAccount = async () => {
+            try {
+                const user = await getClient({ type: sharedAccountData.type }).getUser(sharedAccountData.apiKey);
+                addUser(user);
+                router.push("/accounts");
+            } catch (error) {
+                handleError(error);
+                // Still redirect even on error to show existing accounts
+                router.push("/accounts");
+            }
+        };
+
+        addSharedAccount();
+    }, [currentUser, sharedAccountData, disableAutoRedirect, addUser, router]);
 
     const form = useForm<z.infer<typeof addUserSchema>>({
         resolver: zodResolver(addUserSchema),
@@ -98,6 +103,14 @@ export function LoginForm({
                 const user = await getClient({ type: values.type }).getUser(values.apiKey);
                 addUser(user);
                 toast.success(`Logged in as ${user.username} (${user.type})`);
+
+                // Handle redirects directly after successful login
+                if (!disableAutoRedirect) {
+                    // Redirect based on whether this was a shared account or normal login
+                    const redirectPath = sharedAccountData ? "/accounts" : "/dashboard";
+                    router.push(redirectPath);
+                }
+
                 if (onSuccessCallback) {
                     onSuccessCallback();
                 }
@@ -105,12 +118,13 @@ export function LoginForm({
                 handleError(error);
             }
         },
-        [addUser, onSuccessCallback]
+        [addUser, onSuccessCallback, disableAutoRedirect, sharedAccountData, router]
     );
 
-    // Auto-submit form when shared account data is present
+    // Auto-submit form when shared account data is present and user not logged in
     useEffect(() => {
-        if (sharedAccountData && !currentUser && !hasProcessedSharedAccount.current && !form.formState.isSubmitting) {
+        if (sharedAccountData && !currentUser && !hasAutoSubmitted.current) {
+            hasAutoSubmitted.current = true;
             form.handleSubmit(onSubmit)();
         }
     }, [sharedAccountData, currentUser, form, onSubmit]);
