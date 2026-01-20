@@ -84,6 +84,7 @@ export type DebridFileList = {
     offset: number;
     limit: number;
     hasMore: boolean;
+    total?: number;
 };
 
 export type DebridFileStatus =

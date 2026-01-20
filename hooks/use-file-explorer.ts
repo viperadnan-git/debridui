@@ -4,32 +4,32 @@ import { PAGE_SIZE } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
 import { useFileStore } from "@/lib/stores/files";
 import { useSearchParams } from "next/navigation";
+import { sortTorrentFiles } from "@/lib/utils/file";
 
 export function useFileExplorer() {
     const { client, currentUser } = useAuthContext();
     const searchParams = useSearchParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [totalEstimate, setTotalEstimate] = useState<number | null>(null);
-    const [initialized, setInitialized] = useState(false);
 
-    const { files: sortedFiles, sortBy, sortOrder, sortChanged, setFiles, setSortBy, setSortOrder } = useFileStore();
+    const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore();
 
-    // Initialize sort from URL params on mount
+    // Initialize sort from URL params on mount, or reset to defaults
     useEffect(() => {
-        if (initialized) return;
-
         const urlSortBy = searchParams.get("sort_by");
         const urlSortOrder = searchParams.get("sort_order") as "asc" | "desc" | null;
 
-        // If URL params exist, sync store with them
         if (urlSortBy) {
             setSortBy(urlSortBy);
-        }
-        if (urlSortOrder && (urlSortOrder === "asc" || urlSortOrder === "desc")) {
-            setSortOrder(urlSortOrder);
+        } else {
+            setSortBy("date");
         }
 
-        setInitialized(true);
+        if (urlSortOrder && (urlSortOrder === "asc" || urlSortOrder === "desc")) {
+            setSortOrder(urlSortOrder);
+        } else {
+            setSortOrder("desc");
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -44,10 +44,13 @@ export function useFileExplorer() {
         staleTime: 0,
     });
 
-    // Update total estimate based on hasMore
+    // Update total estimate based on total or hasMore
     useEffect(() => {
         if (data) {
-            if (!data.hasMore) {
+            if (data.total !== undefined) {
+                // Use exact total if available
+                setTotalEstimate(data.total);
+            } else if (!data.hasMore) {
                 // We've reached the end, calculate exact total
                 setTotalEstimate(offset + data.files.length);
             } else if (totalEstimate === null || totalEstimate < offset + limit + 1) {
@@ -59,16 +62,16 @@ export function useFileExplorer() {
 
     // Calculate total pages
     const totalPages = useMemo(() => {
-        if (totalEstimate === null) return currentPage + 1; // Show at least one more page
+        if (totalEstimate === null) return currentPage + 1;
         return Math.ceil(totalEstimate / PAGE_SIZE);
     }, [totalEstimate, currentPage]);
 
-    // Update store with sorted files
-    useEffect(() => {
-        if (data?.files) {
-            setFiles(data.files);
-        }
-    }, [data, setFiles]);
+    // Sort files locally
+    const sortedFiles = useMemo(() => {
+        if (!data?.files) return [];
+        if (sortBy === "date" && sortOrder === "desc") return data.files;
+        return sortTorrentFiles(data.files, sortBy, sortOrder);
+    }, [data?.files, sortBy, sortOrder]);
 
     const setPage = (page: number) => {
         if (page >= 1) {
@@ -84,7 +87,6 @@ export function useFileExplorer() {
         setPage,
         sortBy,
         sortOrder,
-        sortChanged,
         setSortBy,
         setSortOrder,
     };

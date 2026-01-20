@@ -226,6 +226,7 @@ export default class AllDebridClient extends BaseClient {
             offset,
             limit,
             hasMore: endIndex < this.torrentOrder.length,
+            total: this.torrentOrder.length,
         };
     }
 
