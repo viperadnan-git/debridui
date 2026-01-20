@@ -24,7 +24,13 @@ import { Button } from "@/components/ui/button";
 const HeroCarousel = dynamic(
     () => import("@/components/mdb/hero-carousel").then((m) => ({ default: m.HeroCarousel })),
     {
-        loading: () => <div className="h-96 animate-pulse bg-muted rounded" />,
+        loading: () => (
+            <div className="-mx-4 -mt-6">
+                <div className="relative w-full">
+                    <div className="w-full aspect-10/16 md:aspect-video animate-pulse bg-muted" />
+                </div>
+            </div>
+        ),
     }
 );
 
