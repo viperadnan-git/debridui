@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { MediaPlayer } from "../types";
+import { DEFAULT_TORRENTIO_URL_PREFIX } from "../torrentio";
 
 type SettingValue = string | number | boolean | MediaPlayer;
 
@@ -60,8 +61,7 @@ const settingsConfig: SettingsConfig = {
         ],
     },
     torrentioUrlPrefix: {
-        defaultValue:
-            "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4",
+        defaultValue: DEFAULT_TORRENTIO_URL_PREFIX,
     },
 };
 

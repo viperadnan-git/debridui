@@ -5,11 +5,23 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon, Info, Globe } from "lucide-react";
+import {
+    Monitor,
+    Moon,
+    Sun,
+    Play,
+    Trash2,
+    Clock,
+    Settings as SettingsIcon,
+    Info,
+    Globe,
+    RotateCcw,
+} from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { DEFAULT_TORRENTIO_URL_PREFIX } from "@/lib/torrentio";
 import { del } from "idb-keyval";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
@@ -37,8 +49,20 @@ export default function SettingsPage() {
 
     const handleTorrentioUrlSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        set("torrentioUrlPrefix", torrentioUrlInput);
+        const trimmedUrl = torrentioUrlInput.trim();
+        if (!trimmedUrl) {
+            toast.error("Torrentio URL cannot be empty");
+            return;
+        }
+        set("torrentioUrlPrefix", trimmedUrl);
+        setTorrentioUrlInput(trimmedUrl);
         toast.success("Torrentio URL updated");
+    };
+
+    const handleTorrentioUrlReset = () => {
+        set("torrentioUrlPrefix", DEFAULT_TORRENTIO_URL_PREFIX);
+        setTorrentioUrlInput(DEFAULT_TORRENTIO_URL_PREFIX);
+        toast.success("Torrentio URL reset to default");
     };
 
     const handleClearCache = async (key?: string[]) => {
@@ -181,9 +205,18 @@ export default function SettingsPage() {
                                         onChange={(e) => setTorrentioUrlInput(e.target.value)}
                                         placeholder="https://torrentio.strem.fun/..."
                                         className="font-mono text-sm flex-1"
+                                        required
                                     />
                                     <Button type="submit" size="sm">
                                         Save
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={handleTorrentioUrlReset}
+                                        title="Reset to default">
+                                        <RotateCcw className="h-4 w-4" />
                                     </Button>
                                 </div>
                                 <p className="text-xs text-muted-foreground">

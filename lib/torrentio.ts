@@ -1,5 +1,9 @@
 const userAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+export const DEFAULT_TORRENTIO_URL_PREFIX =
+    "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4";
+
 // Types
 export interface TorrentioSource {
     title: string;
@@ -48,7 +52,11 @@ export class TorrentioClient {
     private readonly userAgent: string;
 
     constructor(config: TorrentioClientConfig) {
-        let urlPrefix = config.urlPrefix;
+        let urlPrefix = config.urlPrefix?.trim();
+
+        if (!urlPrefix) {
+            throw new TorrentioError("URL prefix is required and cannot be empty");
+        }
 
         // Trim /manifest.json if present
         if (urlPrefix.endsWith("/manifest.json")) {
