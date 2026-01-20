@@ -7,45 +7,34 @@ import { SearchProvider } from "@/components/mdb/search-provider";
 import { useRouter } from "@bprogress/next/app";
 import { AuthContext } from "@/lib/contexts/auth";
 import { useUserStore } from "@/lib/stores/users";
-import { useShallow } from "zustand/react/shallow";
 import { Separator } from "@/components/ui/separator";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { FilePreviewDialog } from "@/components/preview/file-preview-dialog";
+import { getClientInstance } from "@/lib/clients";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const { isHydrated, currentUser, client } = useUserStore(
-        useShallow((state) => ({
-            isHydrated: state.isHydrated,
-            currentUser: state.currentUser,
-            client: state.client,
-        }))
-    );
+    const isHydrated = useUserStore((state) => state.isHydrated);
+    const currentUser = useUserStore((state) => state.currentUser);
 
     useEffect(() => {
         if (isHydrated && !currentUser) {
             router.push("/login");
         }
-        if (!currentUser) {
-            const hydrateKey = useUserStore.persist.getOptions().name;
-            if (hydrateKey && !localStorage.getItem(hydrateKey)) router.push("/login");
-        }
-    }, [currentUser, isHydrated, router]);
+    }, [isHydrated, currentUser, router]);
 
-    if (!isHydrated && !currentUser) {
-        return (
-            <div className="flex h-screen items-center justify-center">
-                <div className="animate-pulse text-muted-foreground">Loading...</div>
-            </div>
-        );
-    }
+    // Memoize context value with client
+    const authContextValue = useMemo(() => {
+        if (!currentUser) return null;
+        return { currentUser, client: getClientInstance(currentUser) };
+    }, [currentUser]);
 
-    if (!currentUser || !client) {
+    if (!authContextValue) {
         return null;
     }
 
     return (
-        <AuthContext.Provider value={{ currentUser, client }}>
+        <AuthContext.Provider value={authContextValue}>
             <SearchProvider>
                 <SidebarProvider>
                     <AppSidebar />

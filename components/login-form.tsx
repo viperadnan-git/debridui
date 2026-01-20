@@ -18,8 +18,7 @@ import Link from "next/link";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "@bprogress/next/app";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useCallback } from "react";
-import { useShallow } from "zustand/react/shallow";
+import { useEffect, useMemo, useRef } from "react";
 import { useLoadingState } from "@/hooks/use-loading-state";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
@@ -41,12 +40,9 @@ export function LoginForm({
     disableAutoRedirect = false,
     ...props
 }: LoginFormProps) {
-    const { addUser, currentUser } = useUserStore(
-        useShallow((state) => ({
-            addUser: state.addUser,
-            currentUser: state.currentUser,
-        }))
-    );
+    const currentUser = useUserStore((state) => state.currentUser);
+    const addUser = useUserStore((state) => state.addUser);
+
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isLoading, setLoading } = useLoadingState<"alldebrid" | "torbox">();
@@ -72,7 +68,6 @@ export function LoginForm({
 
         if (currentUser && sharedAccountData && !hasProcessedSharedAccount.current) {
             hasProcessedSharedAccount.current = true;
-            // User is logged in and has shared account data
             const addSharedAccount = async () => {
                 try {
                     const user = await getClient({ type: sharedAccountData.type }).getUser(sharedAccountData.apiKey);
@@ -85,7 +80,6 @@ export function LoginForm({
             };
             addSharedAccount();
         } else if (currentUser) {
-            // User is logged in but no shared data, go to dashboard
             router.push("/dashboard");
         }
     }, [currentUser, sharedAccountData, addUser, router, disableAutoRedirect]);
@@ -98,26 +92,22 @@ export function LoginForm({
         },
     });
 
-    const onSubmit = useCallback(
-        async (values: z.infer<typeof addUserSchema>) => {
-            try {
-                const user = await getClient({ type: values.type }).getUser(values.apiKey);
-                addUser(user);
-                toast.success(`Logged in as ${user.username} (${user.type})`);
-                if (onSuccessCallback) {
-                    onSuccessCallback();
-                }
-            } catch (error) {
-                handleError(error);
+    async function onSubmit(values: z.infer<typeof addUserSchema>) {
+        try {
+            const user = await getClient({ type: values.type }).getUser(values.apiKey);
+            addUser(user);
+            toast.success(`Logged in as ${user.username} (${user.type})`);
+            if (onSuccessCallback) {
+                onSuccessCallback();
             }
-        },
-        [addUser, onSuccessCallback]
-    );
+        } catch (error) {
+            handleError(error);
+        }
+    }
 
     // Auto-submit form when shared account data is present
     useEffect(() => {
         if (sharedAccountData && !currentUser && !hasProcessedSharedAccount.current && !form.formState.isSubmitting) {
-            // Auto-submit the form with the shared account data
             form.handleSubmit(onSubmit)();
         }
     }, [sharedAccountData, currentUser, form, onSubmit]);

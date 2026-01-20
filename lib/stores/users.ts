@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { User } from "@/lib/types";
 import { queryClient } from "../query-client";
-import { DebridClient, getClient, getClientInstance } from "@/lib/clients";
+import { getClient } from "@/lib/clients";
 import { toast } from "sonner";
 import { handleError } from "@/lib/utils/error-handling";
 
@@ -10,7 +10,6 @@ interface UserStore {
     users: User[];
     currentUser?: User;
     isHydrated: boolean;
-    client?: DebridClient;
 
     addUser: (user: User) => void;
     removeUser: (userId: string) => void;
@@ -28,7 +27,6 @@ export const useUserStore = create<UserStore>()(
             users: [],
             currentUser: undefined,
             isHydrated: false,
-            client: undefined,
 
             addUser: (user) => {
                 set((state) => {
@@ -41,13 +39,11 @@ export const useUserStore = create<UserStore>()(
                         return {
                             users: state.users.map((u) => (u.id === existingUser.id ? updatedUser : u)),
                             currentUser: updatedUser,
-                            client: getClientInstance(updatedUser),
                         };
                     }
                     return {
                         users: [...state.users, user],
                         currentUser: user,
-                        client: getClientInstance(user),
                     };
                 });
             },
@@ -66,7 +62,6 @@ export const useUserStore = create<UserStore>()(
                     return {
                         users: filteredUsers,
                         currentUser: newCurrentUser,
-                        client: newCurrentUser ? getClientInstance(newCurrentUser) : undefined,
                     };
                 });
                 queryClient.invalidateQueries({ queryKey: [userId] });
@@ -79,7 +74,6 @@ export const useUserStore = create<UserStore>()(
 
                     return {
                         currentUser: user,
-                        client: getClientInstance(user),
                     };
                 });
             },
@@ -112,12 +106,10 @@ export const useUserStore = create<UserStore>()(
                     return;
                 }
 
-                const client = getClientInstance(user);
                 console.log("Initializing client", user.type);
                 set({
                     isHydrated: true,
                     currentUser: user,
-                    client,
                 });
             },
 

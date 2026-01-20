@@ -5,20 +5,14 @@ import { Users, Plus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUserStore } from "@/lib/stores/users";
-import { useShallow } from "zustand/react/shallow";
 import { AccountCard } from "@/components/accounts/account-card";
 import { PageHeader } from "@/components/page-header";
 
 export default function AccountsPage() {
     const router = useRouter();
-
-    const { users, currentUser, logout } = useUserStore(
-        useShallow((state) => ({
-            users: state.users,
-            currentUser: state.currentUser,
-            logout: state.logout,
-        }))
-    );
+    const users = useUserStore((state) => state.users);
+    const currentUser = useUserStore((state) => state.currentUser);
+    const logout = useUserStore((state) => state.logout);
 
     const handleLogoutAll = () => {
         logout();

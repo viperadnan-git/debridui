@@ -16,33 +16,28 @@ import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "@bprogress/next/app";
 import Image from "next/image";
 import { useUserStore } from "@/lib/stores/users";
-import { useShallow } from "zustand/react/shallow";
 
 export function AccountSwitcher() {
-    // Split selectors: primitive values with useShallow, stable functions separately
-    const { users, currentUser } = useUserStore(
-        useShallow((state) => ({
-            users: state.users,
-            currentUser: state.currentUser,
-        }))
-    );
+    const users = useUserStore((state) => state.users);
+    const currentUser = useUserStore((state) => state.currentUser);
     const switchAccount = useUserStore((state) => state.switchUser);
     const removeUser = useUserStore((state) => state.removeUser);
 
     const { isMobile } = useSidebar();
     const router = useRouter();
 
+    const handleLogout = () => {
+        if (currentUser) {
+            removeUser(currentUser.id);
+            if (users.length === 1) {
+                router.push("/login");
+            }
+        }
+    };
+
     if (!currentUser) {
         return null;
     }
-
-    const handleLogout = () => {
-        removeUser(currentUser.id);
-        // If no users left after removal, redirect to login
-        if (users.length === 1) {
-            router.push("/login");
-        }
-    };
 
     return (
         <>
