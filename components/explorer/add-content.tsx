@@ -3,11 +3,11 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
-import { Upload, Link, FileUp, Loader2, ClipboardIcon } from "lucide-react";
+import { Link, FileUp, Loader2, ClipboardIcon } from "lucide-react";
 import { Dropzone } from "../ui/dropzone";
 import { getTextFromClipboard } from "@/lib/utils";
 
@@ -127,12 +127,6 @@ export function AddContent() {
 
     return (
         <Card className="max-sm:-mx-4 max-sm:rounded-none max-sm:border-none">
-            <CardHeader className="max-sm:gap-0">
-                <CardTitle className="flex items-center gap-2">
-                    <Upload className="size-5" />
-                    Add Content
-                </CardTitle>
-            </CardHeader>
             <CardContent className="space-y-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                     <div className="flex flex-col space-y-1 md:space-y-2">

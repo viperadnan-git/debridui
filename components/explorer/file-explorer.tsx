@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, memo } from "react";
+import { FolderOpen } from "lucide-react";
 import { SortControls } from "./sort-controls";
 import { FileList, FileListBody, FileListEmpty, FileListLoading } from "./file-list";
 import { FileListHeader } from "./file-list-header";
@@ -103,7 +104,10 @@ export const FileExplorer = memo(function FileExplorer() {
         <>
             <div className="md:mx-auto md:w-full md:max-w-4xl pb-24">
                 <div className="flex flex-col gap-4">
-                    <h1 className="text-2xl font-bold">File Explorer</h1>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <FolderOpen className="h-6 w-6" />
+                        File Explorer
+                    </h1>
                     <AddContent />
 
                     {/* Search and Sort Controls */}
