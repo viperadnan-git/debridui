@@ -10,6 +10,7 @@ export enum FileType {
     IMAGE = "image",
     DOCUMENT = "document",
     ARCHIVE = "archive",
+    TEXT = "text",
     OTHER = "other",
 }
 

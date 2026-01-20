@@ -6,7 +6,7 @@ import { createContext, useContext } from "react";
 import type { DropEvent, DropzoneOptions, FileRejection } from "react-dropzone";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils/index";
+import { cn, formatSize } from "@/lib/utils/index";
 
 type DropzoneContextType = {
     src?: File[];
@@ -16,31 +16,12 @@ type DropzoneContextType = {
     maxFiles?: DropzoneOptions["maxFiles"];
 };
 
-const renderBytes = (bytes: number) => {
-    const units = ["B", "KB", "MB", "GB", "TB", "PB"];
-    let size = bytes;
-    let unitIndex = 0;
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-        size /= 1024;
-        unitIndex++;
-    }
-
-    return `${size.toFixed(2)}${units[unitIndex]}`;
-};
-
-const DropzoneContext = createContext<DropzoneContextType | undefined>(
-    undefined
-);
+const DropzoneContext = createContext<DropzoneContextType | undefined>(undefined);
 
 export type DropzoneProps = Omit<DropzoneOptions, "onDrop"> & {
     src?: File[];
     className?: string;
-    onDrop?: (
-        acceptedFiles: File[],
-        fileRejections: FileRejection[],
-        event: DropEvent
-    ) => void;
+    onDrop?: (acceptedFiles: File[], fileRejections: FileRejection[], event: DropEvent) => void;
     children?: ReactNode;
 };
 
@@ -77,9 +58,7 @@ export const Dropzone = ({
     });
 
     return (
-        <DropzoneContext.Provider
-            key={JSON.stringify(src)}
-            value={{ src, accept, maxSize, minSize, maxFiles }}>
+        <DropzoneContext.Provider key={JSON.stringify(src)} value={{ src, accept, maxSize, minSize, maxFiles }}>
             <Button
                 className={cn(
                     "relative h-auto w-full flex-col overflow-hidden p-8 border-dashed border-3 border-gray-300 hover:border-gray-400",
@@ -114,10 +93,7 @@ export type DropzoneContentProps = {
 
 const maxLabelItems = 3;
 
-export const DropzoneContent = ({
-    children,
-    className,
-}: DropzoneContentProps) => {
+export const DropzoneContent = ({ children, className }: DropzoneContentProps) => {
     const { src } = useDropzoneContext();
 
     if (!src) {
@@ -129,11 +105,7 @@ export const DropzoneContent = ({
     }
 
     return (
-        <div
-            className={cn(
-                "flex flex-col items-center justify-center",
-                className
-            )}>
+        <div className={cn("flex flex-col items-center justify-center", className)}>
             <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <UploadIcon size={16} />
             </div>
@@ -142,13 +114,9 @@ export const DropzoneContent = ({
                     ? `${new Intl.ListFormat("en").format(
                           src.slice(0, maxLabelItems).map((file) => file.name)
                       )} and ${src.length - maxLabelItems} more`
-                    : new Intl.ListFormat("en").format(
-                          src.map((file) => file.name)
-                      )}
+                    : new Intl.ListFormat("en").format(src.map((file) => file.name))}
             </p>
-            <p className="w-full text-wrap text-muted-foreground text-xs">
-                Drag and drop or click to replace
-            </p>
+            <p className="w-full text-wrap text-muted-foreground text-xs">Drag and drop or click to replace</p>
         </div>
     );
 };
@@ -158,10 +126,7 @@ export type DropzoneEmptyStateProps = {
     className?: string;
 };
 
-export const DropzoneEmptyState = ({
-    children,
-    className,
-}: DropzoneEmptyStateProps) => {
+export const DropzoneEmptyState = ({ children, className }: DropzoneEmptyStateProps) => {
     const { src, accept, maxSize, minSize, maxFiles } = useDropzoneContext();
 
     if (src) {
@@ -180,33 +145,23 @@ export const DropzoneEmptyState = ({
     }
 
     if (minSize && maxSize) {
-        caption += ` between ${renderBytes(minSize)} and ${renderBytes(maxSize)}`;
+        caption += ` between ${formatSize(minSize)} and ${formatSize(maxSize)}`;
     } else if (minSize) {
-        caption += ` at least ${renderBytes(minSize)}`;
+        caption += ` at least ${formatSize(minSize)}`;
     } else if (maxSize) {
-        caption += ` less than ${renderBytes(maxSize)}`;
+        caption += ` less than ${formatSize(maxSize)}`;
     }
 
     return (
-        <div
-            className={cn(
-                "flex flex-col items-center justify-center",
-                className
-            )}>
+        <div className={cn("flex flex-col items-center justify-center", className)}>
             <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <UploadIcon size={16} />
             </div>
             <p className="my-2 w-full truncate text-wrap font-medium text-sm">
                 Upload {maxFiles === 1 ? "a file" : "files"}
             </p>
-            <p className="w-full truncate text-wrap text-muted-foreground text-xs">
-                Drag and drop or click to upload
-            </p>
-            {caption && (
-                <p className="text-wrap text-muted-foreground text-xs">
-                    {caption}.
-                </p>
-            )}
+            <p className="w-full truncate text-wrap text-muted-foreground text-xs">Drag and drop or click to upload</p>
+            {caption && <p className="text-wrap text-muted-foreground text-xs">{caption}.</p>}
         </div>
     );
 };

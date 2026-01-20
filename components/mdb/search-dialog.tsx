@@ -6,7 +6,7 @@ import { CommandDialog, CommandGroup, CommandInput, CommandItem, CommandList } f
 import { Badge } from "@/components/ui/badge";
 import { useTraktSearch } from "@/hooks/use-trakt";
 import { Search, Film, Tv, Star, Calendar, HardDrive } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatSize } from "@/lib/utils";
 import { type TraktSearchResult } from "@/lib/trakt";
 import { type DebridFile } from "@/lib/types";
 import { getFindTorrentsCacheKey } from "@/lib/utils/cache-keys";
@@ -63,9 +63,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
     const renderFileItem = useCallback(
         (file: DebridFile) => {
-            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-            const sizeDisplay =
-                parseFloat(sizeInMB) >= 1024 ? `${(parseFloat(sizeInMB) / 1024).toFixed(2)} GB` : `${sizeInMB} MB`;
+            const sizeDisplay = formatSize(file.size);
 
             return (
                 <CommandItem

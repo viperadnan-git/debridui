@@ -226,6 +226,9 @@ function VirtualizedNode({
     );
 
     const isFile = node.type === "file";
+    const fileType = isFile ? getFileType(node.name) : null;
+    const canPreview = fileType === FileType.IMAGE || fileType === FileType.TEXT;
+    const isVideoWithBrowserPlayer = fileType === FileType.VIDEO && mediaPlayer === MediaPlayer.BROWSER;
 
     return (
         <div
@@ -279,15 +282,13 @@ function VirtualizedNode({
                     <span className="text-[10px] sm:text-xs text-muted-foreground">{formatSize(node.size)}</span>
                     {(!isMobile || showActions) && (
                         <div className="flex gap-1 md:gap-0.5">
-                            {getFileType(node.name) === FileType.VIDEO &&
-                                (mediaPlayer === MediaPlayer.BROWSER ? (
-                                    <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />
-                                ) : (
-                                    <FileActionButton node={node} action="play" />
-                                ))}
-                            {getFileType(node.name) === FileType.IMAGE && (
+                            {isVideoWithBrowserPlayer && (
                                 <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />
                             )}
+                            {fileType === FileType.VIDEO && !isVideoWithBrowserPlayer && (
+                                <FileActionButton node={node} action="play" />
+                            )}
+                            {canPreview && <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />}
                             <FileActionButton node={node} action="copy" />
                             <FileActionButton node={node} action="download" />
                         </div>

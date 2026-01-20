@@ -67,6 +67,12 @@ export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {
     gz: FileType.ARCHIVE,
     bz2: FileType.ARCHIVE,
     xz: FileType.ARCHIVE,
+
+    // Text
+    txt: FileType.TEXT,
+    nfo: FileType.TEXT,
+    md: FileType.TEXT,
+    markdown: FileType.TEXT,
 };
 
 export const TRASH_SIZE_THRESHOLD = 1024 * 1024; // 1MB in bytes
