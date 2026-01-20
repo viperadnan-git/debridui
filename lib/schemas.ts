@@ -13,10 +13,10 @@ export const userSchema = z.object({
     isPremium: z.boolean(),
     premiumExpiresAt: z.date(),
     apiKey: z.string().trim().min(1),
-    type: z.enum(Object.values(AccountType) as [string, ...string[]]),
+    type: z.enum(Object.values(AccountType)),
 });
 
 export const addUserSchema = z.object({
-    type: z.enum(Object.values(AccountType) as [string, ...string[]]),
+    type: z.enum(Object.values(AccountType)),
     apiKey: z.string().trim().min(1),
 });

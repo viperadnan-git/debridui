@@ -14,9 +14,9 @@ import {
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "@bprogress/next/app";
-import Image from "next/image";
 import { useUserStore } from "@/lib/stores/users";
 import { ServiceIcon } from "@/components/accounts/service-icon";
+import { AccountType } from "@/lib/types";
 
 export function AccountSwitcher() {
     const users = useUserStore((state) => state.users);
@@ -48,7 +48,7 @@ export function AccountSwitcher() {
                         <DropdownMenuTrigger asChild>
                             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
                                 <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-accent/50 ring-1 ring-sidebar-border/50 shrink-0">
-                                    <ServiceIcon type={currentUser.type} className="size-5" />
+                                    <ServiceIcon type={currentUser.type as AccountType} className="size-5" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
                                     <span className="truncate font-semibold" title={currentUser.username}>
