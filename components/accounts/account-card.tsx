@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRightLeft, Share2, Trash2 } from "lucide-react";
+import { ArrowRightLeft, RefreshCw, Share2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import {
     AlertDialog,
@@ -31,9 +31,11 @@ interface AccountCardProps {
 export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
     const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const switchAccount = useUserStore((state) => state.switchUser);
     const removeAccount = useUserStore((state) => state.removeUser);
+    const refreshUser = useUserStore((state) => state.refreshUser);
 
     const handleSwitch = () => {
         switchAccount(user.id);
@@ -44,6 +46,15 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
         setRemoveDialogOpen(false);
     };
 
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await refreshUser(user.id);
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
     return (
         <>
             <Card
@@ -52,7 +63,7 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
                     isCurrentAccount && "border-primary/50 ring-2 ring-primary/20"
                 )}>
                 {isCurrentAccount && (
-                    <Badge className="absolute top-4 right-4" variant="default">
+                    <Badge className="absolute -top-2.5 left-4" variant="default">
                         Active
                     </Badge>
                 )}
@@ -105,6 +116,14 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
                                     Switch
                                 </Button>
                             )}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleRefresh}
+                                disabled={isRefreshing}
+                                aria-label="Refresh account data">
+                                <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+                            </Button>
                             <Button
                                 variant="outline"
                                 size="icon"
