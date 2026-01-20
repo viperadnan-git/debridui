@@ -3,7 +3,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { useTheme } from "next-themes";
 import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon, Info } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
@@ -15,6 +14,7 @@ import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { formatDistanceToNow, format } from "date-fns";
+import { PageHeader } from "@/components/page-header";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
 const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
@@ -59,20 +59,7 @@ export default function SettingsPage() {
 
     return (
         <div className="mx-auto w-full max-w-5xl space-y-8 pb-16">
-            {/* Header */}
-            <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                        <SettingsIcon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-                        <p className="text-muted-foreground">Manage your application preferences</p>
-                    </div>
-                </div>
-            </div>
-
-            <Separator />
+            <PageHeader icon={SettingsIcon} title="Settings" description="Manage your application preferences" />
 
             {/* Settings Grid */}
             <div className="grid gap-6 md:grid-cols-2">

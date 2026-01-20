@@ -132,8 +132,9 @@ export default class AllDebridClient extends BaseClient {
         this.validateResponse(data);
 
         const { user } = data.data;
-        const premiumExpiry = user.premiumUntil;
-        const isPremium = premiumExpiry && premiumExpiry > Date.now();
+        const premiumExpiry = (user.premiumUntil || 0) * 1000;
+        const premiumExpiresAt = new Date(premiumExpiry);
+        const isPremium = premiumExpiresAt && premiumExpiresAt > new Date();
 
         return {
             id: `${AccountType.ALLDEBRID}:${user.username}`,
@@ -143,7 +144,7 @@ export default class AllDebridClient extends BaseClient {
             email: user.email,
             language: user.language,
             isPremium,
-            premiumExpiresAt: new Date(premiumExpiry),
+            premiumExpiresAt,
         };
     }
 

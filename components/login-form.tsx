@@ -2,7 +2,7 @@
 
 import { GalleryVerticalEnd, Loader2 } from "lucide-react";
 
-import { cn, formatAccountType } from "@/lib/utils";
+import { cn, formatAccountType, decodeAccountData } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUserStore } from "@/lib/stores/users";
@@ -17,11 +17,30 @@ import { AllDebridClient, TorBoxClient, getClient } from "@/lib/clients";
 import Link from "next/link";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "@bprogress/next/app";
-import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useLoadingState } from "@/hooks/use-loading-state";
 
-export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+interface LoginFormProps extends React.ComponentProps<"div"> {
+    showBranding?: boolean;
+    showOAuthButtons?: boolean;
+    showTerms?: boolean;
+    submitButtonText?: string;
+    onSuccess?: () => void;
+    disableAutoRedirect?: boolean;
+}
+
+export function LoginForm({
+    className,
+    showBranding = true,
+    showOAuthButtons = true,
+    showTerms = true,
+    submitButtonText = "Login",
+    onSuccess: onSuccessCallback,
+    disableAutoRedirect = false,
+    ...props
+}: LoginFormProps) {
     const { addUser, currentUser } = useUserStore(
         useShallow((state) => ({
             addUser: state.addUser,
@@ -29,31 +48,79 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         }))
     );
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isLoading, setLoading } = useLoadingState<"alldebrid" | "torbox">();
+    const hasProcessedSharedAccount = useRef(false);
 
+    // Decode shared account data from URL if present
+    const sharedAccountData = useMemo(() => {
+        const encodedData = searchParams.get("data");
+        if (!encodedData) return undefined;
+
+        try {
+            const decoded = decodeAccountData(encodedData);
+            return decoded;
+        } catch {
+            toast.error("Invalid or corrupted share link");
+            return undefined;
+        }
+    }, [searchParams]);
+
+    // If user is already logged in and there's shared account data, add it directly
     useEffect(() => {
-        if (currentUser) {
+        if (disableAutoRedirect) return;
+
+        if (currentUser && sharedAccountData && !hasProcessedSharedAccount.current) {
+            hasProcessedSharedAccount.current = true;
+            // User is logged in and has shared account data
+            const addSharedAccount = async () => {
+                try {
+                    const user = await getClient({ type: sharedAccountData.type }).getUser(sharedAccountData.apiKey);
+                    addUser(user);
+                    router.push("/accounts");
+                } catch (error) {
+                    handleError(error);
+                    router.push("/accounts");
+                }
+            };
+            addSharedAccount();
+        } else if (currentUser) {
+            // User is logged in but no shared data, go to dashboard
             router.push("/dashboard");
         }
-    }, [currentUser, router]);
+    }, [currentUser, sharedAccountData, addUser, router, disableAutoRedirect]);
 
     const form = useForm<z.infer<typeof addUserSchema>>({
         resolver: zodResolver(addUserSchema),
         defaultValues: {
-            apiKey: "",
-            type: undefined,
+            apiKey: sharedAccountData?.apiKey || "",
+            type: sharedAccountData?.type || undefined,
         },
     });
 
-    async function onSubmit(values: z.infer<typeof addUserSchema>) {
-        try {
-            const user = await getClient({ type: values.type }).getUser(values.apiKey);
-            addUser(user);
-            toast.success(`Logged in as ${user.username} (${user.type})`);
-        } catch (error) {
-            handleError(error);
+    const onSubmit = useCallback(
+        async (values: z.infer<typeof addUserSchema>) => {
+            try {
+                const user = await getClient({ type: values.type }).getUser(values.apiKey);
+                addUser(user);
+                toast.success(`Logged in as ${user.username} (${user.type})`);
+                if (onSuccessCallback) {
+                    onSuccessCallback();
+                }
+            } catch (error) {
+                handleError(error);
+            }
+        },
+        [addUser, onSuccessCallback]
+    );
+
+    // Auto-submit form when shared account data is present
+    useEffect(() => {
+        if (sharedAccountData && !currentUser && !hasProcessedSharedAccount.current && !form.formState.isSubmitting) {
+            // Auto-submit the form with the shared account data
+            form.handleSubmit(onSubmit)();
         }
-    }
+    }, [sharedAccountData, currentUser, form, onSubmit]);
 
     async function handleTorBoxLogin() {
         setLoading("torbox", true);
@@ -100,21 +167,23 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <div className="flex flex-col gap-6">
-                        <div className="flex flex-col items-center gap-2">
-                            <a href="#" className="flex flex-col items-center gap-2 font-medium">
-                                <div className="flex size-8 items-center justify-center rounded-md">
-                                    <GalleryVerticalEnd className="size-6" />
+                        {showBranding && (
+                            <div className="flex flex-col items-center gap-2">
+                                <a href="#" className="flex flex-col items-center gap-2 font-medium">
+                                    <div className="flex size-8 items-center justify-center rounded-md">
+                                        <GalleryVerticalEnd className="size-6" />
+                                    </div>
+                                    <span className="sr-only">DebridUI</span>
+                                </a>
+                                <h1 className="text-xl font-bold">Welcome to DebridUI</h1>
+                                <div className="text-center text-sm">
+                                    Don&apos;t have an account?{" "}
+                                    <Link href="https://alldebrid.com" className="underline underline-offset-4">
+                                        Sign up
+                                    </Link>
                                 </div>
-                                <span className="sr-only">DebridUI</span>
-                            </a>
-                            <h1 className="text-xl font-bold">Welcome to DebridUI</h1>
-                            <div className="text-center text-sm">
-                                Don&apos;t have an account?{" "}
-                                <Link href="https://alldebrid.com" className="underline underline-offset-4">
-                                    Sign up
-                                </Link>
                             </div>
-                        </div>
+                        )}
                         <div className="flex flex-col gap-6">
                             <div>
                                 <FormField
@@ -124,7 +193,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                                         <FormItem>
                                             <FormLabel>Account Type</FormLabel>
                                             <FormControl>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select an account type" />
                                                     </SelectTrigger>
@@ -166,53 +235,59 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                                     isLoading("alldebrid") ||
                                     isLoading("torbox")
                                 }>
-                                {form.formState.isSubmitting ? "Logging in..." : "Login"}
+                                {form.formState.isSubmitting ? `${submitButtonText}...` : submitButtonText}
                             </Button>
                         </div>
-                        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                            <span className="bg-background text-muted-foreground relative z-10 px-2">Or</span>
-                        </div>
-                        <div className="grid gap-4 grid-cols-1">
-                            <Button
-                                variant="outline"
-                                type="button"
-                                className="w-full"
-                                onClick={handleAllDebridLogin}
-                                disabled={isLoading("alldebrid") || isLoading("torbox")}>
-                                {isLoading("alldebrid") ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        Continue with <span className="font-bold">AllDebrid</span>
-                                    </>
-                                )}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                type="button"
-                                className="w-full"
-                                onClick={handleTorBoxLogin}
-                                disabled={isLoading("alldebrid") || isLoading("torbox")}>
-                                {isLoading("torbox") ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        Continue with <span className="font-bold">TorBox</span>
-                                    </>
-                                )}
-                            </Button>
-                            <Button variant="outline" type="button" className="w-full" disabled={true}>
-                                Continue with <span className="font-bold">RealDebrid</span>
-                            </Button>
-                        </div>
+                        {showOAuthButtons && (
+                            <>
+                                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                                    <span className="bg-background text-muted-foreground relative z-10 px-2">Or</span>
+                                </div>
+                                <div className="grid gap-4 grid-cols-1">
+                                    <Button
+                                        variant="outline"
+                                        type="button"
+                                        className="w-full"
+                                        onClick={handleAllDebridLogin}
+                                        disabled={isLoading("alldebrid") || isLoading("torbox")}>
+                                        {isLoading("alldebrid") ? (
+                                            <Loader2 className="size-4 animate-spin" />
+                                        ) : (
+                                            <>
+                                                Continue with <span className="font-bold">AllDebrid</span>
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        type="button"
+                                        className="w-full"
+                                        onClick={handleTorBoxLogin}
+                                        disabled={isLoading("alldebrid") || isLoading("torbox")}>
+                                        {isLoading("torbox") ? (
+                                            <Loader2 className="size-4 animate-spin" />
+                                        ) : (
+                                            <>
+                                                Continue with <span className="font-bold">TorBox</span>
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button variant="outline" type="button" className="w-full" disabled={true}>
+                                        Continue with <span className="font-bold">RealDebrid</span>
+                                    </Button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </form>
             </Form>
-            <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-                By clicking continue, you agree to our{" "}
-                <a href="https://github.com/viperadnan-git/debridui/#disclaimer">Terms of Service</a> and{" "}
-                <a href="https://github.com/viperadnan-git/debridui/#disclaimer">Privacy Policy</a>.
-            </div>
+            {showTerms && (
+                <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+                    By clicking continue, you agree to our{" "}
+                    <a href="https://github.com/viperadnan-git/debridui/#disclaimer">Terms of Service</a> and{" "}
+                    <a href="https://github.com/viperadnan-git/debridui/#disclaimer">Privacy Policy</a>.
+                </div>
+            )}
         </div>
     );
 }

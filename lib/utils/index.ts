@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { AccountType } from "../schemas";
+import { AccountType, addUserSchema } from "../schemas";
 import { formatDistanceToNow } from "date-fns";
 import { DebridLinkInfo, FileType, MediaPlayer } from "../types";
 import { ACCOUNT_TYPE_LABELS, EXTENSION_TO_FILE_TYPE } from "../constants";
@@ -124,3 +124,28 @@ export async function chunkedPromise<T>({
 
     return results;
 }
+
+/**
+ * Encode account data for sharing via URL (base64, NOT encryption)
+ * WARNING: This is NOT secure - data is fully readable after decoding
+ */
+export const encodeAccountData = (data: { type: string; apiKey: string }): string => {
+    return btoa(JSON.stringify(data));
+};
+
+/**
+ * Decode and validate account data from shared URL
+ * Throws error if data is invalid or corrupted
+ */
+export const decodeAccountData = (encoded: string): { type: AccountType; apiKey: string } => {
+    try {
+        const data = JSON.parse(atob(encoded));
+        if (!data.type || !data.apiKey) {
+            throw new Error("Invalid structure");
+        }
+        const validated = addUserSchema.parse(data);
+        return validated as { type: AccountType; apiKey: string };
+    } catch {
+        throw new Error("Failed to decode account data");
+    }
+};

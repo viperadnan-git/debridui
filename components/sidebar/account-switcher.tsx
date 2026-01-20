@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Plus, User, Check, Trash2, LogOut } from "lucide-react";
+import { ChevronsUpDown, Plus, User, Check, LogOut } from "lucide-react";
 
 import {
     DropdownMenu,
@@ -12,18 +12,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { AddAccount } from "./add-account";
 import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "@bprogress/next/app";
 import Image from "next/image";
@@ -39,29 +27,21 @@ export function AccountSwitcher() {
         }))
     );
     const switchAccount = useUserStore((state) => state.switchUser);
-    const removeAccount = useUserStore((state) => state.removeUser);
-    const logout = useUserStore((state) => state.logout);
+    const removeUser = useUserStore((state) => state.removeUser);
 
     const { isMobile } = useSidebar();
     const router = useRouter();
-    const [isAddAccountOpen, setIsAddAccountOpen] = React.useState(false);
-    const [deleteUserId, setDeleteUserId] = React.useState<string | null>(null);
 
     if (!currentUser) {
         return null;
     }
 
-    const handleRemoveAccount = (userId: string) => {
-        removeAccount(userId);
-        setDeleteUserId(null);
+    const handleLogout = () => {
+        removeUser(currentUser.id);
+        // If no users left after removal, redirect to login
         if (users.length === 1) {
             router.push("/login");
         }
-    };
-
-    const handleLogout = () => {
-        logout();
-        router.push("/login");
     };
 
     return (
@@ -104,7 +84,7 @@ export function AccountSwitcher() {
                                 <DropdownMenuItem
                                     key={user.id}
                                     onClick={() => switchAccount(user.id)}
-                                    className="gap-3 p-2.5 rounded-lg flex items-center justify-between group cursor-pointer">
+                                    className="gap-3 p-2.5 rounded-lg flex items-center justify-between cursor-pointer">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
                                         <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30 shrink-0">
                                             <User className="size-4 shrink-0" />
@@ -120,18 +100,6 @@ export function AccountSwitcher() {
                                     </div>
                                     <div className="flex items-center gap-1.5 shrink-0">
                                         {user.id === currentUser.id && <Check className="size-4 text-primary" />}
-                                        {users.length > 1 && user.id !== currentUser.id && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="size-6 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setDeleteUserId(user.id);
-                                                }}>
-                                                <Trash2 className="size-3.5 transition-colors hover:text-red-600 dark:hover:text-red-500" />
-                                            </Button>
-                                        )}
                                     </div>
                                 </DropdownMenuItem>
                             ))}
@@ -139,7 +107,7 @@ export function AccountSwitcher() {
 
                             <DropdownMenuItem
                                 className="gap-3 p-2.5 rounded-lg cursor-pointer"
-                                onClick={() => setIsAddAccountOpen(true)}>
+                                onClick={() => router.push("/accounts/add")}>
                                 <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30">
                                     <Plus className="size-4" />
                                 </div>
@@ -152,34 +120,12 @@ export function AccountSwitcher() {
                                 <div className="flex size-8 items-center justify-center rounded-lg border border-destructive/20 bg-destructive/10">
                                     <LogOut className="size-4" />
                                 </div>
-                                <div className="font-semibold">Logout</div>
+                                <div className="font-semibold">Remove account</div>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </SidebarMenuItem>
             </SidebarMenu>
-
-            <AddAccount isOpen={isAddAccountOpen} onOpenChange={setIsAddAccountOpen} />
-
-            <AlertDialog open={!!deleteUserId} onOpenChange={() => setDeleteUserId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Remove Account</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to remove this account? You&apos;ll need to login again with your API
-                            key to access it.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => deleteUserId && handleRemoveAccount(deleteUserId)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            Remove
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </>
     );
 }
