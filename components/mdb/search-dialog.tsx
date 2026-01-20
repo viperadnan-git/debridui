@@ -33,8 +33,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         queryKey: getFindTorrentsCacheKey(currentUser.id, query),
         queryFn: () => (client.findTorrents ? client.findTorrents(query) : Promise.resolve([])),
         enabled: open && query.trim().length > 2 && !!client.findTorrents,
-        staleTime: 3_000,
-        gcTime: 3_000,
+        staleTime: 0,
+        gcTime: 60_000,
     });
 
     const handleSelect = useCallback(
