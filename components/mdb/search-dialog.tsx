@@ -5,7 +5,7 @@ import { useRouter } from "@bprogress/next/app";
 import { CommandDialog, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { useTraktSearch } from "@/hooks/use-trakt";
-import { Search, Film, Tv, Star, Calendar, HardDrive } from "lucide-react";
+import { Search, Film, Tv, Star, Calendar, HardDrive, Loader2 } from "lucide-react";
 import { cn, formatSize } from "@/lib/utils";
 import { type TraktSearchResult } from "@/lib/trakt";
 import { type DebridFile } from "@/lib/types";
@@ -33,7 +33,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         queryKey: getFindTorrentsCacheKey(currentUser.id, query),
         queryFn: () => (client.findTorrents ? client.findTorrents(query) : Promise.resolve([])),
         enabled: open && query.trim().length > 2 && !!client.findTorrents,
-        staleTime: 5_000,
+        staleTime: 3_000,
+        gcTime: 3_000,
     });
 
     const handleSelect = useCallback(
@@ -177,8 +178,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         [handleSelect]
     );
 
-    const isLoading = isTraktSearching || isFileSearching;
-    const hasResults = (fileResults && fileResults.length > 0) || (searchResults && searchResults.length > 0);
+    const hasFileResults = fileResults && fileResults.length > 0;
+    const hasTraktResults = searchResults && searchResults.length > 0;
+    const isSearching = query.trim().length > 2;
+    const bothLoaded = !isFileSearching && !isTraktSearching;
+    const hasAnyResults = hasFileResults || hasTraktResults;
 
     return (
         <CommandDialog
@@ -193,9 +197,10 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-11 sm:h-12 text-sm sm:text-base"
             />
             <CommandList className="h-[70vh] sm:h-[75vh] overflow-y-auto">
-                {!isLoading && hasResults && (
+                {isSearching && (
                     <>
-                        {fileResults && fileResults.length > 0 && (
+                        {/* Show file results as soon as available */}
+                        {hasFileResults && (
                             <CommandGroup
                                 heading="Your Files"
                                 className="**:[[cmdk-group-heading]]:px-1 sm:**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-1.5 sm:**:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-muted-foreground">
@@ -203,7 +208,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                             </CommandGroup>
                         )}
 
-                        {searchResults && searchResults.length > 0 && (
+                        {/* Show Trakt results as soon as available */}
+                        {hasTraktResults && (
                             <CommandGroup
                                 heading="Movies & TV Shows"
                                 className="**:[[cmdk-group-heading]]:px-1 sm:**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-1.5 sm:**:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-muted-foreground">
@@ -211,32 +217,37 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                             </CommandGroup>
                         )}
 
-                        <div className="flex items-center justify-center py-6 text-xs text-muted-foreground border-t">
-                            <span>
-                                End of results • {(fileResults?.length || 0) + (searchResults?.length || 0)} item
-                                {(fileResults?.length || 0) + (searchResults?.length || 0) !== 1 ? "s" : ""} found
-                            </span>
-                        </div>
+                        {/* Show loading indicator if still searching */}
+                        {(isFileSearching || isTraktSearching) && (
+                            <div className="flex items-center justify-center py-4 text-xs text-muted-foreground border-b">
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                <span>Searching...</span>
+                            </div>
+                        )}
+
+                        {/* Show end of results when both loaded and have results */}
+                        {bothLoaded && hasAnyResults && (
+                            <div className="flex items-center justify-center py-6 text-xs text-muted-foreground border-t">
+                                <span>
+                                    End of results • {(fileResults?.length || 0) + (searchResults?.length || 0)} item
+                                    {(fileResults?.length || 0) + (searchResults?.length || 0) !== 1 ? "s" : ""} found
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Show no results only when both searches are complete */}
+                        {bothLoaded && !hasAnyResults && (
+                            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-sm text-muted-foreground">
+                                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-muted mb-2 sm:mb-3">
+                                    <Search className="h-5 w-5 sm:h-6 sm:w-6" />
+                                </div>
+                                <span className="font-medium text-sm sm:text-base">No results found</span>
+                                <span className="text-xs mt-1 text-center px-4">
+                                    Try different keywords or check your spelling
+                                </span>
+                            </div>
+                        )}
                     </>
-                )}
-
-                {isLoading && query.trim().length > 2 && (
-                    <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-sm text-muted-foreground">
-                        <Search className="h-8 w-8 sm:h-10 sm:w-10 animate-spin mb-2 sm:mb-3 opacity-40" />
-                        <span className="font-medium text-sm sm:text-base">Searching...</span>
-                    </div>
-                )}
-
-                {!isLoading && query.trim().length > 2 && !hasResults && (
-                    <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-sm text-muted-foreground">
-                        <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-muted mb-2 sm:mb-3">
-                            <Search className="h-5 w-5 sm:h-6 sm:w-6" />
-                        </div>
-                        <span className="font-medium text-sm sm:text-base">No results found</span>
-                        <span className="text-xs mt-1 text-center px-4">
-                            Try different keywords or check your spelling
-                        </span>
-                    </div>
                 )}
 
                 {query.trim().length <= 2 && (
