@@ -12,7 +12,7 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
-import { ServerIcon, SearchIcon, HomeIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import { FolderOpen, SearchIcon, HomeIcon, SettingsIcon, UsersIcon } from "lucide-react";
 import { useSearch } from "@/components/mdb/search-provider";
 import { SidebarFooterContent } from "./sidebar-footer";
 
@@ -38,7 +38,7 @@ const data = {
         {
             title: "Files",
             url: "/files",
-            icon: ServerIcon,
+            icon: FolderOpen,
         },
         {
             title: "Accounts",
