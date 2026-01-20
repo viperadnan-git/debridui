@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRightLeft, Share2, Trash2, User } from "lucide-react";
+import { ArrowRightLeft, Share2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import {
     AlertDialog,
@@ -17,10 +17,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User as UserType } from "@/lib/types";
+import { AccountType, User as UserType } from "@/lib/types";
 import { formatAccountType, cn } from "@/lib/utils";
 import { useUserStore } from "@/lib/stores/users";
 import { ShareAccountDialog } from "./share-account-dialog";
+import { ServiceIcon } from "./service-icon";
 
 interface AccountCardProps {
     user: UserType;
@@ -56,17 +57,17 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
                     </Badge>
                 )}
 
-                <CardHeader className="pb-3">
+                <CardHeader>
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                            <User className="h-5 w-5 text-primary" />
+                            <ServiceIcon type={user.type as AccountType} className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <CardTitle className="truncate" title={user.username}>
                                 {user.username}
                             </CardTitle>
-                            <CardDescription className="truncate" title={user.email}>
-                                {user.email}
+                            <CardDescription className="truncate" title={formatAccountType(user.type)}>
+                                {formatAccountType(user.type)}
                             </CardDescription>
                         </div>
                     </div>
@@ -75,8 +76,10 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
                 <CardContent className="flex flex-col flex-1 pt-0">
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Service</span>
-                            <span className="font-medium">{formatAccountType(user.type)}</span>
+                            <span className="text-muted-foreground">Email</span>
+                            <span className="font-medium truncate" title={user.email}>
+                                {user.email}
+                            </span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-muted-foreground">Status</span>

@@ -13,17 +13,19 @@ export default function AddAccountPage() {
     };
 
     return (
-        <div className="mx-auto w-full max-w-2xl space-y-8 pb-16">
+        <div className="mx-auto w-full max-w-5xl space-y-8 pb-16">
             <PageHeader icon={UserPlus} title="Add Account" description="Connect a new debrid service account" />
 
-            <LoginForm
-                showBranding={false}
-                showOAuthButtons={true}
-                showTerms={false}
-                submitButtonText="Add Account"
-                onSuccess={handleSuccess}
-                disableAutoRedirect={true}
-            />
+            <div className="max-w-md mx-auto">
+                <LoginForm
+                    showBranding={false}
+                    showOAuthButtons={true}
+                    showTerms={false}
+                    submitButtonText="Add Account"
+                    onSuccess={handleSuccess}
+                    disableAutoRedirect={true}
+                />
+            </div>
         </div>
     );
 }
