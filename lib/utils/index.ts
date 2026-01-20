@@ -6,6 +6,8 @@ import { DebridLinkInfo, FileType, MediaPlayer } from "../types";
 import { ACCOUNT_TYPE_LABELS, EXTENSION_TO_FILE_TYPE } from "../constants";
 import { useSettingsStore } from "../stores/settings";
 
+export * from "./color";
+
 export const cn = (...inputs: ClassValue[]) => {
     return twMerge(clsx(inputs));
 };

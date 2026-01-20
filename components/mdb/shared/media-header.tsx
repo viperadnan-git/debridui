@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MediaStats } from "../media-stats";
 import { memo } from "react";
+import { getTextColor } from "@/lib/utils";
 
 interface MediaHeaderProps {
     media: TraktMedia;
@@ -82,7 +83,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
 
                             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                                 {media.year && (
-                                    <div className="flex items-center gap-1 text-muted-foreground text-xs sm:text-sm">
+                                    <div className="flex items-center gap-1 text-xs sm:text-sm">
                                         <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                                         {media.year}
                                     </div>
@@ -102,14 +103,14 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 )}
 
                                 {media.runtime && (
-                                    <div className="flex items-center gap-1 text-muted-foreground text-xs sm:text-sm">
+                                    <div className="flex items-center gap-1 text-xs sm:text-sm">
                                         <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                                         {media.runtime} min
                                     </div>
                                 )}
 
                                 {media.certification && (
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge className="text-xs border-0 bg-amber-200 text-amber-900 dark:bg-amber-500 dark:text-amber-950">
                                         {media.certification}
                                     </Badge>
                                 )}
@@ -127,7 +128,10 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                             {media.genres && media.genres.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {media.genres.map((genre) => (
-                                        <Badge key={genre} variant="outline">
+                                        <Badge
+                                            key={genre}
+                                            className="border-0 bg-[hsl(var(--genre-hue),var(--genre-sat),var(--genre-light-bg))] text-[hsl(var(--genre-hue),var(--genre-sat),var(--genre-light-text))] dark:bg-[hsl(var(--genre-hue),var(--genre-sat),var(--genre-dark-bg))] dark:text-[hsl(var(--genre-hue),var(--genre-sat),var(--genre-dark-text))]"
+                                            style={getTextColor(genre)}>
                                             {genre}
                                         </Badge>
                                     ))}
@@ -150,38 +154,56 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 <div className="flex flex-wrap gap-2">
                                     {media.ids.imdb && (
                                         <Link href={`https://www.imdb.com/title/${media.ids.imdb}`} target="_blank">
-                                            <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
-                                                <Globe className="h-3 w-3 mr-1" />
+                                            <Button
+                                                size="sm"
+                                                className="h-8 gap-2 bg-[#F5C518] text-black hover:bg-[#F5C518]/90">
+                                                <img
+                                                    src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/imdb.svg"
+                                                    alt="IMDb"
+                                                    className="h-4 w-4"
+                                                />
                                                 IMDb
-                                            </Badge>
+                                            </Button>
                                         </Link>
                                     )}
                                     {media.ids.tmdb && (
                                         <Link
                                             href={`https://www.themoviedb.org/${type}/${media.ids.tmdb}`}
                                             target="_blank">
-                                            <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
-                                                <Globe className="h-3 w-3 mr-1" />
+                                            <Button
+                                                size="sm"
+                                                className="h-8 gap-2 bg-[#01B4E4] text-white hover:bg-[#01B4E4]/90">
+                                                <img
+                                                    src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/themoviedatabase.svg"
+                                                    alt="TMDB"
+                                                    className="h-4 w-4 invert"
+                                                />
                                                 TMDB
-                                            </Badge>
+                                            </Button>
                                         </Link>
                                     )}
                                     {media.ids.trakt && (
                                         <Link
                                             href={`https://trakt.tv/${type === "movie" ? "movies" : "shows"}/${media.ids.trakt}`}
                                             target="_blank">
-                                            <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
-                                                <Globe className="h-3 w-3 mr-1" />
+                                            <Button
+                                                size="sm"
+                                                className="h-8 gap-2 bg-[#9F42C6] text-white hover:bg-[#9F42C6]/90">
+                                                <img
+                                                    src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/trakt.svg"
+                                                    alt="Trakt"
+                                                    className="h-4 w-4 invert"
+                                                />
                                                 Trakt
-                                            </Badge>
+                                            </Button>
                                         </Link>
                                     )}
                                     {type === "show" && media.ids.imdb && (
                                         <Link href={`https://tvcharts.co/show/${media.ids.imdb}`} target="_blank">
-                                            <Badge variant="secondary">
-                                                <Globe className="h-3 w-3 mr-1" />
+                                            <Button variant="outline" size="sm" className="h-8 gap-2">
+                                                <Globe className="h-4 w-4" />
                                                 TV Charts
-                                            </Badge>
+                                            </Button>
                                         </Link>
                                     )}
                                 </div>

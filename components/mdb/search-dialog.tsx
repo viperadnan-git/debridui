@@ -166,7 +166,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         </div>
 
                         {media.overview && (
-                            <p className="hidden sm:block text-xs text-muted-foreground line-clamp-1 leading-relaxed mt-1">
+                            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-1">
                                 {media.overview}
                             </p>
                         )}

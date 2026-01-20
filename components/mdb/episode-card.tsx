@@ -51,7 +51,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
 
                                 {/* Play button overlay */}
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <div className="bg-black/60 backdrop-blur-sm rounded-full p-2 sm:p-3 flex items-center gap-1.5 sm:gap-2">
+                                    <div className="bg-black/60 backdrop-blur-sm rounded-xl p-2 sm:p-3 flex items-center gap-1.5 sm:gap-2">
                                         <GlobeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                                         <span className="text-white text-xs sm:text-sm font-medium">
                                             {isOpen ? "Hide Sources" : "Show Sources"}

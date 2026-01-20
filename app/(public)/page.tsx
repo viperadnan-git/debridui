@@ -19,18 +19,18 @@ export default function Home() {
             </div>
 
             <main className="flex flex-col gap-[32px] row-start-2 items-center text-center relative z-10">
-                <h1 className="font-mono text-xs sm:text-sm tracking-wider uppercase text-foreground/80 font-semibold backdrop-blur-sm bg-background/30 px-6 py-2 rounded-full border border-solid border-foreground/20">
+                <h1 className="font-mono text-xs sm:text-sm tracking-wider uppercase text-foreground/80 font-semibold backdrop-blur-sm bg-background/30 px-6 py-2 rounded-xl border border-solid border-foreground/20">
                     Stream · Manage · Discover
                 </h1>
                 <Image className="dark:invert" src="/logo.svg" alt="DebridUI logo" width={680} height={220} priority />
                 <div className="flex gap-4 items-center flex-col sm:flex-row">
                     <Link
                         href="/dashboard"
-                        className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto">
+                        className="rounded-xl border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto">
                         Open App
                     </Link>
                     <a
-                        className="rounded-full bg-background border border-solid border-black/8 dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-auto"
+                        className="rounded-xl bg-background border border-solid border-black/8 dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-auto"
                         href="https://github.com/viperadnan-git/debridui"
                         target="_blank"
                         rel="noopener noreferrer">

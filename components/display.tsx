@@ -98,7 +98,7 @@ export function StatusBadge({ status, hide }: { status: DebridFileStatus; hide?:
     return (
         <Badge
             className={cn(
-                "inline-flex items-center gap-1.5 px-2.5 py-1 md:gap-1.5 rounded-full text-xs font-medium focus-visible:outline-none",
+                "inline-flex items-center gap-1.5 px-2.5 py-1 md:gap-1.5 rounded-xl text-xs font-medium focus-visible:outline-none",
                 config.color,
                 config.animate && "animate-pulse"
             )}>
