@@ -3,16 +3,6 @@
 import { useState } from "react";
 import { ArrowRightLeft, RefreshCw, Share2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { AccountType, User as UserType } from "@/lib/types";
 import { formatAccountType, cn } from "@/lib/utils";
 import { useUserStore } from "@/lib/stores/users";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ShareAccountDialog } from "./share-account-dialog";
 import { ServiceIcon } from "./service-icon";
 
@@ -146,25 +137,15 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
 
             <ShareAccountDialog user={user} open={shareDialogOpen} onOpenChange={setShareDialogOpen} />
 
-            <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Remove Account</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to remove this account? You&apos;ll need to login again with your API
-                            key to access it.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleRemove}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            Remove
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDialog
+                open={removeDialogOpen}
+                onOpenChange={setRemoveDialogOpen}
+                title="Remove Account"
+                description="Are you sure you want to remove this account? You'll need to login again with your API key to access it."
+                confirmText="Remove"
+                onConfirm={handleRemove}
+                variant="destructive"
+            />
         </>
     );
 }

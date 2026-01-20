@@ -15,6 +15,7 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/c
 import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "@bprogress/next/app";
 import { useUserStore } from "@/lib/stores/users";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ServiceIcon } from "@/components/accounts/service-icon";
 import { AccountType } from "@/lib/types";
 
@@ -26,6 +27,7 @@ export function AccountSwitcher() {
 
     const { isMobile } = useSidebar();
     const router = useRouter();
+    const [removeDialogOpen, setRemoveDialogOpen] = React.useState(false);
 
     const handleLogout = () => {
         if (currentUser) {
@@ -34,6 +36,7 @@ export function AccountSwitcher() {
                 router.push("/login");
             }
         }
+        setRemoveDialogOpen(false);
     };
 
     if (!currentUser) {
@@ -105,7 +108,7 @@ export function AccountSwitcher() {
 
                             <DropdownMenuItem
                                 className="gap-3 p-2.5 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                                onClick={handleLogout}>
+                                onClick={() => setRemoveDialogOpen(true)}>
                                 <div className="flex size-8 items-center justify-center rounded-lg border border-destructive/20 bg-destructive/10">
                                     <LogOut className="size-4" />
                                 </div>
@@ -115,6 +118,16 @@ export function AccountSwitcher() {
                     </DropdownMenu>
                 </SidebarMenuItem>
             </SidebarMenu>
+
+            <ConfirmDialog
+                open={removeDialogOpen}
+                onOpenChange={setRemoveDialogOpen}
+                title="Remove Account"
+                description="Are you sure you want to remove this account? You'll need to login again with your API key to access it."
+                confirmText="Remove"
+                onConfirm={handleLogout}
+                variant="destructive"
+            />
         </>
     );
 }

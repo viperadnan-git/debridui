@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Plus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUserStore } from "@/lib/stores/users";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { AccountCard } from "@/components/accounts/account-card";
 import { PageHeader } from "@/components/page-header";
 
@@ -13,10 +15,12 @@ export default function AccountsPage() {
     const users = useUserStore((state) => state.users);
     const currentUser = useUserStore((state) => state.currentUser);
     const logout = useUserStore((state) => state.logout);
+    const [logoutAllDialogOpen, setLogoutAllDialogOpen] = useState(false);
 
     const handleLogoutAll = () => {
         logout();
         router.push("/login");
+        setLogoutAllDialogOpen(false);
     };
 
     return (
@@ -52,11 +56,21 @@ export default function AccountsPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                    <Button variant="destructive" onClick={handleLogoutAll}>
+                    <Button variant="destructive" onClick={() => setLogoutAllDialogOpen(true)}>
                         Logout All Accounts
                     </Button>
                 </CardContent>
             </Card>
+
+            <ConfirmDialog
+                open={logoutAllDialogOpen}
+                onOpenChange={setLogoutAllDialogOpen}
+                title="Logout All Accounts"
+                description="Are you sure you want to remove all accounts and logout? You'll need to login again to access your accounts."
+                confirmText="Logout All"
+                onConfirm={handleLogoutAll}
+                variant="destructive"
+            />
         </div>
     );
 }
