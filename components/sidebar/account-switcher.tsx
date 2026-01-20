@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Plus, User, Check, LogOut } from "lucide-react";
+import { ChevronsUpDown, Plus, Check, LogOut } from "lucide-react";
 
 import {
     DropdownMenu,
@@ -16,6 +16,7 @@ import { formatAccountType } from "@/lib/utils";
 import { useRouter } from "@bprogress/next/app";
 import Image from "next/image";
 import { useUserStore } from "@/lib/stores/users";
+import { ServiceIcon } from "@/components/accounts/service-icon";
 
 export function AccountSwitcher() {
     const users = useUserStore((state) => state.users);
@@ -47,14 +48,7 @@ export function AccountSwitcher() {
                         <DropdownMenuTrigger asChild>
                             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
                                 <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-accent/50 ring-1 ring-sidebar-border/50 shrink-0">
-                                    <Image
-                                        src="/icon.svg"
-                                        alt="DebridUI logo"
-                                        width={20}
-                                        height={20}
-                                        className="size-5"
-                                        priority
-                                    />
+                                    <ServiceIcon type={currentUser.type} className="size-5" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
                                     <span className="truncate font-semibold" title={currentUser.username}>
@@ -82,7 +76,7 @@ export function AccountSwitcher() {
                                     className="gap-3 p-2.5 rounded-lg flex items-center justify-between cursor-pointer">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
                                         <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30 shrink-0">
-                                            <User className="size-4 shrink-0" />
+                                            <ServiceIcon type={user.type} className="size-4" />
                                         </div>
                                         <div className="flex flex-col min-w-0 flex-1">
                                             <span className="text-sm font-semibold truncate" title={user.username}>
