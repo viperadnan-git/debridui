@@ -79,12 +79,12 @@ const settingsConfig: SettingsConfig = {
     downloadLinkMaxAge: {
         defaultValue: 900000, // 15 minutes in milliseconds
         presets: [
-            { value: 300000, label: "5 minutes", description: "Keep cached links for 5 minutes" },
-            { value: 900000, label: "15 minutes", description: "Keep cached links for 15 minutes" },
-            { value: 3600000, label: "1 hour", description: "Keep cached links for 1 hour" },
-            { value: 10800000, label: "3 hours", description: "Keep cached links for 3 hours" },
-            { value: 21600000, label: "6 hours", description: "Keep cached links for 6 hours" },
-            { value: 43200000, label: "12 hours", description: "Keep cached links for 12 hours" },
+            { value: 300000, label: "5 minutes" },
+            { value: 900000, label: "15 minutes" },
+            { value: 3600000, label: "1 hour" },
+            { value: 10800000, label: "3 hours" },
+            { value: 21600000, label: "6 hours" },
+            { value: 43200000, label: "12 hours" },
         ],
     },
     torrentioUrlPrefix: {
