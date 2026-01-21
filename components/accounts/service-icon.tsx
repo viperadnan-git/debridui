@@ -3,8 +3,8 @@ import { User } from "lucide-react";
 import Image from "next/image";
 
 const SERVICE_ICONS: Record<AccountType, string> = {
-    [AccountType.TORBOX]: "https://i.ibb.co/xqNBTPG1/68747470733a2f2f746f72626f782e6170702f6c6f676f2e706e67.png",
-    [AccountType.ALLDEBRID]: "https://i.ibb.co/tTDfYx0v/icon.jpg",
+    [AccountType.TORBOX]: "https://wsrv.nl/?url=https://i.ibb.co/YgB6zFK/icon.png&w=280&h=280&maxage=1y",
+    [AccountType.ALLDEBRID]: "https://wsrv.nl/?url=https://i.ibb.co/tTDfYx0v/icon.jpg&w=280&h=280&maxage=1y",
 };
 
 interface ServiceIconProps {
