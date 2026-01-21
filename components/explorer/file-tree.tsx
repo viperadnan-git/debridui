@@ -122,9 +122,7 @@ const FileActionButton = memo(function FileActionButton({
 }) {
     const { client, currentUser } = useAuthContext();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
-    const { get } = useSettingsStore();
-    const mediaPlayer = get("mediaPlayer");
-    const downloadLinkMaxAge = get("downloadLinkMaxAge");
+    const downloadLinkMaxAge = useSettingsStore((state) => state.get("downloadLinkMaxAge"));
 
     const { data: linkInfo, refetch } = useQuery({
         queryKey: getDownloadLinkCacheKey(currentUser.id, node.id, false),
@@ -138,7 +136,7 @@ const FileActionButton = memo(function FileActionButton({
 
         switch (action) {
             case "play":
-                window.open(playUrl(linkInfo.link, mediaPlayer), "_self");
+                playUrl(linkInfo);
                 break;
             case "download":
                 downloadLinks([linkInfo]);

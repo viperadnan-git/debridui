@@ -23,7 +23,15 @@ export enum MediaPlayer {
     KODI = "kodi",
     MX_PLAYER = "mxplayer",
     MX_PLAYER_PRO = "mxplayerpro",
-    EMBED = "embed",
+}
+
+export enum Platform {
+    ANDROID = "Android",
+    IOS = "iOS",
+    MACOS = "macOS",
+    WINDOWS = "Windows",
+    LINUX = "Linux",
+    UNKNOWN = "Unknown",
 }
 
 // Base type for common properties

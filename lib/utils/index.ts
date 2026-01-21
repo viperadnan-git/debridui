@@ -2,11 +2,11 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { AccountType, addUserSchema } from "../schemas";
 import { formatDistanceToNow } from "date-fns";
-import { DebridLinkInfo, FileType, MediaPlayer } from "../types";
+import { DebridLinkInfo, FileType } from "../types";
 import { ACCOUNT_TYPE_LABELS, EXTENSION_TO_FILE_TYPE } from "../constants";
-import { useSettingsStore } from "../stores/settings";
 
 export * from "./color";
+export * from "./media-player";
 
 export const cn = (...inputs: ClassValue[]) => {
     return twMerge(clsx(inputs));
@@ -30,25 +30,6 @@ export const formatSpeed = (bytesPerSec?: number) => {
 
 export const formatRelativeTime = (date: Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true });
-};
-
-const PLAYER_URLS: Record<MediaPlayer, (url: string) => string> = {
-    [MediaPlayer.BROWSER]: (url) => url, // Browser preview uses the preview dialog, not external player
-    [MediaPlayer.IINA]: (url) => `iina://weblink?url=${encodeURIComponent(url)}`,
-    [MediaPlayer.VLC]: (url) => `vlc://${url}`,
-    [MediaPlayer.MPV]: (url) => `mpv://${encodeURIComponent(url)}`,
-    [MediaPlayer.POTPLAYER]: (url) => `potplayer://${encodeURIComponent(url)}`,
-    [MediaPlayer.KODI]: (url) => `kodi://${encodeURIComponent(url)}`,
-    [MediaPlayer.MX_PLAYER]: (url) => `intent:${url}#Intent;package=com.mxtech.videoplayer.ad;S.title=undefined;end`,
-    [MediaPlayer.MX_PLAYER_PRO]: (url) =>
-        `intent:${url}#Intent;package=com.mxtech.videoplayer.pro;S.title=undefined;end`,
-    [MediaPlayer.EMBED]: (url) =>
-        `https://embed-player.com/video/?source=${encodeURIComponent(url)}&color=%23a1c2c3&preload=metadata`,
-};
-
-export const playUrl = (url: string, player?: MediaPlayer) => {
-    const selectedPlayer = player || useSettingsStore.getState().get("mediaPlayer");
-    return PLAYER_URLS[selectedPlayer](url);
 };
 
 export const downloadLinks = (downloads: DebridLinkInfo[]) => {

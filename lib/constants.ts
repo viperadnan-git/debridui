@@ -1,16 +1,4 @@
-import { FileType, AccountType, MediaPlayer } from "./types";
-
-export const MEDIA_PLAYER_LABELS = [
-    { value: MediaPlayer.BROWSER, label: "Browser Preview" },
-    { value: MediaPlayer.EMBED, label: "Embed Player" },
-    { value: MediaPlayer.VLC, label: "VLC Media Player" },
-    { value: MediaPlayer.IINA, label: "IINA" },
-    { value: MediaPlayer.MPV, label: "MPV" },
-    { value: MediaPlayer.POTPLAYER, label: "PotPlayer" },
-    { value: MediaPlayer.MX_PLAYER, label: "MX Player" },
-    { value: MediaPlayer.MX_PLAYER_PRO, label: "MX Player Pro" },
-    { value: MediaPlayer.KODI, label: "Kodi" },
-];
+import { FileType, AccountType } from "./types";
 
 export const ACCOUNT_TYPE_LABELS = {
     [AccountType.ALLDEBRID]: "AllDebrid",

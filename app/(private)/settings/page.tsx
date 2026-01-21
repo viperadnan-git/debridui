@@ -161,12 +161,19 @@ export default function SettingsPage() {
                                 value={mediaPlayer}
                                 onValueChange={(value) => set("mediaPlayer", value as MediaPlayer)}>
                                 <SelectTrigger id="media-player" className="w-full">
-                                    <SelectValue placeholder="Select media player" />
+                                    <SelectValue placeholder="Select media player">
+                                        {mediaPlayerPresets.find((p) => p.value === mediaPlayer)?.label}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {mediaPlayerPresets.map((preset) => (
-                                        <SelectItem key={preset.value} value={preset.value} title={preset.description}>
-                                            {preset.label}
+                                        <SelectItem key={preset.value} value={preset.value}>
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="font-medium">{preset.label}</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {preset.description}
+                                                </span>
+                                            </div>
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

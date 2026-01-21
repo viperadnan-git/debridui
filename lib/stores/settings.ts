@@ -37,16 +37,43 @@ const settingsConfig: SettingsConfig = {
             {
                 value: MediaPlayer.BROWSER,
                 label: "Browser Preview",
-                description: "Built-in browser preview with controls",
+                description: "All platforms - Built-in browser preview with controls",
             },
-            { value: MediaPlayer.IINA, label: "IINA", description: "macOS media player" },
-            { value: MediaPlayer.VLC, label: "VLC", description: "Cross-platform media player" },
-            { value: MediaPlayer.MPV, label: "MPV", description: "Lightweight media player" },
-            { value: MediaPlayer.POTPLAYER, label: "PotPlayer", description: "Windows media player" },
-            { value: MediaPlayer.KODI, label: "Kodi", description: "Media center application" },
-            { value: MediaPlayer.MX_PLAYER, label: "MX Player", description: "Android media player" },
-            { value: MediaPlayer.MX_PLAYER_PRO, label: "MX Player Pro", description: "Android media player (Pro)" },
-            { value: MediaPlayer.EMBED, label: "Embed Player", description: "Built-in web player" },
+            {
+                value: MediaPlayer.VLC,
+                label: "VLC",
+                description: "All platforms - Cross-platform media player",
+            },
+            {
+                value: MediaPlayer.KODI,
+                label: "Kodi",
+                description: "All platforms - Media center application",
+            },
+            {
+                value: MediaPlayer.MPV,
+                label: "MPV",
+                description: "macOS, Windows, Linux - Lightweight media player",
+            },
+            {
+                value: MediaPlayer.IINA,
+                label: "IINA",
+                description: "macOS - Powerful media player for macOS",
+            },
+            {
+                value: MediaPlayer.POTPLAYER,
+                label: "PotPlayer",
+                description: "Windows - Advanced media player for Windows",
+            },
+            {
+                value: MediaPlayer.MX_PLAYER,
+                label: "MX Player",
+                description: "Android - Popular Android media player",
+            },
+            {
+                value: MediaPlayer.MX_PLAYER_PRO,
+                label: "MX Player Pro",
+                description: "Android - Pro version of MX Player",
+            },
         ],
     },
     downloadLinkMaxAge: {
