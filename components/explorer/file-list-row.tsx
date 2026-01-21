@@ -39,7 +39,7 @@ export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
         const fileNodes =
             file.files || queryClient.getQueryData<DebridNode[]>(getTorrentFilesCacheKey(currentUser.id, file.id));
         const processedFileNodes = processFileNodes({ fileNodes: fileNodes || [] });
-        toggleFileSelection(file.id, processedFileNodes ? collectNodeIds(processedFileNodes) : []);
+        toggleFileSelection(file.id, processedFileNodes ? collectNodeIds(processedFileNodes) : [], processedFileNodes);
     };
 
     return (
