@@ -202,7 +202,7 @@ function VirtualizedNode({
     const { node, depth, hasChildren, path } = flatNode;
     const isExpanded = expandedPaths.has(path);
     const isMobile = useIsMobile();
-    const [showActions, setShowActions] = useState(false);
+    const [tooltipOpen, setTooltipOpen] = useState(false);
     const mediaPlayer = useSettingsStore((state) => state.get("mediaPlayer"));
 
     const selectedFiles = useFileSelectedNodes(fileId);
@@ -233,7 +233,7 @@ function VirtualizedNode({
     return (
         <div
             className={cn(
-                "flex items-center gap-1 sm:gap-2 py-0.5 sm:py-1 rounded hover:bg-muted",
+                "flex items-center gap-1 sm:gap-2 py-1 rounded hover:bg-muted",
                 "text-xs sm:text-sm",
                 hasChildren && "cursor-pointer"
             )}
@@ -255,7 +255,10 @@ function VirtualizedNode({
                 className="size-3 sm:size-4"
             />
 
-            <Tooltip delayDuration={2000}>
+            <Tooltip
+                {...(isMobile
+                    ? { open: tooltipOpen, onOpenChange: setTooltipOpen, delayDuration: 0 }
+                    : { delayDuration: 2000 })}>
                 <TooltipTrigger asChild>
                     <span
                         className="flex-1 cursor-pointer truncate"
@@ -263,7 +266,7 @@ function VirtualizedNode({
                             if (isFile) {
                                 e.stopPropagation();
                                 if (isMobile) {
-                                    setShowActions(!showActions);
+                                    setTooltipOpen(!tooltipOpen);
                                 } else {
                                     handleCheckboxChange(!isSelected);
                                 }
@@ -272,7 +275,7 @@ function VirtualizedNode({
                         {node.name}
                     </span>
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent className="max-sm:max-w-[calc(100vw-2rem)] wrap-break-word">
                     <p>{node.name}</p>
                 </TooltipContent>
             </Tooltip>
@@ -280,19 +283,17 @@ function VirtualizedNode({
             {isFile ? (
                 <>
                     <span className="text-[10px] sm:text-xs text-muted-foreground">{formatSize(node.size)}</span>
-                    {(!isMobile || showActions) && (
-                        <div className="flex gap-1 md:gap-0.5">
-                            {isVideoWithBrowserPlayer && (
-                                <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />
-                            )}
-                            {fileType === FileType.VIDEO && !isVideoWithBrowserPlayer && (
-                                <FileActionButton node={node} action="play" />
-                            )}
-                            {canPreview && <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />}
-                            <FileActionButton node={node} action="copy" />
-                            <FileActionButton node={node} action="download" />
-                        </div>
-                    )}
+                    <div className="flex gap-1 md:gap-0.5">
+                        {isVideoWithBrowserPlayer && (
+                            <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />
+                        )}
+                        {fileType === FileType.VIDEO && !isVideoWithBrowserPlayer && (
+                            <FileActionButton node={node} action="play" />
+                        )}
+                        {canPreview && <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />}
+                        <FileActionButton node={node} action="copy" />
+                        <FileActionButton node={node} action="download" />
+                    </div>
                 </>
             ) : (
                 <span className="text-[10px] sm:text-xs text-muted-foreground">{node.children.length} items</span>
