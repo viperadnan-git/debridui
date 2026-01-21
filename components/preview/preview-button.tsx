@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { View } from "lucide-react";
 import { DebridFileNode } from "@/lib/types";
@@ -11,13 +12,16 @@ interface PreviewButtonProps {
     fileId: string;
 }
 
-export function PreviewButton({ node, allNodes, fileId }: PreviewButtonProps) {
+export const PreviewButton = memo(function PreviewButton({ node, allNodes, fileId }: PreviewButtonProps) {
     const openPreview = usePreviewStore((state) => state.openPreview);
 
-    const handleClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        openPreview(node, allNodes, fileId);
-    };
+    const handleClick = useCallback(
+        (e: React.MouseEvent) => {
+            e.stopPropagation();
+            openPreview(node, allNodes, fileId);
+        },
+        [node, allNodes, fileId, openPreview]
+    );
 
     return (
         <Button
@@ -29,4 +33,4 @@ export function PreviewButton({ node, allNodes, fileId }: PreviewButtonProps) {
             <View className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         </Button>
     );
-}
+});

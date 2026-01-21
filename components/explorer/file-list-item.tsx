@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment, useMemo, memo } from "react";
 import { DebridFile } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatSize, formatRelativeTime, formatSpeed, cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ interface FileListItemProps {
     className?: string;
 }
 
-export function FileListItem({
+export const FileListItem = memo(function FileListItem({
     file,
     isSelected,
     canExpand,
@@ -166,4 +166,4 @@ export function FileListItem({
             </div>
         </FileItemContextMenu>
     );
-}
+});

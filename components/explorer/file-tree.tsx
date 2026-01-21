@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, memo } from "react";
 import { DebridNode, DebridFileNode, DebridLinkInfo } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -98,10 +98,13 @@ function collectAllFileNodes(nodes: DebridNode[]): DebridFileNode[] {
         const node = stack.pop()!;
         if (node.type === "file") {
             files.push(node);
-        } else if (node.children && node.children.length > 0) {
-            // Push children in reverse order to maintain display order when popped
-            for (let i = node.children.length - 1; i >= 0; i--) {
-                stack.push(node.children[i]);
+        } else if (node.children) {
+            const childrenLen = node.children.length;
+            if (childrenLen > 0) {
+                // Push children in reverse order to maintain display order when popped
+                for (let i = childrenLen - 1; i >= 0; i--) {
+                    stack.push(node.children[i]);
+                }
             }
         }
     }
@@ -109,7 +112,13 @@ function collectAllFileNodes(nodes: DebridNode[]): DebridFileNode[] {
     return files;
 }
 
-function FileActionButton({ node, action }: { node: DebridFileNode; action: "copy" | "download" | "play" }) {
+const FileActionButton = memo(function FileActionButton({
+    node,
+    action,
+}: {
+    node: DebridFileNode;
+    action: "copy" | "download" | "play";
+}) {
     const { client, currentUser } = useAuthContext();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const { get } = useSettingsStore();
@@ -180,7 +189,7 @@ function FileActionButton({ node, action }: { node: DebridFileNode; action: "cop
             {icon}
         </Button>
     );
-}
+});
 
 interface VirtualizedNodeProps {
     flatNode: FlatNode;
@@ -191,7 +200,7 @@ interface VirtualizedNodeProps {
     allNodes: DebridNode[];
 }
 
-function VirtualizedNode({
+const VirtualizedNode = memo(function VirtualizedNode({
     flatNode,
     fileId,
     expandedPaths,
@@ -300,7 +309,7 @@ function VirtualizedNode({
             )}
         </div>
     );
-}
+});
 
 const VIRTUALIZATION_THRESHOLD = 200; // Use virtualization above this many nodes
 
