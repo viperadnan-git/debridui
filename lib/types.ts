@@ -15,14 +15,14 @@ export enum FileType {
 }
 
 export enum MediaPlayer {
-    BROWSER = "browser",
-    IINA = "iina",
-    VLC = "vlc",
-    MPV = "mpv",
-    POTPLAYER = "potplayer",
-    KODI = "kodi",
-    MX_PLAYER = "mxplayer",
-    MX_PLAYER_PRO = "mxplayerpro",
+    BROWSER = "Browser",
+    IINA = "IINA",
+    VLC = "VLC",
+    MPV = "MPV",
+    POTPLAYER = "PotPlayer",
+    KODI = "Kodi",
+    MX_PLAYER = "MX Player",
+    MX_PLAYER_PRO = "MX Player Pro",
 }
 
 export enum Platform {
