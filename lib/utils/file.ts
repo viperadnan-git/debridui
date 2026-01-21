@@ -146,13 +146,21 @@ export const processFileNodes = ({
 
 /**
  * Downloads an M3U8 playlist file from debrid link nodes
+ * Only includes video files in the playlist
  */
 export const downloadM3UPlaylist = (linkNodes: DebridLinkInfo[], playlistName?: string): void => {
+    // Filter to only include video files
+    const videoLinks = linkNodes.filter((linkNode) => getFileType(linkNode.name) === FileType.VIDEO);
+
+    if (videoLinks.length === 0) {
+        throw new Error("No video files found. M3U8 playlists can only be generated for video files.");
+    }
+
     const filename = playlistName || `Playlist-${format(new Date(), "yyyy-MM-dd-HH-mm-ss")}`;
     const playlistContent = [
         "#EXTM3U",
         "",
-        ...linkNodes.map((linkNode) => `#EXTINF:-1,${linkNode.name}\n${linkNode.link}`),
+        ...videoLinks.map((linkNode) => `#EXTINF:-1,${linkNode.name}\n${linkNode.link}`),
     ].join("\n");
 
     const downloadUrl = URL.createObjectURL(new Blob([playlistContent], { type: "application/vnd.apple.mpegurl" }));
