@@ -1,4 +1,4 @@
-import { User, DebridFileAddStatus, DebridFile } from "@/lib/types";
+import { User, DebridFileAddStatus, DebridFile, DebridFileNode, DebridLinkInfo } from "@/lib/types";
 
 export default abstract class BaseClient {
     protected readonly user: User;
@@ -72,4 +72,5 @@ export default abstract class BaseClient {
     abstract addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>>;
     abstract uploadTorrentFiles(files: File[]): Promise<Record<string, DebridFileAddStatus>>;
     abstract findTorrentById?(torrentId: string): Promise<DebridFile | null>;
+    abstract getDownloadLink(params: { fileNode: DebridFileNode; resolve?: boolean }): Promise<DebridLinkInfo>;
 }

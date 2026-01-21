@@ -253,14 +253,25 @@ export default class TorBoxClient extends BaseClient {
         }
     }
 
-    async getDownloadLink(fileNode: DebridFileNode): Promise<DebridLinkInfo> {
+    async getDownloadLink({
+        fileNode,
+        resolve = false,
+    }: {
+        fileNode: DebridFileNode;
+        resolve?: boolean;
+    }): Promise<DebridLinkInfo> {
         const [torrentId, targetFileId] = fileNode.id.split(":");
 
         if (!torrentId || !targetFileId) {
             throw new DebridError("Invalid file ID format. Expected 'torrentId:fileId'", "INVALID_FILE_ID");
         }
 
-        const downloadUrl = `https://api.torbox.app/v1/api/torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=true`;
+        let downloadUrl: string;
+        if (resolve) {
+            downloadUrl = await this.getResolvedDownloadLink(torrentId, targetFileId);
+        } else {
+            downloadUrl = `https://api.torbox.app/v1/api/torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=true`;
+        }
 
         // Use file node's properties directly - no API call needed!
         return {
@@ -268,6 +279,15 @@ export default class TorBoxClient extends BaseClient {
             name: fileNode.name,
             size: fileNode.size || 0,
         };
+    }
+
+    private async getResolvedDownloadLink(torrentId: string, targetFileId: string): Promise<string> {
+        return this.makeRequest<string>(
+            `torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=false`,
+            {
+                method: "GET",
+            }
+        );
     }
 
     async getTorrentFiles(torrentId: string): Promise<DebridNode[]> {

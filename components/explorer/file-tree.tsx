@@ -17,6 +17,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useSelectionStore, useFileSelectedNodes } from "@/lib/stores/selection";
 import { FixedSizeList as List, ListChildComponentProps } from "react-window";
 import { PreviewButton } from "@/components/preview/preview-button";
+import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
 
 interface FileTreeProps {
     nodes: DebridNode[];
@@ -126,8 +127,8 @@ const FileActionButton = memo(function FileActionButton({
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
 
     const { data: linkInfo, refetch } = useQuery({
-        queryKey: [currentUser.id, "getDownloadLink", node.id],
-        queryFn: () => client.getDownloadLink(node),
+        queryKey: getDownloadLinkCacheKey(currentUser.id, node.id, false),
+        queryFn: () => client.getDownloadLink({ fileNode: node }),
         enabled: false,
         gcTime: downloadLinkMaxAge,
     });

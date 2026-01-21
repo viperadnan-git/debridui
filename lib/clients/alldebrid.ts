@@ -250,7 +250,7 @@ export default class AllDebridClient extends BaseClient {
         return torrent ? this.mapToDebridFile(torrent) : null;
     }
 
-    async getDownloadLink(fileNode: DebridFileNode): Promise<DebridLinkInfo> {
+    async getDownloadLink({ fileNode }: { fileNode: DebridFileNode; resolve?: boolean }): Promise<DebridLinkInfo> {
         const formData = new FormData();
         formData.append("link", fileNode.id);
 

@@ -253,7 +253,7 @@ export const getDownloadLinkWithCache = async ({
     let linkInfo = queryClient.getQueryData<DebridLinkInfo>(cacheKey);
 
     if (!linkInfo) {
-        linkInfo = await client.getDownloadLink(fileNode);
+        linkInfo = await client.getDownloadLink({ fileNode });
         queryClient.setQueryData(cacheKey, linkInfo);
     }
 

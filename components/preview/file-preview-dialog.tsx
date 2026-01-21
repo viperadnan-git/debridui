@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, ChevronRight, Download, X, Loader2 } from "lucide-react";
 import { PreviewContent } from "./preview-content";
 import { formatSize, downloadLinks } from "@/lib/utils";
+import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
 
 export function FilePreviewDialog() {
     const { client, currentUser } = useAuthContext();
@@ -26,8 +27,8 @@ export function FilePreviewDialog() {
 
     // Fetch download link for current file
     const { data: linkInfo, isLoading } = useQuery({
-        queryKey: [currentUser.id, "getDownloadLink", currentFile?.id],
-        queryFn: () => client.getDownloadLink(currentFile!),
+        queryKey: getDownloadLinkCacheKey(currentUser.id, currentFile?.id || "", true),
+        queryFn: () => client.getDownloadLink({ fileNode: currentFile!, resolve: true }),
         enabled: isOpen && !!currentFile?.id,
         gcTime: downloadLinkMaxAge,
     });
