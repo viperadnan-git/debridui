@@ -13,6 +13,7 @@ import { useUserStore } from "@/lib/stores/users";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ShareAccountDialog } from "./share-account-dialog";
 import { ServiceIcon } from "./service-icon";
+import { toast } from "sonner";
 
 interface AccountCardProps {
     user: UserType;
@@ -41,6 +42,7 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
         setIsRefreshing(true);
         try {
             await refreshUser(user.id);
+            toast.success("Account refreshed successfully");
         } finally {
             setIsRefreshing(false);
         }
@@ -85,7 +87,7 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-muted-foreground">Status</span>
-                            <Badge variant={user.isPremium ? "default" : "secondary"}>
+                            <Badge variant={user.isPremium ? "secondary" : "outline"}>
                                 {user.isPremium ? "Premium" : "Free"}
                             </Badge>
                         </div>

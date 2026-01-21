@@ -7,7 +7,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MediaStats } from "../media-stats";
 import { memo } from "react";
-import { getTextColor } from "@/lib/utils";
 
 interface MediaHeaderProps {
     media: TraktMedia;
@@ -130,8 +129,8 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                     {media.genres.map((genre) => (
                                         <Badge
                                             key={genre}
-                                            className="border-0 bg-[hsl(var(--genre-hue),var(--genre-sat),var(--genre-light-bg))] text-[hsl(var(--genre-hue),var(--genre-sat),var(--genre-light-text))] dark:bg-[hsl(var(--genre-hue),var(--genre-sat),var(--genre-dark-bg))] dark:text-[hsl(var(--genre-hue),var(--genre-sat),var(--genre-dark-text))]"
-                                            style={getTextColor(genre)}>
+                                            variant="outline"
+                                            className="border-muted-foreground/20 bg-muted/30 text-foreground">
                                             {genre}
                                         </Badge>
                                     ))}

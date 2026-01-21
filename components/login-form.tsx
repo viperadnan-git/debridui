@@ -1,6 +1,7 @@
 "use client";
 
-import { GalleryVerticalEnd, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 import { cn, formatAccountType, decodeAccountData } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { toast } from "sonner";
 import { handleError } from "@/lib/utils/error-handling";
 import { AllDebridClient, TorBoxClient, getClient } from "@/lib/clients";
-import Link from "next/link";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "@bprogress/next/app";
 import { useSearchParams } from "next/navigation";
@@ -177,18 +177,18 @@ export function LoginForm({
                         {showBranding && (
                             <div className="flex flex-col items-center gap-2">
                                 <a href="#" className="flex flex-col items-center gap-2 font-medium">
-                                    <div className="flex size-8 items-center justify-center rounded-md">
-                                        <GalleryVerticalEnd className="size-6" />
+                                    <div className="flex size-12 items-center justify-center">
+                                        <Image
+                                            src="/icon.svg"
+                                            alt="DebridUI"
+                                            width={48}
+                                            height={48}
+                                            className="invert dark:invert-0"
+                                        />
                                     </div>
                                     <span className="sr-only">DebridUI</span>
                                 </a>
                                 <h1 className="text-xl font-bold">Welcome to DebridUI</h1>
-                                <div className="text-center text-sm">
-                                    Don&apos;t have an account?{" "}
-                                    <Link href="https://alldebrid.com" className="underline underline-offset-4">
-                                        Sign up
-                                    </Link>
-                                </div>
                             </div>
                         )}
                         <div className="flex flex-col gap-6">

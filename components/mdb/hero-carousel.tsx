@@ -14,7 +14,7 @@ import {
     CarouselApi,
 } from "@/components/ui/carousel";
 import Link from "next/link";
-import { StarIcon, CalendarIcon, InfoIcon, PlayIcon } from "lucide-react";
+import { StarIcon, CalendarIcon, InfoIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -107,21 +107,15 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
                             </p>
                         )}
 
-                        {/* Netflix-style Action Buttons */}
+                        {/* CTA Button */}
                         <div className="flex items-center gap-3">
-                            <Link href={`${linkHref}#sources`}>
-                                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-semibold px-8">
-                                    <PlayIcon className="h-5 w-5 mr-2 fill-current" />
-                                    Play
-                                </Button>
-                            </Link>
                             <Link href={linkHref}>
                                 <Button
                                     size="lg"
-                                    variant="secondary"
-                                    className="bg-white/20 text-white border-white/30 hover:bg-white/30 font-semibold px-6">
+                                    variant="outline"
+                                    className="bg-white/10 text-white border-white/40 hover:bg-white/20 font-semibold px-8">
                                     <InfoIcon className="h-5 w-5 mr-2" />
-                                    More Info
+                                    View Details
                                 </Button>
                             </Link>
                         </div>
@@ -191,17 +185,15 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
                         <p className="text-white/80 text-sm line-clamp-3 leading-relaxed">{media.overview}</p>
                     )}
 
-                    {/* Mobile action buttons */}
+                    {/* Mobile CTA button */}
                     <div className="flex items-center gap-2">
-                        <Link href={`${linkHref}#sources`}>
-                            <Button size="sm" className="bg-white text-black hover:bg-white/90 flex-1">
-                                <PlayIcon className="h-4 w-4 mr-1 fill-current" />
-                                Play
-                            </Button>
-                        </Link>
-                        <Link href={linkHref}>
-                            <Button size="sm" variant="ghost" className="text-white hover:bg-white/20 p-2">
-                                <InfoIcon className="h-4 w-4" />
+                        <Link href={linkHref} className="w-full">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-white/10 text-white border-white/40 hover:bg-white/20 w-full">
+                                <InfoIcon className="h-4 w-4 mr-1" />
+                                View Details
                             </Button>
                         </Link>
                     </div>

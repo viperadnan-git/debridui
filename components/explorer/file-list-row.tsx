@@ -52,7 +52,7 @@ export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
                 onToggleExpand={() => setIsExpanded(!isExpanded)}
             />
             {isExpanded && (
-                <div className="border-b border-border/40 bg-muted/10">
+                <div className="border-b">
                     <ExpandedRow file={file} />
                 </div>
             )}
