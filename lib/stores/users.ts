@@ -5,6 +5,7 @@ import { queryClient } from "../query-client";
 import { getClient } from "@/lib/clients";
 import { toast } from "sonner";
 import { handleError } from "@/lib/utils/error-handling";
+import { useSelectionStore } from "./selection";
 
 interface UserStore {
     users: User[];
@@ -68,14 +69,13 @@ export const useUserStore = create<UserStore>()(
             },
 
             switchUser: (userId) => {
-                set((state) => {
-                    const user = state.users.find((u) => u.id === userId);
-                    if (!user) return state;
+                const user = get().users.find((u) => u.id === userId);
+                if (!user) return;
 
-                    return {
-                        currentUser: user,
-                    };
-                });
+                // Clear selection when switching accounts
+                useSelectionStore.getState().clearAll();
+
+                set({ currentUser: user });
             },
 
             updateUser: (userId, updates) => {

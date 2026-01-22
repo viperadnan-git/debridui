@@ -76,7 +76,7 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
     });
 
     return (
-        <div className="flex flex-wrap gap-1 sm:gap-2">
+        <div className="contents">
             <Button
                 variant="outline"
                 size="sm"

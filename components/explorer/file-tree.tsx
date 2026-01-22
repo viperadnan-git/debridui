@@ -291,7 +291,7 @@ const VirtualizedNode = memo(function VirtualizedNode({
             {isFile ? (
                 <>
                     <span className="text-[10px] sm:text-xs text-muted-foreground">{formatSize(node.size)}</span>
-                    <div className="flex gap-1 md:gap-0.5">
+                    <div className="flex gap-2 md:gap-0.5">
                         {isVideoWithBrowserPlayer && (
                             <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />
                         )}
