@@ -11,7 +11,7 @@ A modern, fast debrid client with integrated media discovery. Built with Next.js
 
 ## Demo
 
-🚀 **Live Demo**: [https://debridui.viperadnan.com](https://debridui.viperadnan.com)
+🚀 **Live Demo**: [https://debridui.vercel.app](https://debridui.vercel.app)
 
 ## Features
 

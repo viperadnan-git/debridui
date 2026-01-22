@@ -12,7 +12,7 @@
         "tailwindcss",
         "typescript"
     ],
-    "homepage": "https://debridui.viperadnan.com",
+    "homepage": "https://debridui.vercel.app",
     "repository": {
         "type": "git",
         "url": "https://github.com/viperadnan-git/debridui"
