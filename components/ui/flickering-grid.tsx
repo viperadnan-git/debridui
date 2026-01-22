@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils/index";
 
@@ -8,7 +9,7 @@ interface FlickeringGridProps extends React.HTMLAttributes<HTMLDivElement> {
     squareSize?: number;
     gridGap?: number;
     flickerChance?: number;
-    color?: string;
+    colors?: [string, string];
     width?: number;
     height?: number;
     className?: string;
@@ -19,7 +20,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     squareSize = 4,
     gridGap = 6,
     flickerChance = 0.3,
-    color = "rgb(0, 0, 0)",
+    colors = ["rgb(0, 0, 0)", "rgb(255, 255, 255)"],
     width,
     height,
     className,
@@ -30,6 +31,8 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [isInView, setIsInView] = useState(false);
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+    const { theme } = useTheme();
+    const currentColor = theme === "dark" ? colors[1] : colors[0];
 
     const memoizedColor = useMemo(() => {
         const toRGBA = (color: string) => {
@@ -45,8 +48,8 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
             const [r, g, b] = Array.from(ctx.getImageData(0, 0, 1, 1).data);
             return `rgba(${r}, ${g}, ${b},`;
         };
-        return toRGBA(color);
-    }, [color]);
+        return toRGBA(currentColor);
+    }, [currentColor]);
 
     const setupCanvas = useCallback(
         (canvas: HTMLCanvasElement, width: number, height: number) => {

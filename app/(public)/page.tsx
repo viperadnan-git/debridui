@@ -13,7 +13,7 @@ export default function Home() {
                     className="absolute inset-0"
                     squareSize={4}
                     gridGap={6}
-                    color="#e7e7e7"
+                    colors={["#181717", "#e7e7e7"]}
                     maxOpacity={0.2}
                     flickerChance={0.3}
                 />
@@ -34,16 +34,16 @@ export default function Home() {
                         <Button
                             variant="default"
                             size="lg"
-                            className="text-md bg-[#24292e] hover:bg-[#2c3136] text-white border-0">
+                            className="text-md bg-[#181717] hover:bg-[#272525] text-white dark:text-[#181717] dark:bg-[#e7e7e7]">
                             <div className="flex items-center gap-2">
                                 <img
                                     height="24"
                                     width="24"
-                                    className="invert"
+                                    className="invert dark:invert-0"
                                     src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/github.svg"
                                     alt="GitHub"
                                 />
-                                <span>See on GitHub</span>
+                                <span>View on GitHub</span>
                             </div>
                         </Button>
                     </Link>

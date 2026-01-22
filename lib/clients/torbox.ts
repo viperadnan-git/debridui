@@ -78,7 +78,7 @@ interface TorBoxResponse<T> {
 }
 
 export default class TorBoxClient extends BaseClient {
-    private readonly baseUrl = `https://torbox.bustcors.workers.dev/?url=${encodeURIComponent("https://api.torbox.app/v1/api")}`;
+    private readonly baseUrl = `https://cdn.corsfix.workers.dev/?url=${encodeURIComponent("https://api.torbox.app/v1/api")}`;
 
     constructor(user: User) {
         super(user);
@@ -131,7 +131,7 @@ export default class TorBoxClient extends BaseClient {
     }
 
     static async getUser(apiKey: string): Promise<User> {
-        const response = await fetch("https://torbox.bustcors.workers.dev/?url=https://api.torbox.app/v1/api/user/me", {
+        const response = await fetch("https://cdn.corsfix.workers.dev/?url=https://api.torbox.app/v1/api/user/me", {
             headers: {
                 Authorization: `Bearer ${apiKey}`,
                 "User-Agent": USER_AGENT,
