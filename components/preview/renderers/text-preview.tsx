@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DebridFileNode } from "@/lib/types";
+import { DebridFileNode, AccountType } from "@/lib/types";
 import { Loader2, AlertCircle } from "lucide-react";
+import { useUserStore } from "@/lib/stores/users";
 
 interface TextPreviewProps {
     file: DebridFileNode;
@@ -15,6 +16,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [content, setContent] = useState<string>("");
+    const currentUser = useUserStore((state) => state.currentUser);
 
     useEffect(() => {
         const fetchContent = async () => {
@@ -22,7 +24,12 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
                 setLoading(true);
                 setError(null);
 
-                const response = await fetch(downloadUrl);
+                const useProxy = currentUser?.type === AccountType.ALLDEBRID;
+                const fetchUrl = useProxy
+                    ? `https://cdn.corsfix.workers.dev/?url=${encodeURIComponent(downloadUrl)}`
+                    : downloadUrl;
+
+                const response = await fetch(fetchUrl);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch: ${response.statusText}`);
                 }
@@ -40,7 +47,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
         };
 
         fetchContent();
-    }, [downloadUrl, onLoad, onError]);
+    }, [downloadUrl, currentUser?.type, onLoad, onError]);
 
     if (loading) {
         return (
