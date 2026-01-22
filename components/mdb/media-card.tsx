@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
+import { getPosterUrl } from "@/lib/utils/trakt";
 
 interface MediaCardProps {
     media: TraktMedia;
@@ -17,10 +18,9 @@ interface MediaCardProps {
 export const MediaCard = memo(function MediaCard({ media, type, rank, className }: MediaCardProps) {
     const slug = media.ids?.slug || media.ids?.imdb;
     const linkHref = slug ? `/${type}/${slug}` : "#";
-
-    const posterUrl = media.images?.poster?.[0]
-        ? `https://${media.images.poster[0]}`
-        : `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
+    const posterUrl =
+        getPosterUrl(media.images) ||
+        `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
 
     return (
         <Link href={linkHref} className="block">

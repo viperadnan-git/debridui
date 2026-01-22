@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { traktClient } from "@/lib/trakt";
+import { getPosterUrl } from "@/lib/utils/trakt";
 
 interface SeasonCardProps {
     season: TraktSeason;
@@ -25,6 +26,11 @@ export const SeasonCard = memo(function SeasonCard({
 }: SeasonCardProps) {
     const queryClient = useQueryClient();
 
+    const seasonName = season.number === 0 ? "Specials" : `${season.number}`;
+    const posterUrl =
+        getPosterUrl(season.images) ||
+        `https://placehold.co/200x300/1a1a1a/white?text=${encodeURIComponent(seasonName)}`;
+
     // Prefetch season episodes on hover to eliminate 200-500ms waterfall
     const prefetchSeason = () => {
         if (!mediaId) return;
@@ -34,10 +40,6 @@ export const SeasonCard = memo(function SeasonCard({
             queryFn: () => traktClient.getShowEpisodes(mediaId, season.number),
         });
     };
-    const seasonName = season.number === 0 ? "Specials" : `${season.number}`;
-    const posterUrl = season.images?.poster?.[0]
-        ? `https://${season.images.poster[0]}`
-        : `https://placehold.co/200x300/1a1a1a/white?text=${encodeURIComponent(seasonName)}`;
 
     const formatDate = (dateString?: string) => {
         if (!dateString) return null;

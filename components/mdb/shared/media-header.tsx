@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MediaStats } from "../media-stats";
 import { memo } from "react";
+import { getPosterUrl, getBackdropUrl } from "@/lib/utils/trakt";
 
 interface MediaHeaderProps {
     media: TraktMedia;
@@ -15,21 +16,16 @@ interface MediaHeaderProps {
 }
 
 export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeaderProps) {
-    const posterUrl = media.images?.poster?.[0]
-        ? `https://${media.images.poster[0]}`
-        : `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
-
-    const backdropUrl = media.images?.fanart?.[0]
-        ? `https://${media.images.fanart[0]}`
-        : media.images?.banner?.[0]
-          ? `https://${media.images.banner[0]}`
-          : null;
+    const posterUrl =
+        getPosterUrl(media.images) ||
+        `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
+    const backdropUrl = getBackdropUrl(media.images);
 
     return (
         <div className="relative">
             {backdropUrl && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen -mt-6 pointer-events-none">
-                    <div className="aspect-video overflow-hidden">
+                <>
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen overflow-hidden -mt-6">
                         <img
                             src={backdropUrl}
                             alt={media.title}
@@ -37,9 +33,9 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                             loading="lazy"
                             decoding="async"
                         />
-                        <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
                     </div>
-                </div>
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-t from-background via-background/50 to-transparent -mt-6" />
+                </>
             )}
 
             <div className={backdropUrl ? "relative pt-[20vh] sm:pt-[22vh] md:pt-[25vh] pb-8" : "pb-8"}>

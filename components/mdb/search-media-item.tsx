@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Film, Tv, Star, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type TraktSearchResult } from "@/lib/trakt";
+import { getPosterUrl } from "@/lib/utils/trakt";
 
 interface SearchMediaItemProps {
     result: TraktSearchResult;
@@ -29,15 +30,7 @@ export const SearchMediaItem = memo(function SearchMediaItem({
 
     const type = result.movie ? "movie" : "show";
     const Icon = type === "movie" ? Film : Tv;
-
-    const images = media.images;
-    const posterImage = images?.poster?.[0]
-        ? `https://${images.poster[0]}`
-        : images?.fanart?.[0]
-          ? `https://${images.fanart[0]}`
-          : images?.banner?.[0]
-            ? `https://${images.banner[0]}`
-            : null;
+    const posterImage = getPosterUrl(media.images);
 
     const content = (
         <>
