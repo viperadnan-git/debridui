@@ -71,6 +71,7 @@ export default abstract class BaseClient {
 
     abstract addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>>;
     abstract uploadTorrentFiles(files: File[]): Promise<Record<string, DebridFileAddStatus>>;
+    abstract findTorrents(searchQuery: string): Promise<DebridFile[]>;
     abstract findTorrentById?(torrentId: string): Promise<DebridFile | null>;
     abstract getDownloadLink(params: { fileNode: DebridFileNode; resolve?: boolean }): Promise<DebridLinkInfo>;
 }

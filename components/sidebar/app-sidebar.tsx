@@ -24,9 +24,8 @@ const data = {
         },
         {
             title: "Search",
-            url: "#",
+            url: "/search",
             icon: SearchIcon,
-            action: "search",
         },
         {
             title: "Files",

@@ -102,19 +102,6 @@ export const useTraktSeasonEpisodes = createTraktHook(
     "details"
 );
 
-// Search hooks
-export const useTraktSearchMovies = createTraktHook(
-    ["search", "movies"],
-    (query: string) => traktClient.search(query, ["movie"]),
-    "search"
-);
-
-export const useTraktSearchShows = createTraktHook(
-    ["search", "shows"],
-    (query: string) => traktClient.search(query, ["show"]),
-    "search"
-);
-
 // Aliases for backward compatibility
 export const useTraktMostPlayedMovies = useTraktMostWatchedMovies;
 export const useTraktMostPlayedShows = useTraktMostWatchedShows;
@@ -127,17 +114,6 @@ export function useTraktTrendingMixed(limit = 20) {
         queryFn: () => traktClient.getTrendingMixed(limit),
         staleTime: cache,
         gcTime: cache * 2,
-    });
-}
-
-export function useTraktSearch(query: string, type?: "movie" | "show", enabled = true) {
-    const cache = CACHE_TIMES.search;
-    return useQuery({
-        queryKey: ["trakt", "search", query, type],
-        queryFn: () => traktClient.search(query, type ? [type] : ["movie", "show"]),
-        staleTime: cache,
-        gcTime: cache * 2,
-        enabled: enabled && query.trim().length > 0,
     });
 }
 

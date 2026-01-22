@@ -30,9 +30,9 @@ export const SearchSection = memo(function SearchSection({ onSearchResults }: Se
                 const result = await client.findTorrentById(torrentId);
                 return result ? [result] : [];
             }
-            return client.findTorrents ? client.findTorrents(queryParam) : Promise.resolve([]);
+            return client.findTorrents(queryParam);
         },
-        enabled: !!queryParam && (isIdSearch ? !!client.findTorrentById : !!client.findTorrents),
+        enabled: !!queryParam && (isIdSearch ? !!client.findTorrentById : true),
         staleTime: 5_000,
     });
 
