@@ -3,17 +3,21 @@
 import { CommandGroup } from "@/components/ui/command";
 import { Search, Loader2 } from "lucide-react";
 import { type DebridFile } from "@/lib/types";
+import { type TorBoxSearchResult } from "@/lib/clients/torbox";
 import { type TraktSearchResult } from "@/lib/trakt";
 import { SearchFileItem } from "./search-file-item";
 import { SearchMediaItem } from "./search-media-item";
+import { SearchSourceItem } from "./search-source-item";
 import { cn } from "@/lib/utils";
 
 interface SearchResultsProps {
     query: string;
     fileResults?: DebridFile[];
     traktResults?: TraktSearchResult[];
+    sourceResults?: TorBoxSearchResult[];
     isFileSearching: boolean;
     isTraktSearching: boolean;
+    isSourceSearching: boolean;
     onFileSelect: (file: DebridFile) => void;
     onMediaSelect: (result: TraktSearchResult) => void;
     variant?: "modal" | "page";
@@ -24,8 +28,10 @@ export function SearchResults({
     query,
     fileResults,
     traktResults,
+    sourceResults,
     isFileSearching,
     isTraktSearching,
+    isSourceSearching,
     onFileSelect,
     onMediaSelect,
     variant = "modal",
@@ -34,9 +40,10 @@ export function SearchResults({
     const trimmedQuery = query.trim();
     const hasFileResults = fileResults && fileResults.length > 0;
     const hasTraktResults = traktResults && traktResults.length > 0;
+    const hasSourceResults = sourceResults && sourceResults.length > 0;
     const isSearching = trimmedQuery.length > 2;
-    const bothLoaded = !isFileSearching && !isTraktSearching;
-    const hasAnyResults = hasFileResults || hasTraktResults;
+    const bothLoaded = !isFileSearching && !isTraktSearching && !isSourceSearching;
+    const hasAnyResults = hasFileResults || hasTraktResults || hasSourceResults;
 
     // Show initial state when query is too short
     if (trimmedQuery.length <= 2) {
@@ -61,7 +68,7 @@ export function SearchResults({
                 {isSearching && (
                     <>
                         {/* Loading indicator at the top */}
-                        {(isFileSearching || isTraktSearching) && (
+                        {(isFileSearching || isTraktSearching || isSourceSearching) && (
                             <div className="flex items-center justify-center py-2 text-xs text-muted-foreground border-b sticky top-0 bg-background z-10">
                                 <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
                                 <span className="text-xs">Searching...</span>
@@ -99,12 +106,28 @@ export function SearchResults({
                             </CommandGroup>
                         )}
 
+                        {/* Source results */}
+                        {hasSourceResults && (
+                            <CommandGroup
+                                heading="Source Results"
+                                className="**:[[cmdk-group-heading]]:px-1 sm:**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-1.5 sm:**:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-muted-foreground">
+                                {sourceResults.map((result) => (
+                                    <SearchSourceItem key={result.hash} result={result} variant="modal" />
+                                ))}
+                            </CommandGroup>
+                        )}
+
                         {/* End of results */}
                         {bothLoaded && hasAnyResults && (
                             <div className="flex items-center justify-center py-6 text-xs text-muted-foreground border-t">
                                 <span>
-                                    End of results • {(fileResults?.length || 0) + (traktResults?.length || 0)} item
-                                    {(fileResults?.length || 0) + (traktResults?.length || 0) !== 1 ? "s" : ""} found
+                                    {(() => {
+                                        const totalCount =
+                                            (fileResults?.length || 0) +
+                                            (traktResults?.length || 0) +
+                                            (sourceResults?.length || 0);
+                                        return `End of results • ${totalCount} item${totalCount !== 1 ? "s" : ""} found`;
+                                    })()}
                                 </span>
                             </div>
                         )}
@@ -133,7 +156,7 @@ export function SearchResults({
             {isSearching && (
                 <>
                     {/* Loading indicator at the top */}
-                    {(isFileSearching || isTraktSearching) && (
+                    {(isFileSearching || isTraktSearching || isSourceSearching) && (
                         <div className="flex items-center justify-center py-2 text-xs text-muted-foreground sticky top-0 z-10">
                             <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
                             <span className="text-xs">Searching...</span>
@@ -173,12 +196,29 @@ export function SearchResults({
                         </section>
                     )}
 
+                    {/* Source results */}
+                    {hasSourceResults && (
+                        <section className="space-y-3">
+                            <h2 className="text-sm font-semibold text-muted-foreground px-3">Source Results</h2>
+                            <div className="space-y-1 border rounded-lg p-2">
+                                {sourceResults.map((result) => (
+                                    <SearchSourceItem key={result.hash} result={result} variant="page" />
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
                     {/* End of results */}
                     {bothLoaded && hasAnyResults && (
                         <div className="flex items-center justify-center py-6 text-sm text-muted-foreground border-t pt-6">
                             <span>
-                                {(fileResults?.length || 0) + (traktResults?.length || 0)} item
-                                {(fileResults?.length || 0) + (traktResults?.length || 0) !== 1 ? "s" : ""} found
+                                {(() => {
+                                    const totalCount =
+                                        (fileResults?.length || 0) +
+                                        (traktResults?.length || 0) +
+                                        (sourceResults?.length || 0);
+                                    return `${totalCount} item${totalCount !== 1 ? "s" : ""} found`;
+                                })()}
                             </span>
                         </div>
                     )}

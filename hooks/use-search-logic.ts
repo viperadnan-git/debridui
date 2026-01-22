@@ -3,8 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { getFindTorrentsCacheKey } from "@/lib/utils/cache-keys";
-import { type DebridFile } from "@/lib/types";
+import { type DebridFile, AccountType } from "@/lib/types";
 import { traktClient } from "@/lib/trakt";
+import type TorBoxClient from "@/lib/clients/torbox";
+import type { TorBoxSearchResult } from "@/lib/clients/torbox";
 
 interface UseSearchLogicOptions {
     query: string;
@@ -35,19 +37,33 @@ export function useSearchLogic({ query, enabled = true }: UseSearchLogicOptions)
         gcTime: 60_000,
     });
 
-    const hasFileResults = !!(fileResults && fileResults.length > 0);
-    const hasTraktResults = !!(traktResults && traktResults.length > 0);
-    const bothLoaded = !isFileSearching && !isTraktSearching;
-    const hasAnyResults = hasFileResults || hasTraktResults;
+    const isTorBoxUser = currentUser.type === AccountType.TORBOX;
+
+    const { data: sourceResults, isLoading: isSourceSearching } = useQuery<TorBoxSearchResult[]>({
+        queryKey: ["torbox", "search", currentUser.id, query],
+        queryFn: () => (client as TorBoxClient).searchTorrents(query),
+        enabled: shouldSearch && isTorBoxUser,
+        staleTime: 60 * 60 * 1000,
+        gcTime: 24 * 60 * 60 * 1000,
+    });
+
+    const hasFileResults = !!fileResults?.length;
+    const hasTraktResults = !!traktResults?.length;
+    const hasSourceResults = isTorBoxUser && !!sourceResults?.length;
+    const bothLoaded = !isFileSearching && !isTraktSearching && (!isTorBoxUser || !isSourceSearching);
+    const hasAnyResults = hasFileResults || hasTraktResults || hasSourceResults;
 
     return {
         fileResults,
         traktResults,
+        sourceResults: isTorBoxUser ? sourceResults : undefined,
         isFileSearching,
         isTraktSearching,
+        isSourceSearching: isTorBoxUser ? isSourceSearching : false,
         bothLoaded,
         hasFileResults,
         hasTraktResults,
+        hasSourceResults,
         hasAnyResults,
     };
 }

@@ -40,7 +40,7 @@ interface SourcesSkeletonProps {
     className?: string;
 }
 
-function AddHashButton({ magnet }: { magnet: string }) {
+export function AddSourceButton({ source }: { source: string }) {
     const { client } = useAuthContext();
     const router = useRouter();
     const [status, setStatus] = useState<"added" | "cached" | "failed" | "loading" | null>(null);
@@ -49,15 +49,15 @@ function AddHashButton({ magnet }: { magnet: string }) {
     const handleAdd = async () => {
         setStatus("loading");
         try {
-            const result = await client.addTorrent([magnet]);
-            const magnetStatus = result[magnet];
-            if (magnetStatus.error) {
-                throw new Error(magnetStatus.error);
+            const result = await client.addTorrent([source]);
+            const sourceStatus = result[source];
+            if (sourceStatus.error) {
+                throw new Error(sourceStatus.error);
             }
-            setStatus(magnetStatus.is_cached ? "cached" : "added");
-            setTorrentId(magnetStatus.id as number | string);
+            setStatus(sourceStatus.is_cached ? "cached" : "added");
+            setTorrentId(sourceStatus.id as number | string);
         } catch (error) {
-            toast.error(`Failed to add magnet: ${error instanceof Error ? error.message : "Unknown error"}`);
+            toast.error(`Failed to add source: ${error instanceof Error ? error.message : "Unknown error"}`);
             setStatus("failed");
         }
     };
@@ -184,7 +184,7 @@ export function SourceRow({
             </div>
 
             <div className="shrink-0">
-                <AddHashButton magnet={source.magnet} />
+                <AddSourceButton source={source.magnet} />
             </div>
         </div>
     );
@@ -192,6 +192,8 @@ export function SourceRow({
 
 export function Sources({ imdbId, mediaType = "movie", tvParams, className }: SourcesProps) {
     const { data: sources, isLoading, error, refetch } = useTorrentioSources(imdbId, mediaType, tvParams);
+
+    if (!imdbId) return null;
 
     if (error) {
         return (
@@ -292,6 +294,8 @@ export function SourcesSkeleton({ count = 5, className }: SourcesSkeletonProps) 
 }
 
 export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, children }: SourcesDialogProps) {
+    if (!imdbId) return null;
+
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>

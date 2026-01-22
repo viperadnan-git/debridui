@@ -16,6 +16,30 @@ import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
 import { useUserStore } from "../stores/users";
 
+// TorBox Search API types
+export interface TorBoxSearchResult {
+    hash: string;
+    raw_title: string;
+    title: string;
+    magnet: string;
+    last_known_seeders: number;
+    last_known_peers: number;
+    size: number;
+    files: number;
+    type: string;
+    age: string;
+    cached: boolean;
+}
+
+interface TorBoxSearchResponse {
+    success: boolean;
+    message: string;
+    data: {
+        metadata: null;
+        torrents: TorBoxSearchResult[];
+    };
+}
+
 // TorBox API Response types
 interface TorBoxUser {
     id: number;
@@ -469,6 +493,42 @@ export default class TorBoxClient extends BaseClient {
             },
             {} as Record<string, DebridFileAddStatus>
         );
+    }
+
+    async searchTorrents(query: string): Promise<TorBoxSearchResult[]> {
+        // Use different base URL for search API (search-api.torbox.app vs api.torbox.app)
+        const searchApiUrl = `https://cdn.corsfix.workers.dev/?url=${encodeURIComponent(
+            `https://search-api.torbox.app/torrents/search/${encodeURIComponent(query)}`
+        )}`;
+
+        const params = new URLSearchParams({
+            check_cache: "true",
+            check_owned: "true",
+            search_user_engines: "true",
+        });
+
+        const response = await fetch(`${searchApiUrl}?${params}`, {
+            headers: {
+                Authorization: `Bearer ${this.user.apiKey}`,
+                "User-Agent": USER_AGENT,
+            },
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                useUserStore.getState().removeUser(this.user.id);
+                throw new AuthError("Invalid or expired API key", "AUTH_INVALID_APIKEY", response.status);
+            }
+            throw new DebridError(`Search request failed: ${response.statusText}`, "SEARCH_FAILED", response.status);
+        }
+
+        const data: TorBoxSearchResponse = await response.json();
+
+        if (!data.success || !data.data) {
+            throw new DebridError(data.message || "Search failed", "SEARCH_ERROR");
+        }
+
+        return data.data.torrents || [];
     }
 
     private mapToDebridFile(torrent: TorBoxTorrent): DebridFile {

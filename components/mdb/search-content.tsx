@@ -39,10 +39,11 @@ export function SearchContent({
         return () => clearTimeout(timer);
     }, [query]);
 
-    const { fileResults, traktResults, isFileSearching, isTraktSearching } = useSearchLogic({
-        query: debouncedQuery,
-        enabled: true,
-    });
+    const { fileResults, traktResults, sourceResults, isFileSearching, isTraktSearching, isSourceSearching } =
+        useSearchLogic({
+            query: debouncedQuery,
+            enabled: true,
+        });
 
     const handleFileSelect = useCallback(
         (file: DebridFile) => {
@@ -90,8 +91,10 @@ export function SearchContent({
                         query={debouncedQuery}
                         fileResults={fileResults}
                         traktResults={traktResults}
+                        sourceResults={sourceResults}
                         isFileSearching={isFileSearching}
                         isTraktSearching={isTraktSearching}
+                        isSourceSearching={isSourceSearching}
                         onFileSelect={handleFileSelect}
                         onMediaSelect={handleMediaSelect}
                         variant="modal"
@@ -120,8 +123,10 @@ export function SearchContent({
                 query={debouncedQuery}
                 fileResults={fileResults}
                 traktResults={traktResults}
+                sourceResults={sourceResults}
                 isFileSearching={isFileSearching}
                 isTraktSearching={isTraktSearching}
+                isSourceSearching={isSourceSearching}
                 onFileSelect={handleFileSelect}
                 onMediaSelect={handleMediaSelect}
                 variant="page"
