@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BookIcon, InfoIcon } from "lucide-react";
+import { BookIcon, InfoIcon, ScrollTextIcon } from "lucide-react";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { Button } from "@/components/ui/button";
 
@@ -49,9 +49,9 @@ export default function Home() {
                     </Link>
                 </div>
             </main>
-            <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center relative z-10">
+            <footer className="row-start-3 flex gap-2 sm:gap-[24px] flex-wrap items-center justify-center relative z-10 text-sm">
                 <a
-                    className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+                    className="flex items-center gap-1 hover:underline hover:underline-offset-4"
                     href="https://github.com/viperadnan-git/debridui#readme"
                     target="_blank"
                     rel="noopener noreferrer">
@@ -59,7 +59,15 @@ export default function Home() {
                     Learn more
                 </a>
                 <a
-                    className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+                    className="flex items-center gap-1 hover:underline hover:underline-offset-4"
+                    href="https://github.com/viperadnan-git/debridui/blob/main/DISCLAIMER.md"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    <ScrollTextIcon className="size-4 text-muted-foreground" />
+                    Disclaimer
+                </a>
+                <a
+                    className="flex items-center gap-1 hover:underline hover:underline-offset-4"
                     href="https://github.com/viperadnan-git/debridui/issues"
                     target="_blank"
                     rel="noopener noreferrer">

@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
 
 import { cn, formatAccountType, decodeAccountData } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,9 +21,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLoadingState } from "@/hooks/use-loading-state";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
-    showBranding?: boolean;
     showOAuthButtons?: boolean;
-    showTerms?: boolean;
     submitButtonText?: string;
     onSuccess?: () => void;
     disableAutoRedirect?: boolean;
@@ -32,9 +29,7 @@ interface LoginFormProps extends React.ComponentProps<"div"> {
 
 export function LoginForm({
     className,
-    showBranding = true,
     showOAuthButtons = true,
-    showTerms = true,
     submitButtonText = "Login",
     onSuccess: onSuccessCallback,
     disableAutoRedirect = false,
@@ -174,23 +169,6 @@ export function LoginForm({
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <div className="flex flex-col gap-6">
-                        {showBranding && (
-                            <div className="flex flex-col items-center gap-2">
-                                <a href="#" className="flex flex-col items-center gap-2 font-medium">
-                                    <div className="flex size-12 items-center justify-center">
-                                        <Image
-                                            src="/icon.svg"
-                                            alt="DebridUI"
-                                            width={48}
-                                            height={48}
-                                            className="invert dark:invert-0"
-                                        />
-                                    </div>
-                                    <span className="sr-only">DebridUI</span>
-                                </a>
-                                <h1 className="text-xl font-bold">Welcome to DebridUI</h1>
-                            </div>
-                        )}
                         <div className="flex flex-col gap-6">
                             <div>
                                 <FormField
@@ -288,13 +266,10 @@ export function LoginForm({
                     </div>
                 </form>
             </Form>
-            {showTerms && (
-                <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-                    By clicking continue, you agree to our{" "}
-                    <a href="https://github.com/viperadnan-git/debridui/#disclaimer">Terms of Service</a> and{" "}
-                    <a href="https://github.com/viperadnan-git/debridui/#disclaimer">Privacy Policy</a>.
-                </div>
-            )}
+            <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+                By clicking continue, you acknowledge our{" "}
+                <a href="https://github.com/viperadnan-git/debridui/blob/main/DISCLAIMER.md">disclaimer</a>.
+            </div>
         </div>
     );
 }

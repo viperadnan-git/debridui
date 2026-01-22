@@ -18,9 +18,7 @@ export default function AddAccountPage() {
 
             <div className="max-w-md mx-auto">
                 <LoginForm
-                    showBranding={false}
                     showOAuthButtons={true}
-                    showTerms={false}
                     submitButtonText="Add Account"
                     onSuccess={handleSuccess}
                     disableAutoRedirect={true}

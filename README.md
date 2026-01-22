@@ -7,7 +7,8 @@
 
 A modern, fast debrid client with integrated media discovery. Built with Next.js 15, TypeScript, and Tailwind CSS.
 
-> This project does not provide, host, or stream any content. DebridUI is a client interface that connects to third-party debrid service APIs to display authorized users' private files and content. [Learn more](#disclaimer).
+> [!IMPORTANT]
+> This project does not provide, host, or stream any content. DebridUI is a client interface that connects to third-party debrid service APIs to display authorized users' private files and content. [Read full disclaimer](DISCLAIMER.md).
 
 ## Demo
 
@@ -102,21 +103,7 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 ## Disclaimer
 
-This software ("DebridUI") is provided as a client interface application only and operates under the following terms:
-
-1. **No Content Hosting**: This application does not host, store, distribute, or stream any media content, files, or data of any kind.
-
-2. **Third-Party Services**: DebridUI functions solely as an interface to access third-party debrid service APIs. All content accessed through this application is provided by and remains the property of these third-party services and their respective rights holders.
-
-3. **User Authorization Required**: Users must possess valid, authorized accounts with compatible debrid services. This application only facilitates access to content that users are already authorized to access through their existing service subscriptions.
-
-4. **No Affiliation**: This project is not affiliated with, endorsed by, or sponsored by any debrid service providers or content creators.
-
-5. **User Responsibility**: Users are solely responsible for ensuring their use of this application complies with all applicable laws, regulations, and terms of service of the third-party services they access.
-
-6. **No Warranty**: This software is provided "as is" without warranty of any kind, either express or implied. The developers assume no liability for any damages or legal consequences arising from the use or misuse of this application.
-
-By using this application, you acknowledge that you have read, understood, and agree to these terms.
+> **⚠️ Important Legal Notice**: This project is a client interface only and does not host, store, or distribute any content. Users are solely responsible for ensuring their use complies with all applicable laws, copyright regulations, and third-party service terms. By using this software, you acknowledge and agree to the [full disclaimer](DISCLAIMER.md).
 
 ## License
 
