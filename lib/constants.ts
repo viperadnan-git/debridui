@@ -61,6 +61,15 @@ export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {
     nfo: FileType.TEXT,
     md: FileType.TEXT,
     markdown: FileType.TEXT,
+
+    // Subtitles
+    srt: FileType.TEXT,
+    vtt: FileType.TEXT,
+    ass: FileType.TEXT,
+    ssa: FileType.TEXT,
+    sub: FileType.TEXT,
+    sbv: FileType.TEXT,
+    scc: FileType.TEXT,
 };
 
 export const TRASH_SIZE_THRESHOLD = 1024 * 1024; // 1MB in bytes

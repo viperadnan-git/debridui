@@ -69,7 +69,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
 
     return (
         <div className="w-full h-full overflow-auto bg-background">
-            <pre className="whitespace-pre-wrap font-mono text-sm text-foreground bg-foreground/10 h-full wrap-break-word p-6 max-w-4xl mx-auto">
+            <pre className="whitespace-pre-wrap font-mono text-sm text-foreground bg-foreground/10 min-h-full wrap-break-word p-6 max-w-4xl mx-auto">
                 {content}
             </pre>
         </div>
