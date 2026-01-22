@@ -78,3 +78,6 @@ export const QUERY_CACHE_STALE_TIME = 1000 * 60 * 5; // 5 minutes
 export const PAGE_SIZE = 50;
 export const USER_AGENT = "DebridUI";
 export const CAROUSEL_AUTO_DELAY = 3000; // 3 seconds
+
+// External links
+export const DISCORD_URL = process.env.NEXT_PUBLIC_DISCORD_URL;

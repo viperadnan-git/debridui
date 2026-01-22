@@ -3,14 +3,7 @@
 import * as React from "react";
 
 import { NavMain } from "@/components/sidebar/nav-main";
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarRail,
-    useSidebar,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
 import { FolderOpen, SearchIcon, HomeIcon, SettingsIcon, UsersIcon } from "lucide-react";
 import { useSearch } from "@/components/mdb/search-provider";
@@ -54,7 +47,6 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { open, isMobile } = useSidebar();
     const { toggle: toggleSearch } = useSearch();
 
     const handleNavAction = (action?: string) => {
@@ -72,11 +64,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <NavMain items={data.navMain} onAction={handleNavAction} />
             </SidebarContent>
             {/* <NavUser user={data.user} /> */}
-            {(open || isMobile) && (
-                <SidebarFooter className="border-t border-sidebar-border/50">
-                    <SidebarFooterContent />
-                </SidebarFooter>
-            )}
+            <SidebarFooter className="border-t border-sidebar-border/50">
+                <SidebarFooterContent />
+            </SidebarFooter>
             <SidebarRail />
         </Sidebar>
     );
