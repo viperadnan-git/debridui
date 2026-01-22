@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookIcon, InfoIcon } from "lucide-react";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
     return (
@@ -24,27 +25,28 @@ export default function Home() {
                 </h1>
                 <Image className="dark:invert" src="/logo.svg" alt="DebridUI logo" width={680} height={220} priority />
                 <div className="flex gap-4 items-center flex-col sm:flex-row">
-                    <Link
-                        href="/dashboard"
-                        className="rounded-xl border border-solid border-transparent transition-colors flex items-center justify-center bg-primary text-primary-foreground gap-2 hover:bg-primary/90 font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto">
-                        Open App
+                    <Link href="/dashboard">
+                        <Button variant="default" size="lg" className="text-md">
+                            Open App
+                        </Button>
                     </Link>
-                    <a
-                        className="rounded-xl bg-background border border-solid border-black/8 dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-auto"
-                        href="https://github.com/viperadnan-git/debridui"
-                        target="_blank"
-                        rel="noopener noreferrer">
-                        <div className="flex items-center gap-2">
-                            <img
-                                height="24"
-                                width="24"
-                                className="dark:invert"
-                                src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/github.svg"
-                                alt="GitHub"
-                            />
-                            <span>See on GitHub</span>
-                        </div>
-                    </a>
+                    <Link href="https://github.com/viperadnan-git/debridui" target="_blank" rel="noopener noreferrer">
+                        <Button
+                            variant="default"
+                            size="lg"
+                            className="text-md bg-[#24292e] hover:bg-[#2c3136] text-white border-0">
+                            <div className="flex items-center gap-2">
+                                <img
+                                    height="24"
+                                    width="24"
+                                    className="invert"
+                                    src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/github.svg"
+                                    alt="GitHub"
+                                />
+                                <span>See on GitHub</span>
+                            </div>
+                        </Button>
+                    </Link>
                 </div>
             </main>
             <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center relative z-10">
