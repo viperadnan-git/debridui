@@ -1,5 +1,3 @@
-"use client";
-
 import { type TraktMedia } from "@/lib/trakt";
 import { Badge } from "@/components/ui/badge";
 import { Star, Calendar, Clock, Film, Tv, ExternalLink, Home, Globe } from "lucide-react";

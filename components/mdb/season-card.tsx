@@ -48,7 +48,7 @@ export const SeasonCard = memo(function SeasonCard({
 
     return (
         <div
-            className={cn("group cursor-pointer transition-all hover:scale-105", className)}
+            className={cn("group cursor-pointer transition-all hover:scale-105 w-32 sm:w-36 md:w-40", className)}
             onClick={onClick}
             onMouseEnter={prefetchSeason}>
             <div
@@ -69,7 +69,12 @@ export const SeasonCard = memo(function SeasonCard({
 
                 {/* Season number badge */}
                 <div className="absolute top-2 left-2">
-                    <Badge variant={isSelected ? "default" : "secondary"} className="text-xs font-bold shadow-sm">
+                    <Badge
+                        variant={isSelected ? "default" : "outline"}
+                        className={cn(
+                            "text-xs font-bold shadow-sm",
+                            !isSelected && "bg-black/50 border-white/20 text-white"
+                        )}>
                         {seasonName}
                     </Badge>
                 </div>

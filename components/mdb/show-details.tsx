@@ -2,6 +2,7 @@
 
 import { type TraktMedia, type TraktSeason } from "@/lib/trakt";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useTraktShowSeasons, useTraktShowEpisodes, useTraktPeople } from "@/hooks/use-trakt";
 import { SeasonCard } from "./season-card";
 import { EpisodeCard } from "./episode-card";
@@ -32,17 +33,20 @@ const SeasonsSection = memo(function SeasonsSection({
     return (
         <div>
             <h3 className="text-base sm:text-lg font-semibold mb-3">Seasons</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-                {seasons.map((season) => (
-                    <SeasonCard
-                        key={season.number}
-                        season={season as unknown as TraktSeason}
-                        isSelected={selectedSeason === season.number}
-                        onClick={() => setSelectedSeason(season.number)}
-                        mediaId={mediaId}
-                    />
-                ))}
-            </div>
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max space-x-4 pb-4">
+                    {seasons.map((season) => (
+                        <SeasonCard
+                            key={season.number}
+                            season={season as unknown as TraktSeason}
+                            isSelected={selectedSeason === season.number}
+                            onClick={() => setSelectedSeason(season.number)}
+                            mediaId={mediaId}
+                        />
+                    ))}
+                </div>
+                <ScrollBar orientation="horizontal" />
+            </ScrollArea>
         </div>
     );
 });
