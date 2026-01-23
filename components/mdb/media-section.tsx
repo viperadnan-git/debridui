@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { memo } from "react";
+import { ScrollCarousel } from "@/components/common/scroll-carousel";
 
 interface MediaSectionProps {
     title: string;
@@ -15,6 +16,12 @@ interface MediaSectionProps {
     showRank?: boolean;
     viewAllHref?: string;
 }
+
+const skeletonCards = Array.from({ length: 20 }, (_, i) => (
+    <div key={i}>
+        <Skeleton className="aspect-2/3 rounded-md" />
+    </div>
+));
 
 export const MediaSection = memo(function MediaSection({
     title,
@@ -47,30 +54,29 @@ export const MediaSection = memo(function MediaSection({
                 )}
             </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 lg:gap-4">
-                {isLoading
-                    ? Array.from({ length: 10 }).map((_, i) => (
-                          <div key={i}>
-                              <Skeleton className="aspect-2/3 rounded-md" />
-                          </div>
-                      ))
-                    : items?.slice(0, 20).map((item, index) => {
-                          const media = item.movie || item.show;
-                          const type = item.movie ? "movie" : "show";
+            <ScrollCarousel className="-mx-4 lg:mx-0">
+                <div className="grid grid-rows-2 grid-flow-col auto-cols-[120px] sm:auto-cols-[150px] md:auto-cols-[180px] gap-2 lg:gap-4 py-3 max-md:px-4">
+                    {isLoading
+                        ? skeletonCards
+                        : items
+                              ?.slice(0, 20)
+                              .filter((item) => item.movie || item.show)
+                              .map((item, index) => {
+                                  const media = item.movie || item.show;
+                                  const type = item.movie ? "movie" : "show";
 
-                          if (!media) return null;
-
-                          return (
-                              <MediaCard
-                                  key={`${type}-${media.ids?.trakt || index}`}
-                                  media={media}
-                                  type={type}
-                                  rank={showRank ? index + 1 : undefined}
-                                  watchers={item.watchers}
-                              />
-                          );
-                      })}
-            </div>
+                                  return (
+                                      <MediaCard
+                                          key={`${type}-${media!.ids?.trakt || index}`}
+                                          media={media!}
+                                          type={type}
+                                          rank={showRank ? index + 1 : undefined}
+                                          watchers={item.watchers}
+                                      />
+                                  );
+                              })}
+                </div>
+            </ScrollCarousel>
         </section>
     );
 });

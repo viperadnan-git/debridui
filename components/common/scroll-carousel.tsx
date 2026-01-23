@@ -45,14 +45,14 @@ export function ScrollCarousel({ className, children, ...props }: React.Componen
             <Button
                 variant="ghost"
                 size="icon"
-                className="scroll-carousel-btn scroll-carousel-btn-left max-md:hidden! absolute -left-4 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-md opacity-0 group-hover/scroll:opacity-100 transition-opacity"
+                className="scroll-carousel-btn scroll-carousel-btn-left max-md:hidden! absolute -left-4 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-md border border-border/50 opacity-0 group-hover/scroll:opacity-100 transition-opacity"
                 onClick={() => scroll("left")}>
                 <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
                 variant="ghost"
                 size="icon"
-                className="scroll-carousel-btn scroll-carousel-btn-right max-md:hidden! absolute -right-4 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-md opacity-0 group-hover/scroll:opacity-100 transition-opacity"
+                className="scroll-carousel-btn scroll-carousel-btn-right max-md:hidden! absolute -right-4 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-md border border-border/50 opacity-0 group-hover/scroll:opacity-100 transition-opacity"
                 onClick={() => scroll("right")}>
                 <ChevronRight className="h-4 w-4" />
             </Button>

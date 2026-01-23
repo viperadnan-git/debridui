@@ -2,6 +2,7 @@
 
 import { type TraktMedia } from "@/lib/trakt";
 import Link from "next/link";
+import Image from "next/image";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
@@ -23,11 +24,18 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
         `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
 
     return (
-        <Link href={linkHref} className="block">
+        <Link href={linkHref} className="block [content-visibility:auto] [contain-intrinsic-size:0_300px]">
             <div className={cn("group relative overflow-hidden transition-all hover:scale-105", className)}>
                 <div className="aspect-2/3 relative overflow-hidden bg-muted rounded-md">
-                    {}
-                    <img src={posterUrl} alt={media.title} className="object-cover w-full h-full" loading="lazy" />
+                    <Image
+                        src={posterUrl}
+                        alt={media.title}
+                        fill
+                        sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 180px"
+                        className="object-cover"
+                        loading="lazy"
+                        unoptimized
+                    />
                     <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                     <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
