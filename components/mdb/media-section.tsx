@@ -55,7 +55,7 @@ export const MediaSection = memo(function MediaSection({
             </div>
 
             <ScrollCarousel className="-mx-4 lg:mx-0">
-                <div className="grid grid-rows-2 grid-flow-col auto-cols-[120px] sm:auto-cols-[150px] md:auto-cols-[180px] gap-2 lg:gap-4 py-3 max-md:px-4">
+                <div className="grid grid-rows-2 grid-flow-col auto-cols-[120px] sm:auto-cols-[150px] md:auto-cols-[180px] gap-2 lg:gap-4 py-3 max-md:px-4 w-max">
                     {isLoading
                         ? skeletonCards
                         : items

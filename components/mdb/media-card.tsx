@@ -24,8 +24,12 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
         `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
 
     return (
-        <Link href={linkHref} className="block [content-visibility:auto] [contain-intrinsic-size:0_300px]">
-            <div className={cn("group relative overflow-hidden transition-all hover:scale-105", className)}>
+        <Link href={linkHref} className="block">
+            <div
+                className={cn(
+                    "group relative overflow-hidden transition-all hover:scale-105 [content-visibility:auto] [contain-intrinsic-size:120px_180px]",
+                    className
+                )}>
                 <div className="aspect-2/3 relative overflow-hidden bg-muted rounded-md">
                     <Image
                         src={posterUrl}
