@@ -17,7 +17,9 @@ interface SearchSourceItemProps {
 const SourceContent = memo(function SourceContent({ result }: { result: TorBoxSearchResult }) {
     return (
         <div className="flex-1 min-w-0">
-            <div className="font-medium text-xs sm:text-sm mb-1.5 leading-tight break-words">{result.raw_title}</div>
+            <div className="font-medium text-xs sm:text-sm mb-1.5 leading-tight wrap-break-word">
+                {result.raw_title}
+            </div>
             <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1 mb-1.5">

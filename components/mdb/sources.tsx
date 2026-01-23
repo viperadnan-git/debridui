@@ -151,11 +151,13 @@ export function SourceRow({ source, isFirst, isLast }: { source: AddonSource; is
             )}>
             <div className="flex-1 min-w-0">
                 {/* Title */}
-                <div className="font-medium text-xs sm:text-sm mb-1.5 leading-tight break-words">{source.title}</div>
+                <div className="font-medium text-xs sm:text-sm mb-1.5 leading-tight wrap-break-word">
+                    {source.title}
+                </div>
 
                 {/* Description */}
                 {source.folder && (
-                    <div className="text-xs text-muted-foreground whitespace-pre-wrap break-words mb-1.5">
+                    <div className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word mb-1.5">
                         {source.folder}
                     </div>
                 )}

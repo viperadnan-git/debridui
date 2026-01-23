@@ -19,7 +19,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             }
             toastOptions={{
                 classNames: {
-                    toast: "!rounded-xl",
+                    toast: "rounded-xl!",
                 },
             }}
             {...props}
