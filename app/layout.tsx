@@ -3,6 +3,7 @@ import "./globals.css";
 import Providers from "./providers";
 import localFont from "next/font/local";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@/components/analytics";
 
 const siteConfig = {
     name: "DebridUI",
@@ -104,6 +105,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <body className={cn(font.className, "antialiased")}>
                 <Providers>{children}</Providers>
+                <Analytics />
             </body>
         </html>
     );
