@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Calendar, Clock, Film, Tv, ExternalLink, Home, Globe } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { MediaStats } from "../media-stats";
+import { MediaStats } from "./media-stats";
 import { memo } from "react";
 import { getPosterUrl, getBackdropUrl } from "@/lib/utils/trakt";
 

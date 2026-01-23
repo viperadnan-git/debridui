@@ -6,7 +6,7 @@ import { useTraktShowSeasons, useTraktShowEpisodes, useTraktPeople } from "@/hoo
 import { SeasonCard } from "./season-card";
 import { EpisodeCard } from "./episode-card";
 import { PeopleSection } from "./people-section";
-import { MediaHeader } from "./shared/media-header";
+import { MediaHeader } from "./media-header";
 import { useState, memo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 

@@ -4,7 +4,7 @@ import { type TraktMedia } from "@/lib/trakt";
 import { useTraktPeople } from "@/hooks/use-trakt";
 import { PeopleSection } from "./people-section";
 import { Sources } from "./sources";
-import { MediaHeader } from "./shared/media-header";
+import { MediaHeader } from "./media-header";
 import { memo } from "react";
 
 interface MovieDetailsProps {
