@@ -11,12 +11,44 @@ import { Link, FileUp, Loader2, ClipboardIcon } from "lucide-react";
 import { Dropzone } from "../ui/dropzone";
 import { getTextFromClipboard } from "@/lib/utils";
 
+type OperationResult = Record<string, { error?: string }>;
+
 export function AddContent() {
     const [links, setLinks] = useState("");
     const [isAddingLinks, setIsAddingLinks] = useState(false);
     const [isUploadingFiles, setIsUploadingFiles] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { client, currentUser } = useAuthContext();
+
+    const handleOperationResults = (results: OperationResult, itemType: "link" | "file", toastId: string | number) => {
+        let successCount = 0;
+        let errorCount = 0;
+
+        Object.entries(results).forEach(([name, status]) => {
+            if (!status.error) {
+                successCount++;
+            } else {
+                errorCount++;
+                toast.error(`${name}: ${status.error}`);
+            }
+        });
+
+        const toastfn = successCount > 0 ? toast.success : toast.error;
+        let message = `Successfully ${itemType === "link" ? "added" : "uploaded"} ${successCount} ${itemType}${successCount > 1 ? "s" : ""}`;
+        if (errorCount > 0) {
+            message += `, ${errorCount} ${itemType}${errorCount > 1 ? "s" : ""} failed.`;
+        }
+
+        toastfn(message, { id: toastId });
+
+        if (successCount > 0) {
+            queryClient.invalidateQueries({
+                queryKey: [currentUser.id, "getTorrentList"],
+            });
+        }
+
+        return successCount > 0;
+    };
 
     const addLinks = async (links: string) => {
         const trimmedLinks = links.trim();
@@ -34,35 +66,12 @@ export function AddContent() {
         const toastId = toast.loading(`Adding ${uris.length} link${uris.length > 1 ? "s" : ""}`);
         try {
             const results = await client.addTorrent(uris);
-
-            let successCount = 0;
-            let errorCount = 0;
-
-            Object.entries(results).forEach(([uri, status]) => {
-                if (!status.error) {
-                    successCount++;
-                } else {
-                    errorCount++;
-                    toast.error(`${uri}: ${status.error}`);
-                }
-            });
-
-            const toastfn = successCount > 0 ? toast.success : toast.error;
-            let message = `Successfully added ${successCount} link${successCount > 1 ? "s" : ""}`;
-            if (errorCount > 0) {
-                message += `, ${errorCount} link${errorCount > 1 ? "s" : ""} failed.`;
+            const success = handleOperationResults(results, "link", toastId);
+            if (success) {
+                setLinks("");
             }
-
-            toastfn(message, { id: toastId });
-
-            if (successCount > 0) {
-                queryClient.invalidateQueries({
-                    queryKey: [currentUser.id, "getTorrentList"],
-                });
-            }
-            setLinks("");
         } catch (error) {
-            toast.error("Failed to add links");
+            toast.error("Failed to add links", { id: toastId });
             console.error(error);
         } finally {
             setIsAddingLinks(false);
@@ -77,32 +86,7 @@ export function AddContent() {
         try {
             const fileArray = Array.from(files);
             const results = await client.uploadTorrentFiles(fileArray);
-
-            let successCount = 0;
-            let errorCount = 0;
-
-            Object.entries(results).forEach(([fileName, status]) => {
-                if (!status.error) {
-                    successCount++;
-                } else {
-                    errorCount++;
-                    toast.error(`${fileName}: ${status.error}`);
-                }
-            });
-
-            const toastfn = successCount > 0 ? toast.success : toast.error;
-            let message = `Successfully uploaded ${successCount} file${successCount > 1 ? "s" : ""}`;
-            if (errorCount > 0) {
-                message += `, ${errorCount} file${errorCount > 1 ? "s" : ""} failed.`;
-            }
-
-            toastfn(message, { id: toastId });
-
-            if (successCount > 0) {
-                queryClient.invalidateQueries({
-                    queryKey: [currentUser.id, "getTorrentList"],
-                });
-            }
+            handleOperationResults(results, "file", toastId);
 
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";

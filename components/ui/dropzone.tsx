@@ -61,8 +61,8 @@ export const Dropzone = ({
         <DropzoneContext.Provider key={JSON.stringify(src)} value={{ src, accept, maxSize, minSize, maxFiles }}>
             <Button
                 className={cn(
-                    "relative h-auto w-full flex-col overflow-hidden p-8 border-dashed border-3",
-                    isDragActive && "outline-none ring-3 ring-ring",
+                    "relative h-auto w-full flex-col overflow-hidden p-8 border-dashed border-3 dark:border-inherit",
+                    isDragActive && "border-primary dark:border-primary",
                     className
                 )}
                 disabled={disabled}
