@@ -61,21 +61,21 @@ export const isSupportedPlayer = (player: MediaPlayer, platform?: Platform): boo
     return supportedPlatforms.includes(currentPlatform);
 };
 
-const generateVlcUrl = (url: string, fileName?: string): string => {
+const generateVlcUrl = (url: string, fileName: string): string => {
     if (isMobileOrTablet()) {
-        const title = fileName || "Video";
-        const encodedTitle = encodeURIComponent(title);
+        const encodedTitle = encodeURIComponent(fileName);
         const cleanUrl = url.replace("https://", "");
         return `intent://${cleanUrl}#Intent;scheme=https;type=video/*;package=org.videolan.vlc;S.title=${encodedTitle};end`;
     }
     return `vlc://${url}`;
 };
 
-const generateMxPlayerUrl = (url: string, packageName: string): string => {
-    return `intent:${url}#Intent;package=${packageName};S.title=Video;end`;
+const generateMxPlayerUrl = (url: string, packageName: string, fileName: string): string => {
+    const encodedTitle = encodeURIComponent(fileName);
+    return `intent:${url}#Intent;type=video/*;package=${packageName};S.title=${encodedTitle};end`;
 };
 
-type PlayerUrlGenerator = (url: string, fileName?: string) => string;
+type PlayerUrlGenerator = (url: string, fileName: string) => string;
 
 const PLAYER_URLS: Record<MediaPlayer, PlayerUrlGenerator> = {
     [MediaPlayer.BROWSER]: (url) => url,
@@ -84,8 +84,8 @@ const PLAYER_URLS: Record<MediaPlayer, PlayerUrlGenerator> = {
     [MediaPlayer.MPV]: (url) => `mpv://${encodeURIComponent(url)}`,
     [MediaPlayer.POTPLAYER]: (url) => `potplayer://${encodeURIComponent(url)}`,
     [MediaPlayer.KODI]: (url) => `kodi://${encodeURIComponent(url)}`,
-    [MediaPlayer.MX_PLAYER]: (url) => generateMxPlayerUrl(url, "com.mxtech.videoplayer.ad"),
-    [MediaPlayer.MX_PLAYER_PRO]: (url) => generateMxPlayerUrl(url, "com.mxtech.videoplayer.pro"),
+    [MediaPlayer.MX_PLAYER]: (url, fileName) => generateMxPlayerUrl(url, "com.mxtech.videoplayer.ad", fileName),
+    [MediaPlayer.MX_PLAYER_PRO]: (url, fileName) => generateMxPlayerUrl(url, "com.mxtech.videoplayer.pro", fileName),
 };
 
 export const playUrl = (linkInfo: DebridLinkInfo, player?: MediaPlayer): void => {
