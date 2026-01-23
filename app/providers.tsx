@@ -23,7 +23,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
     }
 
     return (
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark">
             <ProgressProvider height="4px" color="var(--primary)" options={{ showSpinner: false }} shallowRouting>
                 <QueryClientProvider client={queryClient}>
                     <TooltipProvider delayDuration={2000}>{children}</TooltipProvider>

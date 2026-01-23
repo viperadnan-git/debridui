@@ -29,12 +29,7 @@ export function SidebarFooterContent() {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             tooltip="Join Discord"
-                            className="border transition-all"
-                            style={{
-                                backgroundColor: "#5865F21A",
-                                color: "#5865F2",
-                                borderColor: "#5865F233",
-                            }}
+                            className="border transition-all bg-[#5865F21A] hover:bg-[#5865F226] text-[#5865F2] hover:text-[#5865F2] border-[#5865F233]"
                             asChild>
                             <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
                                 <img
