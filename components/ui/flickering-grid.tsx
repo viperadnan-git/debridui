@@ -31,8 +31,8 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [isInView, setIsInView] = useState(false);
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-    const { theme } = useTheme();
-    const currentColor = theme === "dark" ? colors[1] : colors[0];
+    const { resolvedTheme } = useTheme();
+    const currentColor = resolvedTheme === "dark" ? colors[1] : colors[0];
 
     const memoizedColor = useMemo(() => {
         const toRGBA = (color: string) => {
