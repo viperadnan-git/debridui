@@ -120,7 +120,7 @@ export const FileListItem = memo(function FileListItem({
         <FileItemContextMenu file={file}>
             <div
                 className={cn(
-                    "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b transition-colors duration-150 bg-card",
+                    "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b transition-colors duration-150 bg-card max-md:select-none",
                     canExpand && "cursor-pointer hover:bg-card/50",
                     className
                 )}
