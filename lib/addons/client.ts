@@ -1,18 +1,13 @@
 import { AddonError, type AddonManifest, type AddonStreamResponse, type TvSearchParams } from "./types";
 
-const userAgent =
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-
 export interface AddonClientConfig {
     url: string;
     timeout?: number;
-    userAgent?: string;
 }
 
 export class AddonClient {
     private readonly baseUrl: string;
     private readonly timeout: number;
-    private readonly userAgent: string;
 
     constructor(config: AddonClientConfig) {
         let url = config.url?.trim();
@@ -33,7 +28,6 @@ export class AddonClient {
 
         this.baseUrl = url;
         this.timeout = config.timeout || 1000 * 60 * 3; // 3 minutes
-        this.userAgent = config.userAgent || userAgent;
     }
 
     /**
@@ -43,7 +37,6 @@ export class AddonClient {
         return {
             accept: "application/json",
             "accept-language": "en-US,en;q=0.5",
-            "user-agent": this.userAgent,
         };
     }
 
