@@ -10,6 +10,7 @@ Example:
 https://cdn.corsfix.workers.dev/?url=https://api.example.com/endpoint
 */
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default {
     async fetch(request) {
         // Configure allowed origins - add your domains here

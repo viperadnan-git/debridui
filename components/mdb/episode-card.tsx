@@ -122,7 +122,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                 </CollapsibleTrigger>
 
                 <CollapsibleContent>
-                    {isOpen && (
+                    {isOpen && imdbId && (
                         <div className="border-t px-3 sm:px-4 py-3 sm:py-4 bg-muted/20">
                             <div className="mb-2 text-sm font-medium text-muted-foreground">Available Sources</div>
                             <Sources

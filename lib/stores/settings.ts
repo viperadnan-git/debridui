@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { MediaPlayer } from "../types";
-import { DEFAULT_TORRENTIO_URL_PREFIX } from "../torrentio";
 
 type SettingValue = string | number | boolean | MediaPlayer;
 
@@ -21,7 +20,6 @@ type SettingsConfig = {
     hideTrash: SettingConfig<boolean>;
     mediaPlayer: SettingConfig<MediaPlayer>;
     downloadLinkMaxAge: SettingConfig<number>;
-    torrentioUrlPrefix: SettingConfig<string>;
 };
 
 const settingsConfig: SettingsConfig = {
@@ -87,9 +85,6 @@ const settingsConfig: SettingsConfig = {
             { value: 43200000, label: "12 hours" },
         ],
     },
-    torrentioUrlPrefix: {
-        defaultValue: DEFAULT_TORRENTIO_URL_PREFIX,
-    },
 };
 
 type SettingsData = {
@@ -113,7 +108,6 @@ const getDefaultSettings = (): SettingsData => {
         hideTrash: settingsConfig.hideTrash.defaultValue,
         mediaPlayer: settingsConfig.mediaPlayer.defaultValue,
         downloadLinkMaxAge: settingsConfig.downloadLinkMaxAge.defaultValue,
-        torrentioUrlPrefix: settingsConfig.torrentioUrlPrefix.defaultValue,
     };
 };
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { DebridFileNode, AccountType } from "@/lib/types";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useUserStore } from "@/lib/stores/users";
+import { getProxyUrl } from "@/lib/utils";
 
 interface TextPreviewProps {
     file: DebridFileNode;
@@ -25,9 +26,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
                 setError(null);
 
                 const useProxy = currentUser?.type === AccountType.ALLDEBRID;
-                const fetchUrl = useProxy
-                    ? `https://cdn.corsfix.workers.dev/?url=${encodeURIComponent(downloadUrl)}`
-                    : downloadUrl;
+                const fetchUrl = useProxy ? getProxyUrl(downloadUrl) : downloadUrl;
 
                 const response = await fetch(fetchUrl);
                 if (!response.ok) {

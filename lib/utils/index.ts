@@ -132,3 +132,10 @@ export const decodeAccountData = (encoded: string): { type: AccountType; apiKey:
         throw new Error("Failed to decode account data");
     }
 };
+
+/**
+ * Get proxied URL using CORS proxy
+ */
+export const getProxyUrl = (url: string): string => {
+    return `https://cdn.corsfix.workers.dev/?url=${encodeURIComponent(url)}`;
+};

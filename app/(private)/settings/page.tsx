@@ -3,25 +3,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { useTheme } from "next-themes";
-import {
-    Monitor,
-    Moon,
-    Sun,
-    Play,
-    Trash2,
-    Clock,
-    Settings as SettingsIcon,
-    Info,
-    Globe,
-    RotateCcw,
-} from "lucide-react";
+import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon, Info } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { DEFAULT_TORRENTIO_URL_PREFIX } from "@/lib/torrentio";
 import { del } from "idb-keyval";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
@@ -43,27 +30,7 @@ export default function SettingsPage() {
     const mediaPlayerPresets = getPresets("mediaPlayer") || [];
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
     const downloadLinkMaxAgePresets = getPresets("downloadLinkMaxAge") || [];
-    const torrentioUrlPrefix = get("torrentioUrlPrefix");
-    const [torrentioUrlInput, setTorrentioUrlInput] = useState(torrentioUrlPrefix);
     const [isClearing, setIsClearing] = useState(false);
-
-    const handleTorrentioUrlSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const trimmedUrl = torrentioUrlInput.trim();
-        if (!trimmedUrl) {
-            toast.error("Torrentio URL cannot be empty");
-            return;
-        }
-        set("torrentioUrlPrefix", trimmedUrl);
-        setTorrentioUrlInput(trimmedUrl);
-        toast.success("Torrentio URL updated");
-    };
-
-    const handleTorrentioUrlReset = () => {
-        set("torrentioUrlPrefix", DEFAULT_TORRENTIO_URL_PREFIX);
-        setTorrentioUrlInput(DEFAULT_TORRENTIO_URL_PREFIX);
-        toast.success("Torrentio URL reset to default");
-    };
 
     const handleClearCache = async (key?: string[]) => {
         setIsClearing(true);
@@ -182,63 +149,6 @@ export default function SettingsPage() {
                                 External players require the application to be installed
                             </p>
                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* Torrentio Configuration */}
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-                                <Globe className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <CardTitle>Torrentio Configuration</CardTitle>
-                                <CardDescription>Configure Torrentio URL with providers and filters</CardDescription>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleTorrentioUrlSubmit} className="space-y-4">
-                            <div className="space-y-3">
-                                <Label htmlFor="torrentio-url" className="text-sm font-medium">
-                                    Torrentio URL Prefix
-                                </Label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        id="torrentio-url"
-                                        type="url"
-                                        value={torrentioUrlInput}
-                                        onChange={(e) => setTorrentioUrlInput(e.target.value)}
-                                        placeholder="https://torrentio.strem.fun/..."
-                                        className="font-mono text-sm flex-1"
-                                        required
-                                    />
-                                    <Button type="submit" size="sm">
-                                        Save
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={handleTorrentioUrlReset}
-                                        title="Reset to default">
-                                        <RotateCcw className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Visit{" "}
-                                    <a
-                                        href="https://torrentio.strem.fun/configure"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="underline hover:text-foreground">
-                                        torrentio.strem.fun/configure
-                                    </a>{" "}
-                                    to generate a custom URL
-                                </p>
-                            </div>
-                        </form>
                     </CardContent>
                 </Card>
 
