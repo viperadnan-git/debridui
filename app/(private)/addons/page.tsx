@@ -1,20 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useAddonsStore, DEFAULT_TORRENTIO_URL_PREFIX } from "@/lib/stores/addons";
+import { useAddonsStore, DEFAULT_ADDON_MANIFEST } from "@/lib/stores/addons";
 import { AddonClient } from "@/lib/addons/client";
 import { type Addon } from "@/lib/addons/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, CheckCircle2, AlertCircle, Puzzle, Zap, Info, Share2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Zap, Info } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { AddonCard } from "@/components/addon-card";
 
 export default function AddonsPage() {
     const { addons, addAddon, removeAddon, toggleAddon } = useAddonsStore();
@@ -22,23 +20,24 @@ export default function AddonsPage() {
     const [newAddonUrl, setNewAddonUrl] = useState("");
     const [validating, setValidating] = useState(false);
 
-    const handleAddAddon = async () => {
-        if (!newAddonUrl.trim()) {
+    const handleAddAddon = async (url?: string) => {
+        const addonUrl = url || newAddonUrl;
+
+        if (!addonUrl.trim()) {
             toast.error("Please enter an addon URL");
             return;
         }
 
         setValidating(true);
         try {
-            const client = new AddonClient({ url: newAddonUrl });
+            const client = new AddonClient({ url: addonUrl });
             const manifest = await client.fetchManifest();
 
             addAddon({
                 id: manifest.id,
                 name: manifest.name,
-                url: newAddonUrl,
+                url: addonUrl,
                 enabled: true,
-                manifestData: manifest,
             });
 
             toast.success(`Added ${manifest.name} addon`);
@@ -59,36 +58,6 @@ export default function AddonsPage() {
     const handleToggleAddon = (addon: Addon) => {
         toggleAddon(addon.id);
         toast.success(`${addon.enabled ? "Disabled" : "Enabled"} ${addon.name} addon`);
-    };
-
-    const handleAddTorrentio = async () => {
-        setValidating(true);
-        const torrentioUrl = `${DEFAULT_TORRENTIO_URL_PREFIX}/manifest.json`;
-
-        try {
-            const exists = addons.some((a) => a.url === torrentioUrl || a.id === "app.stremio.torrentio");
-            if (exists) {
-                toast.error("Torrentio addon is already added");
-                return;
-            }
-
-            const client = new AddonClient({ url: torrentioUrl });
-            const manifest = await client.fetchManifest();
-
-            addAddon({
-                id: manifest.id,
-                name: manifest.name,
-                url: torrentioUrl,
-                enabled: true,
-                manifestData: manifest,
-            });
-
-            toast.success(`Added ${manifest.name} addon`);
-        } catch (error) {
-            toast.error(`Failed to add Torrentio: ${error instanceof Error ? error.message : "Unknown error"}`);
-        } finally {
-            setValidating(false);
-        }
     };
 
     return (
@@ -122,7 +91,7 @@ export default function AddonsPage() {
                                     Add Addon
                                 </Button>
                                 <Button
-                                    onClick={handleAddTorrentio}
+                                    onClick={() => handleAddAddon(DEFAULT_ADDON_MANIFEST)}
                                     variant="outline"
                                     className="gap-2"
                                     disabled={validating}>
@@ -160,7 +129,7 @@ export default function AddonsPage() {
                                 </div>
                                 <div className="flex flex-col md:flex-row gap-2">
                                     <Button
-                                        onClick={handleAddAddon}
+                                        onClick={() => handleAddAddon()}
                                         disabled={validating || !newAddonUrl.trim()}
                                         size="sm"
                                         className="gap-2">
@@ -223,82 +192,12 @@ export default function AddonsPage() {
                         ) : (
                             <div className="space-y-3">
                                 {addons.map((addon) => (
-                                    <div
+                                    <AddonCard
                                         key={addon.id}
-                                        className={cn(
-                                            "rounded-lg border p-4 transition-colors space-y-3",
-                                            addon.enabled ? "bg-card" : "bg-muted/30"
-                                        )}>
-                                        {/* Row 1: Icon + Name/Version */}
-                                        <div className="flex gap-3 items-start">
-                                            {/* Column 1: Icon */}
-                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border bg-muted/50 overflow-hidden">
-                                                {addon.manifestData?.logo ? (
-                                                    <img
-                                                        src={addon.manifestData.logo}
-                                                        alt={addon.name}
-                                                        className="h-full w-full object-contain p-1"
-                                                    />
-                                                ) : (
-                                                    <Puzzle className="h-6 w-6 text-muted-foreground" />
-                                                )}
-                                            </div>
-
-                                            {/* Column 2: Name + Version Badge */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex flex-col gap-1">
-                                                    <h3 className="font-semibold truncate min-w-0">{addon.name}</h3>
-                                                    {addon.manifestData?.version && (
-                                                        <Badge variant="outline" className="text-[10px] shrink-0">
-                                                            v{addon.manifestData.version}
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Row 2: Description */}
-                                        {addon.manifestData?.description && (
-                                            <p className="text-sm text-muted-foreground line-clamp-4 md:line-clamp-3 lg:line-clamp-2 whitespace-pre-wrap break-all">
-                                                {addon.manifestData.description}
-                                            </p>
-                                        )}
-
-                                        {/* Row 3: Actions */}
-                                        <div className="flex items-center justify-between gap-3 pt-3 border-t flex-wrap">
-                                            <div className="flex items-center gap-2">
-                                                <Switch
-                                                    id={`toggle-${addon.id}`}
-                                                    checked={addon.enabled}
-                                                    onCheckedChange={() => handleToggleAddon(addon)}
-                                                />
-                                                <Label
-                                                    htmlFor={`toggle-${addon.id}`}
-                                                    className="text-sm cursor-pointer whitespace-nowrap">
-                                                    {addon.enabled ? "Enabled" : "Disabled"}
-                                                </Label>
-                                            </div>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText(addon.url);
-                                                        toast.success("Addon URL copied to clipboard");
-                                                    }}
-                                                    className="h-9 w-9">
-                                                    <Share2 className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleRemoveAddon(addon)}
-                                                    className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        addon={addon}
+                                        onToggle={handleToggleAddon}
+                                        onRemove={handleRemoveAddon}
+                                    />
                                 ))}
                             </div>
                         )}

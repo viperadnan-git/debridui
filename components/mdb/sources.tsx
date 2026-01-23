@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
-import { useAddonSources } from "@/hooks/use-addon-sources";
+import { useAddonSources } from "@/hooks/use-addon";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, Zap, X, AlertTriangle } from "lucide-react";
@@ -221,7 +221,7 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className }: So
 
             {sources?.map((source, index) => (
                 <SourceRow
-                    key={`${source.addonId}-${source.hash || source.url || index}`}
+                    key={`${source.addonId}-${source.url || index}`}
                     source={source}
                     isFirst={index === 0 && !isLoading}
                     isLast={index === sources.length - 1 && failedAddons.length === 0}

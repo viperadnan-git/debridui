@@ -106,7 +106,6 @@ export function parseStream(stream: AddonStream, addonId: string, addonName: str
         title,
         folder,
         size,
-        hash,
         peers,
         magnet,
         url,

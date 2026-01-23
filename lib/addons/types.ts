@@ -27,6 +27,7 @@ export interface AddonManifest {
 
 export interface AddonStream {
     name?: string;
+    title?: string;
     description?: string;
     url?: string;
     infoHash?: string;
@@ -38,8 +39,6 @@ export interface AddonStream {
         notWebReady?: boolean;
         videoSize?: number;
     };
-    // Additional fields from various addons
-    title?: string;
 }
 
 export interface AddonStreamResponse {
@@ -50,7 +49,6 @@ export interface AddonSource {
     title: string;
     folder?: string;
     size: string;
-    hash?: string;
     peers?: string;
     magnet?: string;
     url?: string;
@@ -66,7 +64,6 @@ export interface Addon {
     url: string;
     enabled: boolean;
     order: number;
-    manifestData?: AddonManifest;
 }
 
 export interface TvSearchParams {

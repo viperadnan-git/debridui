@@ -1,9 +1,30 @@
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { AddonClient } from "@/lib/addons/client";
 import { parseStreams } from "@/lib/addons/parser";
 import { useAddonsStore } from "@/lib/stores/addons";
 import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
+
+interface UseAddonOptions {
+    url: string;
+    enabled?: boolean;
+}
+
+/**
+ * Hook to fetch and cache addon manifest
+ */
+export function useAddon({ url, enabled = true }: UseAddonOptions) {
+    return useQuery({
+        queryKey: ["addon-manifest", url],
+        queryFn: async () => {
+            const client = new AddonClient({ url });
+            return await client.fetchManifest();
+        },
+        enabled,
+        staleTime: 1000 * 60 * 60 * 24, // 24 hours
+        gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
+}
 
 interface UseAddonSourcesOptions {
     imdbId: string;
