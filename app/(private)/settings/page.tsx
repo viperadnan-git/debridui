@@ -15,6 +15,9 @@ import { toast } from "sonner";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { formatDistanceToNow, format } from "date-fns";
 import { PageHeader } from "@/components/page-header";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { detectPlatform } from "@/lib/utils/media-player";
+import { getPlayerSetupInstruction } from "./player-setup-instructions";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
 const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
@@ -31,6 +34,8 @@ export default function SettingsPage() {
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
     const downloadLinkMaxAgePresets = getPresets("downloadLinkMaxAge") || [];
     const [isClearing, setIsClearing] = useState(false);
+    const platform = detectPlatform();
+    const setupInstruction = getPlayerSetupInstruction(mediaPlayer, platform);
 
     const handleClearCache = async (key?: string[]) => {
         setIsClearing(true);
@@ -149,6 +154,12 @@ export default function SettingsPage() {
                                 External players require the application to be installed
                             </p>
                         </div>
+                        {setupInstruction && (
+                            <Alert>
+                                <Info className="h-4 w-4" />
+                                <AlertDescription>{setupInstruction}</AlertDescription>
+                            </Alert>
+                        )}
                     </CardContent>
                 </Card>
 
