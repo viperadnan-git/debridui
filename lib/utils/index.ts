@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { AccountType, addUserSchema } from "../schemas";
 import { formatDistanceToNow } from "date-fns";
 import { DebridLinkInfo, FileType } from "../types";
-import { ACCOUNT_TYPE_LABELS, EXTENSION_TO_FILE_TYPE } from "../constants";
+import { ACCOUNT_TYPE_LABELS, CORS_PROXY_URL, EXTENSION_TO_FILE_TYPE } from "../constants";
 
 export * from "./color";
 export * from "./media-player";
@@ -137,5 +137,5 @@ export const decodeAccountData = (encoded: string): { type: AccountType; apiKey:
  * Get proxied URL using CORS proxy
  */
 export const getProxyUrl = (url: string): string => {
-    return `https://cdn.corsfix.workers.dev/?url=${encodeURIComponent(url)}`;
+    return `${CORS_PROXY_URL}${encodeURIComponent(url)}`;
 };

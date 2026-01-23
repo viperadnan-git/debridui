@@ -81,3 +81,4 @@ export const CAROUSEL_AUTO_DELAY = 3000; // 3 seconds
 
 // External links
 export const DISCORD_URL = process.env.NEXT_PUBLIC_DISCORD_URL;
+export const CORS_PROXY_URL = process.env.NEXT_PUBLIC_CORS_PROXY_URL || "https://corsproxy.io/?url=";
