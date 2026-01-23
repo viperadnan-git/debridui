@@ -2,7 +2,7 @@
 
 import { type TraktMedia, type TraktSeason } from "@/lib/trakt";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollCarousel } from "@/components/common/scroll-carousel";
 import { useTraktShowSeasons, useTraktShowEpisodes, useTraktPeople } from "@/hooks/use-trakt";
 import { SeasonCard } from "./season-card";
 import { EpisodeCard } from "./episode-card";
@@ -33,7 +33,7 @@ const SeasonsSection = memo(function SeasonsSection({
     return (
         <div>
             <h3 className="text-base sm:text-lg font-semibold mb-3">Seasons</h3>
-            <ScrollArea className="w-full whitespace-nowrap">
+            <ScrollCarousel className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-4 pb-4">
                     {seasons.map((season) => (
                         <SeasonCard
@@ -45,8 +45,7 @@ const SeasonsSection = memo(function SeasonsSection({
                         />
                     ))}
                 </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+            </ScrollCarousel>
         </div>
     );
 });
@@ -92,7 +91,11 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                         </h3>
                         <div className="flex flex-col gap-3 sm:gap-4">
                             {episodesQuery.data.map((episode) => (
-                                <EpisodeCard key={episode.number} episode={episode} imdbId={media.ids?.imdb} />
+                                <EpisodeCard
+                                    key={`${selectedSeason}-${episode.number}`}
+                                    episode={episode}
+                                    imdbId={media.ids?.imdb}
+                                />
                             ))}
                         </div>
                     </div>

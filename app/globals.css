@@ -181,3 +181,12 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* ScrollCarousel: Hide buttons when content is not scrollable */
+.scroll-carousel-btn {
+    display: none !important;
+}
+
+[data-scrollable="true"] .scroll-carousel-btn {
+    display: flex !important;
+}
