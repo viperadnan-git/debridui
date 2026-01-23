@@ -158,12 +158,12 @@ export default function AddonsPage() {
                                         The URL will be validated by fetching the addon manifest
                                     </p>
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col md:flex-row gap-2">
                                     <Button
                                         onClick={handleAddAddon}
                                         disabled={validating || !newAddonUrl.trim()}
                                         size="sm"
-                                        className="gap-2 w-full">
+                                        className="gap-2">
                                         {validating ? (
                                             <>
                                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -179,7 +179,6 @@ export default function AddonsPage() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="w-full"
                                         onClick={() => {
                                             setIsAdding(false);
                                             setNewAddonUrl("");
