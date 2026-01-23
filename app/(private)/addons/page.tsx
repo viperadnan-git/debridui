@@ -13,12 +13,16 @@ import { toast } from "sonner";
 import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Zap, Info } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { AddonCard } from "@/components/addon-card";
+import { Badge } from "@/components/ui/badge";
 
 export default function AddonsPage() {
-    const { addons, addAddon, removeAddon, toggleAddon } = useAddonsStore();
+    const { addons, addAddon, removeAddon, toggleAddon, reorderAddons } = useAddonsStore();
     const [isAdding, setIsAdding] = useState(false);
     const [newAddonUrl, setNewAddonUrl] = useState("");
     const [validating, setValidating] = useState(false);
+
+    // Sort addons by order
+    const sortedAddons = [...addons].sort((a, b) => a.order - b.order);
 
     const handleAddAddon = async (url?: string) => {
         const addonUrl = url || newAddonUrl;
@@ -58,6 +62,32 @@ export default function AddonsPage() {
     const handleToggleAddon = (addon: Addon) => {
         toggleAddon(addon.id);
         toast.success(`${addon.enabled ? "Disabled" : "Enabled"} ${addon.name} addon`);
+    };
+
+    const handleMoveUp = (addon: Addon) => {
+        const currentIndex = sortedAddons.findIndex((a) => a.id === addon.id);
+        if (currentIndex > 0) {
+            const newAddons = [...sortedAddons];
+            [newAddons[currentIndex - 1], newAddons[currentIndex]] = [
+                newAddons[currentIndex],
+                newAddons[currentIndex - 1],
+            ];
+            reorderAddons(newAddons);
+            toast.success(`Moved ${addon.name} up`);
+        }
+    };
+
+    const handleMoveDown = (addon: Addon) => {
+        const currentIndex = sortedAddons.findIndex((a) => a.id === addon.id);
+        if (currentIndex < sortedAddons.length - 1) {
+            const newAddons = [...sortedAddons];
+            [newAddons[currentIndex], newAddons[currentIndex + 1]] = [
+                newAddons[currentIndex + 1],
+                newAddons[currentIndex],
+            ];
+            reorderAddons(newAddons);
+            toast.success(`Moved ${addon.name} down`);
+        }
     };
 
     return (
@@ -171,15 +201,15 @@ export default function AddonsPage() {
                             <div>
                                 <CardTitle>Your Addons</CardTitle>
                                 <CardDescription>
-                                    {addons.length === 0
+                                    {sortedAddons.length === 0
                                         ? "No addons configured yet"
-                                        : `${addons.filter((a) => a.enabled).length} of ${addons.length} addon(s) enabled`}
+                                        : `${sortedAddons.filter((a) => a.enabled).length} of ${sortedAddons.length} addon(s) enabled`}
                                 </CardDescription>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {addons.length === 0 ? (
+                        {sortedAddons.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
                                     <AlertCircle className="h-6 w-6 text-muted-foreground" />
@@ -191,12 +221,16 @@ export default function AddonsPage() {
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                {addons.map((addon) => (
+                                {sortedAddons.map((addon, index) => (
                                     <AddonCard
                                         key={addon.id}
                                         addon={addon}
                                         onToggle={handleToggleAddon}
                                         onRemove={handleRemoveAddon}
+                                        onMoveUp={handleMoveUp}
+                                        onMoveDown={handleMoveDown}
+                                        isFirst={index === 0}
+                                        isLast={index === sortedAddons.length - 1}
                                     />
                                 ))}
                             </div>
@@ -208,9 +242,23 @@ export default function AddonsPage() {
                 <Alert className="md:col-span-2">
                     <Info className="h-4 w-4" />
                     <AlertTitle>About Stremio Addons</AlertTitle>
-                    <AlertDescription>
-                        Stremio addons follow a standard protocol. Sources from all enabled addons will be merged and
-                        displayed together. Cached sources (marked with ⚡) are instantly available for download.
+                    <AlertDescription className="space-y-2">
+                        <p>
+                            Stremio addons follow a standard protocol. Sources from all enabled addons will be merged
+                            and displayed together in the order listed above. Use the arrow buttons to reorder addons.
+                        </p>
+                        <p>
+                            <strong>Cached sources</strong> (marked with{" "}
+                            <Badge
+                                variant="secondary"
+                                className="inline-flex items-center text-xs px-1.5 py-0.5 h-5 bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
+                                <Zap className="h-2.5 w-2.5 mr-0.5" />
+                                <span>Cached</span>
+                            </Badge>
+                            ) are detected by checking if the source name contains &quot;instant&quot; or &quot;+&quot;,
+                            or if the name/description includes ✅ or ⚡ emojis. Cached sources are instantly available
+                            for download from your debrid service.
+                        </p>
                     </AlertDescription>
                 </Alert>
             </div>

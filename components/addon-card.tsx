@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Puzzle, Trash2, Share2 } from "lucide-react";
+import { Puzzle, Trash2, Share2, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -15,9 +15,13 @@ interface AddonCardProps {
     addon: Addon;
     onToggle: (addon: Addon) => void;
     onRemove: (addon: Addon) => void;
+    onMoveUp?: (addon: Addon) => void;
+    onMoveDown?: (addon: Addon) => void;
+    isFirst?: boolean;
+    isLast?: boolean;
 }
 
-export function AddonCard({ addon, onToggle, onRemove }: AddonCardProps) {
+export function AddonCard({ addon, onToggle, onRemove, onMoveUp, onMoveDown, isFirst, isLast }: AddonCardProps) {
     const { data: manifest, isLoading } = useAddon({ url: addon.url });
 
     return (
@@ -79,6 +83,30 @@ export function AddonCard({ addon, onToggle, onRemove }: AddonCardProps) {
                     </Label>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                    {onMoveUp && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onMoveUp(addon)}
+                            disabled={isFirst}
+                            className="h-9 w-9"
+                            aria-label={`Move ${addon.name} up`}
+                            title="Move up">
+                            <ArrowUp className="h-4 w-4" />
+                        </Button>
+                    )}
+                    {onMoveDown && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onMoveDown(addon)}
+                            disabled={isLast}
+                            className="h-9 w-9"
+                            aria-label={`Move ${addon.name} down`}
+                            title="Move down">
+                            <ArrowDown className="h-4 w-4" />
+                        </Button>
+                    )}
                     <Button
                         variant="ghost"
                         size="icon"
@@ -86,14 +114,18 @@ export function AddonCard({ addon, onToggle, onRemove }: AddonCardProps) {
                             navigator.clipboard.writeText(addon.url);
                             toast.success("Addon URL copied to clipboard");
                         }}
-                        className="h-9 w-9">
+                        className="h-9 w-9"
+                        aria-label={`Copy ${addon.name} URL`}
+                        title="Copy addon URL">
                         <Share2 className="h-4 w-4" />
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onRemove(addon)}
-                        className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10">
+                        className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        aria-label={`Remove ${addon.name}`}
+                        title="Remove addon">
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </div>
