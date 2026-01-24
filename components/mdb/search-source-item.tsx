@@ -58,7 +58,7 @@ const SourceContent = memo(function SourceContent({ result }: { result: TorBoxSe
                     </div>
                 </div>
                 <div className="shrink-0">
-                    <AddSourceButton source={{ magnet: result.magnet }} />
+                    <AddSourceButton magnet={result.magnet} />
                 </div>
             </div>
         </div>
