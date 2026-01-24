@@ -19,3 +19,6 @@ done
 
 # update staged files
 git update-index --again
+
+# Run linting
+bun run lint
