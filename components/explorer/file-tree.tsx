@@ -136,7 +136,7 @@ const FileActionButton = memo(function FileActionButton({
 
         switch (action) {
             case "play":
-                playUrl(linkInfo);
+                playUrl({ url: linkInfo.link, fileName: linkInfo.name });
                 break;
             case "download":
                 downloadLinks([linkInfo]);

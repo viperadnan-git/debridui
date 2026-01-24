@@ -99,16 +99,13 @@ export function parseStream(stream: AddonStream, addonId: string, addonName: str
     // Construct magnet if we have a hash
     const magnet = hash ? constructMagnet(hash, title) : undefined;
 
-    // Fall back to URL if no magnet available
-    const url = !magnet && stream.url ? stream.url : undefined;
-
     return {
         title,
         folder,
         size,
         peers,
         magnet,
-        url,
+        url: stream.url,
         isCached,
         addonId,
         addonName,

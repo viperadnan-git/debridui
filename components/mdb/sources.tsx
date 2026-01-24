@@ -11,7 +11,6 @@ import { useAuthContext } from "@/lib/contexts/auth";
 import { toast } from "sonner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useRouter } from "next/navigation";
-import { AddonClient } from "@/lib/addons/client";
 import { Badge } from "@/components/ui/badge";
 
 interface SourcesProps {
@@ -30,7 +29,7 @@ interface SourcesSkeletonProps {
     className?: string;
 }
 
-export function AddSourceButton({ source }: { source: { magnet?: string; url?: string; addonUrl?: string } }) {
+export function AddSourceButton({ magnet }: { magnet: string }) {
     const { client } = useAuthContext();
     const router = useRouter();
     const [status, setStatus] = useState<"added" | "cached" | "loading" | null>(null);
@@ -39,26 +38,8 @@ export function AddSourceButton({ source }: { source: { magnet?: string; url?: s
     const handleAdd = async () => {
         setStatus("loading");
         try {
-            let sourceUrl = source.magnet;
-
-            // If only URL provided, fetch it to get final URL after redirects
-            if (!sourceUrl && source.url && source.addonUrl) {
-                try {
-                    const addonClient = new AddonClient({ url: source.addonUrl });
-                    sourceUrl = await addonClient.fetchUrlWithRedirect(source.url);
-                } catch (error) {
-                    throw new Error(
-                        `Failed to resolve URL: ${error instanceof Error ? error.message : "Unknown error"}`
-                    );
-                }
-            }
-
-            if (!sourceUrl) {
-                throw new Error("No valid source URL available");
-            }
-
-            const result = await client.addTorrent([sourceUrl]);
-            const sourceStatus = result[sourceUrl];
+            const result = await client.addTorrent([magnet]);
+            const sourceStatus = result[magnet];
             if (sourceStatus.error) {
                 throw new Error(sourceStatus.error);
             }
@@ -80,6 +61,13 @@ export function AddSourceButton({ source }: { source: { magnet?: string; url?: s
         return (
             <div className="flex items-center gap-1.5 justify-end">
                 <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => handleRemove()}>
+                    <Trash2Icon className="h-4 w-4" />
+                </Button>
+                <Button
                     variant="outline"
                     size="sm"
                     className="h-8 w-8 sm:w-auto gap-0 sm:gap-1.5 p-0 sm:px-3"
@@ -90,13 +78,6 @@ export function AddSourceButton({ source }: { source: { magnet?: string; url?: s
                     }}>
                     <DownloadIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">View Files</span>
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => handleRemove()}>
-                    <Trash2Icon className="h-4 w-4" />
                 </Button>
             </div>
         );
@@ -183,15 +164,7 @@ export function SourceRow({ source, isFirst, isLast }: { source: AddonSource; is
                         </div>
                     </div>
 
-                    <div className="shrink-0">
-                        <AddSourceButton
-                            source={{
-                                magnet: source.magnet,
-                                url: source.url,
-                                addonUrl: source.addonUrl,
-                            }}
-                        />
-                    </div>
+                    <div className="shrink-0">{source.magnet && <AddSourceButton magnet={source.magnet} />}</div>
                 </div>
             </div>
         </div>

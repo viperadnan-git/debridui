@@ -1,4 +1,4 @@
-import { DebridLinkInfo, MediaPlayer, Platform } from "../types";
+import { MediaPlayer, Platform } from "../types";
 import { useSettingsStore } from "../stores/settings";
 import { toast } from "sonner";
 
@@ -77,8 +77,7 @@ const generateMxPlayerUrl = (url: string, packageName: string, fileName: string)
 
 type PlayerUrlGenerator = (url: string, fileName: string) => string;
 
-const PLAYER_URLS: Record<MediaPlayer, PlayerUrlGenerator> = {
-    [MediaPlayer.BROWSER]: (url) => url,
+const PLAYER_URLS: Record<Exclude<MediaPlayer, MediaPlayer.BROWSER>, PlayerUrlGenerator> = {
     [MediaPlayer.IINA]: (url) => `iina://weblink?url=${encodeURIComponent(url)}`,
     [MediaPlayer.VLC]: (url, fileName) => generateVlcUrl(url, fileName),
     [MediaPlayer.MPV]: (url) => `mpv://${encodeURIComponent(url)}`,
@@ -88,8 +87,14 @@ const PLAYER_URLS: Record<MediaPlayer, PlayerUrlGenerator> = {
     [MediaPlayer.MX_PLAYER_PRO]: (url, fileName) => generateMxPlayerUrl(url, "com.mxtech.videoplayer.pro", fileName),
 };
 
-export const playUrl = (linkInfo: DebridLinkInfo, player?: MediaPlayer): void => {
+export const playUrl = ({ url, fileName, player }: { url: string; fileName: string; player?: MediaPlayer }): void => {
     const selectedPlayer = player || useSettingsStore.getState().get("mediaPlayer");
+
+    if (selectedPlayer === MediaPlayer.BROWSER) {
+        toast.error("Browser preview is not supported for this file. Please select a different player.");
+        return;
+    }
+
     const currentPlatform = detectPlatform();
 
     if (!isSupportedPlayer(selectedPlayer, currentPlatform)) {
@@ -100,6 +105,6 @@ export const playUrl = (linkInfo: DebridLinkInfo, player?: MediaPlayer): void =>
         return;
     }
 
-    const url = PLAYER_URLS[selectedPlayer](linkInfo.link, linkInfo.name);
-    window.open(url, "_self");
+    const playerUrl = PLAYER_URLS[selectedPlayer](url, fileName);
+    window.open(playerUrl, "_self");
 };
