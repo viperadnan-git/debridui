@@ -238,14 +238,14 @@ export function HeroCarousel() {
 
     if (isLoading) {
         return (
-            <div className="relative w-full">
+            <div className="-mx-4 -mt-6">
                 {/* Desktop skeleton */}
                 <div className="hidden md:block">
                     <Skeleton className="w-full aspect-video" />
                 </div>
                 {/* Mobile skeleton */}
                 <div className="md:hidden">
-                    <Skeleton className="w-full aspect-9/16" />
+                    <Skeleton className="w-full aspect-9/14" />
                 </div>
             </div>
         );

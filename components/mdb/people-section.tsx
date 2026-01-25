@@ -1,16 +1,19 @@
 "use client";
 
-import { type TraktCastAndCrew, type TraktCastMember, type TraktCrewMember } from "@/lib/trakt";
+import { type TraktCastMember, type TraktCrewMember } from "@/lib/trakt";
 import { Skeleton } from "@/components/ui/skeleton";
 import { User } from "lucide-react";
+import { useTraktPeople } from "@/hooks/use-trakt";
+import { memo } from "react";
 
 interface PeopleSectionProps {
-    people?: TraktCastAndCrew;
-    isLoading?: boolean;
-    error?: Error | null;
+    mediaId: string;
+    type: "movies" | "shows";
 }
 
-export function PeopleSection({ people, isLoading, error }: PeopleSectionProps) {
+export const PeopleSection = memo(function PeopleSection({ mediaId, type }: PeopleSectionProps) {
+    const { data: people, isLoading, error } = useTraktPeople(mediaId, type);
+
     if (error) {
         return null;
     }
@@ -52,7 +55,7 @@ export function PeopleSection({ people, isLoading, error }: PeopleSectionProps) 
             )}
         </div>
     );
-}
+});
 
 interface PersonCardProps {
     person: TraktCastMember | TraktCrewMember;
