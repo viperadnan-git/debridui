@@ -12,7 +12,6 @@ import {
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
-import { useUserStore } from "../stores/users";
 import Fuse from "fuse.js";
 
 // Response type definitions
@@ -110,15 +109,8 @@ export default class AllDebridClient extends BaseClient {
         }
 
         const data = await response.json();
-        try {
-            AllDebridClient.validateResponse(data);
-            return data.data;
-        } catch (error) {
-            if (error instanceof AuthError) {
-                useUserStore.getState().removeUser(this.user.id);
-            }
-            throw error;
-        }
+        AllDebridClient.validateResponse(data);
+        return data.data;
     }
 
     static async getUser(apiKey: string): Promise<User> {

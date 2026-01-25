@@ -2,15 +2,14 @@ import { create } from "zustand";
 import { queryClient } from "../query-client";
 import { DebridClient } from "../clients";
 import { useSelectionStore } from "./selection";
-import { useUserStore } from "./users";
 
 interface FileStoreState {
     sortBy: string;
     sortOrder: "asc" | "desc";
     setSortBy: (sortBy: string) => void;
     setSortOrder: (sortOrder: "asc" | "desc") => void;
-    removeTorrent: (client: DebridClient, fileId: string) => Promise<string>;
-    retryFiles: (client: DebridClient, fileIds: string[]) => Promise<Record<string, string>>;
+    removeTorrent: (client: DebridClient, accountId: string, fileId: string) => Promise<string>;
+    retryFiles: (client: DebridClient, accountId: string, fileIds: string[]) => Promise<Record<string, string>>;
 }
 
 const initialState = {
@@ -26,26 +25,24 @@ export const useFileStore = create<FileStoreState>((set) => ({
     setSortOrder: (sortOrder: "asc" | "desc") => {
         set({ sortOrder });
     },
-    removeTorrent: async (client: DebridClient, fileId: string) => {
-        const currentUser = useUserStore.getState().currentUser;
+    removeTorrent: async (client: DebridClient, accountId: string, fileId: string) => {
         const message = await client.removeTorrent(fileId);
         useSelectionStore.getState().removeFileSelection(fileId);
         queryClient.invalidateQueries({
-            queryKey: [currentUser?.id, "getTorrentList"],
+            queryKey: [accountId, "getTorrentList"],
         });
         queryClient.invalidateQueries({
-            queryKey: [currentUser?.id, "findTorrents"],
+            queryKey: [accountId, "findTorrents"],
         });
         return message;
     },
-    retryFiles: async (client: DebridClient, fileIds: string[]) => {
-        const currentUser = useUserStore.getState().currentUser;
+    retryFiles: async (client: DebridClient, accountId: string, fileIds: string[]) => {
         const message = await client.restartTorrents(fileIds);
         queryClient.invalidateQueries({
-            queryKey: [currentUser?.id, "getTorrentList"],
+            queryKey: [accountId, "getTorrentList"],
         });
         queryClient.invalidateQueries({
-            queryKey: [currentUser?.id, "findTorrents"],
+            queryKey: [accountId, "findTorrents"],
         });
         return message;
     },

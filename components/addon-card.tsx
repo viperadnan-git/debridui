@@ -22,7 +22,7 @@ interface AddonCardProps {
 }
 
 export function AddonCard({ addon, onToggle, onRemove, onMoveUp, onMoveDown, isFirst, isLast }: AddonCardProps) {
-    const { data: manifest, isLoading } = useAddon({ url: addon.url });
+    const { data: manifest, isLoading } = useAddon({ addonId: addon.id, url: addon.url });
 
     return (
         <div

@@ -38,7 +38,7 @@ export function useAddUserAccount() {
             localStorage.setItem("selected-account-id", account.id);
 
             // Cache user info to avoid refetching
-            queryClient.setQueryData(["debrid-user-info", account.id], user);
+            queryClient.setQueryData([account.id, "getUser"], user);
 
             // Wait for the query to refetch before allowing redirect
             await queryClient.refetchQueries({ queryKey: USER_ACCOUNTS_KEY });
@@ -57,8 +57,8 @@ export function useRemoveUserAccount() {
     return useMutation({
         mutationFn: (accountId: string) => removeUserAccount(accountId),
         onSuccess: async (_, accountId) => {
-            // Remove cached user info for deleted account
-            queryClient.removeQueries({ queryKey: ["debrid-user-info", accountId] });
+            // Invalidate all queries related to this account
+            await queryClient.invalidateQueries({ queryKey: [accountId] });
 
             // Refetch accounts list
             await queryClient.refetchQueries({ queryKey: USER_ACCOUNTS_KEY });
@@ -83,7 +83,7 @@ export function useDebridUserInfo(account: UserAccount | null) {
     const accountApiKey = account?.apiKey;
 
     return useQuery({
-        queryKey: ["debrid-user-info", accountId],
+        queryKey: [accountId, "getUser"],
         queryFn: () => {
             if (!account) throw new Error("No account provided");
             return getDebridUserInfo(account);

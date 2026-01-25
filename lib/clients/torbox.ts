@@ -14,7 +14,6 @@ import {
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
-import { useUserStore } from "../stores/users";
 import { getProxyUrl } from "@/lib/utils";
 
 // TorBox Search API types
@@ -127,7 +126,6 @@ export default class TorBoxClient extends BaseClient {
 
         if (!response.ok) {
             if (response.status === 401) {
-                useUserStore.getState().removeUser(this.user.id);
                 throw new AuthError("Invalid or expired API key", "AUTH_INVALID_APIKEY", response.status);
             }
             if (response.status === 429) {
@@ -146,7 +144,6 @@ export default class TorBoxClient extends BaseClient {
         if (!data.success) {
             const errorMessage = data.detail || data.error || "Unknown error";
             if (errorMessage.includes("auth") || errorMessage.includes("token")) {
-                useUserStore.getState().removeUser(this.user.id);
                 throw new AuthError(errorMessage, "AUTH_ERROR");
             }
             throw new DebridError(errorMessage, "API_ERROR");
@@ -515,7 +512,6 @@ export default class TorBoxClient extends BaseClient {
 
         if (!response.ok) {
             if (response.status === 401) {
-                useUserStore.getState().removeUser(this.user.id);
                 throw new AuthError("Invalid or expired API key", "AUTH_INVALID_APIKEY", response.status);
             }
             throw new DebridError(`Search request failed: ${response.statusText}`, "SEARCH_FAILED", response.status);

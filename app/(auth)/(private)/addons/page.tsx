@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useUserAddons, useAddAddon, useRemoveAddon, useToggleAddon, useUpdateAddonOrders } from "@/hooks/use-addons";
 import { AddonClient } from "@/lib/addons/client";
 import { type Addon } from "@/lib/addons/types";
@@ -31,8 +31,8 @@ export default function AddonsPage() {
     const [validating, setValidating] = useState(false);
     const [addonToDelete, setAddonToDelete] = useState<Addon | null>(null);
 
-    // Sort addons by order
-    const sortedAddons = [...serverAddons].sort((a, b) => a.order - b.order);
+    // Memoize sorted addons to avoid re-sorting on every render
+    const sortedAddons = useMemo(() => [...serverAddons].sort((a, b) => a.order - b.order), [serverAddons]);
 
     const handleAddAddon = async (url?: string) => {
         const addonUrl = url || newAddonUrl;

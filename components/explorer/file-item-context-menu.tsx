@@ -91,7 +91,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
         mutationFn: async () => {
             const toastId = toast.loading("Deleting file...");
             try {
-                const message = await removeTorrent(client, file.id);
+                const message = await removeTorrent(client, currentAccount.id, file.id);
                 toast.success(message || "File deleted", { id: toastId });
                 return message;
             } catch (error: unknown) {
@@ -109,7 +109,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
         mutationFn: async () => {
             const toastId = toast.loading("Retrying file...");
             try {
-                const result = await retryFiles(client, [file.id]);
+                const result = await retryFiles(client, currentAccount.id, [file.id]);
                 const message = result[file.id] || "Retry initiated";
                 toast.success(message, { id: toastId });
                 return message;

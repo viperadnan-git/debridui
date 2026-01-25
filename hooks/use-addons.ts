@@ -6,7 +6,7 @@ import { AddonClient } from "@/lib/addons/client";
 import { parseStreams } from "@/lib/addons/parser";
 import { type Addon, type AddonSource, type TvSearchParams } from "@/lib/addons/types";
 
-const USER_ADDONS_KEY = ["addons", "user-addons"];
+const USER_ADDONS_KEY = ["user-addons"];
 
 /**
  * Fetch all user addons from database
@@ -45,7 +45,12 @@ export function useRemoveAddon() {
 
     return useMutation({
         mutationFn: (addonId: string) => removeAddon(addonId),
-        onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
+        onSuccess: async (_, addonId) => {
+            // Invalidate all queries related to this addon
+            await queryClient.invalidateQueries({ queryKey: ["addon", addonId] });
+            // Refetch user addons list
+            await queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY });
+        },
         onError: (error) => {
             handleError(error, "Failed to remove addon");
         },
@@ -74,9 +79,7 @@ export function useUpdateAddonOrders() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (updates: { id: string; order: number }[]) => {
-            return updateAddonOrders(updates);
-        },
+        mutationFn: updateAddonOrders,
         onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
         onError: (error) => {
             handleError(error, "Failed to reorder addons");
@@ -85,6 +88,7 @@ export function useUpdateAddonOrders() {
 }
 
 interface UseAddonOptions {
+    addonId: string;
     url: string;
     enabled?: boolean;
 }
@@ -92,9 +96,9 @@ interface UseAddonOptions {
 /**
  * Hook to fetch and cache addon manifest
  */
-export function useAddon({ url, enabled = true }: UseAddonOptions) {
+export function useAddon({ addonId, url, enabled = true }: UseAddonOptions) {
     return useQuery({
-        queryKey: ["addons", url],
+        queryKey: ["addon", addonId, "manifest"],
         queryFn: async () => {
             const client = new AddonClient({ url });
             return await client.fetchManifest();
@@ -142,7 +146,7 @@ export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSources
     // Individual query per addon for progressive loading
     const queries = useQueries({
         queries: enabledAddons.map((addon) => ({
-            queryKey: ["addon-sources", addon.id, imdbId, mediaType, tvParams] as const,
+            queryKey: ["addon", addon.id, "sources", imdbId, mediaType, tvParams] as const,
             queryFn: () => fetchAddonSources(addon, imdbId, mediaType, tvParams),
             staleTime: 5 * 60 * 1000, // 5 minutes
             gcTime: 24 * 60 * 60 * 1000, // 24 hours

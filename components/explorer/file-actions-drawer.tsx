@@ -44,7 +44,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
             return totalNodes === 0 || (selectedNodes && selectedNodes.size === totalNodes);
         });
     }, [selectedFileIds, selectedNodesByFile, totalNodesByFile]);
-    const { client } = useAuthGuaranteed();
+    const { client, currentAccount } = useAuthGuaranteed();
     const { removeTorrent, retryFiles } = useFileStore(
         useShallow((state) => ({
             removeTorrent: state.removeTorrent,
@@ -71,7 +71,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
     // Delete mutation
     const deleteMutation = useMutation({
         mutationFn: async (fileIds: string[]) => {
-            const promises = fileIds.map((id) => removeTorrent(client, id));
+            const promises = fileIds.map((id) => removeTorrent(client, currentAccount.id, id));
             await Promise.all(promises);
             return fileIds;
         },
@@ -87,7 +87,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
     // Retry mutation
     const retryMutation = useMutation({
         mutationFn: async (fileIds: string[]) => {
-            return retryFiles(client, fileIds);
+            return retryFiles(client, currentAccount.id, fileIds);
         },
         onSuccess: (results) => {
             Object.entries(results).forEach(([magnet, message]) => {
