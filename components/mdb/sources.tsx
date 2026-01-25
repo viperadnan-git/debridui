@@ -15,6 +15,7 @@ import {
     X,
     AlertTriangle,
     HardDrive,
+    Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/lib/contexts/auth";
@@ -162,8 +163,10 @@ export function SourceRow({
             <div className="font-medium text-sm leading-tight wrap-break-word">{source.title}</div>
 
             {/* Row 2: Description (if exists) */}
-            {source.folder && (
-                <div className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">{source.folder}</div>
+            {source.description && (
+                <div className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
+                    {source.description}
+                </div>
             )}
 
             {/* Row 3: Badges and Buttons - stacked on mobile, side-by-side on tablet/desktop */}
@@ -180,10 +183,21 @@ export function SourceRow({
                         </Badge>
                     )}
 
+                    {/* Resolution Badge */}
+                    {source.resolution && (
+                        <Badge
+                            variant="secondary"
+                            className="text-xs px-1.5 py-0.5 h-5 bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 border-orange-500/20"
+                            title="Resolution">
+                            <Monitor className="h-2.5 w-2.5 mr-0.5" />
+                            {source.resolution}
+                        </Badge>
+                    )}
+
                     {/* Size Badge */}
                     {source.size && (
                         <Badge
-                            variant="outline"
+                            variant="secondary"
                             className="text-xs px-1.5 py-0.5 h-5 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-blue-500/20"
                             title="Size">
                             <HardDrive className="h-2.5 w-2.5 mr-0.5" />

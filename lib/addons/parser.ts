@@ -3,6 +3,7 @@ import { type AddonStream, type AddonSource } from "./types";
 
 const HASH_REGEX = /[a-f0-9]{40}/;
 const FILE_SIZE_REGEX = /\b\d+(?:\.\d+)?\s*(?:[KMGT]i?)?B\b/gi;
+const RESOLUTION_REGEX = /\b(\d{3,4}p|4k)\b/i;
 
 /**
  * Detect if a source is cached based on name/description
@@ -64,6 +65,15 @@ export function extractSize(stream: AddonStream): string | undefined {
     return undefined;
 }
 
+export function extractResolution(stream: AddonStream): string | undefined {
+    if (!stream.name) return undefined;
+
+    const resolutionMatch = stream.name.match(RESOLUTION_REGEX);
+    if (!resolutionMatch) return undefined;
+
+    const resolution = resolutionMatch[0].toLowerCase();
+    return resolution === "4k" ? "2160p" : resolution;
+}
 /**
  * Construct magnet link from hash
  */
@@ -76,7 +86,8 @@ export function constructMagnet(hash: string, title: string): string {
  */
 export function parseStreamInfo(stream: AddonStream): {
     title: string;
-    folder?: string;
+    description?: string;
+    resolution?: string;
     size?: string;
     peers?: string;
 } {
@@ -87,10 +98,12 @@ export function parseStreamInfo(stream: AddonStream): {
     // Combine title and description
     const combinedDescription = [title, description].filter(Boolean).join("\n");
     const size = extractSize(stream);
+    const resolution = extractResolution(stream);
 
     return {
         title: name,
-        folder: combinedDescription || undefined,
+        description: combinedDescription || undefined,
+        resolution: resolution,
         size: size,
         peers: undefined,
     };
@@ -100,7 +113,7 @@ export function parseStreamInfo(stream: AddonStream): {
  * Parse a single addon stream into AddonSource format
  */
 export function parseStream(stream: AddonStream, addonId: string, addonName: string, addonUrl: string): AddonSource {
-    const { title, folder, size, peers } = parseStreamInfo(stream);
+    const { title, description, resolution, size, peers } = parseStreamInfo(stream);
     const hash = extractHash(stream);
     const isCached = detectCached(stream);
 
@@ -109,7 +122,8 @@ export function parseStream(stream: AddonStream, addonId: string, addonName: str
 
     return {
         title,
-        folder,
+        description,
+        resolution,
         size,
         peers,
         magnet,
