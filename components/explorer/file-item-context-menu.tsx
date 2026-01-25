@@ -12,7 +12,7 @@ import {
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { DebridFile } from "@/lib/types";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { downloadM3UPlaylist, fetchTorrentDownloadLinks } from "@/lib/utils/file";
 import { useFileStore } from "@/lib/stores/files";
@@ -24,7 +24,7 @@ interface FileItemContextMenuProps {
 }
 
 export function FileItemContextMenu({ file, children, className }: FileItemContextMenuProps) {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
     const { removeTorrent, retryFiles } = useFileStore();
 
     // Copy mutation

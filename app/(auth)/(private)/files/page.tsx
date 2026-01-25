@@ -1,9 +1,9 @@
 "use client";
 
 import { FileExplorer } from "@/components/explorer/file-explorer";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 
 export default function AccountPage() {
-    const { currentUser } = useAuthContext();
+    const { currentUser } = useAuthGuaranteed();
     return <FileExplorer key={currentUser.id} />;
 }

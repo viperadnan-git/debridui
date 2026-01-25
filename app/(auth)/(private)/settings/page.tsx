@@ -12,7 +12,7 @@ import { useState } from "react";
 import { del } from "idb-keyval";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { formatDistanceToNow, format } from "date-fns";
 import { PageHeader } from "@/components/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -24,7 +24,7 @@ const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString(
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
-    const { currentUser } = useAuthContext();
+    const { currentUser } = useAuthGuaranteed();
     const buildDate = new Date(BUILD_TIME);
     const buildTimeFormatted = format(buildDate, "PPpp");
     const buildTimeRelative = formatDistanceToNow(buildDate, { addSuffix: true });

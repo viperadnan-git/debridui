@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { SearchBar } from "./search-bar";
 import { useSearchParams, useRouter } from "next/navigation";
 import { DebridFile } from "@/lib/types";
@@ -16,7 +16,7 @@ export const SearchSection = memo(function SearchSection({ onSearchResults }: Se
     const router = useRouter();
     const queryParam = searchParams.get("q") || "";
     const [searchQuery, setSearchQuery] = useState<string>(queryParam);
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
 
     // Check if this is an ID search
     const isIdSearch = queryParam.trim().startsWith("id:");

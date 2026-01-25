@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, serial, text, boolean, integer, timestamp, jsonb, uniqueIndex, index } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, integer, timestamp, jsonb, uniqueIndex, index, uuid } from "drizzle-orm/pg-core";
 import { AccountType } from "../schemas";
 export * from "./auth-schema";
 import { user } from "./auth-schema";
@@ -8,7 +8,7 @@ import { user } from "./auth-schema";
 export const userAccounts = pgTable(
     "user_accounts",
     {
-        id: serial("id").primaryKey(),
+        id: uuid("id").primaryKey().defaultRandom(),
         userId: text("user_id")
             .notNull()
             .references(() => user.id, { onDelete: "cascade" }),

@@ -1,52 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRightLeft, RefreshCw, Share2, Trash2 } from "lucide-react";
+import { useState, useCallback } from "react";
+import * as React from "react";
+import { ArrowRightLeft, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { AccountType, User as UserType } from "@/lib/types";
+import { AccountType } from "@/lib/types";
 import { formatAccountType, cn } from "@/lib/utils";
-import { useUserStore } from "@/lib/stores/users";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { ShareAccountDialog } from "./share-account-dialog";
 import { ServiceIcon } from "./service-icon";
-import { toast } from "sonner";
+import { useAuth } from "@/components/auth/auth-provider";
+import { useRemoveUserAccount, useDebridUserInfo } from "@/hooks/use-user-accounts";
+import type { UserAccount } from "@/lib/db";
 
 interface AccountCardProps {
-    user: UserType;
+    account: UserAccount;
     isCurrentAccount: boolean;
 }
 
-export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
-    const [shareDialogOpen, setShareDialogOpen] = useState(false);
+// `rerender-memo` - Memoize component to prevent unnecessary re-renders
+export const AccountCard = React.memo(function AccountCard({ account, isCurrentAccount }: AccountCardProps) {
     const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const { switchAccount } = useAuth();
+    const removeAccount = useRemoveUserAccount();
 
-    const switchAccount = useUserStore((state) => state.switchUser);
-    const removeAccount = useUserStore((state) => state.removeUser);
-    const refreshUser = useUserStore((state) => state.refreshUser);
+    // Fetch debrid user info for this account
+    const { data: userInfo } = useDebridUserInfo(account);
 
-    const handleSwitch = () => {
-        switchAccount(user.id);
-    };
+    // `rerender-defer-reads` - Use callbacks to avoid subscribing to switchAccount identity
+    const handleSwitch = useCallback(() => {
+        switchAccount(account.id);
+    }, [switchAccount, account.id]);
 
-    const handleRemove = () => {
-        removeAccount(user.id);
+    const handleRemove = useCallback(() => {
+        removeAccount.mutate(account.id);
         setRemoveDialogOpen(false);
-    };
-
-    const handleRefresh = async () => {
-        setIsRefreshing(true);
-        try {
-            await refreshUser(user.id);
-            toast.success("Account refreshed successfully");
-        } finally {
-            setIsRefreshing(false);
-        }
-    };
+    }, [removeAccount, account.id]);
 
     return (
         <>
@@ -64,40 +56,44 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
                 <CardHeader>
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                            <ServiceIcon type={user.type as AccountType} className="h-5 w-5" />
+                            <ServiceIcon type={account.type as AccountType} className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <CardTitle className="truncate" title={user.username}>
-                                {user.username}
+                            <CardTitle className="truncate" title={userInfo?.username || "Loading..."}>
+                                {userInfo?.username || "Loading..."}
                             </CardTitle>
-                            <CardDescription className="truncate" title={formatAccountType(user.type)}>
-                                {formatAccountType(user.type)}
+                            <CardDescription className="truncate" title={formatAccountType(account.type)}>
+                                {formatAccountType(account.type)}
                             </CardDescription>
                         </div>
                     </div>
                 </CardHeader>
 
                 <CardContent className="flex flex-col flex-1 pt-0">
-                    <div className="space-y-2 text-sm">
-                        <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Email</span>
-                            <span className="font-medium truncate" title={user.email}>
-                                {user.email}
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Status</span>
-                            <Badge variant={user.isPremium ? "secondary" : "outline"}>
-                                {user.isPremium ? "Premium" : "Free"}
-                            </Badge>
-                        </div>
-                        {user.isPremium && (
+                    {userInfo ? (
+                        <div className="space-y-2 text-sm">
                             <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Expires</span>
-                                <span>{format(user.premiumExpiresAt, "PP")}</span>
+                                <span className="text-muted-foreground">Email</span>
+                                <span className="font-medium truncate" title={userInfo.email}>
+                                    {userInfo.email}
+                                </span>
                             </div>
-                        )}
-                    </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Status</span>
+                                <Badge variant={userInfo.isPremium ? "secondary" : "outline"}>
+                                    {userInfo.isPremium ? "Premium" : "Free"}
+                                </Badge>
+                            </div>
+                            {userInfo.premiumExpiresAt && (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Expires</span>
+                                    <span className="font-medium">{format(userInfo.premiumExpiresAt, "PP")}</span>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="text-sm text-muted-foreground">Loading account info...</div>
+                    )}
 
                     <div className="mt-auto pt-3 space-y-3">
                         <Separator />
@@ -112,21 +108,6 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
                             <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={handleRefresh}
-                                disabled={isRefreshing}
-                                aria-label="Refresh account data">
-                                <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => setShareDialogOpen(true)}
-                                aria-label="Share account URL">
-                                <Share2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
                                 onClick={() => setRemoveDialogOpen(true)}
                                 className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                 aria-label="Remove account">
@@ -137,17 +118,15 @@ export function AccountCard({ user, isCurrentAccount }: AccountCardProps) {
                 </CardContent>
             </Card>
 
-            <ShareAccountDialog user={user} open={shareDialogOpen} onOpenChange={setShareDialogOpen} />
-
             <ConfirmDialog
                 open={removeDialogOpen}
                 onOpenChange={setRemoveDialogOpen}
                 title="Remove Account"
-                description="Are you sure you want to remove this account? You'll need to login again with your API key to access it."
+                description="Are you sure you want to remove this account? You'll need to add it again to access it."
                 confirmText="Remove"
                 onConfirm={handleRemove}
                 variant="destructive"
             />
         </>
     );
-}
+});

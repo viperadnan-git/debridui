@@ -17,7 +17,7 @@ import {
     Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useRouter } from "next/navigation";
@@ -46,7 +46,7 @@ interface SourcesSkeletonProps {
 }
 
 export function AddSourceButton({ magnet }: { magnet: string }) {
-    const { client } = useAuthContext();
+    const { client } = useAuthGuaranteed();
     const router = useRouter();
     const [status, setStatus] = useState<"added" | "cached" | "loading" | null>(null);
     const [torrentId, setTorrentId] = useState<number | string | null>(null);

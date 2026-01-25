@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef } from "react";
 import { usePreviewStore } from "@/lib/stores/preview";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useQuery } from "@tanstack/react-query";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -15,7 +15,7 @@ import { formatSize, downloadLinks } from "@/lib/utils";
 import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
 
 export function FilePreviewDialog() {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
     const { get } = useSettingsStore();
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
 

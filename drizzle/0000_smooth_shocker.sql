@@ -8,7 +8,7 @@ CREATE TABLE "addons" (
 );
 --> statement-breakpoint
 CREATE TABLE "user_accounts" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"api_key" text NOT NULL,
 	"type" text NOT NULL,

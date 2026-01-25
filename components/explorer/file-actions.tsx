@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Download, Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { downloadM3UPlaylist, fetchSelectedDownloadLinks } from "@/lib/utils/file";
 
@@ -14,7 +14,7 @@ interface FileActionsProps {
 }
 
 export function FileActions({ selectedFiles }: FileActionsProps) {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
     const fileIds = useMemo(() => Array.from(selectedFiles), [selectedFiles]);
     const selectedCount = selectedFiles.size;
     const isDisabled = selectedCount === 0;

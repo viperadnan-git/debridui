@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { getFindTorrentsCacheKey } from "@/lib/utils/cache-keys";
 import { type DebridFile, AccountType } from "@/lib/types";
 import { traktClient } from "@/lib/trakt";
@@ -14,7 +14,7 @@ interface UseSearchLogicOptions {
 }
 
 export function useSearchLogic({ query, enabled = true }: UseSearchLogicOptions) {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
     const trimmedQuery = query.trim();
     const minQueryLength = 3;
     const shouldSearch = enabled && trimmedQuery.length >= minQueryLength;

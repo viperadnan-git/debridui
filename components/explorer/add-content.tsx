@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
 import { Link, FileUp, Loader2, ClipboardIcon } from "lucide-react";
@@ -18,7 +18,7 @@ export function AddContent() {
     const [isAddingLinks, setIsAddingLinks] = useState(false);
     const [isUploadingFiles, setIsUploadingFiles] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
 
     const handleOperationResults = (results: OperationResult, itemType: "link" | "file", toastId: string | number) => {
         let successCount = 0;

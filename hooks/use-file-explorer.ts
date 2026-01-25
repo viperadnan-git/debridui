@@ -1,4 +1,4 @@
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useEffect, useState, useMemo } from "react";
 import { PAGE_SIZE } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { sortTorrentFiles } from "@/lib/utils/file";
 
 export function useFileExplorer() {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
     const searchParams = useSearchParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [totalEstimate, setTotalEstimate] = useState<number | null>(null);

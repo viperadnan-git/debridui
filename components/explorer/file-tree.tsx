@@ -9,7 +9,7 @@ import { cn, getFileType } from "@/lib/utils";
 import { formatSize, playUrl, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
 import { FileType, MediaPlayer } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
@@ -120,7 +120,7 @@ const FileActionButton = memo(function FileActionButton({
     node: DebridFileNode;
     action: "copy" | "download" | "play";
 }) {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const downloadLinkMaxAge = useSettingsStore((state) => state.get("downloadLinkMaxAge"));
 

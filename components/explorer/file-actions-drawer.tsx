@@ -9,7 +9,7 @@ import { FileActions } from "./file-actions";
 import { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useFileStore } from "@/lib/stores/files";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useShallow } from "zustand/react/shallow";
 import { useSelectionStore } from "@/lib/stores/selection";
 
@@ -44,7 +44,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
             return totalNodes === 0 || (selectedNodes && selectedNodes.size === totalNodes);
         });
     }, [selectedFileIds, selectedNodesByFile, totalNodesByFile]);
-    const { client } = useAuthContext();
+    const { client } = useAuthGuaranteed();
     const { removeTorrent, retryFiles } = useFileStore(
         useShallow((state) => ({
             removeTorrent: state.removeTorrent,

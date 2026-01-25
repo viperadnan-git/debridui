@@ -3,7 +3,7 @@
 import { DebridFile, DebridNode } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useEffect } from "react";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { processFileNodes } from "@/lib/utils/file";
@@ -25,7 +25,7 @@ interface ExpandedRowProps {
 }
 
 export function ExpandedRow({ file }: ExpandedRowProps) {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser } = useAuthGuaranteed();
     const { get } = useSettingsStore();
     const hideTrash = get("hideTrash");
     const smartOrder = get("smartOrder");

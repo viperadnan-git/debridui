@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/login-form";
+import { OnboardingForm } from "@/components/onboarding-form";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -24,7 +24,7 @@ export default function OnboardingPage() {
                         Add your debrid service account to get started
                     </p>
                 </div>
-                <LoginForm />
+                <OnboardingForm />
             </div>
         </div>
     );
