@@ -9,9 +9,10 @@ import {
     ClockIcon,
     OctagonAlertIcon,
     CircleXIcon,
+    Zap,
 } from "lucide-react";
 import { Badge } from "./ui/badge";
-import { cache } from "react";
+import { cache, memo } from "react";
 import { cn } from "@/lib/utils";
 
 export function AccountIcon({ type }: { type: AccountType | string }) {
@@ -107,3 +108,14 @@ export function StatusBadge({ status, hide }: { status: DebridFileStatus; hide?:
         </Badge>
     );
 }
+
+export const CachedBadge = memo(function CachedBadge() {
+    return (
+        <Badge
+            variant="secondary"
+            className="text-xs px-1.5 py-0.5 h-5 bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
+            <Zap className="h-2.5 w-2.5 mr-0.5" />
+            <span>Cached</span>
+        </Badge>
+    );
+});

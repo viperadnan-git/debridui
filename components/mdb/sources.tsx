@@ -11,7 +11,6 @@ import {
     HardDriveDownloadIcon,
     Trash2Icon,
     DownloadIcon,
-    Zap,
     X,
     AlertTriangle,
     HardDrive,
@@ -23,6 +22,7 @@ import { toast } from "sonner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { CachedBadge } from "@/components/display";
 import { PlayUrlButton } from "./play-url-button";
 import { UrlPreviewDialog } from "@/components/preview/url-preview-dialog";
 import { useSettingsStore } from "@/lib/stores/settings";
@@ -174,14 +174,7 @@ export function SourceRow({
                 {/* Badges */}
                 <div className="flex flex-wrap items-center gap-1.5 md:flex-1">
                     {/* Cached Badge */}
-                    {source.isCached && (
-                        <Badge
-                            variant="secondary"
-                            className="text-xs px-1.5 py-0.5 h-5 bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
-                            <Zap className="h-2.5 w-2.5 mr-0.5" />
-                            <span>Cached</span>
-                        </Badge>
-                    )}
+                    {source.isCached && <CachedBadge />}
 
                     {/* Resolution Badge */}
                     {source.resolution && (

@@ -3,10 +3,11 @@
 import { memo } from "react";
 import { CommandItem } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
-import { HardDrive, Users, CheckCircle2 } from "lucide-react";
+import { HardDrive, Users } from "lucide-react";
 import { cn, formatSize } from "@/lib/utils";
 import { type TorBoxSearchResult } from "@/lib/clients/torbox";
 import { AddSourceButton } from "./sources";
+import { CachedBadge } from "@/components/display";
 
 interface SearchSourceItemProps {
     result: TorBoxSearchResult;
@@ -23,14 +24,7 @@ const SourceContent = memo(function SourceContent({ result }: { result: TorBoxSe
             <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1 mb-1.5">
-                        {result.cached && (
-                            <Badge
-                                variant="secondary"
-                                className="text-xs px-1.5 py-0.5 h-5 bg-green-500/10 text-green-600">
-                                <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
-                                Cached
-                            </Badge>
-                        )}
+                        {result.cached && <CachedBadge />}
                         <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
                             {result.type}
                         </Badge>

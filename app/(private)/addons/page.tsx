@@ -10,10 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Zap, Info } from "lucide-react";
+import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Info } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { AddonCard } from "@/components/addon-card";
-import { Badge } from "@/components/ui/badge";
+import { CachedBadge } from "@/components/display";
 
 export default function AddonsPage() {
     const { addons, addAddon, removeAddon, toggleAddon, reorderAddons } = useAddonsStore();
@@ -132,7 +132,7 @@ export default function AddonsPage() {
                                         </>
                                     ) : (
                                         <>
-                                            <Zap className="h-4 w-4" />
+                                            <Puzzle className="h-4 w-4" />
                                             Add Torrentio
                                         </>
                                     )}
@@ -248,16 +248,10 @@ export default function AddonsPage() {
                             and displayed together in the order listed above. Use the arrow buttons to reorder addons.
                         </p>
                         <p>
-                            <strong>Cached sources</strong> (marked with{" "}
-                            <Badge
-                                variant="secondary"
-                                className="inline-flex items-center text-xs px-1.5 py-0.5 h-5 bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
-                                <Zap className="h-2.5 w-2.5 mr-0.5" />
-                                <span>Cached</span>
-                            </Badge>
-                            ) are detected by checking if the source name contains &quot;instant&quot; or &quot;+&quot;,
-                            or if the name/description includes ✅ or ⚡ emojis. Cached sources are instantly available
-                            for download from your debrid service.
+                            <strong>Cached sources</strong> (marked with <CachedBadge />) are detected by checking if
+                            the source name contains &quot;instant&quot; or &quot;+&quot;, or if the name/description
+                            includes ✅ or ⚡ emojis. Cached sources are instantly available for download from your
+                            debrid service.
                         </p>
                     </AlertDescription>
                 </Alert>
