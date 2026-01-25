@@ -12,37 +12,40 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-const loginSchema = z.object({
+const signupSchema = z.object({
+    name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-export default function LoginPage() {
+export default function SignupPage() {
     const router = useRouter();
 
-    const form = useForm<z.infer<typeof loginSchema>>({
-        resolver: zodResolver(loginSchema),
+    const form = useForm<z.infer<typeof signupSchema>>({
+        resolver: zodResolver(signupSchema),
         defaultValues: {
+            name: "",
             email: "",
             password: "",
         },
     });
 
-    async function onSubmit(values: z.infer<typeof loginSchema>) {
+    async function onSubmit(values: z.infer<typeof signupSchema>) {
         try {
-            const { data, error } = await authClient.signIn.email({
+            const { data, error } = await authClient.signUp.email({
                 email: values.email,
                 password: values.password,
+                name: values.name,
             });
 
             if (error) {
-                toast.error(error.message || "Failed to sign in");
+                toast.error(error.message || "Failed to sign up");
                 return;
             }
 
             if (data) {
-                toast.success("Logged in successfully");
-                router.push("/dashboard");
+                toast.success("Account created successfully");
+                router.push("/onboarding");
             }
         } catch {
             toast.error("An unexpected error occurred");
@@ -65,13 +68,27 @@ export default function LoginPage() {
                         </div>
                         <span className="sr-only">DebridUI</span>
                     </Link>
-                    <h1 className="text-xl font-bold">Welcome Back</h1>
-                    <p className="text-sm text-muted-foreground text-center">Sign in to your account</p>
+                    <h1 className="text-xl font-bold">Create an Account</h1>
+                    <p className="text-sm text-muted-foreground text-center">Sign up to get started</p>
                 </div>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
                         <div className="flex flex-col gap-6">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Your name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -93,7 +110,7 @@ export default function LoginPage() {
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="Enter your password" {...field} />
+                                            <Input type="password" placeholder="Create a password" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -101,14 +118,14 @@ export default function LoginPage() {
                             />
 
                             <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                                {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
+                                {form.formState.isSubmitting ? "Creating account..." : "Sign Up"}
                             </Button>
                         </div>
 
                         <div className="text-center text-sm">
-                            Don&apos;t have an account?{" "}
-                            <Link href="/signup" className="underline underline-offset-4 hover:text-primary">
-                                Sign up
+                            Already have an account?{" "}
+                            <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+                                Sign in
                             </Link>
                         </div>
                     </form>
