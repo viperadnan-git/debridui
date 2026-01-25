@@ -1,18 +1,22 @@
 # DebridUI
 
-[![Deploy Status](https://img.shields.io/badge/deploy-live-success)](https://debridui.vercel.app)
-[![License](https://img.shields.io/github/license/viperadnan-git/debridui)](https://github.com/viperadnan-git/debridui/blob/main/LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+<p align="center">
+  <a href="https://debridui.vercel.app"><img src="https://img.shields.io/website?url=https%3A%2F%2Fviperadnan.com&label=Deployment&color=brightgreen" alt="Deployment" /></a>
+  <a href="https://nextjs.org"><img src="https://img.shields.io/github/package-json/dependency-version/viperadnan-git/debridui/next?logo=next.js&logoColor=white&label=Next.js&color=black" alt="Next.js" /></a>
+  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/github/package-json/dependency-version/viperadnan-git/debridui/dev/typescript?logo=typescript&logoColor=white&label=TypeScript&color=3178C6" alt="TypeScript" /></a>
+  <a href="https://tailwindcss.com"><img src="https://img.shields.io/github/package-json/dependency-version/viperadnan-git/debridui/dev/tailwindcss?logo=tailwind-css&logoColor=white&label=Tailwind&color=06B6D4" alt="Tailwind CSS" /></a>
+  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/viperadnan-git/debridui?color=%23E8E2D8">
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/viperadnan-git/debridui?color=blue" alt="License" /></a>
+</p>
 
 A modern, fast debrid client with integrated media discovery. Built with Next.js 15, TypeScript, and Tailwind CSS.
 
 > [!IMPORTANT]
 > This project does not provide, host, or stream any content. DebridUI is a client interface that connects to third-party debrid service APIs to display authorized users' private files and content. [Read full disclaimer](DISCLAIMER.md).
 
-## Demo
+## Community Hosted Instances
 
-🚀 **Live Demo**: [https://debridui.vercel.app](https://debridui.vercel.app)
+- [https://debridui.vercel.app](https://debridui.vercel.app) - Hosted by creator
 
 ## Features
 
@@ -39,23 +43,23 @@ A modern, fast debrid client with integrated media discovery. Built with Next.js
 - **Progress tracking** - Visual indicators for active downloads
 - **Context menus** - Right-click actions for quick operations
 
-## Tech Stack
-
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **UI Components**: Radix UI + shadcn/ui
-- **State Management**: Zustand
-- **Data Fetching**: TanStack Query v5
-- **Forms**: React Hook Form + Zod validation
-- **Package Manager**: Bun (recommended)
-
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 20+ or Bun
-- A debrid account (AllDebrid supported)
+- A debrid account (AllDebrid, TorBox supported)
+
+### Configuration
+
+All configuration is done via environment variables in `.env.local`:
+
+- `NEXT_PUBLIC_TRAKT_CLIENT_ID` - Trakt.tv API client ID for media discovery
+- `NEXT_PUBLIC_CORS_PROXY_URL` - CORS proxy URL for addon requests ([see CORS Proxy section](#cors-proxy))
+- `NEXT_PUBLIC_DISCORD_URL` - Discord community invite link (Optional)
+- `NEXT_PUBLIC_ANALYTICS_SCRIPT` - Analytics script URL (Optional)
+
+Copy `.env.example` to `.env.local` and fill in values as needed.
 
 ### Installation
 
@@ -67,35 +71,42 @@ cd debridui
 # Install dependencies
 bun install
 
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your API keys
+
 # Run development server
 bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to access the app.
 
-### Build for Production
+### Deployment
+
+**Vercel (Recommended):**
+
+1. Push code to GitHub
+2. Import project on [Vercel](https://vercel.com)
+3. Configure environment variables
+4. Deploy
+
+**Self-hosted:**
 
 ```bash
 bun run build
 bun start
 ```
 
-## Configuration
+## CORS Proxy
 
-### Environment Variables
+Addons require a CORS proxy to function. Deploy `proxy.worker.js` to Cloudflare Workers:
 
-Create a `.env.local` file:
-
-```env
-# Optional: Custom API endpoints
-NEXT_PUBLIC_TRAKT_CLIENT_ID=<your-trakt-client-id>
-```
-
-### Supported Services
-
-- **Debrid**: AllDebrid (more coming soon)
-- **Media Players**: VLC, IINA, MPV, PotPlayer, Kodi, MX Player
-- **Content Catalogue**: Trakt.tv
+1. Create a [Cloudflare Workers](https://workers.cloudflare.com) account
+2. Click "Create Application" → "Create Worker"
+3. Replace worker code with contents of `proxy.worker.js`
+4. Update `ALLOWED_ORIGINS` array with your domain(s)
+5. Deploy and copy the worker URL
+6. Add to `.env.local`: `NEXT_PUBLIC_CORS_PROXY_URL=https://your.worker.workers.dev?url=`
 
 ## Contributing
 
