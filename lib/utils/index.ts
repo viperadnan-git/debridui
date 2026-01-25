@@ -32,6 +32,26 @@ export const formatRelativeTime = (date: Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true });
 };
 
+/**
+ * Format date string to year only
+ */
+export const formatYear = (dateString?: string): number | null => {
+    return dateString ? new Date(dateString).getFullYear() : null;
+};
+
+/**
+ * Format date string to localized date (Month Day, Year)
+ */
+export const formatLocalizedDate = (dateString?: string): string | null => {
+    return dateString
+        ? new Date(dateString).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+          })
+        : null;
+};
+
 export const downloadLinks = (downloads: DebridLinkInfo[]) => {
     const downloadContainer = document.createElement("a");
     downloadContainer.style.display = "none";

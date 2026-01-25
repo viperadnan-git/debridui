@@ -3,7 +3,7 @@
 import { type TraktEpisode } from "@/lib/trakt";
 import { Badge } from "@/components/ui/badge";
 import { Star, Calendar, Clock, GlobeIcon, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatLocalizedDate } from "@/lib/utils";
 import { memo, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sources } from "./sources";
@@ -21,15 +21,6 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
     const screenshotUrl = episode.images?.screenshot?.[0]
         ? `https://${episode.images.screenshot[0]}`
         : `https://placehold.co/400x225/1a1a1a/white?text=Episode+${episode.number}`;
-
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return null;
-        return new Date(dateString).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        });
-    };
 
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn("group", className)}>
@@ -105,7 +96,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                     {episode.first_aired && (
                                         <div className="flex items-center gap-1.5">
                                             <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                            <span>{formatDate(episode.first_aired)}</span>
+                                            <span>{formatLocalizedDate(episode.first_aired)}</span>
                                         </div>
                                     )}
 

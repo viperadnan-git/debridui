@@ -3,7 +3,7 @@
 import { type TraktSeason } from "@/lib/trakt";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatYear } from "@/lib/utils";
 import { memo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { traktClient } from "@/lib/trakt";
@@ -39,11 +39,6 @@ export const SeasonCard = memo(function SeasonCard({
             queryKey: ["trakt", "season", "episodes", mediaId, season.number],
             queryFn: () => traktClient.getShowEpisodes(mediaId, season.number),
         });
-    };
-
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return null;
-        return new Date(dateString).getFullYear();
     };
 
     return (
@@ -100,7 +95,7 @@ export const SeasonCard = memo(function SeasonCard({
                             {season.first_aired && (
                                 <div className="flex items-center gap-1">
                                     <CalendarDays className="h-3 w-3" />
-                                    {formatDate(season.first_aired)}
+                                    {formatYear(season.first_aired)}
                                 </div>
                             )}
 
