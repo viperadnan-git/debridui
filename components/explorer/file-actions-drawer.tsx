@@ -3,8 +3,6 @@
 import { useMemo, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, RotateCcw } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { FileActions } from "./file-actions";
 import { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -12,6 +10,7 @@ import { useFileStore } from "@/lib/stores/files";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useShallow } from "zustand/react/shallow";
 import { useSelectionStore } from "@/lib/stores/selection";
+import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 interface FileActionsDrawerProps {
     files: DebridFile[];
@@ -68,36 +67,30 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
         };
     }, [files, fullySelectedFileIds]);
 
-    // Delete mutation
-    const deleteMutation = useMutation({
-        mutationFn: async (fileIds: string[]) => {
+    const deleteMutation = useToastMutation(
+        async (fileIds: string[]) => {
             const promises = fileIds.map((id) => removeTorrent(client, currentAccount.id, id));
             await Promise.all(promises);
             return fileIds;
         },
-        onSuccess: (fileIds) => {
-            // Selection clearing is now handled in the store's removeTorrent
-            toast.success(`Deleted ${fileIds.length} file(s)`);
-        },
-        onError: (error: Error) => {
-            toast.error(`Failed to delete: ${error.message}`);
-        },
-    });
+        {
+            loading: "Deleting files...",
+            success: (fileIds) => `Deleted ${fileIds.length} file(s)`,
+            error: "Failed to delete",
+        }
+    );
 
-    // Retry mutation
-    const retryMutation = useMutation({
-        mutationFn: async (fileIds: string[]) => {
-            return retryFiles(client, currentAccount.id, fileIds);
+    const retryMutation = useToastMutation(
+        async (fileIds: string[]) => {
+            const results = await retryFiles(client, currentAccount.id, fileIds);
+            return { results, count: fileIds.length };
         },
-        onSuccess: (results) => {
-            Object.entries(results).forEach(([magnet, message]) => {
-                toast.success(`Retrying ${magnet}: ${message}`);
-            });
-        },
-        onError: (error: Error) => {
-            toast.error(`Failed to retry: ${error.message}`);
-        },
-    });
+        {
+            loading: "Retrying files...",
+            success: ({ count }) => `Retrying ${count} file(s)`,
+            error: "Failed to retry",
+        }
+    );
 
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);

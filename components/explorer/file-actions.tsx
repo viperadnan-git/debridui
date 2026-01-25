@@ -3,11 +3,10 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Download, Loader2 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { downloadM3UPlaylist, fetchSelectedDownloadLinks } from "@/lib/utils/file";
+import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 interface FileActionsProps {
     selectedFiles: Set<string>;
@@ -19,61 +18,44 @@ export function FileActions({ selectedFiles }: FileActionsProps) {
     const selectedCount = selectedFiles.size;
     const isDisabled = selectedCount === 0;
 
-    const copyMutation = useMutation({
-        mutationFn: async () => {
-            const toastId = toast.loading("Loading links...");
-            try {
-                const links = await fetchSelectedDownloadLinks(fileIds, client, currentAccount.id);
-                copyLinksToClipboard(links);
-                toast.success(`${links.length} link(s) copied to clipboard`, {
-                    id: toastId,
-                });
-                return links;
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to copy: ${errorMessage}`, { id: toastId });
-                throw error;
-            }
+    const copyMutation = useToastMutation(
+        async () => {
+            const links = await fetchSelectedDownloadLinks(fileIds, client, currentAccount.id);
+            copyLinksToClipboard(links);
+            return links;
         },
-    });
+        {
+            loading: "Loading links...",
+            success: (links) => `${links.length} link(s) copied to clipboard`,
+            error: "Failed to copy",
+        }
+    );
 
-    const downloadMutation = useMutation({
-        mutationFn: async () => {
-            const toastId = toast.loading("Loading links...");
-            try {
-                const links = await fetchSelectedDownloadLinks(fileIds, client, currentAccount.id);
-                downloadLinks(links);
-                toast.success(`Downloading ${links.length} files`, {
-                    id: toastId,
-                });
-                return links;
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to download: ${errorMessage}`, {
-                    id: toastId,
-                });
-                throw error;
-            }
+    const downloadMutation = useToastMutation(
+        async () => {
+            const links = await fetchSelectedDownloadLinks(fileIds, client, currentAccount.id);
+            downloadLinks(links);
+            return links;
         },
-    });
+        {
+            loading: "Loading links...",
+            success: (links) => `Downloading ${links.length} files`,
+            error: "Failed to download",
+        }
+    );
 
-    const playMutation = useMutation({
-        mutationFn: async () => {
-            const toastId = toast.loading("Loading links...");
-            try {
-                const links = await fetchSelectedDownloadLinks(fileIds, client, currentAccount.id);
-                downloadM3UPlaylist(links);
-                toast.success("Playlist downloaded", { id: toastId });
-                return links;
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to create playlist: ${errorMessage}`, {
-                    id: toastId,
-                });
-                throw error;
-            }
+    const playMutation = useToastMutation(
+        async () => {
+            const links = await fetchSelectedDownloadLinks(fileIds, client, currentAccount.id);
+            downloadM3UPlaylist(links);
+            return links;
         },
-    });
+        {
+            loading: "Loading links...",
+            success: "Playlist downloaded",
+            error: "Failed to create playlist",
+        }
+    );
 
     return (
         <div className="contents">
