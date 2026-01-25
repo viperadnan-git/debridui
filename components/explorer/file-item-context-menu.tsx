@@ -24,7 +24,7 @@ interface FileItemContextMenuProps {
 }
 
 export function FileItemContextMenu({ file, children, className }: FileItemContextMenuProps) {
-    const { client, currentUser } = useAuthGuaranteed();
+    const { client, currentAccount } = useAuthGuaranteed();
     const { removeTorrent, retryFiles } = useFileStore();
 
     // Copy mutation
@@ -32,7 +32,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
         mutationFn: async () => {
             const toastId = toast.loading("Loading file links...");
             try {
-                const links = await fetchTorrentDownloadLinks(file.id, client, currentUser.id);
+                const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
                 copyLinksToClipboard(links);
                 toast.success(`${links.length} link(s) copied to clipboard`, {
                     id: toastId,
@@ -51,7 +51,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
         mutationFn: async () => {
             const toastId = toast.loading("Loading file links...");
             try {
-                const links = await fetchTorrentDownloadLinks(file.id, client, currentUser.id);
+                const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
                 downloadLinks(links);
                 toast.success(`Downloading ${links.length} file(s)`, {
                     id: toastId,
@@ -72,7 +72,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
         mutationFn: async () => {
             const toastId = toast.loading("Loading file links...");
             try {
-                const links = await fetchTorrentDownloadLinks(file.id, client, currentUser.id);
+                const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
                 downloadM3UPlaylist(links, file.name);
                 toast.success("Playlist downloaded", { id: toastId });
                 return links;

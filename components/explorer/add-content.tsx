@@ -18,7 +18,7 @@ export function AddContent() {
     const [isAddingLinks, setIsAddingLinks] = useState(false);
     const [isUploadingFiles, setIsUploadingFiles] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { client, currentUser } = useAuthGuaranteed();
+    const { client, currentAccount } = useAuthGuaranteed();
 
     const handleOperationResults = (results: OperationResult, itemType: "link" | "file", toastId: string | number) => {
         let successCount = 0;
@@ -43,7 +43,7 @@ export function AddContent() {
 
         if (successCount > 0) {
             queryClient.invalidateQueries({
-                queryKey: [currentUser.id, "getTorrentList"],
+                queryKey: [currentAccount.id, "getTorrentList"],
             });
         }
 

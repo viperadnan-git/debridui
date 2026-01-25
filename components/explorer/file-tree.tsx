@@ -120,12 +120,12 @@ const FileActionButton = memo(function FileActionButton({
     node: DebridFileNode;
     action: "copy" | "download" | "play";
 }) {
-    const { client, currentUser } = useAuthGuaranteed();
+    const { client, currentAccount } = useAuthGuaranteed();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const downloadLinkMaxAge = useSettingsStore((state) => state.get("downloadLinkMaxAge"));
 
     const { data: linkInfo, refetch } = useQuery({
-        queryKey: getDownloadLinkCacheKey(currentUser.id, node.id, false),
+        queryKey: getDownloadLinkCacheKey(currentAccount.id, node.id, false),
         queryFn: () => client.getDownloadLink({ fileNode: node }),
         enabled: false,
         gcTime: downloadLinkMaxAge,

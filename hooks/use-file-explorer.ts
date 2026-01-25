@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { sortTorrentFiles } from "@/lib/utils/file";
 
 export function useFileExplorer() {
-    const { client, currentUser } = useAuthGuaranteed();
+    const { client, currentAccount } = useAuthGuaranteed();
     const searchParams = useSearchParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [totalEstimate, setTotalEstimate] = useState<number | null>(null);
@@ -38,7 +38,7 @@ export function useFileExplorer() {
     const limit = PAGE_SIZE;
 
     const { data, isLoading } = useQuery({
-        queryKey: [currentUser.id, "getTorrentList", currentPage, sortBy, sortOrder],
+        queryKey: [currentAccount.id, "getTorrentList", currentPage, sortBy, sortOrder],
         queryFn: () => client.getTorrentList({ offset, limit }),
         refetchInterval: 3000,
         staleTime: 0,

@@ -15,7 +15,7 @@ import { formatSize, downloadLinks } from "@/lib/utils";
 import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
 
 export function FilePreviewDialog() {
-    const { client, currentUser } = useAuthGuaranteed();
+    const { client, currentAccount } = useAuthGuaranteed();
     const { get } = useSettingsStore();
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
 
@@ -27,7 +27,7 @@ export function FilePreviewDialog() {
 
     // Fetch download link for current file
     const { data: linkInfo, isLoading } = useQuery({
-        queryKey: getDownloadLinkCacheKey(currentUser.id, currentFile?.id || "", true),
+        queryKey: getDownloadLinkCacheKey(currentAccount.id, currentFile?.id || "", true),
         queryFn: () => client.getDownloadLink({ fileNode: currentFile!, resolve: true }),
         enabled: isOpen && !!currentFile?.id,
         gcTime: downloadLinkMaxAge,

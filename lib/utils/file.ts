@@ -213,23 +213,23 @@ export const sortTorrentFiles = (
 export const getTorrentFilesWithCache = async ({
     fileId,
     client,
-    userId,
+    accountId,
     files,
 }: {
     fileId: string;
     client: DebridClient;
-    userId: string;
+    accountId: string;
     files?: DebridNode[];
 }): Promise<DebridNode[]> => {
     // If files are already provided (e.g., from TorBox), use them
     if (files) {
-        const cacheKey = getTorrentFilesCacheKey(userId, fileId);
+        const cacheKey = getTorrentFilesCacheKey(accountId, fileId);
         queryClient.setQueryData(cacheKey, files);
         return files;
     }
 
     // Otherwise check cache or fetch
-    const cacheKey = getTorrentFilesCacheKey(userId, fileId);
+    const cacheKey = getTorrentFilesCacheKey(accountId, fileId);
     let node = queryClient.getQueryData<DebridNode[]>(cacheKey);
 
     if (!node) {
@@ -243,13 +243,13 @@ export const getTorrentFilesWithCache = async ({
 export const getDownloadLinkWithCache = async ({
     fileNode,
     client,
-    userId,
+    accountId,
 }: {
     fileNode: DebridFileNode;
     client: DebridClient;
-    userId: string;
+    accountId: string;
 }): Promise<DebridLinkInfo> => {
-    const cacheKey = getDownloadLinkCacheKey(userId, fileNode.id);
+    const cacheKey = getDownloadLinkCacheKey(accountId, fileNode.id);
     let linkInfo = queryClient.getQueryData<DebridLinkInfo>(cacheKey);
 
     if (!linkInfo) {
@@ -266,13 +266,13 @@ export const getDownloadLinkWithCache = async ({
 export async function collectDownloadLinks(
     fileNodes: DebridNode[],
     debridClient: DebridClient,
-    userId: string
+    accountId: string
 ): Promise<DebridLinkInfo[]> {
     const collectedLinks: DebridLinkInfo[] = [];
 
     const collectFileNodeLinks = async (fileNode: DebridNode): Promise<void> => {
         if (fileNode.type === "file") {
-            collectedLinks.push(await getDownloadLinkWithCache({ fileNode, client: debridClient, userId }));
+            collectedLinks.push(await getDownloadLinkWithCache({ fileNode, client: debridClient, accountId }));
         }
 
         if (fileNode.children?.length) {
@@ -299,13 +299,13 @@ export async function collectDownloadLinks(
 export async function fetchTorrentDownloadLinks(
     torrentFileId: string,
     debridClient: DebridClient,
-    userId: string
+    accountId: string
 ): Promise<DebridLinkInfo[]> {
-    const torrentFileNodes = await getTorrentFilesWithCache({ fileId: torrentFileId, client: debridClient, userId });
+    const torrentFileNodes = await getTorrentFilesWithCache({ fileId: torrentFileId, client: debridClient, accountId });
     // Process nodes with specified options
     const processedFileNodes = processFileNodes({ fileNodes: torrentFileNodes });
     // Collect all download links
-    const downloadLinks = await collectDownloadLinks(processedFileNodes, debridClient, userId);
+    const downloadLinks = await collectDownloadLinks(processedFileNodes, debridClient, accountId);
 
     if (downloadLinks.length === 0) {
         throw new Error("No downloadable files found in torrent");
@@ -321,7 +321,7 @@ export async function fetchTorrentDownloadLinks(
 export async function fetchSelectedDownloadLinks(
     selectedFileIds: string[],
     debridClient: DebridClient,
-    userId: string
+    accountId: string
 ): Promise<DebridLinkInfo[]> {
     if (selectedFileIds.length === 0) {
         return [];
@@ -340,7 +340,7 @@ export async function fetchSelectedDownloadLinks(
             return getDownloadLinkWithCache({
                 fileNode: { ...metadata, type: "file", children: [] },
                 client: debridClient,
-                userId,
+                accountId,
             });
         }),
         chunkSize: 10,

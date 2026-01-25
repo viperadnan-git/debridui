@@ -30,15 +30,15 @@ export function useAuth() {
 }
 
 // Helper hook for components inside private routes
-// Private layout guarantees non-null currentUser and client
+// Private layout guarantees non-null currentAccount, currentUser and client
 export function useAuthGuaranteed() {
-    const { currentUser, client, ...rest } = useAuth();
+    const { currentAccount, currentUser, client, ...rest } = useAuth();
 
-    if (!currentUser || !client) {
+    if (!currentAccount || !currentUser || !client) {
         throw new Error("useAuthGuaranteed can only be used in private routes");
     }
 
-    return { currentUser, client, ...rest };
+    return { currentAccount, currentUser, client, ...rest };
 }
 
 interface AuthProviderProps {

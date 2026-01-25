@@ -24,7 +24,7 @@ const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString(
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
-    const { currentUser } = useAuthGuaranteed();
+    const { currentAccount } = useAuthGuaranteed();
     const buildDate = new Date(BUILD_TIME);
     const buildTimeFormatted = format(buildDate, "PPpp");
     const buildTimeRelative = formatDistanceToNow(buildDate, { addSuffix: true });
@@ -229,7 +229,7 @@ export default function SettingsPage() {
                                         </p>
                                     </div>
                                     <Button
-                                        onClick={() => handleClearCache([currentUser.id, "getDownloadLink"])}
+                                        onClick={() => handleClearCache([currentAccount.id, "getDownloadLink"])}
                                         disabled={isClearing}
                                         variant="destructive"
                                         size="sm"

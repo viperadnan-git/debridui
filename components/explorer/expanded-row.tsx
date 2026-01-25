@@ -25,7 +25,7 @@ interface ExpandedRowProps {
 }
 
 export function ExpandedRow({ file }: ExpandedRowProps) {
-    const { client, currentUser } = useAuthGuaranteed();
+    const { client, currentAccount } = useAuthGuaranteed();
     const { get } = useSettingsStore();
     const hideTrash = get("hideTrash");
     const smartOrder = get("smartOrder");
@@ -37,7 +37,7 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
         isLoading,
         error,
     } = useQuery<DebridNode[]>({
-        queryKey: [currentUser.id, "getTorrentFiles", file.id],
+        queryKey: [currentAccount.id, "getTorrentFiles", file.id],
         queryFn: () => client.getTorrentFiles(file.id),
         enabled: file.status === "completed" && !file.files, // Only fetch if files not already available
     });
