@@ -95,6 +95,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                                     key={`${selectedSeason}-${episode.number}`}
                                     episode={episode}
                                     imdbId={media.ids?.imdb}
+                                    showTitle={media.title}
                                 />
                             ))}
                         </div>

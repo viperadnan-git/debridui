@@ -65,7 +65,7 @@ export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSources
         queries: enabledAddons.map((addon) => ({
             queryKey: ["addon-sources", addon.id, imdbId, mediaType, tvParams] as const,
             queryFn: () => fetchAddonSources(addon, imdbId, mediaType, tvParams),
-            staleTime: 60 * 60 * 1000, // 1 hour
+            staleTime: 5 * 60 * 1000, // 5 minutes
             gcTime: 24 * 60 * 60 * 1000, // 24 hours
             retry: 1,
             retryDelay: 1000,

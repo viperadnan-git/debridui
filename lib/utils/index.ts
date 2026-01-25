@@ -66,6 +66,17 @@ export const getFileType = (name: string): FileType => {
     return EXTENSION_TO_FILE_TYPE[extension.toLowerCase()] || FileType.OTHER;
 };
 
+/**
+ * Checks if a video file or URL is in a non-MP4 format.
+ * Non-MP4 formats (MKV, AVI, etc.) may have codec compatibility issues in browsers.
+ *
+ * @param filenameOrUrl - A filename (e.g., "video.mkv") or URL (e.g., "https://example.com/video.mp4")
+ * @returns true if the file is not in MP4 format
+ */
+export const isNonMP4Video = (filenameOrUrl: string): boolean => {
+    return !filenameOrUrl.toLowerCase().endsWith(".mp4");
+};
+
 export const getTextFromClipboard = async (): Promise<string> => {
     return await navigator.clipboard.readText();
 };

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { DebridFileNode, MediaPlayer } from "@/lib/types";
-import { AlertCircle, Info, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
+import { isNonMP4Video } from "@/lib/utils";
+import { VideoCodecWarning } from "../video-codec-warning";
 
 interface VideoPreviewProps {
     file: DebridFileNode;
@@ -18,8 +19,7 @@ export function VideoPreview({ file, downloadUrl, onLoad, onError }: VideoPrevie
     const [showCodecWarning, setShowCodecWarning] = useState(true);
     const { set } = useSettingsStore();
 
-    // Check if file is not MP4 (may have codec issues in browser)
-    const isNonMP4Video = !file.name.toLowerCase().endsWith(".mp4");
+    const hasCodecIssue = isNonMP4Video(file.name);
 
     const handleLoad = () => {
         onLoad?.();
@@ -58,49 +58,12 @@ export function VideoPreview({ file, downloadUrl, onLoad, onError }: VideoPrevie
                 </div>
             )}
 
-            {/* Codec Warning Banner for Non-MP4 Videos - Overlaid on top */}
-            {isNonMP4Video && showCodecWarning && (
-                <div className="absolute top-0 left-0 right-0 bg-yellow-500/90 text-black px-4 py-2 flex items-start gap-3 z-20">
-                    <Info className="h-5 w-5 shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">This video format may have audio/codec issues in browser</p>
-                        <p className="text-xs mt-0.5">
-                            Non-MP4 formats (MKV, AVI, etc.) may use codecs not supported in browsers. Switch to an
-                            external player for best experience:
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            <Button
-                                size="sm"
-                                variant="secondary"
-                                className="h-7 text-xs"
-                                onClick={() => switchToPlayer(MediaPlayer.VLC)}>
-                                Use VLC
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="secondary"
-                                className="h-7 text-xs"
-                                onClick={() => switchToPlayer(MediaPlayer.MPV)}>
-                                Use MPV
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="secondary"
-                                className="h-7 text-xs"
-                                onClick={() => switchToPlayer(MediaPlayer.IINA)}>
-                                Use IINA
-                            </Button>
-                        </div>
-                    </div>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 shrink-0 hover:bg-black/20"
-                        onClick={() => setShowCodecWarning(false)}>
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-            )}
+            {/* Codec Warning Banner for Non-MP4 Videos */}
+            <VideoCodecWarning
+                show={hasCodecIssue && showCodecWarning}
+                onClose={() => setShowCodecWarning(false)}
+                onSwitchPlayer={switchToPlayer}
+            />
         </div>
     );
 }

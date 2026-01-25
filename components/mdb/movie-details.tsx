@@ -24,7 +24,7 @@ export const MovieDetails = memo(function MovieDetails({ media, mediaId }: Movie
                     <h2 className="text-lg sm:text-xl font-bold" id="sources">
                         Available Sources
                     </h2>
-                    <Sources imdbId={media.ids.imdb} mediaType="movie" />
+                    <Sources imdbId={media.ids.imdb} mediaType="movie" mediaTitle={media.title || "Movie"} />
                 </div>
             )}
 

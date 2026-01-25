@@ -12,9 +12,10 @@ interface EpisodeCardProps {
     episode: TraktEpisode;
     className?: string;
     imdbId?: string;
+    showTitle?: string;
 }
 
-export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbId }: EpisodeCardProps) {
+export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbId, showTitle }: EpisodeCardProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     const screenshotUrl = episode.images?.screenshot?.[0]
@@ -131,6 +132,11 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                 mediaType="show"
                                 tvParams={
                                     episode.season ? { season: episode.season, episode: episode.number } : undefined
+                                }
+                                mediaTitle={
+                                    showTitle && episode.season
+                                        ? `${showTitle} S${episode.season.toString().padStart(2, "0")} E${episode.number.toString().padStart(2, "0")}${episode.title ? ` - ${episode.title}` : ""}`
+                                        : episode.title || `Episode ${episode.number}`
                                 }
                                 className="border-x-0 border-b-0 rounded-none"
                             />
