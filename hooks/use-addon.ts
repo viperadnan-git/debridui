@@ -43,7 +43,7 @@ async function fetchAddonSources(
 ): Promise<AddonSource[]> {
     const client = new AddonClient({ url: addon.url });
     const response = await client.fetchStreams(imdbId, mediaType, tvParams);
-    return parseStreams(response.streams, addon.id, addon.name, addon.url);
+    return parseStreams(response.streams, addon.id, addon.name);
 }
 
 /**

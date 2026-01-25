@@ -185,10 +185,7 @@ export function SourceRow({
 
                     {/* Resolution Badge */}
                     {source.resolution && (
-                        <Badge
-                            variant="secondary"
-                            className="text-xs px-1.5 py-0.5 h-5 bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 border-orange-500/20"
-                            title="Resolution">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5" title="Resolution">
                             <Monitor className="h-2.5 w-2.5 mr-0.5" />
                             {source.resolution}
                         </Badge>
@@ -196,10 +193,7 @@ export function SourceRow({
 
                     {/* Size Badge */}
                     {source.size && (
-                        <Badge
-                            variant="secondary"
-                            className="text-xs px-1.5 py-0.5 h-5 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-blue-500/20"
-                            title="Size">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5" title="Size">
                             <HardDrive className="h-2.5 w-2.5 mr-0.5" />
                             {source.size}
                         </Badge>

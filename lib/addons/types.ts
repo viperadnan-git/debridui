@@ -56,7 +56,6 @@ export interface AddonSource {
     isCached?: boolean;
     addonId: string;
     addonName: string;
-    addonUrl: string;
 }
 
 export interface Addon {

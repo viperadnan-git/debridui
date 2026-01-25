@@ -4,23 +4,16 @@ import { type AddonStream, type AddonSource } from "./types";
 const HASH_REGEX = /[a-f0-9]{40}/;
 const FILE_SIZE_REGEX = /\b\d+(?:\.\d+)?\s*(?:[KMGT]i?)?B\b/gi;
 const RESOLUTION_REGEX = /\b(\d{3,4}p|4k)\b/i;
+const CACHED_NAME_REGEX = /instant|\+|✅|⚡/i;
+const CACHED_DESC_REGEX = /✅|⚡/;
 
 /**
  * Detect if a source is cached based on name/description
  * Looks for "Instant", "+" in name, or "✅", "⚡️" in name/description
  */
+
 export function detectCached(stream: AddonStream): boolean {
-    const name = stream.name || "";
-    const description = stream.description || "";
-    const combinedText = `${name} ${description}`;
-
-    // Check name for "instant" or "+"
-    const nameCheck = name.toLowerCase().includes("instant") || name.includes("+");
-
-    // Check name and description for emojis
-    const emojiCheck = combinedText.includes("✅") || combinedText.includes("⚡");
-
-    return nameCheck || emojiCheck;
+    return CACHED_NAME_REGEX.test(stream.name || "") || CACHED_DESC_REGEX.test(stream.description || "");
 }
 
 /**
@@ -112,7 +105,7 @@ export function parseStreamInfo(stream: AddonStream): {
 /**
  * Parse a single addon stream into AddonSource format
  */
-export function parseStream(stream: AddonStream, addonId: string, addonName: string, addonUrl: string): AddonSource {
+export function parseStream(stream: AddonStream, addonId: string, addonName: string): AddonSource {
     const { title, description, resolution, size, peers } = parseStreamInfo(stream);
     const hash = extractHash(stream);
     const isCached = detectCached(stream);
@@ -131,18 +124,12 @@ export function parseStream(stream: AddonStream, addonId: string, addonName: str
         isCached,
         addonId,
         addonName,
-        addonUrl,
     };
 }
 
 /**
  * Parse all streams from an addon response
  */
-export function parseStreams(
-    streams: AddonStream[],
-    addonId: string,
-    addonName: string,
-    addonUrl: string
-): AddonSource[] {
-    return streams.map((stream) => parseStream(stream, addonId, addonName, addonUrl));
+export function parseStreams(streams: AddonStream[], addonId: string, addonName: string): AddonSource[] {
+    return streams.map((stream) => parseStream(stream, addonId, addonName));
 }

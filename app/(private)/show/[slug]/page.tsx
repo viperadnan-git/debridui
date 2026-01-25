@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useTraktMedia } from "@/hooks/use-trakt";
 import { useParams } from "next/navigation";
 import { memo } from "react";
+import { MdbFooter } from "@/components/mdb/mdb-footer";
 
 // Dynamic import for MediaDetails to reduce initial bundle size (~345 lines)
 const MediaDetails = dynamic(
@@ -25,8 +26,9 @@ const ShowPage = memo(function ShowPage() {
     const { data, isLoading, error } = useTraktMedia(slug, "show");
 
     return (
-        <div className="w-full px-2 sm:px-4 lg:px-6 max-w-7xl mx-auto">
+        <div className="w-full px-2 sm:px-4 lg:px-6 max-w-7xl mx-auto space-y-8">
             <MediaDetails media={data} mediaId={slug} type="show" isLoading={isLoading} error={error} />
+            <MdbFooter className="pb-8" />
         </div>
     );
 });

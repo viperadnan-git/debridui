@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { MediaSection } from "@/components/mdb/media-section";
 import { SearchDialog } from "@/components/mdb/search-dialog";
+import { MdbFooter } from "@/components/mdb/mdb-footer";
 import { memo, useState } from "react";
 import {
     useTraktTrendingMovies,
@@ -153,6 +154,8 @@ const DashboardPage = memo(function DashboardPage() {
                     isLoading={anticipatedShows.isLoading}
                     error={anticipatedShows.error}
                 />
+
+                <MdbFooter className="py-8" />
             </div>
         </div>
     );
