@@ -48,7 +48,7 @@ export interface AddonStreamResponse {
 export interface AddonSource {
     title: string;
     folder?: string;
-    size: string;
+    size?: string;
     peers?: string;
     magnet?: string;
     url?: string;

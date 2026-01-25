@@ -5,7 +5,17 @@ import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
 import { useAddonSources } from "@/hooks/use-addon";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, Zap, X, AlertTriangle } from "lucide-react";
+import {
+    Plus,
+    Loader2,
+    HardDriveDownloadIcon,
+    Trash2Icon,
+    DownloadIcon,
+    Zap,
+    X,
+    AlertTriangle,
+    HardDrive,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/lib/contexts/auth";
 import { toast } from "sonner";
@@ -154,6 +164,17 @@ export function SourceRow({ source, isFirst, isLast }: { source: AddonSource; is
                                     className="text-xs px-1.5 py-0.5 h-5 bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
                                     <Zap className="h-2.5 w-2.5 mr-0.5" />
                                     <span>Cached</span>
+                                </Badge>
+                            )}
+
+                            {/* Size Badge */}
+                            {source.size && (
+                                <Badge
+                                    variant="outline"
+                                    className="text-xs px-1.5 py-0.5 h-5 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-blue-500/20"
+                                    title="Size">
+                                    <HardDrive className="h-2.5 w-2.5 mr-0.5" />
+                                    {source.size}
                                 </Badge>
                             )}
 

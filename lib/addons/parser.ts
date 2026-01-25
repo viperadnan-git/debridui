@@ -1,4 +1,8 @@
+import { formatSize } from "../utils";
 import { type AddonStream, type AddonSource } from "./types";
+
+const HASH_REGEX = /[a-f0-9]{40}/;
+const FILE_SIZE_REGEX = /\b\d+(?:\.\d+)?\s*(?:[KMGT]i?)?B\b/gi;
 
 /**
  * Detect if a source is cached based on name/description
@@ -30,30 +34,33 @@ export function extractHash(stream: AddonStream): string | undefined {
 
     // Priority 2: bingeGroup (TorBox format: "torbox|HASH" or direct hash)
     if (stream.behaviorHints?.bingeGroup) {
-        const bingeGroup = stream.behaviorHints.bingeGroup;
-
-        // Check if it's in "provider|hash" format (e.g., "torbox|59a962c8...")
-        if (bingeGroup.includes("|")) {
-            const parts = bingeGroup.split("|");
-            const hash = parts[1]?.toLowerCase();
-            if (hash && /^[a-f0-9]{40}$/.test(hash)) {
-                return hash;
-            }
-        }
-
-        // Check if it's a direct hash (40 hex chars)
-        const lowerBingeGroup = bingeGroup.toLowerCase();
-        if (/^[a-f0-9]{40}$/.test(lowerBingeGroup)) {
-            return lowerBingeGroup;
-        }
-
+        const bingeGroup = stream.behaviorHints.bingeGroup.toLowerCase();
         // Try to extract hash pattern from it
-        const hashMatch = lowerBingeGroup.match(/[a-f0-9]{40}/);
+        const hashMatch = bingeGroup.match(HASH_REGEX);
         if (hashMatch) {
             return hashMatch[0];
         }
     }
 
+    return undefined;
+}
+
+export function extractSize(stream: AddonStream): string | undefined {
+    if (stream.behaviorHints?.videoSize) {
+        return formatSize(stream.behaviorHints.videoSize);
+    }
+    if (stream.description) {
+        const sizeMatch = stream.description.match(FILE_SIZE_REGEX);
+        if (sizeMatch) {
+            return sizeMatch[0];
+        }
+    }
+    if (stream.name) {
+        const sizeMatch = stream.name.match(FILE_SIZE_REGEX);
+        if (sizeMatch) {
+            return sizeMatch[0];
+        }
+    }
     return undefined;
 }
 
@@ -70,7 +77,7 @@ export function constructMagnet(hash: string, title: string): string {
 export function parseStreamInfo(stream: AddonStream): {
     title: string;
     folder?: string;
-    size: string;
+    size?: string;
     peers?: string;
 } {
     const name = stream.name || "Unknown";
@@ -79,11 +86,12 @@ export function parseStreamInfo(stream: AddonStream): {
 
     // Combine title and description
     const combinedDescription = [title, description].filter(Boolean).join("\n");
+    const size = extractSize(stream);
 
     return {
         title: name,
         folder: combinedDescription || undefined,
-        size: "",
+        size: size,
         peers: undefined,
     };
 }
