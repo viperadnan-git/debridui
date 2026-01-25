@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAddonsStore, DEFAULT_ADDON_MANIFEST } from "@/lib/stores/addons";
+import { useUserAddons, useAddAddon, useRemoveAddon, useToggleAddon, useUpdateAddonOrders } from "@/hooks/use-addons";
 import { AddonClient } from "@/lib/addons/client";
 import { type Addon } from "@/lib/addons/types";
 import { Button } from "@/components/ui/button";
@@ -14,15 +14,25 @@ import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Info } from "lucide-r
 import { PageHeader } from "@/components/page-header";
 import { AddonCard } from "@/components/addon-card";
 import { CachedBadge } from "@/components/display";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+
+const DEFAULT_ADDON_MANIFEST =
+    "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4/manifest.json";
 
 export default function AddonsPage() {
-    const { addons, addAddon, removeAddon, toggleAddon, reorderAddons } = useAddonsStore();
+    const { data: serverAddons = [], isLoading } = useUserAddons();
+    const addAddonMutation = useAddAddon();
+    const removeAddonMutation = useRemoveAddon();
+    const toggleAddonMutation = useToggleAddon();
+    const updateOrdersMutation = useUpdateAddonOrders();
+
     const [isAdding, setIsAdding] = useState(false);
     const [newAddonUrl, setNewAddonUrl] = useState("");
     const [validating, setValidating] = useState(false);
+    const [addonToDelete, setAddonToDelete] = useState<Addon | null>(null);
 
     // Sort addons by order
-    const sortedAddons = [...addons].sort((a, b) => a.order - b.order);
+    const sortedAddons = [...serverAddons].sort((a, b) => a.order - b.order);
 
     const handleAddAddon = async (url?: string) => {
         const addonUrl = url || newAddonUrl;
@@ -37,13 +47,22 @@ export default function AddonsPage() {
             const client = new AddonClient({ url: addonUrl });
             const manifest = await client.fetchManifest();
 
-            addAddon({
-                id: manifest.id,
+            // Check if addon URL already exists
+            const addonExists = serverAddons.some((addon) => addon.url === addonUrl);
+            if (addonExists) {
+                toast.error(`${manifest.name} addon is already added`);
+                setValidating(false);
+                return;
+            }
+
+            const newAddon: Omit<Addon, "id"> = {
                 name: manifest.name,
                 url: addonUrl,
                 enabled: true,
-            });
+                order: serverAddons.length,
+            };
 
+            await addAddonMutation.mutateAsync(newAddon);
             toast.success(`Added ${manifest.name} addon`);
             setNewAddonUrl("");
             setIsAdding(false);
@@ -55,40 +74,64 @@ export default function AddonsPage() {
     };
 
     const handleRemoveAddon = (addon: Addon) => {
-        removeAddon(addon.id);
-        toast.success(`Removed ${addon.name} addon`);
+        setAddonToDelete(addon);
     };
 
-    const handleToggleAddon = (addon: Addon) => {
-        toggleAddon(addon.id);
+    const confirmRemoveAddon = async () => {
+        if (!addonToDelete) return;
+
+        await removeAddonMutation.mutateAsync(addonToDelete.id);
+        toast.success(`Removed ${addonToDelete.name} addon`);
+        setAddonToDelete(null);
+    };
+
+    const handleToggleAddon = async (addon: Addon) => {
+        await toggleAddonMutation.mutateAsync({ addonId: addon.id, enabled: !addon.enabled });
         toast.success(`${addon.enabled ? "Disabled" : "Enabled"} ${addon.name} addon`);
     };
 
-    const handleMoveUp = (addon: Addon) => {
+    const handleMoveUp = async (addon: Addon) => {
         const currentIndex = sortedAddons.findIndex((a) => a.id === addon.id);
+
         if (currentIndex > 0) {
-            const newAddons = [...sortedAddons];
-            [newAddons[currentIndex - 1], newAddons[currentIndex]] = [
-                newAddons[currentIndex],
-                newAddons[currentIndex - 1],
+            const updates = [
+                { id: sortedAddons[currentIndex].id, order: currentIndex - 1 },
+                { id: sortedAddons[currentIndex - 1].id, order: currentIndex },
             ];
-            reorderAddons(newAddons);
-            toast.success(`Moved ${addon.name} up`);
+            await updateOrdersMutation.mutateAsync(updates);
         }
     };
 
-    const handleMoveDown = (addon: Addon) => {
+    const handleMoveDown = async (addon: Addon) => {
         const currentIndex = sortedAddons.findIndex((a) => a.id === addon.id);
+
         if (currentIndex < sortedAddons.length - 1) {
-            const newAddons = [...sortedAddons];
-            [newAddons[currentIndex], newAddons[currentIndex + 1]] = [
-                newAddons[currentIndex + 1],
-                newAddons[currentIndex],
+            const updates = [
+                { id: sortedAddons[currentIndex].id, order: currentIndex + 1 },
+                { id: sortedAddons[currentIndex + 1].id, order: currentIndex },
             ];
-            reorderAddons(newAddons);
-            toast.success(`Moved ${addon.name} down`);
+            await updateOrdersMutation.mutateAsync(updates);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="container mx-auto max-w-5xl space-y-8 pb-16">
+                <PageHeader
+                    icon={Puzzle}
+                    title="Stremio Addons"
+                    description="Manage your Stremio addons to fetch sources from multiple providers"
+                />
+                <Card>
+                    <CardContent className="py-12">
+                        <div className="flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto max-w-5xl space-y-8 pb-16">
@@ -256,6 +299,18 @@ export default function AddonsPage() {
                     </AlertDescription>
                 </Alert>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmDialog
+                open={!!addonToDelete}
+                onOpenChange={(open) => !open && setAddonToDelete(null)}
+                title="Remove Addon"
+                description={`Are you sure you want to remove "${addonToDelete?.name}"? This action cannot be undone.`}
+                confirmText="Remove"
+                cancelText="Cancel"
+                variant="destructive"
+                onConfirm={confirmRemoveAddon}
+            />
         </div>
     );
 }

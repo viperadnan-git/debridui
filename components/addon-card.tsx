@@ -1,7 +1,7 @@
 "use client";
 
 import { type Addon } from "@/lib/addons/types";
-import { useAddon } from "@/hooks/use-addon";
+import { useAddon } from "@/hooks/use-addons";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";

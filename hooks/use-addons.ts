@@ -1,9 +1,88 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { handleError } from "@/lib/utils/error-handling";
+import { getUserAddons, addAddon, removeAddon, toggleAddon, updateAddonOrders } from "@/lib/actions/addons";
 import { AddonClient } from "@/lib/addons/client";
 import { parseStreams } from "@/lib/addons/parser";
-import { useAddonsStore } from "@/lib/stores/addons";
-import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
+import { type Addon, type AddonSource, type TvSearchParams } from "@/lib/addons/types";
+
+const USER_ADDONS_KEY = ["addons", "user-addons"];
+
+/**
+ * Fetch all user addons from database
+ */
+export function useUserAddons(enabled = true) {
+    return useQuery({
+        queryKey: USER_ADDONS_KEY,
+        queryFn: getUserAddons,
+        enabled,
+        staleTime: 1 * 60 * 60 * 1000, // 1 hour
+    });
+}
+
+/**
+ * Add a new addon
+ */
+export function useAddAddon() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (addon: Omit<Addon, "id">) => addAddon(addon),
+        onSuccess: async () => {
+            await queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY });
+        },
+        onError: (error) => {
+            handleError(error, "Failed to add addon");
+        },
+    });
+}
+
+/**
+ * Remove an addon
+ */
+export function useRemoveAddon() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (addonId: string) => removeAddon(addonId),
+        onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
+        onError: (error) => {
+            handleError(error, "Failed to remove addon");
+        },
+    });
+}
+
+/**
+ * Toggle addon enabled status
+ */
+export function useToggleAddon() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ addonId, enabled }: { addonId: string; enabled: boolean }) => toggleAddon(addonId, enabled),
+        onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
+        onError: (error) => {
+            handleError(error, "Failed to toggle addon");
+        },
+    });
+}
+
+/**
+ * Update addon orders (for reordering)
+ */
+export function useUpdateAddonOrders() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (updates: { id: string; order: number }[]) => {
+            return updateAddonOrders(updates);
+        },
+        onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
+        onError: (error) => {
+            handleError(error, "Failed to reorder addons");
+        },
+    });
+}
 
 interface UseAddonOptions {
     url: string;
@@ -15,7 +94,7 @@ interface UseAddonOptions {
  */
 export function useAddon({ url, enabled = true }: UseAddonOptions) {
     return useQuery({
-        queryKey: ["addon-manifest", url],
+        queryKey: ["addons", url],
         queryFn: async () => {
             const client = new AddonClient({ url });
             return await client.fetchManifest();
@@ -55,7 +134,7 @@ async function fetchAddonSources(
  * - rerender-dependencies: Uses primitive dependencies (addon IDs)
  */
 export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSourcesOptions) {
-    const addons = useAddonsStore((state) => state.addons);
+    const { data: addons = [] } = useUserAddons();
 
     // Stable reference for enabled addons list
     const enabledAddons = useMemo(() => addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order), [addons]);

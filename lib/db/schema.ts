@@ -9,7 +9,7 @@ export const userAccounts = pgTable(
     "user_accounts",
     {
         id: uuid("id").primaryKey().defaultRandom(),
-        userId: text("user_id")
+        userId: uuid("user_id")
             .notNull()
             .references(() => user.id, { onDelete: "cascade" }),
         apiKey: text("api_key").notNull(),
@@ -26,8 +26,8 @@ export const userAccounts = pgTable(
 export const addons = pgTable(
     "addons",
     {
-        id: text("id").primaryKey(),
-        userId: text("user_id")
+        id: uuid("id").primaryKey().defaultRandom(),
+        userId: uuid("user_id")
             .notNull()
             .references(() => user.id, { onDelete: "cascade" }),
         name: text("name").notNull(),
@@ -35,15 +35,12 @@ export const addons = pgTable(
         enabled: boolean("enabled").notNull().default(true),
         order: integer("order").notNull().default(0),
     },
-    (table) => [
-        uniqueIndex("unique_user_order").on(table.userId, table.order),
-        index("addons_userId_idx").on(table.userId),
-    ]
+    (table) => [index("addons_userId_idx").on(table.userId)]
 );
 
 // User settings table - stores user preferences
 export const userSettings = pgTable("user_settings", {
-    userId: text("user_id")
+    userId: uuid("user_id")
         .primaryKey()
         .references(() => user.id, { onDelete: "cascade" }),
     settings: jsonb("settings").notNull(),

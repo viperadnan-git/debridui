@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
-import { useAddonSources } from "@/hooks/use-addon";
+import { useAddonSources } from "@/hooks/use-addons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {

@@ -59,7 +59,7 @@ export interface AddonSource {
 }
 
 export interface Addon {
-    id: string;
+    id: string; // UUID from database
     name: string;
     url: string;
     enabled: boolean;
