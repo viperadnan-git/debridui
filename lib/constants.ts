@@ -82,3 +82,9 @@ export const CAROUSEL_AUTO_DELAY = 3000; // 3 seconds
 // External links
 export const DISCORD_URL = process.env.NEXT_PUBLIC_DISCORD_URL;
 export const CORS_PROXY_URL = process.env.NEXT_PUBLIC_CORS_PROXY_URL || "https://corsproxy.io/?url=";
+
+// Auth config - raw values for Docker runtime env injection
+// These values are stored as-is (not compared) so that sed can replace placeholders at container startup
+// Comparisons must happen at runtime in components, NOT here (otherwise they'd be evaluated at build time)
+export const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+export const DISABLE_EMAIL_SIGNUP = process.env.NEXT_PUBLIC_DISABLE_EMAIL_SIGNUP ?? "";

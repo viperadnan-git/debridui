@@ -13,17 +13,22 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { config } from "@/lib/config";
+import { GOOGLE_CLIENT_ID, DISABLE_EMAIL_SIGNUP } from "@/lib/constants";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const signupSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    email: z.string().email("Invalid email address"),
+    email: z.email("Invalid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export default function SignupForm() {
     const router = useRouter();
+
+    // Runtime comparisons for Docker env injection support
+    // Placeholder strings are replaced at container startup, so comparisons must happen here
+    const isGoogleOAuthEnabled = !!GOOGLE_CLIENT_ID;
+    const isEmailSignupDisabled = DISABLE_EMAIL_SIGNUP === "true";
 
     const form = useForm<z.infer<typeof signupSchema>>({
         resolver: zodResolver(signupSchema),
@@ -81,7 +86,7 @@ export default function SignupForm() {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
                             <GoogleSignInButton mode="signup" callbackURL="/dashboard" />
 
-                            {!config.isEmailSignupDisabled && config.isGoogleOAuthEnabled && (
+                            {!isEmailSignupDisabled && isGoogleOAuthEnabled && (
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center">
                                         <Separator />
@@ -94,7 +99,7 @@ export default function SignupForm() {
                                 </div>
                             )}
 
-                            {!config.isEmailSignupDisabled && (
+                            {!isEmailSignupDisabled && (
                                 <div className="flex flex-col gap-6">
                                     <FormField
                                         control={form.control}
@@ -143,7 +148,7 @@ export default function SignupForm() {
                                     </Button>
                                 </div>
                             )}
-                            {config.isEmailSignupDisabled && !config.isGoogleOAuthEnabled && (
+                            {isEmailSignupDisabled && !isGoogleOAuthEnabled && (
                                 <Alert variant="destructive">
                                     <AlertTitle>New signup is disabled</AlertTitle>
                                     <AlertDescription>

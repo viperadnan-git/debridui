@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { config } from "@/lib/config";
+import { GOOGLE_CLIENT_ID } from "@/lib/constants";
 
 const loginSchema = z.object({
     email: z.email("Invalid email address"),
@@ -76,7 +76,8 @@ export default function LoginForm() {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
                         <GoogleSignInButton mode="signin" callbackURL="/dashboard" />
 
-                        {config.isGoogleOAuthEnabled && (
+                        {/* Runtime comparison for Docker env injection support */}
+                        {!!GOOGLE_CLIENT_ID && (
                             <div className="relative">
                                 <div className="absolute inset-0 flex items-center">
                                     <Separator />

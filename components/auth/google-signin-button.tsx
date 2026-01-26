@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { config } from "@/lib/config";
+import { GOOGLE_CLIENT_ID } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -14,7 +14,9 @@ interface GoogleSignInButtonProps {
 export function GoogleSignInButton({ callbackURL = "/dashboard", mode = "signin" }: GoogleSignInButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
 
-    if (!config.isGoogleOAuthEnabled) {
+    // Runtime comparison for Docker env injection support
+    // Placeholder strings are replaced at container startup, so comparison must happen here
+    if (!!GOOGLE_CLIENT_ID) {
         return null;
     }
 
