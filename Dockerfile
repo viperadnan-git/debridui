@@ -29,6 +29,15 @@ RUN bun run build
 FROM base AS runner
 WORKDIR /app
 
+LABEL org.opencontainers.image.title="DebridUI" \
+      org.opencontainers.image.description="A modern, fast debrid client with integrated media discovery. Built with Next.js, TypeScript, and Tailwind CSS." \
+      org.opencontainers.image.url="https://github.com/viperadnan-git/debridui" \
+      org.opencontainers.image.source="https://github.com/viperadnan-git/debridui" \
+      org.opencontainers.image.documentation="https://github.com/viperadnan-git/debridui#readme" \
+      org.opencontainers.image.authors="Adnan Ahmad <viperadnan@gmail.com>" \
+      org.opencontainers.image.vendor="Adnan Ahmad" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later"
+
 ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME="0.0.0.0"
