@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useUserAddons, useAddAddon, useRemoveAddon, useToggleAddon, useUpdateAddonOrders } from "@/hooks/use-addons";
 import { AddonClient } from "@/lib/addons/client";
 import { type Addon } from "@/lib/addons/types";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Info } from "lucide-react";
+import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Info, RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { AddonCard } from "@/components/addon-card";
 import { CachedBadge } from "@/components/display";
@@ -20,7 +20,7 @@ const DEFAULT_ADDON_MANIFEST =
     "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4/manifest.json";
 
 export default function AddonsPage() {
-    const { data: serverAddons = [], isLoading } = useUserAddons();
+    const { data: serverAddons = [], isLoading, refetch } = useUserAddons();
     const addAddonMutation = useAddAddon();
     const removeAddonMutation = useRemoveAddon();
     const toggleAddonMutation = useToggleAddon();
@@ -30,9 +30,16 @@ export default function AddonsPage() {
     const [newAddonUrl, setNewAddonUrl] = useState("");
     const [validating, setValidating] = useState(false);
     const [addonToDelete, setAddonToDelete] = useState<Addon | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Memoize sorted addons to avoid re-sorting on every render
     const sortedAddons = useMemo(() => [...serverAddons].sort((a, b) => a.order - b.order), [serverAddons]);
+
+    const handleRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        await refetch();
+        setIsRefreshing(false);
+    }, [refetch]);
 
     const handleAddAddon = async (url?: string) => {
         const addonUrl = url || newAddonUrl;
@@ -139,6 +146,17 @@ export default function AddonsPage() {
                 icon={Puzzle}
                 title="Stremio Addons"
                 description="Manage your Stremio addons to fetch sources from multiple providers"
+                action={
+                    <Button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto">
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+                        Refresh
+                    </Button>
+                }
             />
 
             {/* Settings Grid */}

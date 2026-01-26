@@ -14,7 +14,7 @@ export function useUserAccounts(enabled = true) {
         queryKey: USER_ACCOUNTS_KEY,
         queryFn: () => getUserAccounts(),
         enabled,
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 1 * 60 * 60 * 1000, // 1 hour
     });
 }
 
