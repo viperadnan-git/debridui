@@ -8,7 +8,6 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { AccountSwitcher } from "./account-switcher";
 import { FolderOpen, SearchIcon, HomeIcon, SettingsIcon, UsersIcon, Puzzle } from "lucide-react";
 import { useSearch } from "@/components/mdb/search-provider";
-import { SidebarFooterContent } from "./sidebar-footer";
 
 const data = {
     navMain: [
@@ -63,7 +62,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <NavMain items={data.navMain} onAction={handleNavAction} />
             </SidebarContent>
             <SidebarFooter className="border-t border-sidebar-border/50">
-                <SidebarFooterContent />
                 <NavUser />
             </SidebarFooter>
             <SidebarRail />

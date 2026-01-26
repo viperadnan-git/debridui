@@ -18,8 +18,10 @@ import {
     useTraktMostPlayedMovies,
     useTraktMostPlayedShows,
 } from "@/hooks/use-trakt";
-import { CommandIcon, Search } from "lucide-react";
+import { CommandIcon, Search, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DISCORD_URL } from "@/lib/constants";
+import Image from "next/image";
 
 // Dynamic import for HeroCarousel to reduce initial bundle size (~315 lines)
 const HeroCarousel = dynamic(
@@ -54,6 +56,54 @@ const DashboardPage = memo(function DashboardPage() {
         <div className="space-y-4 sm:space-y-6 lg:space-y-8 pb-4 sm:pb-8">
             {/* Full-width Hero Carousel */}
             <HeroCarousel />
+
+            {/* Branding CTA */}
+            <div className="py-4 md:py-6 px-4">
+                <div className="max-w-2xl mx-auto text-center space-y-3">
+                    <a
+                        href="https://github.com/viperadnan-git/debridui"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block">
+                        <Image
+                            src="/logo.svg"
+                            alt="DebridUI"
+                            width={180}
+                            height={42}
+                            className="dark:invert opacity-80 hover:opacity-100 transition-all hover:scale-105 md:w-[220px]"
+                        />
+                    </a>
+                    <p className="text-muted-foreground text-sm md:text-base max-w-md mx-auto">
+                        A modern, fast debrid client with integrated media discovery and streaming capabilities.
+                    </p>
+                    <div className="flex items-center justify-center gap-3 flex-wrap">
+                        {DISCORD_URL && (
+                            <Button
+                                variant="outline"
+                                className="gap-2 bg-[#5865F2]/10 hover:bg-[#5865F2]/20 text-[#5865F2] border-[#5865F2]/30 hover:border-[#5865F2]/50"
+                                asChild>
+                                <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
+                                    <img
+                                        src="https://cdn.simpleicons.org/discord/5865F2"
+                                        alt="Discord"
+                                        className="size-4"
+                                    />
+                                    Join Community
+                                </a>
+                            </Button>
+                        )}
+                        <Button variant="outline" className="gap-2" asChild>
+                            <a
+                                href="https://github.com/viperadnan-git/debridui/issues"
+                                target="_blank"
+                                rel="noopener noreferrer">
+                                <Bug className="size-4" />
+                                Report Bug
+                            </a>
+                        </Button>
+                    </div>
+                </div>
+            </div>
 
             {/* Search Bar */}
             <div className="py-6 md:px-4 mb-4">
@@ -155,7 +205,7 @@ const DashboardPage = memo(function DashboardPage() {
                     error={anticipatedShows.error}
                 />
 
-                <MdbFooter className="py-8" />
+<MdbFooter className="py-8" />
             </div>
         </div>
     );
