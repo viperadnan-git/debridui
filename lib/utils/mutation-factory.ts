@@ -15,12 +15,12 @@ interface ToastMessages<TData> {
  * - Integrates with custom onSuccess/onError callbacks
  * - All messages are optional for maximum flexibility
  */
-export function useToastMutation<TData = unknown, TVariables = void>(
+export function useToastMutation<TData = unknown, TVariables = void, TContext = unknown>(
     mutationFn: (variables: TVariables) => Promise<TData>,
     messages?: ToastMessages<TData>,
-    options?: Omit<UseMutationOptions<TData, Error, TVariables>, "mutationFn">
+    options?: Omit<UseMutationOptions<TData, Error, TVariables, TContext>, "mutationFn">
 ) {
-    return useMutation<TData, Error, TVariables>({
+    return useMutation<TData, Error, TVariables, TContext>({
         mutationFn: async (variables) => {
             const toastId = messages?.loading ? toast.loading(messages.loading) : undefined;
             try {

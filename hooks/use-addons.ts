@@ -63,11 +63,31 @@ export function useRemoveAddon() {
 export function useToggleAddon() {
     const queryClient = useQueryClient();
 
-    return useToastMutation(
-        ({ addonId, enabled }: { addonId: string; enabled: boolean }) => toggleAddon(addonId, enabled),
+    return useToastMutation<
+        { success: boolean },
+        { addonId: string; enabled: boolean },
+        { previousAddons: Addon[] | undefined }
+    >(
+        ({ addonId, enabled }) => toggleAddon(addonId, enabled),
         { error: "Failed to toggle addon" },
         {
-            onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
+            onMutate: async ({ addonId, enabled }) => {
+                await queryClient.cancelQueries({ queryKey: USER_ADDONS_KEY });
+
+                const previousAddons = queryClient.getQueryData<Addon[]>(USER_ADDONS_KEY);
+
+                queryClient.setQueryData<Addon[]>(USER_ADDONS_KEY, (old = []) => {
+                    return old.map((addon) => (addon.id === addonId ? { ...addon, enabled } : addon));
+                });
+
+                return { previousAddons };
+            },
+            onError: (_error, _variables, context) => {
+                if (context?.previousAddons) {
+                    queryClient.setQueryData(USER_ADDONS_KEY, context.previousAddons);
+                }
+            },
+            onSettled: () => queryClient.invalidateQueries({ queryKey: USER_ADDONS_KEY }),
         }
     );
 }
@@ -78,11 +98,36 @@ export function useToggleAddon() {
 export function useUpdateAddonOrders() {
     const queryClient = useQueryClient();
 
-    return useToastMutation(
+    return useToastMutation<
+        { success: boolean },
+        Array<{ id: string; order: number }>,
+        { previousAddons: Addon[] | undefined }
+    >(
         updateAddonOrders,
         { error: "Failed to reorder addons" },
         {
-            onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
+            onMutate: async (updates) => {
+                await queryClient.cancelQueries({ queryKey: USER_ADDONS_KEY });
+
+                const previousAddons = queryClient.getQueryData<Addon[]>(USER_ADDONS_KEY);
+
+                queryClient.setQueryData<Addon[]>(USER_ADDONS_KEY, (old = []) => {
+                    const updated = [...old];
+                    updates.forEach(({ id, order }) => {
+                        const addon = updated.find((a) => a.id === id);
+                        if (addon) addon.order = order;
+                    });
+                    return updated.sort((a, b) => a.order - b.order);
+                });
+
+                return { previousAddons };
+            },
+            onError: (_error, _variables, context) => {
+                if (context?.previousAddons) {
+                    queryClient.setQueryData(USER_ADDONS_KEY, context.previousAddons);
+                }
+            },
+            onSettled: () => queryClient.invalidateQueries({ queryKey: USER_ADDONS_KEY }),
         }
     );
 }
