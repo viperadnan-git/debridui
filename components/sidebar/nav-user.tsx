@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronsUpDown, LogOut, User as UserIcon, Settings } from "lucide-react";
+import { ChevronsUpDown, LogOut, User as UserIcon, Settings, HelpCircle } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -92,6 +92,12 @@ export function NavUser() {
                                 <Link href="/settings" onClick={handleNavigation}>
                                     <Settings />
                                     Settings
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/help" onClick={handleNavigation}>
+                                    <HelpCircle />
+                                    Help
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
