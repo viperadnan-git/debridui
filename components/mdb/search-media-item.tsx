@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, memo } from "react";
-import { CommandItem } from "@/components/ui/command";
+import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Film, Tv, Star, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type TraktSearchResult } from "@/lib/trakt";
 import { getPosterUrl } from "@/lib/utils/trakt";
+import { SearchItemWrapper } from "@/components/search-item-wrapper";
 
 interface SearchMediaItemProps {
     result: TraktSearchResult;
@@ -21,10 +21,6 @@ export const SearchMediaItem = memo(function SearchMediaItem({
     variant = "modal",
     className,
 }: SearchMediaItemProps) {
-    const handleSelect = useCallback(() => {
-        onSelect(result);
-    }, [result, onSelect]);
-
     const media = result.movie || result.show;
     if (!media) return null;
 
@@ -32,8 +28,14 @@ export const SearchMediaItem = memo(function SearchMediaItem({
     const Icon = type === "movie" ? Film : Tv;
     const posterImage = getPosterUrl(media.images);
 
-    const content = (
-        <>
+    return (
+        <SearchItemWrapper
+            data={result}
+            variant={variant}
+            onSelect={onSelect}
+            commandValue={`${type}-${media.ids?.trakt}-${media.title}`}
+            commandKeywords={[media.title, type, media.year?.toString() || ""]}
+            className={className}>
             {/* Poster thumbnail or icon */}
             <div className="shrink-0 w-10 h-14 sm:w-12 sm:h-16 bg-muted rounded-md overflow-hidden">
                 {posterImage ? (
@@ -80,30 +82,6 @@ export const SearchMediaItem = memo(function SearchMediaItem({
                     <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-1">{media.overview}</p>
                 )}
             </div>
-        </>
-    );
-
-    if (variant === "modal") {
-        return (
-            <CommandItem
-                key={`${type}-${media.ids?.trakt}`}
-                value={`${type}-${media.ids?.trakt}-${media.title}`}
-                keywords={[media.title, type, media.year?.toString() || ""]}
-                onSelect={handleSelect}
-                className={cn("flex items-center gap-2 sm:gap-3 px-1 sm:px-3 py-2 sm:py-3 cursor-pointer", className)}>
-                {content}
-            </CommandItem>
-        );
-    }
-
-    return (
-        <div
-            onClick={handleSelect}
-            className={cn(
-                "flex items-center gap-2 sm:gap-3 px-3 py-3 cursor-pointer rounded-md hover:bg-muted transition-colors",
-                className
-            )}>
-            {content}
-        </div>
+        </SearchItemWrapper>
     );
 });

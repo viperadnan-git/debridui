@@ -1,13 +1,13 @@
 "use client";
 
 import { memo } from "react";
-import { CommandItem } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { HardDrive, Users } from "lucide-react";
-import { cn, formatSize } from "@/lib/utils";
+import { formatSize } from "@/lib/utils";
 import { type TorBoxSearchResult } from "@/lib/clients/torbox";
 import { AddSourceButton } from "./sources";
 import { CachedBadge } from "@/components/display";
+import { SearchItemWrapper } from "@/components/search-item-wrapper";
 
 interface SearchSourceItemProps {
     result: TorBoxSearchResult;
@@ -64,23 +64,13 @@ export const SearchSourceItem = memo(function SearchSourceItem({
     variant = "modal",
     className,
 }: SearchSourceItemProps) {
-    const content = <SourceContent result={result} />;
-
-    if (variant === "modal") {
-        return (
-            <CommandItem
-                key={`source-${result.hash}`}
-                value={`source-${result.hash}-${result.title}`}
-                keywords={[result.title, result.raw_title, result.hash]}
-                className={cn("flex items-center gap-2 px-1 sm:px-3 py-2 sm:py-3", className)}>
-                {content}
-            </CommandItem>
-        );
-    }
-
     return (
-        <div className={cn("flex items-center gap-2 px-3 py-3 rounded-md hover:bg-muted transition-colors", className)}>
-            {content}
-        </div>
+        <SearchItemWrapper
+            variant={variant}
+            commandValue={`source-${result.hash}-${result.title}`}
+            commandKeywords={[result.title, result.raw_title, result.hash]}
+            className={className}>
+            <SourceContent result={result} />
+        </SearchItemWrapper>
     );
 });
