@@ -4,6 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -71,6 +72,8 @@ export default function LoginPage() {
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+                        <GoogleSignInButton mode="signin" callbackURL="/dashboard" />
+
                         <div className="flex flex-col gap-6">
                             <FormField
                                 control={form.control}

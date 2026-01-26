@@ -19,6 +19,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { detectPlatform } from "@/lib/utils/media-player";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
 import { authClient } from "@/lib/auth-client";
+import { setPassword } from "@/lib/actions/password";
+import { useHasPassword } from "@/hooks/use-auth-accounts";
 import {
     Dialog,
     DialogContent,
@@ -47,6 +49,16 @@ const passwordChangeSchema = z
         path: ["confirmPassword"],
     });
 
+const passwordSetSchema = z
+    .object({
+        newPassword: z.string().min(8, "Password must be at least 8 characters"),
+        confirmPassword: z.string().min(1, "Please confirm your password"),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+    });
+
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
     const { currentAccount, logout, isLoggingOut } = useAuthGuaranteed();
@@ -62,11 +74,20 @@ export default function SettingsPage() {
     const platform = detectPlatform();
     const setupInstruction = getPlayerSetupInstruction(mediaPlayer, platform);
     const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+    const { hasPassword, isLoading: isLoadingPassword } = useHasPassword();
 
-    const passwordForm = useForm<z.infer<typeof passwordChangeSchema>>({
+    const passwordChangeForm = useForm<z.infer<typeof passwordChangeSchema>>({
         resolver: zodResolver(passwordChangeSchema),
         defaultValues: {
             currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+        },
+    });
+
+    const passwordSetForm = useForm<z.infer<typeof passwordSetSchema>>({
+        resolver: zodResolver(passwordSetSchema),
+        defaultValues: {
             newPassword: "",
             confirmPassword: "",
         },
@@ -105,7 +126,23 @@ export default function SettingsPage() {
         } else {
             toast.success("Password changed successfully", { id: toastId });
             setShowPasswordDialog(false);
-            passwordForm.reset();
+            passwordChangeForm.reset();
+        }
+    };
+
+    const handleSetPassword = async (values: z.infer<typeof passwordSetSchema>) => {
+        const toastId = toast.loading("Setting password...");
+
+        const result = await setPassword(values.newPassword);
+
+        if (!result.success) {
+            toast.error(`Failed to set password: ${result.error}`, { id: toastId });
+        } else {
+            toast.success("Password set successfully", { id: toastId });
+            setShowPasswordDialog(false);
+            passwordSetForm.reset();
+            // Invalidate accounts query to refresh password status
+            queryClient.invalidateQueries({ queryKey: ["auth-accounts"] });
         }
     };
 
@@ -277,14 +314,25 @@ export default function SettingsPage() {
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <p className="font-medium">Password</p>
-                                        <p className="text-sm text-muted-foreground">Change your account password</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {isLoadingPassword
+                                                ? "Loading..."
+                                                : hasPassword
+                                                  ? "Change your account password"
+                                                  : "Set a password for your account"}
+                                        </p>
                                     </div>
                                     <Button
                                         onClick={() => setShowPasswordDialog(true)}
                                         variant="outline"
                                         size="sm"
+                                        disabled={isLoadingPassword}
                                         className="w-full sm:w-auto">
-                                        Change Password
+                                        {isLoadingPassword
+                                            ? "Loading..."
+                                            : hasPassword
+                                              ? "Change Password"
+                                              : "Set Password"}
                                     </Button>
                                 </div>
                             </div>
@@ -395,90 +443,157 @@ export default function SettingsPage() {
                 </Card>
             </div>
 
-            {/* Change Password Dialog */}
+            {/* Change/Set Password Dialog */}
             <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Change Password</DialogTitle>
-                        <DialogDescription>Enter your current password and choose a new one</DialogDescription>
+                        <DialogTitle>{hasPassword ? "Change Password" : "Set Password"}</DialogTitle>
+                        <DialogDescription>
+                            {hasPassword
+                                ? "Enter your current password and choose a new one"
+                                : "Choose a password for your account"}
+                        </DialogDescription>
                     </DialogHeader>
-                    <Form {...passwordForm}>
-                        <form onSubmit={passwordForm.handleSubmit(handleChangePassword)} className="space-y-4 py-4">
-                            <FormField
-                                control={passwordForm.control}
-                                name="currentPassword"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Current Password</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="password"
-                                                placeholder="Enter current password"
-                                                {...field}
-                                                disabled={passwordForm.formState.isSubmitting}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                    {hasPassword ? (
+                        <Form {...passwordChangeForm}>
+                            <form
+                                onSubmit={passwordChangeForm.handleSubmit(handleChangePassword)}
+                                className="space-y-4 py-4">
+                                <FormField
+                                    control={passwordChangeForm.control}
+                                    name="currentPassword"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Current Password</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="Enter current password"
+                                                    {...field}
+                                                    disabled={passwordChangeForm.formState.isSubmitting}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            <FormField
-                                control={passwordForm.control}
-                                name="newPassword"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>New Password</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="password"
-                                                placeholder="Enter new password"
-                                                {...field}
-                                                disabled={passwordForm.formState.isSubmitting}
-                                            />
-                                        </FormControl>
-                                        <FormDescription>Must be at least 8 characters long</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={passwordChangeForm.control}
+                                    name="newPassword"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>New Password</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="Enter new password"
+                                                    {...field}
+                                                    disabled={passwordChangeForm.formState.isSubmitting}
+                                                />
+                                            </FormControl>
+                                            <FormDescription>Must be at least 8 characters long</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            <FormField
-                                control={passwordForm.control}
-                                name="confirmPassword"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Confirm New Password</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="password"
-                                                placeholder="Confirm new password"
-                                                {...field}
-                                                disabled={passwordForm.formState.isSubmitting}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={passwordChangeForm.control}
+                                    name="confirmPassword"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Confirm New Password</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="Confirm new password"
+                                                    {...field}
+                                                    disabled={passwordChangeForm.formState.isSubmitting}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            <DialogFooter>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => {
-                                        setShowPasswordDialog(false);
-                                        passwordForm.reset();
-                                    }}
-                                    disabled={passwordForm.formState.isSubmitting}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={passwordForm.formState.isSubmitting}>
-                                    {passwordForm.formState.isSubmitting ? "Changing..." : "Change Password"}
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </Form>
+                                <DialogFooter>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setShowPasswordDialog(false);
+                                            passwordChangeForm.reset();
+                                        }}
+                                        disabled={passwordChangeForm.formState.isSubmitting}>
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={passwordChangeForm.formState.isSubmitting}>
+                                        {passwordChangeForm.formState.isSubmitting ? "Changing..." : "Change Password"}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </Form>
+                    ) : (
+                        <Form {...passwordSetForm}>
+                            <form onSubmit={passwordSetForm.handleSubmit(handleSetPassword)} className="space-y-4 py-4">
+                                <FormField
+                                    control={passwordSetForm.control}
+                                    name="newPassword"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>New Password</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="Enter password"
+                                                    {...field}
+                                                    disabled={passwordSetForm.formState.isSubmitting}
+                                                />
+                                            </FormControl>
+                                            <FormDescription>Must be at least 8 characters long</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={passwordSetForm.control}
+                                    name="confirmPassword"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Confirm Password</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="Confirm password"
+                                                    {...field}
+                                                    disabled={passwordSetForm.formState.isSubmitting}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <DialogFooter>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setShowPasswordDialog(false);
+                                            passwordSetForm.reset();
+                                        }}
+                                        disabled={passwordSetForm.formState.isSubmitting}>
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={passwordSetForm.formState.isSubmitting}>
+                                        {passwordSetForm.formState.isSubmitting ? "Setting..." : "Set Password"}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </Form>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>
