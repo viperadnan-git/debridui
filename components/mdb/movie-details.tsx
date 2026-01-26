@@ -13,19 +13,32 @@ interface MovieDetailsProps {
 
 export const MovieDetails = memo(function MovieDetails({ media, mediaId }: MovieDetailsProps) {
     return (
-        <div className="flex flex-col gap-8">
+        <div className="space-y-12">
             <MediaHeader media={media} mediaId={mediaId} type="movie" />
 
             {media.ids?.imdb && (
-                <div className="space-y-4">
-                    <h2 className="text-lg sm:text-xl font-bold" id="sources">
-                        Available Sources
-                    </h2>
-                    <Sources imdbId={media.ids.imdb} mediaType="movie" mediaTitle={media.title || "Movie"} />
-                </div>
+                <section className="space-y-6">
+                    <div className="flex items-center gap-4">
+                        <div className="h-px flex-1 bg-border/50" />
+                        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+                            Available Sources
+                        </span>
+                        <div className="h-px flex-1 bg-border/50" />
+                    </div>
+                    <div id="sources">
+                        <Sources imdbId={media.ids.imdb} mediaType="movie" mediaTitle={media.title || "Movie"} />
+                    </div>
+                </section>
             )}
 
-            <PeopleSection mediaId={mediaId} type="movies" />
+            <section className="space-y-6">
+                <div className="flex items-center gap-4">
+                    <div className="h-px flex-1 bg-border/50" />
+                    <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Cast & Crew</span>
+                    <div className="h-px flex-1 bg-border/50" />
+                </div>
+                <PeopleSection mediaId={mediaId} type="movies" />
+            </section>
         </div>
     );
 });

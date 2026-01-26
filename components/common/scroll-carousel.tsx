@@ -58,7 +58,7 @@ export function ScrollCarousel({ className, children, ...props }: React.Componen
             </Button>
             <ScrollArea ref={scrollContainerRef} className={cn(className)} {...props}>
                 {children}
-                <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="horizontal" className="max-lg:hidden" />
             </ScrollArea>
         </div>
     );
