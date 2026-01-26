@@ -1,10 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UserAccount } from "@/lib/db";
 import { getClient } from "@/lib/clients";
-import { handleError } from "@/lib/utils/error-handling";
 import { getUserAccounts, addUserAccount, removeUserAccount } from "@/lib/actions/user-accounts";
 import { AccountType } from "@/lib/schemas";
+import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 const USER_ACCOUNTS_KEY = ["user-accounts"];
 
@@ -23,8 +22,8 @@ export function useUserAccounts(enabled = true) {
 export function useAddUserAccount() {
     const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: async (data: { apiKey: string; type: AccountType }) => {
+    return useToastMutation(
+        async (data: { apiKey: string; type: AccountType }) => {
             // Validate with debrid service first
             const user = await getClient({ type: data.type }).getUser(data.apiKey);
 
@@ -33,41 +32,47 @@ export function useAddUserAccount() {
 
             return { account, user };
         },
-        onSuccess: async ({ account, user }) => {
-            // Save account ID to localStorage for auto-selection
-            localStorage.setItem("selected-account-id", account.id);
-
-            // Cache user info to avoid refetching
-            queryClient.setQueryData([account.id, "getUser"], user);
-
-            // Wait for the query to refetch before allowing redirect
-            await queryClient.refetchQueries({ queryKey: USER_ACCOUNTS_KEY });
-            toast.success(`Added account: ${user.username} (${user.type})`);
+        {
+            loading: "Adding account...",
+            success: ({ user }) => `Added account: ${user.username} (${user.type})`,
+            error: "Failed to add account",
         },
-        onError: (error) => {
-            handleError(error);
-        },
-    });
+        {
+            onSuccess: async ({ account, user }) => {
+                // Save account ID to localStorage for auto-selection
+                localStorage.setItem("selected-account-id", account.id);
+
+                // Cache user info to avoid refetching
+                queryClient.setQueryData([account.id, "getUser"], user);
+
+                // Wait for the query to refetch before allowing redirect
+                await queryClient.refetchQueries({ queryKey: USER_ACCOUNTS_KEY });
+            },
+        }
+    );
 }
 
 // Remove a user account
 export function useRemoveUserAccount() {
     const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: (accountId: string) => removeUserAccount(accountId),
-        onSuccess: async (_, accountId) => {
-            // Invalidate all queries related to this account
-            await queryClient.invalidateQueries({ queryKey: [accountId] });
+    return useToastMutation(
+        (accountId: string) => removeUserAccount(accountId),
+        {
+            loading: "Removing account...",
+            success: "Account removed",
+            error: "Failed to remove account",
+        },
+        {
+            onSuccess: async (_, accountId) => {
+                // Invalidate all queries related to this account
+                await queryClient.invalidateQueries({ queryKey: [accountId] });
 
-            // Refetch accounts list
-            await queryClient.refetchQueries({ queryKey: USER_ACCOUNTS_KEY });
-            toast.success("Account removed");
-        },
-        onError: (error) => {
-            handleError(error);
-        },
-    });
+                // Refetch accounts list
+                await queryClient.refetchQueries({ queryKey: USER_ACCOUNTS_KEY });
+            },
+        }
+    );
 }
 
 // Get debrid user info for an account
