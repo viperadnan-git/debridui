@@ -211,7 +211,7 @@ export default function AccountPage() {
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Profile Section */}
-                <Card className="md:col-span-2">
+                <Card className="md:col-span-2 min-w-0">
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
@@ -285,7 +285,7 @@ export default function AccountPage() {
                 </Card>
 
                 {/* Password Section */}
-                <Card className="md:col-span-2">
+                <Card className="md:col-span-2 min-w-0">
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
@@ -428,7 +428,7 @@ export default function AccountPage() {
                 </Card>
 
                 {/* Sessions Section */}
-                <Card className="md:col-span-2">
+                <Card className="md:col-span-2 min-w-0">
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
@@ -455,18 +455,20 @@ export default function AccountPage() {
                                         return (
                                             <div
                                                 key={sessionItem.id}
-                                                className="flex flex-col gap-3 rounded-lg border p-4">
-                                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                                    <div>
-                                                        <p className="font-medium flex items-center gap-2">
-                                                            {sessionItem.userAgent || "Unknown Device"}
+                                                className="flex flex-col gap-3 rounded-lg border p-4 min-w-0">
+                                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between min-w-0">
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="font-medium flex items-center gap-2 flex-wrap">
+                                                            <span className="truncate">
+                                                                {sessionItem.userAgent || "Unknown Device"}
+                                                            </span>
                                                             {isCurrent && (
-                                                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full whitespace-nowrap">
                                                                     Current
                                                                 </span>
                                                             )}
                                                         </p>
-                                                        <p className="text-sm text-muted-foreground">
+                                                        <p className="text-sm text-muted-foreground break-all">
                                                             {sessionItem.ipAddress || "Unknown IP"} •{" "}
                                                             {format(new Date(sessionItem.createdAt), "PPp")}
                                                         </p>

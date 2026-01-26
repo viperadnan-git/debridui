@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { Separator } from "@/components/ui/separator";
 
 export default function OnboardingPage() {
     const { logout, isLoggingOut } = useAuth();
@@ -32,12 +33,13 @@ export default function OnboardingPage() {
                     </p>
                 </div>
                 <AddAccountForm />
+                <Separator className="my-4" />
                 <Button
                     variant="outline"
                     type="button"
                     onClick={logout}
                     disabled={isLoggingOut}
-                    className="w-full mt-4 border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                    className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive">
                     {isLoggingOut ? (
                         <>
                             <LogOut className="h-4 w-4 mr-2" />

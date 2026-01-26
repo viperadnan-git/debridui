@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon, Info, User } from "lucide-react";
+import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon, Info } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -18,13 +18,11 @@ import { PageHeader } from "@/components/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { detectPlatform } from "@/lib/utils/media-player";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
-import { useRouter } from "next/navigation";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
 const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
 
 export default function SettingsPage() {
-    const router = useRouter();
     const { theme, setTheme } = useTheme();
     const { currentAccount } = useAuthGuaranteed();
     const buildDate = new Date(BUILD_TIME);
@@ -66,21 +64,7 @@ export default function SettingsPage() {
 
     return (
         <div className="mx-auto w-full max-w-5xl space-y-8 pb-16">
-            <PageHeader
-                icon={SettingsIcon}
-                title="Settings"
-                description="Manage your application preferences"
-                action={
-                    <Button
-                        onClick={() => router.push("/settings/account")}
-                        variant="default"
-                        size="sm"
-                        className="w-full sm:w-auto">
-                        <User className="h-4 w-4 mr-2" />
-                        Manage Account
-                    </Button>
-                }
-            />
+            <PageHeader icon={SettingsIcon} title="Settings" description="Manage your application preferences" />
 
             {/* Settings Grid */}
             <div className="grid gap-6 md:grid-cols-2">
