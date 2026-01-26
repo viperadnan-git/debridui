@@ -16,13 +16,13 @@ import {
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function NavUser() {
-    const { isMobile } = useSidebar();
-    const router = useRouter();
+    const { isMobile, setOpenMobile } = useSidebar();
     const { session, logout, isLoggingOut } = useAuth();
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const user = {
         name: session?.user?.name || "User",
@@ -37,10 +37,17 @@ export function NavUser() {
             .join("")
             .toUpperCase() || "U";
 
+    const handleNavigation = () => {
+        setDropdownOpen(false);
+        if (isMobile) {
+            setTimeout(() => setOpenMobile(false), 150);
+        }
+    };
+
     return (
         <SidebarMenu>
             <SidebarMenuItem>
-                <DropdownMenu>
+                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
@@ -75,18 +82,25 @@ export function NavUser() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem onClick={() => router.push("/settings/account")}>
-                                <UserIcon />
-                                Account
+                            <DropdownMenuItem asChild>
+                                <Link href="/settings/account" onClick={handleNavigation}>
+                                    <UserIcon />
+                                    Account
+                                </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => router.push("/settings")}>
-                                <Settings />
-                                Settings
+                            <DropdownMenuItem asChild>
+                                <Link href="/settings" onClick={handleNavigation}>
+                                    <Settings />
+                                    Settings
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            onClick={() => setShowLogoutDialog(true)}
+                            onClick={() => {
+                                setDropdownOpen(false);
+                                setShowLogoutDialog(true);
+                            }}
                             disabled={isLoggingOut}
                             className="text-destructive focus:text-destructive">
                             <LogOut />

@@ -21,7 +21,6 @@ export function useFileExplorer() {
         queryKey: [currentAccount.id, "getTorrentList", currentPage, sortBy, sortOrder],
         queryFn: () => client.getTorrentList({ offset, limit }),
         refetchInterval: 3000,
-        staleTime: 0,
     });
 
     // Calculate total pages from data

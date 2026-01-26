@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Info, RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-import { AddonCard } from "@/components/addon-card";
+import { AddonCard, AddonCardSkeleton } from "@/components/addon-card";
 import { CachedBadge } from "@/components/display";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
@@ -121,25 +121,6 @@ export default function AddonsPage() {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="container mx-auto max-w-5xl space-y-8 pb-16">
-                <PageHeader
-                    icon={Puzzle}
-                    title="Stremio Addons"
-                    description="Manage your Stremio addons to fetch sources from multiple providers"
-                />
-                <Card>
-                    <CardContent className="py-12">
-                        <div className="flex items-center justify-center">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
     return (
         <div className="container mx-auto max-w-5xl space-y-8 pb-16">
             <PageHeader
@@ -149,7 +130,7 @@ export default function AddonsPage() {
                 action={
                     <Button
                         onClick={handleRefresh}
-                        disabled={isRefreshing}
+                        disabled={isRefreshing || isLoading}
                         variant="outline"
                         size="sm"
                         className="w-full sm:w-auto">
@@ -262,15 +243,23 @@ export default function AddonsPage() {
                             <div>
                                 <CardTitle>Your Addons</CardTitle>
                                 <CardDescription>
-                                    {sortedAddons.length === 0
-                                        ? "No addons configured yet"
-                                        : `${sortedAddons.filter((a) => a.enabled).length} of ${sortedAddons.length} addon(s) enabled`}
+                                    {isLoading
+                                        ? "Loading..."
+                                        : sortedAddons.length === 0
+                                          ? "No addons configured yet"
+                                          : `${sortedAddons.filter((a) => a.enabled).length} of ${sortedAddons.length} addon(s) enabled`}
                                 </CardDescription>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {sortedAddons.length === 0 ? (
+                        {isLoading ? (
+                            <div className="space-y-3">
+                                {[1, 2, 3].map((i) => (
+                                    <AddonCardSkeleton key={i} />
+                                ))}
+                            </div>
+                        ) : sortedAddons.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
                                     <AlertCircle className="h-6 w-6 text-muted-foreground" />

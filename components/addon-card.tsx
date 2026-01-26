@@ -21,6 +21,41 @@ interface AddonCardProps {
     isLast?: boolean;
 }
 
+export function AddonCardSkeleton() {
+    return (
+        <div className="rounded-lg border p-4 bg-card space-y-3">
+            {/* Row 1: Icon + Name/Version */}
+            <div className="flex gap-3 items-start">
+                <Skeleton className="h-12 w-12 rounded-md shrink-0" />
+                <div className="flex-1 min-w-0 space-y-1">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-12" />
+                </div>
+            </div>
+
+            {/* Row 2: Description */}
+            <div className="space-y-2">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-4/5" />
+            </div>
+
+            {/* Row 3: Actions */}
+            <div className="flex items-center justify-between gap-3 pt-3 border-t">
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-9 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                </div>
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-9 w-9 rounded-md" />
+                    <Skeleton className="h-9 w-9 rounded-md" />
+                    <Skeleton className="h-9 w-9 rounded-md" />
+                    <Skeleton className="h-9 w-9 rounded-md" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function AddonCard({ addon, onToggle, onRemove, onMoveUp, onMoveDown, isFirst, isLast }: AddonCardProps) {
     const { data: manifest, isLoading } = useAddon({ addonId: addon.id, url: addon.url });
 

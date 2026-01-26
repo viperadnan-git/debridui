@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChevronsUpDown, Plus, Check } from "lucide-react";
+import Link from "next/link";
 
 import {
     DropdownMenu,
@@ -13,25 +14,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { formatAccountType } from "@/lib/utils";
-import { useRouter } from "@bprogress/next/app";
 import { ServiceIcon } from "@/components/accounts/service-icon";
 import { AccountType } from "@/lib/types";
 import { useAuth } from "@/components/auth/auth-provider";
 
 export const AccountSwitcher = React.memo(function AccountSwitcher() {
     const { userAccounts, currentUser, currentAccount, switchAccount } = useAuth();
-    const { isMobile } = useSidebar();
-    const router = useRouter();
+    const { isMobile, setOpenMobile } = useSidebar();
+    const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
     if (!currentUser || !currentAccount) {
         return null;
     }
 
+    const handleNavigation = () => {
+        setDropdownOpen(false);
+        if (isMobile) {
+            setTimeout(() => setOpenMobile(false), 150);
+        }
+    };
+
     return (
         <>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <DropdownMenu>
+                    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                         <DropdownMenuTrigger asChild>
                             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
                                 <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-accent/50 ring-1 ring-sidebar-border/50 shrink-0">
@@ -59,7 +66,10 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                             {userAccounts.map((account) => (
                                 <DropdownMenuItem
                                     key={account.id}
-                                    onClick={() => switchAccount(account.id)}
+                                    onClick={() => {
+                                        handleNavigation();
+                                        switchAccount(account.id);
+                                    }}
                                     className="gap-3 p-2.5 rounded-lg flex items-center justify-between cursor-pointer">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
                                         <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30 shrink-0">
@@ -81,13 +91,13 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                             ))}
                             <DropdownMenuSeparator className="my-2" />
 
-                            <DropdownMenuItem
-                                className="gap-3 p-2.5 rounded-lg cursor-pointer"
-                                onClick={() => router.push("/accounts/add")}>
-                                <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30">
-                                    <Plus className="size-4" />
-                                </div>
-                                <div className="font-semibold">Add account</div>
+                            <DropdownMenuItem className="gap-3 p-2.5 rounded-lg cursor-pointer" asChild>
+                                <Link href="/accounts/add" onClick={handleNavigation}>
+                                    <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30">
+                                        <Plus className="size-4" />
+                                    </div>
+                                    <div className="font-semibold">Add account</div>
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
