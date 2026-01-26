@@ -8,6 +8,11 @@ import type { User } from "@/lib/types";
 import { getClientInstance } from "@/lib/clients";
 import type { DebridClient } from "@/lib/clients";
 import { SplashScreen } from "@/components/splash-screen";
+import { useRouter } from "next/navigation";
+import { queryClient } from "@/lib/query-client";
+import { del } from "idb-keyval";
+import { toast } from "sonner";
+
 interface AuthContextType {
     session: ReturnType<typeof authClient.useSession>["data"];
     userAccounts: UserAccount[];
@@ -15,8 +20,10 @@ interface AuthContextType {
     currentUser: User | null; // Debrid user info
     client: DebridClient | null;
     isLoading: boolean;
+    isLoggingOut: boolean;
     switchAccount: (accountId: string) => void;
     refetchAccounts: () => void;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -47,6 +54,7 @@ interface AuthProviderProps {
 
 // `client-swr-dedup` - Single AuthProvider for all authenticated routes
 export function AuthProvider({ children }: AuthProviderProps) {
+    const router = useRouter();
     const { data: session, isPending: isSessionPending } = authClient.useSession();
     // Only fetch accounts when session exists
     const { data: userAccounts = [], isLoading: isAccountsLoading, refetch } = useUserAccounts(!!session);
@@ -55,6 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // State for account switching (forces re-render when changed)
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     // `rerender-memo` - Memoize account ID selection (involves array operations)
     const currentAccountId = useMemo(() => {
@@ -103,6 +112,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
     }, []);
 
+    // Logout function
+    const logout = useCallback(async () => {
+        setIsLoggingOut(true);
+        const toastId = toast.loading("Logging out...");
+        try {
+            // Clear all React Query caches
+            await del("DEBRIDUI_CACHE"); // Clear IndexedDB persistence
+            queryClient.clear(); // Clear all in-memory query cache
+
+            // Sign out from Better Auth
+            await authClient.signOut();
+
+            toast.success("Logged out successfully", { id: toastId });
+            router.push("/login");
+        } catch (error) {
+            toast.error("Failed to logout", { id: toastId });
+            console.error("Error logging out:", error);
+        } finally {
+            setIsLoggingOut(false);
+        }
+    }, [router]);
+
     // `rerender-memo` - Memoize context value to prevent unnecessary rerenders
     const contextValue = useMemo<AuthContextType>(
         () => ({
@@ -112,8 +143,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             currentUser,
             client,
             isLoading: isSessionPending || isAccountsLoading || isLoadingUser,
+            isLoggingOut,
             switchAccount,
             refetchAccounts: refetch,
+            logout,
         }),
         [
             session,
@@ -124,8 +157,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             isSessionPending,
             isAccountsLoading,
             isLoadingUser,
+            isLoggingOut,
             switchAccount,
             refetch,
+            logout,
         ]
     );
 

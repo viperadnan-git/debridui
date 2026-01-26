@@ -1,7 +1,7 @@
 "use client";
 
 import { UserPlus } from "lucide-react";
-import { OnboardingForm } from "@/components/onboarding-form";
+import { AddAccountForm } from "@/components/add-account-form";
 import { PageHeader } from "@/components/page-header";
 
 export default function AddAccountPage() {
@@ -10,7 +10,7 @@ export default function AddAccountPage() {
             <PageHeader icon={UserPlus} title="Add Account" description="Connect a new debrid service account" />
 
             <div className="max-w-md mx-auto">
-                <OnboardingForm />
+                <AddAccountForm />
             </div>
         </div>
     );

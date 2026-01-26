@@ -130,6 +130,17 @@ export default function SignupPage() {
                         </div>
                     </form>
                 </Form>
+
+                <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 mt-4">
+                    By signing up, you acknowledge our{" "}
+                    <a
+                        href="https://github.com/viperadnan-git/debridui/blob/main/DISCLAIMER.md"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        disclaimer
+                    </a>
+                    .
+                </div>
             </div>
         </div>
     );

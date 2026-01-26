@@ -1,8 +1,15 @@
-import { OnboardingForm } from "@/components/onboarding-form";
+"use client";
+
+import { AddAccountForm } from "@/components/add-account-form";
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export default function OnboardingPage() {
+    const { logout, isLoggingOut } = useAuth();
+
     return (
         <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
             <div className="w-full max-w-sm">
@@ -24,7 +31,25 @@ export default function OnboardingPage() {
                         Add your debrid service account to get started
                     </p>
                 </div>
-                <OnboardingForm />
+                <AddAccountForm />
+                <Button
+                    variant="outline"
+                    type="button"
+                    onClick={logout}
+                    disabled={isLoggingOut}
+                    className="w-full mt-4 border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                    {isLoggingOut ? (
+                        <>
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Logging out...
+                        </>
+                    ) : (
+                        <>
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Logout
+                        </>
+                    )}
+                </Button>
             </div>
         </div>
     );

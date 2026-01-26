@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { handleError } from "@/lib/utils/error-handling";
 import { formatAccountType } from "@/lib/utils";
 
-export function OnboardingForm() {
+export function AddAccountForm() {
     const router = useRouter();
     const addAccount = useAddUserAccount();
     const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | null>(null);
@@ -169,10 +169,6 @@ export function OnboardingForm() {
                     </div>
                 </form>
             </Form>
-            <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-                By clicking continue, you acknowledge our{" "}
-                <a href="https://github.com/viperadnan-git/debridui/blob/main/DISCLAIMER.md">disclaimer</a>.
-            </div>
         </div>
     );
 }
