@@ -16,7 +16,7 @@ export function GoogleSignInButton({ callbackURL = "/dashboard", mode = "signin"
 
     // Runtime comparison for Docker env injection support
     // Placeholder strings are replaced at container startup, so comparison must happen here
-    if (!!GOOGLE_CLIENT_ID) {
+    if (!GOOGLE_CLIENT_ID) {
         return null;
     }
 
