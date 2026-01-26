@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { config } from "@/lib/config";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const signupSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -22,7 +24,6 @@ const signupSchema = z.object({
 
 export default function SignupForm() {
     const router = useRouter();
-    const isEmailSignupDisabled = process.env.NEXT_PUBLIC_DISABLE_EMAIL_SIGNUP === "true";
 
     const form = useForm<z.infer<typeof signupSchema>>({
         resolver: zodResolver(signupSchema),
@@ -80,71 +81,75 @@ export default function SignupForm() {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
                             <GoogleSignInButton mode="signup" callbackURL="/dashboard" />
 
-                            {!isEmailSignupDisabled && (
-                                <>
-                                    <div className="relative">
-                                        <div className="absolute inset-0 flex items-center">
-                                            <Separator />
-                                        </div>
-                                        <div className="relative flex justify-center text-xs uppercase">
-                                            <span className="bg-background px-2 text-muted-foreground">
-                                                Or continue with email
-                                            </span>
-                                        </div>
+                            {!config.isEmailSignupDisabled && config.isGoogleOAuthEnabled && (
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <Separator />
                                     </div>
-
-                                    <div className="flex flex-col gap-6">
-                                        <FormField
-                                            control={form.control}
-                                            name="name"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Your name" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="email"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Email</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="email" placeholder="name@example.com" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="password"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Password</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="password"
-                                                            placeholder="Create a password"
-                                                            {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                                            {form.formState.isSubmitting ? "Creating account..." : "Sign Up"}
-                                        </Button>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                        <span className="bg-background px-2 text-muted-foreground">
+                                            Or continue with email
+                                        </span>
                                     </div>
-                                </>
+                                </div>
+                            )}
+
+                            {!config.isEmailSignupDisabled && (
+                                <div className="flex flex-col gap-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="name"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Name</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Your name" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Email</FormLabel>
+                                                <FormControl>
+                                                    <Input type="email" placeholder="name@example.com" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Password</FormLabel>
+                                                <FormControl>
+                                                    <Input type="password" placeholder="Create a password" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                                        {form.formState.isSubmitting ? "Creating account..." : "Sign Up"}
+                                    </Button>
+                                </div>
+                            )}
+                            {config.isEmailSignupDisabled && !config.isGoogleOAuthEnabled && (
+                                <Alert variant="destructive">
+                                    <AlertTitle>New signup is disabled</AlertTitle>
+                                    <AlertDescription>
+                                        New signup is disabled. Please contact the administrator to create an account.
+                                    </AlertDescription>
+                                </Alert>
                             )}
                             <div className="text-center text-sm">
                                 Already have an account?{" "}

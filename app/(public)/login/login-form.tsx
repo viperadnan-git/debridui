@@ -13,9 +13,10 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { config } from "@/lib/config";
 
 const loginSchema = z.object({
-    email: z.string().email("Invalid email address"),
+    email: z.email("Invalid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -75,14 +76,18 @@ export default function LoginForm() {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
                         <GoogleSignInButton mode="signin" callbackURL="/dashboard" />
 
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <Separator />
+                        {config.isGoogleOAuthEnabled && (
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <Separator />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-background px-2 text-muted-foreground">
+                                        Or continue with email
+                                    </span>
+                                </div>
                             </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-                            </div>
-                        </div>
+                        )}
 
                         <div className="flex flex-col gap-6">
                             <FormField

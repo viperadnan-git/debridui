@@ -5,4 +5,5 @@
 
 export const config = {
     isGoogleOAuthEnabled: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+    isEmailSignupDisabled: process.env.NEXT_PUBLIC_DISABLE_EMAIL_SIGNUP === "true",
 } as const;
