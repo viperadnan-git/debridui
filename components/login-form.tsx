@@ -13,7 +13,7 @@ import { AccountType, addUserSchema } from "@/lib/schemas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { toast } from "sonner";
 import { handleError } from "@/lib/utils/error-handling";
-import { AllDebridClient, TorBoxClient, getClient } from "@/lib/clients";
+import { AllDebridClient, TorBoxClient, PremiumizeClient, getClient } from "@/lib/clients";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "@bprogress/next/app";
 import { useSearchParams } from "next/navigation";
@@ -40,7 +40,7 @@ export function LoginForm({
 
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { isLoading, setLoading } = useLoadingState<"alldebrid" | "torbox">();
+    const { isLoading, setLoading } = useLoadingState<"alldebrid" | "torbox" | "premiumize">();
     const hasAutoSubmitted = useRef(false);
     const hasProcessedSharedAccount = useRef(false);
 
@@ -164,6 +164,40 @@ export function LoginForm({
         }
     }
 
+    async function handlePremiumizeLogin() {
+        setLoading("premiumize", true);
+        try {
+            const { pin, check, redirect_url } = await PremiumizeClient.getAuthPin();
+
+            // Check if this is direct API key mode or OAuth mode
+            if (check === "direct_api_key") {
+                // Direct API key mode - open settings page
+                window.open(redirect_url, "_blank", "noreferrer");
+                toast.info("Please copy your Premiumize API key and paste it in the form above");
+            } else {
+                // OAuth device code mode
+                window.open(redirect_url, "_blank", "noreferrer");
+                toast.info(`Enter code: ${pin} on the Premiumize page to authorize`);
+
+                const { success, apiKey } = await PremiumizeClient.validateAuthPin(pin, check);
+
+                if (success && apiKey) {
+                    const user = await getClient({
+                        type: AccountType.PREMIUMIZE,
+                    }).getUser(apiKey);
+                    addUser(user);
+                    toast.success(`Logged in as ${user.username} (Premiumize)`);
+                } else {
+                    toast.error("Failed to login with Premiumize");
+                }
+            }
+        } catch (error) {
+            handleError(error);
+        } finally {
+            setLoading("premiumize", false);
+        }
+    }
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Form {...form}>
@@ -218,7 +252,8 @@ export function LoginForm({
                                     form.formState.isSubmitting ||
                                     !form.formState.isValid ||
                                     isLoading("alldebrid") ||
-                                    isLoading("torbox")
+                                    isLoading("torbox") ||
+                                    isLoading("premiumize")
                                 }>
                                 {form.formState.isSubmitting ? `${submitButtonText}...` : submitButtonText}
                             </Button>
@@ -234,7 +269,9 @@ export function LoginForm({
                                         type="button"
                                         className="w-full"
                                         onClick={handleAllDebridLogin}
-                                        disabled={isLoading("alldebrid") || isLoading("torbox")}>
+                                        disabled={
+                                            isLoading("alldebrid") || isLoading("torbox") || isLoading("premiumize")
+                                        }>
                                         {isLoading("alldebrid") ? (
                                             <Loader2 className="size-4 animate-spin" />
                                         ) : (
@@ -248,7 +285,9 @@ export function LoginForm({
                                         type="button"
                                         className="w-full"
                                         onClick={handleTorBoxLogin}
-                                        disabled={isLoading("alldebrid") || isLoading("torbox")}>
+                                        disabled={
+                                            isLoading("alldebrid") || isLoading("torbox") || isLoading("premiumize")
+                                        }>
                                         {isLoading("torbox") ? (
                                             <Loader2 className="size-4 animate-spin" />
                                         ) : (
@@ -257,8 +296,21 @@ export function LoginForm({
                                             </>
                                         )}
                                     </Button>
-                                    <Button variant="outline" type="button" className="w-full" disabled={true}>
-                                        Continue with <span className="font-bold">RealDebrid</span>
+                                    <Button
+                                        variant="outline"
+                                        type="button"
+                                        className="w-full"
+                                        onClick={handlePremiumizeLogin}
+                                        disabled={
+                                            isLoading("alldebrid") || isLoading("torbox") || isLoading("premiumize")
+                                        }>
+                                        {isLoading("premiumize") ? (
+                                            <Loader2 className="size-4 animate-spin" />
+                                        ) : (
+                                            <>
+                                                Continue with <span className="font-bold">Premiumize</span>
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </>
