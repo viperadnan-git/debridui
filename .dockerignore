@@ -1,0 +1,46 @@
+# Dependencies
+node_modules
+
+# Build output
+.next
+out
+dist
+build
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*
+
+# CI/CD
+.github
+.husky
+.gitlab
+
+# Misc
+README.md
+CLAUDE.md
+LICENSE
+*.md
