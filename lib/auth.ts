@@ -26,13 +26,14 @@ export const auth = betterAuth({
         updateAge: 60 * 60 * 24 * 7, // Update session every 7 days
         cookieCache: {
             enabled: true,
-            maxAge: 60 * 60 * 24, // 24 hours cache
+            maxAge: 1 * 60 * 24, // 1 hours cache
         },
     },
     advanced: {
         database: {
             generateId: () => uuidv7(),
         },
+        cookiePrefix: "debridui",
     },
     plugins: [nextCookies()],
 });

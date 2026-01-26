@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon, Info, Shield, LogOut } from "lucide-react";
+import { Monitor, Moon, Sun, Play, Trash2, Clock, Settings as SettingsIcon, Info, User } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -18,50 +18,15 @@ import { PageHeader } from "@/components/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { detectPlatform } from "@/lib/utils/media-player";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
-import { authClient } from "@/lib/auth-client";
-import { setPassword } from "@/lib/actions/password";
-import { useHasPassword } from "@/hooks/use-auth-accounts";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
 const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
 
-const passwordChangeSchema = z
-    .object({
-        currentPassword: z.string().min(1, "Current password is required"),
-        newPassword: z.string().min(8, "Password must be at least 8 characters"),
-        confirmPassword: z.string().min(1, "Please confirm your password"),
-    })
-    .refine((data) => data.newPassword === data.confirmPassword, {
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-    });
-
-const passwordSetSchema = z
-    .object({
-        newPassword: z.string().min(8, "Password must be at least 8 characters"),
-        confirmPassword: z.string().min(1, "Please confirm your password"),
-    })
-    .refine((data) => data.newPassword === data.confirmPassword, {
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-    });
-
 export default function SettingsPage() {
+    const router = useRouter();
     const { theme, setTheme } = useTheme();
-    const { currentAccount, logout, isLoggingOut } = useAuthGuaranteed();
+    const { currentAccount } = useAuthGuaranteed();
     const buildDate = new Date(BUILD_TIME);
     const buildTimeFormatted = format(buildDate, "PPpp");
     const buildTimeRelative = formatDistanceToNow(buildDate, { addSuffix: true });
@@ -73,25 +38,6 @@ export default function SettingsPage() {
     const [isClearing, setIsClearing] = useState(false);
     const platform = detectPlatform();
     const setupInstruction = getPlayerSetupInstruction(mediaPlayer, platform);
-    const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-    const { hasPassword, isLoading: isLoadingPassword } = useHasPassword();
-
-    const passwordChangeForm = useForm<z.infer<typeof passwordChangeSchema>>({
-        resolver: zodResolver(passwordChangeSchema),
-        defaultValues: {
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        },
-    });
-
-    const passwordSetForm = useForm<z.infer<typeof passwordSetSchema>>({
-        resolver: zodResolver(passwordSetSchema),
-        defaultValues: {
-            newPassword: "",
-            confirmPassword: "",
-        },
-    });
 
     const handleClearCache = async (key?: string[]) => {
         setIsClearing(true);
@@ -112,40 +58,6 @@ export default function SettingsPage() {
         }
     };
 
-    const handleChangePassword = async (values: z.infer<typeof passwordChangeSchema>) => {
-        const toastId = toast.loading("Changing password...");
-
-        const { error } = await authClient.changePassword({
-            currentPassword: values.currentPassword,
-            newPassword: values.newPassword,
-            revokeOtherSessions: true,
-        });
-
-        if (error) {
-            toast.error(`Failed to change password: ${error.message}`, { id: toastId });
-        } else {
-            toast.success("Password changed successfully", { id: toastId });
-            setShowPasswordDialog(false);
-            passwordChangeForm.reset();
-        }
-    };
-
-    const handleSetPassword = async (values: z.infer<typeof passwordSetSchema>) => {
-        const toastId = toast.loading("Setting password...");
-
-        const result = await setPassword(values.newPassword);
-
-        if (!result.success) {
-            toast.error(`Failed to set password: ${result.error}`, { id: toastId });
-        } else {
-            toast.success("Password set successfully", { id: toastId });
-            setShowPasswordDialog(false);
-            passwordSetForm.reset();
-            // Invalidate accounts query to refresh password status
-            queryClient.invalidateQueries({ queryKey: ["auth-accounts"] });
-        }
-    };
-
     const themes = [
         { value: "light", label: "Light", icon: Sun },
         { value: "dark", label: "Dark", icon: Moon },
@@ -154,7 +66,21 @@ export default function SettingsPage() {
 
     return (
         <div className="mx-auto w-full max-w-5xl space-y-8 pb-16">
-            <PageHeader icon={SettingsIcon} title="Settings" description="Manage your application preferences" />
+            <PageHeader
+                icon={SettingsIcon}
+                title="Settings"
+                description="Manage your application preferences"
+                action={
+                    <Button
+                        onClick={() => router.push("/settings/account")}
+                        variant="default"
+                        size="sm"
+                        className="w-full sm:w-auto">
+                        <User className="h-4 w-4 mr-2" />
+                        Manage Account
+                    </Button>
+                }
+            />
 
             {/* Settings Grid */}
             <div className="grid gap-6 md:grid-cols-2">
@@ -295,70 +221,6 @@ export default function SettingsPage() {
                     </CardContent>
                 </Card>
 
-                {/* Account Security */}
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-                                <Shield className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <CardTitle>Account Security</CardTitle>
-                                <CardDescription>Manage your account credentials and sessions</CardDescription>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            <div className="flex flex-col gap-3 rounded-lg border p-4">
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <p className="font-medium">Password</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {isLoadingPassword
-                                                ? "Loading..."
-                                                : hasPassword
-                                                  ? "Change your account password"
-                                                  : "Set a password for your account"}
-                                        </p>
-                                    </div>
-                                    <Button
-                                        onClick={() => setShowPasswordDialog(true)}
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={isLoadingPassword}
-                                        className="w-full sm:w-auto">
-                                        {isLoadingPassword
-                                            ? "Loading..."
-                                            : hasPassword
-                                              ? "Change Password"
-                                              : "Set Password"}
-                                    </Button>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-3 rounded-lg border border-destructive/50 bg-destructive/5 p-4">
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <p className="font-medium">Sign Out</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Sign out of your account on this device
-                                        </p>
-                                    </div>
-                                    <Button
-                                        onClick={logout}
-                                        disabled={isLoggingOut}
-                                        variant="destructive"
-                                        size="sm"
-                                        className="w-full sm:w-auto gap-2">
-                                        <LogOut className="h-4 w-4" />
-                                        {isLoggingOut ? "Logging out..." : "Logout"}
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
                 {/* Cache Management */}
                 <Card className="md:col-span-2">
                     <CardHeader>
@@ -442,160 +304,6 @@ export default function SettingsPage() {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Change/Set Password Dialog */}
-            <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{hasPassword ? "Change Password" : "Set Password"}</DialogTitle>
-                        <DialogDescription>
-                            {hasPassword
-                                ? "Enter your current password and choose a new one"
-                                : "Choose a password for your account"}
-                        </DialogDescription>
-                    </DialogHeader>
-                    {hasPassword ? (
-                        <Form {...passwordChangeForm}>
-                            <form
-                                onSubmit={passwordChangeForm.handleSubmit(handleChangePassword)}
-                                className="space-y-4 py-4">
-                                <FormField
-                                    control={passwordChangeForm.control}
-                                    name="currentPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Current Password</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="password"
-                                                    placeholder="Enter current password"
-                                                    {...field}
-                                                    disabled={passwordChangeForm.formState.isSubmitting}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={passwordChangeForm.control}
-                                    name="newPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>New Password</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="password"
-                                                    placeholder="Enter new password"
-                                                    {...field}
-                                                    disabled={passwordChangeForm.formState.isSubmitting}
-                                                />
-                                            </FormControl>
-                                            <FormDescription>Must be at least 8 characters long</FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={passwordChangeForm.control}
-                                    name="confirmPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Confirm New Password</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="password"
-                                                    placeholder="Confirm new password"
-                                                    {...field}
-                                                    disabled={passwordChangeForm.formState.isSubmitting}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <DialogFooter>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setShowPasswordDialog(false);
-                                            passwordChangeForm.reset();
-                                        }}
-                                        disabled={passwordChangeForm.formState.isSubmitting}>
-                                        Cancel
-                                    </Button>
-                                    <Button type="submit" disabled={passwordChangeForm.formState.isSubmitting}>
-                                        {passwordChangeForm.formState.isSubmitting ? "Changing..." : "Change Password"}
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </Form>
-                    ) : (
-                        <Form {...passwordSetForm}>
-                            <form onSubmit={passwordSetForm.handleSubmit(handleSetPassword)} className="space-y-4 py-4">
-                                <FormField
-                                    control={passwordSetForm.control}
-                                    name="newPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>New Password</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="password"
-                                                    placeholder="Enter password"
-                                                    {...field}
-                                                    disabled={passwordSetForm.formState.isSubmitting}
-                                                />
-                                            </FormControl>
-                                            <FormDescription>Must be at least 8 characters long</FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={passwordSetForm.control}
-                                    name="confirmPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Confirm Password</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="password"
-                                                    placeholder="Confirm password"
-                                                    {...field}
-                                                    disabled={passwordSetForm.formState.isSubmitting}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <DialogFooter>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setShowPasswordDialog(false);
-                                            passwordSetForm.reset();
-                                        }}
-                                        disabled={passwordSetForm.formState.isSubmitting}>
-                                        Cancel
-                                    </Button>
-                                    <Button type="submit" disabled={passwordSetForm.formState.isSubmitting}>
-                                        {passwordSetForm.formState.isSubmitting ? "Setting..." : "Set Password"}
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </Form>
-                    )}
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

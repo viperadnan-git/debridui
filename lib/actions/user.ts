@@ -14,6 +14,9 @@ export async function setPassword(newPassword: string) {
                 newPassword,
             },
             headers: await headers(),
+            query: {
+                disableCookieCache: true,
+            },
         });
 
         if (!result) {
