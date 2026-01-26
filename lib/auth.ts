@@ -6,8 +6,11 @@ import { v7 as uuidv7 } from "uuid";
 
 const isGoogleOAuthEnabled = !!(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 const isEmailSignupDisabled = process.env.NEXT_PUBLIC_DISABLE_EMAIL_SIGNUP === "true";
+const appURL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export const auth = betterAuth({
+    baseURL: appURL,
+    trustedOrigins: [appURL],
     database: drizzleAdapter(db, {
         provider: "pg",
     }),
