@@ -9,7 +9,7 @@
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/viperadnan-git/debridui?color=blue" alt="License" /></a>
 </p>
 
-A modern, fast debrid client with integrated media discovery. Built with Next.js 15, TypeScript, and Tailwind CSS.
+A modern, fast debrid client with integrated media discovery and streaming capabilities.
 
 > [!IMPORTANT]
 > This project does not provide, host, or stream any content. DebridUI is a client interface that connects to third-party debrid service APIs to display authorized users' private files and content. [Read full disclaimer](DISCLAIMER.md).
@@ -48,18 +48,18 @@ A modern, fast debrid client with integrated media discovery. Built with Next.js
 ### Prerequisites
 
 - Node.js 20+ or Bun
+- PostgreSQL 14+
 - A debrid account (AllDebrid, TorBox supported)
 
 ### Configuration
 
-All configuration is done via environment variables in `.env.local`:
+Copy `.env.example` to `.env.local` and fill in the required values:
 
-- `NEXT_PUBLIC_TRAKT_CLIENT_ID` - Trakt.tv API client ID for media discovery
-- `NEXT_PUBLIC_CORS_PROXY_URL` - CORS proxy URL for addon requests ([see CORS Proxy section](#cors-proxy))
-- `NEXT_PUBLIC_DISCORD_URL` - Discord community invite link (Optional)
-- `NEXT_PUBLIC_ANALYTICS_SCRIPT` - Analytics script URL (Optional)
+```bash
+cp .env.example .env.local
+```
 
-Copy `.env.example` to `.env.local` and fill in values as needed.
+See [`.env.example`](.env.example) for all available environment variables and their descriptions.
 
 ### Installation
 
@@ -71,9 +71,11 @@ cd debridui
 # Install dependencies
 bun install
 
-# Configure environment
+# Configure environment (see Configuration section above)
 cp .env.example .env.local
-# Edit .env.local with your API keys
+
+# Set up database
+bunx drizzle-kit push
 
 # Run development server
 bun run dev
@@ -87,14 +89,25 @@ Open [http://localhost:3000](http://localhost:3000) to access the app.
 
 1. Push code to GitHub
 2. Import project on [Vercel](https://vercel.com)
-3. Configure environment variables
-4. Deploy
+3. Add PostgreSQL database (Vercel Postgres, Neon, Supabase, etc.)
+4. Configure environment variables
+5. Deploy
 
-**Self-hosted:**
+**Standalone (Self-hosted):**
+
+This app uses Next.js standalone output for optimized self-hosting.
+
+**Environment Variables:**
+Ensure all required environment variables from [`.env.example`](.env.example) are set in your production environment.
 
 ```bash
+# Build the app
 bun run build
-bun start
+
+# Static files are automatically copied to .next/standalone via postbuild script
+
+# Start the server
+NODE_ENV=production node .next/standalone/server.js
 ```
 
 ## CORS Proxy
