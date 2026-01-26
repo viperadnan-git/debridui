@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { handleError } from "@/lib/utils/error-handling";
 import { getUserAddons, addAddon, removeAddon, toggleAddon, updateAddonOrders } from "@/lib/actions/addons";
 import { AddonClient } from "@/lib/addons/client";
 import { parseStreams } from "@/lib/addons/parser";
 import { type Addon, type AddonSource, type TvSearchParams } from "@/lib/addons/types";
+import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 const USER_ADDONS_KEY = ["user-addons"];
 
@@ -26,15 +26,15 @@ export function useUserAddons(enabled = true) {
 export function useAddAddon() {
     const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: (addon: Omit<Addon, "id">) => addAddon(addon),
-        onSuccess: async () => {
-            await queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY });
-        },
-        onError: (error) => {
-            handleError(error, "Failed to add addon");
-        },
-    });
+    return useToastMutation(
+        (addon: Omit<Addon, "id">) => addAddon(addon),
+        { error: "Failed to add addon" },
+        {
+            onSuccess: async () => {
+                await queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY });
+            },
+        }
+    );
 }
 
 /**
@@ -43,18 +43,18 @@ export function useAddAddon() {
 export function useRemoveAddon() {
     const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: (addonId: string) => removeAddon(addonId),
-        onSuccess: async (_, addonId) => {
-            // Invalidate all queries related to this addon
-            await queryClient.invalidateQueries({ queryKey: ["addon", addonId] });
-            // Refetch user addons list
-            await queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY });
-        },
-        onError: (error) => {
-            handleError(error, "Failed to remove addon");
-        },
-    });
+    return useToastMutation(
+        (addonId: string) => removeAddon(addonId),
+        { error: "Failed to remove addon" },
+        {
+            onSuccess: async (_, addonId) => {
+                // Invalidate all queries related to this addon
+                await queryClient.invalidateQueries({ queryKey: ["addon", addonId] });
+                // Refetch user addons list
+                await queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY });
+            },
+        }
+    );
 }
 
 /**
@@ -63,13 +63,13 @@ export function useRemoveAddon() {
 export function useToggleAddon() {
     const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: ({ addonId, enabled }: { addonId: string; enabled: boolean }) => toggleAddon(addonId, enabled),
-        onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
-        onError: (error) => {
-            handleError(error, "Failed to toggle addon");
-        },
-    });
+    return useToastMutation(
+        ({ addonId, enabled }: { addonId: string; enabled: boolean }) => toggleAddon(addonId, enabled),
+        { error: "Failed to toggle addon" },
+        {
+            onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
+        }
+    );
 }
 
 /**
@@ -78,13 +78,13 @@ export function useToggleAddon() {
 export function useUpdateAddonOrders() {
     const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: updateAddonOrders,
-        onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
-        onError: (error) => {
-            handleError(error, "Failed to reorder addons");
-        },
-    });
+    return useToastMutation(
+        updateAddonOrders,
+        { error: "Failed to reorder addons" },
+        {
+            onSuccess: () => queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY }),
+        }
+    );
 }
 
 interface UseAddonOptions {

@@ -6,11 +6,11 @@ import { Trash2, RotateCcw } from "lucide-react";
 import { FileActions } from "./file-actions";
 import { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useFileStore } from "@/lib/stores/files";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useShallow } from "zustand/react/shallow";
 import { useSelectionStore } from "@/lib/stores/selection";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
+import { removeTorrentWithCleanup, retryTorrentsWithCleanup } from "@/lib/utils/file-mutations";
 
 interface FileActionsDrawerProps {
     files: DebridFile[];
@@ -44,12 +44,6 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
         });
     }, [selectedFileIds, selectedNodesByFile, totalNodesByFile]);
     const { client, currentAccount } = useAuthGuaranteed();
-    const { removeTorrent, retryFiles } = useFileStore(
-        useShallow((state) => ({
-            removeTorrent: state.removeTorrent,
-            retryFiles: state.retryFiles,
-        }))
-    );
 
     const hasAnySelection = selectedFileIds.size > 0 || selectedNodeIds.size > 0;
 
@@ -69,7 +63,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
 
     const deleteMutation = useToastMutation(
         async (fileIds: string[]) => {
-            const promises = fileIds.map((id) => removeTorrent(client, currentAccount.id, id));
+            const promises = fileIds.map((id) => removeTorrentWithCleanup(client, currentAccount.id, id));
             await Promise.all(promises);
             return fileIds;
         },
@@ -82,7 +76,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
 
     const retryMutation = useToastMutation(
         async (fileIds: string[]) => {
-            const results = await retryFiles(client, currentAccount.id, fileIds);
+            const results = await retryTorrentsWithCleanup(client, currentAccount.id, fileIds);
             return { results, count: fileIds.length };
         },
         {

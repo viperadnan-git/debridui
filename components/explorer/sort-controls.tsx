@@ -4,8 +4,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { SORT_OPTIONS } from "@/lib/utils/file";
-import { useShallow } from "zustand/react/shallow";
-import { useFileStore } from "@/lib/stores/files";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useCallback } from "react";
 
@@ -14,14 +12,8 @@ export function SortControls() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    const { sortBy, sortOrder, setSortBy, setSortOrder } = useFileStore(
-        useShallow((state) => ({
-            sortBy: state.sortBy,
-            sortOrder: state.sortOrder,
-            setSortBy: state.setSortBy,
-            setSortOrder: state.setSortOrder,
-        }))
-    );
+    const sortBy = searchParams.get("sort_by") || "date";
+    const sortOrder = (searchParams.get("sort_order") as "asc" | "desc") || "desc";
 
     const updateURLParams = useCallback(
         (newSortBy: string, newSortOrder: "asc" | "desc") => {
@@ -34,13 +26,11 @@ export function SortControls() {
     );
 
     const handleSortChange = (newSortBy: string) => {
-        setSortBy(newSortBy);
         updateURLParams(newSortBy, sortOrder);
     };
 
     const handleOrderChange = () => {
         const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
-        setSortOrder(newSortOrder);
         updateURLParams(sortBy, newSortOrder);
     };
 

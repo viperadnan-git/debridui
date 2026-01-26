@@ -13,8 +13,8 @@ import { DebridFile } from "@/lib/types";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { downloadM3UPlaylist, fetchTorrentDownloadLinks } from "@/lib/utils/file";
-import { useFileStore } from "@/lib/stores/files";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
+import { removeTorrentWithCleanup, retryTorrentsWithCleanup } from "@/lib/utils/file-mutations";
 
 interface FileItemContextMenuProps {
     file: DebridFile;
@@ -24,7 +24,6 @@ interface FileItemContextMenuProps {
 
 export function FileItemContextMenu({ file, children, className }: FileItemContextMenuProps) {
     const { client, currentAccount } = useAuthGuaranteed();
-    const { removeTorrent, retryFiles } = useFileStore();
 
     const copyMutation = useToastMutation(
         async () => {
@@ -67,7 +66,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
 
     const deleteMutation = useToastMutation(
         async () => {
-            const message = await removeTorrent(client, currentAccount.id, file.id);
+            const message = await removeTorrentWithCleanup(client, currentAccount.id, file.id);
             return message;
         },
         {
@@ -79,7 +78,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
 
     const retryMutation = useToastMutation(
         async () => {
-            const result = await retryFiles(client, currentAccount.id, [file.id]);
+            const result = await retryTorrentsWithCleanup(client, currentAccount.id, [file.id]);
             return result[file.id] || "Retry initiated";
         },
         {
