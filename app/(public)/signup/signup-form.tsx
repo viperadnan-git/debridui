@@ -48,7 +48,7 @@ export default function SignupForm() {
 
             if (data) {
                 toast.success("Account created successfully");
-                router.push("/onboarding");
+                router.push("/dashboard");
             }
         } catch {
             toast.error("An unexpected error occurred");
@@ -78,7 +78,7 @@ export default function SignupForm() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                            <GoogleSignInButton mode="signup" callbackURL="/onboarding" />
+                            <GoogleSignInButton mode="signup" callbackURL="/dashboard" />
 
                             {!isEmailSignupDisabled && (
                                 <>
