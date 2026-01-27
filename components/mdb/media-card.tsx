@@ -6,7 +6,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { getPosterUrl } from "@/lib/utils/trakt";
-import { ImdbIcon } from "@/components/icons";
+import { Star } from "lucide-react";
 
 interface MediaCardProps {
     media: TraktMedia;
@@ -65,7 +65,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
                                 <>
                                     <span className="text-white/30">·</span>
                                     <span className="flex items-center gap-1">
-                                        <ImdbIcon className="size-3.5 text-[#F5C518]" />
+                                        <Star className="size-3.5 fill-[#F5C518] text-[#F5C518]" />
                                         {media.rating.toFixed(1)}
                                     </span>
                                 </>

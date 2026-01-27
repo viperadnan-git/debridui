@@ -13,9 +13,8 @@ import {
     CarouselApi,
 } from "@/components/ui/carousel";
 import Link from "next/link";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ImdbIcon } from "@/components/icons";
 import Autoplay from "embla-carousel-autoplay";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTraktTrendingMixed } from "@/hooks/use-trakt";
@@ -85,7 +84,7 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
                                 <>
                                     <span className="text-white/30">·</span>
                                     <span className="flex items-center gap-1.5">
-                                        <ImdbIcon className="size-4 text-[#F5C518]" />
+                                        <Star className="size-4 fill-[#F5C518] text-[#F5C518]" />
                                         <span className="text-white font-medium">{media.rating.toFixed(1)}</span>
                                     </span>
                                 </>
@@ -171,7 +170,7 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
                             <>
                                 <span className="text-white/30">·</span>
                                 <span className="flex items-center gap-1">
-                                    <ImdbIcon className="size-3.5 text-[#F5C518]" />
+                                    <Star className="size-3.5 fill-[#F5C518] text-[#F5C518]" />
                                     {media.rating.toFixed(1)}
                                 </span>
                             </>

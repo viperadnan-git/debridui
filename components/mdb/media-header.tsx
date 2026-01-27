@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MediaStats } from "./media-stats";
 import { memo } from "react";
 import { getPosterUrl, getBackdropUrl } from "@/lib/utils/trakt";
-import { ArrowUpRightIcon } from "lucide-react";
-import { ImdbIcon } from "@/components/icons";
+import { ArrowUpRightIcon, Star } from "lucide-react";
 
 interface MediaHeaderProps {
     media: TraktMedia;
@@ -92,7 +91,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 <>
                                     <span className="text-border">·</span>
                                     <span className="flex items-center gap-1.5">
-                                        <ImdbIcon className="size-4 text-[#F5C518]" />
+                                        <Star className="size-4 fill-[#F5C518] text-[#F5C518]" />
                                         <span className="text-foreground font-medium">{media.rating.toFixed(1)}</span>
                                         <span className="text-muted-foreground/60">/10</span>
                                     </span>
@@ -145,7 +144,11 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                         href={`https://www.imdb.com/title/${media.ids?.imdb}`}
                                         target="_blank"
                                         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                                        <ImdbIcon className="size-4" />
+                                        <img
+                                            src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/imdb.svg"
+                                            alt=""
+                                            className="size-4 opacity-60 dark:invert"
+                                        />
                                         IMDb
                                     </Link>
                                 )}

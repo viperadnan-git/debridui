@@ -9,7 +9,7 @@ export function DownloadList() {
 
     if (isLoading) {
         return (
-            <div className="rounded-sm border border-border/50 overflow-hidden">
+            <div className="rounded-sm border border-border/50 bg-card overflow-hidden">
                 {[1, 2, 3].map((i) => (
                     <DownloadItemSkeleton key={i} />
                 ))}
@@ -30,7 +30,7 @@ export function DownloadList() {
     }
 
     return (
-        <div className="rounded-sm border border-border/50 overflow-hidden">
+        <div className="rounded-sm border border-border/50 bg-card overflow-hidden">
             {downloads.map((download) => (
                 <DownloadItem
                     key={download.id}
