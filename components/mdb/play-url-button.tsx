@@ -22,9 +22,9 @@ export const PlayUrlButton = memo(
         };
 
         return (
-            <Button size="sm" onClick={handlePlay} className="h-7 gap-1.5 px-2.5 text-xs" title="Play">
+            <Button size="sm" onClick={handlePlay} title="Play">
                 <PlayIcon className="size-3" />
-                <span>Play</span>
+                Play
             </Button>
         );
     },

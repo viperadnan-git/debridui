@@ -73,14 +73,13 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
                 <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 gap-1.5 px-2.5 text-xs border-border/50"
                     onClick={() => {
                         if (torrentId) {
                             router.push(`/files?q=id:${torrentId}`);
                         }
                     }}>
                     <DownloadIcon className="size-3" />
-                    <span>View</span>
+                    View
                 </Button>
             </div>
         );
@@ -103,21 +102,16 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
     }
 
     return (
-        <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleAdd()}
-            disabled={status === "loading"}
-            className="h-7 gap-1.5 px-2.5 text-xs border-border/50">
+        <Button variant="outline" size="sm" onClick={() => handleAdd()} disabled={status === "loading"}>
             {status === "loading" ? (
                 <>
                     <Loader2 className="size-3 animate-spin" />
-                    <span>Adding</span>
+                    Adding
                 </>
             ) : (
                 <>
                     <Plus className="size-3" />
-                    <span>Add</span>
+                    Add
                 </>
             )}
         </Button>
@@ -300,7 +294,7 @@ export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, mediaTitl
                 </div>
                 <div className="flex-none px-6 py-4 border-t border-border/50 bg-muted/20">
                     <DialogClose asChild>
-                        <Button variant="outline" size="sm" className="w-full sm:w-auto sm:ml-auto sm:flex h-9">
+                        <Button variant="outline" className="w-full sm:w-auto sm:ml-auto sm:flex">
                             Close
                         </Button>
                     </DialogClose>

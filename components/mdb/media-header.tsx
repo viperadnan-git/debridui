@@ -57,7 +57,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                         {/* Action Buttons */}
                         <div className="hidden md:flex flex-col gap-2">
                             {media.trailer && (
-                                <Button asChild variant="outline" className="w-full h-10 text-sm border-border/50">
+                                <Button asChild variant="outline" size="lg" className="w-full">
                                     <Link href={media.trailer} target="_blank" rel="noopener">
                                         Watch Trailer
                                         <ArrowUpRightIcon className="size-3 ml-1.5 opacity-50" />
@@ -65,7 +65,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 </Button>
                             )}
                             {media.homepage && (
-                                <Button asChild variant="ghost" className="w-full h-10 text-sm text-muted-foreground">
+                                <Button asChild variant="ghost" size="lg" className="w-full text-muted-foreground">
                                     <Link href={media.homepage} target="_blank" rel="noopener">
                                         Official Site
                                         <ArrowUpRightIcon className="size-3 ml-1.5 opacity-50" />
@@ -107,9 +107,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                             {media.certification && (
                                 <>
                                     <span className="text-border">·</span>
-                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 border-border/50">
-                                        {media.certification}
-                                    </Badge>
+                                    <Badge>{media.certification}</Badge>
                                 </>
                             )}
                         </div>
@@ -192,7 +190,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                         {/* Mobile Action Buttons */}
                         <div className="flex md:hidden flex-wrap gap-2 pt-2">
                             {media.trailer && (
-                                <Button asChild variant="outline" size="sm" className="h-9 text-sm border-border/50">
+                                <Button asChild variant="outline">
                                     <Link href={media.trailer} target="_blank" rel="noopener">
                                         Trailer
                                         <ArrowUpRightIcon className="size-3 ml-1 opacity-50" />
@@ -200,7 +198,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 </Button>
                             )}
                             {media.homepage && (
-                                <Button asChild variant="ghost" size="sm" className="h-9 text-sm text-muted-foreground">
+                                <Button asChild variant="ghost" className="text-muted-foreground">
                                     <Link href={media.homepage} target="_blank" rel="noopener">
                                         Website
                                         <ArrowUpRightIcon className="size-3 ml-1 opacity-50" />
