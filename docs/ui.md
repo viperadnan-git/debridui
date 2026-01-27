@@ -154,17 +154,18 @@ DebridUI uses OKLCH color space for perceptually uniform colors with CSS custom 
 
 #### Semantic Colors
 
-| Token                | Light Mode                 | Dark Mode                  | Usage                             |
-| -------------------- | -------------------------- | -------------------------- | --------------------------------- |
-| `--background`       | `oklch(0.992 0 0)`         | `oklch(0.199 0 0)`         | Page background                   |
-| `--foreground`       | `oklch(0.204 0 0)`         | `oklch(0.947 0 0)`         | Primary text                      |
-| `--card`             | `oklch(0.963 0 0)`         | `oklch(0.255 0 0)`         | Card backgrounds                  |
-| `--muted`            | `oklch(0.93 0 0)`          | `oklch(0.3 0 0)`           | Muted backgrounds                 |
-| `--muted-foreground` | `oklch(0.541 0 0)`         | `oklch(0.706 0 0)`         | Secondary text                    |
-| `--border`           | `oklch(0.891 0 0)`         | `oklch(0.364 0 0)`         | Borders, dividers                 |
-| `--primary`          | `oklch(0.87 0.156 89.2)`   | `oklch(0.87 0.156 89.2)`   | Primary actions, accents          |
-| `--secondary`        | `oklch(0.641 0.133 157.6)` | `oklch(0.641 0.133 157.6)` | Secondary accents                 |
-| `--destructive`      | `oklch(0.625 0.193 22.9)`  | `oklch(0.625 0.193 22.9)`  | Error states, destructive actions |
+| Token                      | Light Mode                 | Dark Mode                  | Usage                             |
+| -------------------------- | -------------------------- | -------------------------- | --------------------------------- |
+| `--background`             | `oklch(0.992 0 0)`         | `oklch(0.199 0 0)`         | Page background                   |
+| `--foreground`             | `oklch(0.204 0 0)`         | `oklch(0.947 0 0)`         | Primary text                      |
+| `--card`                   | `oklch(0.963 0 0)`         | `oklch(0.255 0 0)`         | Card backgrounds                  |
+| `--muted`                  | `oklch(0.93 0 0)`          | `oklch(0.3 0 0)`           | Muted backgrounds                 |
+| `--muted-foreground`       | `oklch(0.541 0 0)`         | `oklch(0.706 0 0)`         | Secondary text                    |
+| `--border`                 | `oklch(0.891 0 0)`         | `oklch(0.364 0 0)`         | Borders, dividers                 |
+| `--primary`                | `oklch(0.87 0.156 89.2)`   | `oklch(0.87 0.156 89.2)`   | Primary actions, accents          |
+| `--secondary`              | `oklch(0.641 0.133 157.6)` | `oklch(0.641 0.133 157.6)` | Secondary accents                 |
+| `--destructive`            | `oklch(0.625 0.193 22.9)`  | `oklch(0.625 0.193 22.9)`  | Error states, destructive actions |
+| `--destructive-foreground` | `oklch(0.969 0 0)`         | `oklch(0.969 0 0)`         | Text on destructive backgrounds   |
 
 #### Opacity Conventions
 
@@ -320,13 +321,13 @@ Based on shadcn/ui with editorial refinements.
 
 #### Variants
 
-| Variant       | Appearance                         | Usage               |
-| ------------- | ---------------------------------- | ------------------- |
-| `default`     | Solid primary background           | Primary actions     |
-| `outline`     | Border with transparent background | Secondary actions   |
-| `ghost`       | No border, transparent background  | Tertiary actions    |
-| `destructive` | Red background                     | Destructive actions |
-| `link`        | Underlined text                    | Inline links        |
+| Variant       | Appearance                          | Usage               |
+| ------------- | ----------------------------------- | ------------------- |
+| `default`     | Solid primary background            | Primary actions     |
+| `outline`     | Border with transparent background  | Secondary actions   |
+| `ghost`       | No border, transparent background   | Tertiary actions    |
+| `destructive` | Red background, semantic foreground | Destructive actions |
+| `link`        | Underlined text                     | Inline links        |
 
 #### Sizes
 

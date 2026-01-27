@@ -10,17 +10,17 @@
 
 **IMPORTANT:** All `components/ui/` primitives are pre-styled for editorial minimalism. Read components before implementing new UI.
 
-| Component    | Pre-baked Defaults                                                                     |
-| ------------ | -------------------------------------------------------------------------------------- |
-| Button       | `rounded-sm`, `duration-300`, sizes: sm=`h-8`, default=`h-9`, lg=`h-10`, icon=`size-9` |
-| Input        | `rounded-sm`, `border-border/50`, `h-9`, `duration-300`                                |
-| Badge        | `rounded-sm`, `text-xs`, `px-2.5 py-0.5`, default=`outline`                            |
-| Card         | `rounded-sm`, `border-border/50`, title=`font-light`                                   |
-| Dialog       | `rounded-sm`, `border-border/50`, title=`font-light text-xl`                           |
-| Select       | `rounded-sm`, `border-border/50`, `duration-300`, sizes: sm=`h-8`, default=`h-9`       |
-| DropdownMenu | `rounded-sm`, `border-border/50`, items=`hover:bg-muted/50`                            |
-| Skeleton     | `rounded-sm`, `bg-muted/50`                                                            |
-| Separator    | `bg-border/50`                                                                         |
+| Component    | Pre-baked Defaults                                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Button       | `rounded-sm`, `duration-300`, sizes: sm=`h-8`, default=`h-9`, lg=`h-10`, icon=`size-9`, destructive uses `text-destructive-foreground` |
+| Input        | `rounded-sm`, `border-border/50`, `h-9`, `duration-300`                                                                                |
+| Badge        | `rounded-sm`, `text-xs`, `px-2.5 py-0.5`, default=`outline`, destructive uses `text-destructive-foreground`                            |
+| Card         | `rounded-sm`, `border-border/50`, title=`font-light`                                                                                   |
+| Dialog       | `rounded-sm`, `border-border/50`, title=`font-light text-xl`                                                                           |
+| Select       | `rounded-sm`, `border-border/50`, `duration-300`, sizes: sm=`h-8`, default=`h-9`                                                       |
+| DropdownMenu | `rounded-sm`, `border-border/50`, items=`hover:bg-muted/50`                                                                            |
+| Skeleton     | `rounded-sm`, `bg-muted/50`                                                                                                            |
+| Separator    | `bg-border/50`                                                                                                                         |
 
 ```tsx
 // ✓ Use directly - styles are baked in
