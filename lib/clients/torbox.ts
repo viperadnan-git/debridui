@@ -11,6 +11,9 @@ import {
     AuthError,
     DebridError,
     RateLimitError,
+    WebDownload,
+    WebDownloadAddResult,
+    WebDownloadStatus,
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
@@ -101,8 +104,32 @@ interface TorBoxResponse<T> {
     data?: T;
 }
 
+interface TorBoxWebDownload {
+    id: number;
+    hash: string;
+    created_at: string;
+    updated_at: string;
+    name: string;
+    size: number;
+    download_state: string;
+    progress: number;
+    download_speed: number;
+    eta: number;
+    server: number;
+    download_present: boolean;
+    download_finished: boolean;
+    download_url: string;
+    original_url: string;
+    auth_id: string;
+    error?: string;
+}
+
 export default class TorBoxClient extends BaseClient {
     private readonly baseUrl = getProxyUrl("https://api.torbox.app/v1/api");
+
+    // TorBox downloads on server, needs refresh for progress
+    readonly refreshInterval = 5000;
+    readonly supportsEphemeralLinks = false;
 
     constructor(user: User) {
         super(user);
@@ -524,6 +551,89 @@ export default class TorBoxClient extends BaseClient {
         }
 
         return data.data.torrents || [];
+    }
+
+    // Web download methods
+    async addWebDownloads(links: string[]): Promise<WebDownloadAddResult[]> {
+        const results = await Promise.allSettled(
+            links.map(async (link) => {
+                const formData = new FormData();
+                formData.append("link", link);
+
+                const response = await this.makeRequest<{
+                    data: { webdownload_id?: number; hash?: string };
+                    detail: string;
+                }>("webdl/createwebdownload", {
+                    method: "POST",
+                    body: formData,
+                    returnRaw: true,
+                });
+
+                return {
+                    link,
+                    success: true,
+                    id: response.data.webdownload_id?.toString(),
+                    name: link.split("/").pop() || link,
+                };
+            })
+        );
+
+        return results.map((result, index) => {
+            if (result.status === "fulfilled") {
+                return result.value;
+            }
+            return {
+                link: links[index],
+                success: false,
+                error: result.reason?.message || "Failed to add link",
+            };
+        });
+    }
+
+    async getWebDownloadList(): Promise<WebDownload[]> {
+        const data = await this.makeRequest<TorBoxWebDownload[]>("webdl/mylist");
+        const downloads = Array.isArray(data) ? data : [];
+        return downloads.map((dl) => this.mapToWebDownload(dl));
+    }
+
+    async deleteWebDownload(id: string): Promise<void> {
+        await this.makeRequest("webdl/controlwebdownload", {
+            method: "POST",
+            body: JSON.stringify({ operation: "delete", webdl_id: parseInt(id) }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    }
+
+    private mapToWebDownload(dl: TorBoxWebDownload): WebDownload {
+        const isReady = dl.download_finished && dl.download_present;
+        // Construct download URL for ready files - use redirect=true for direct download
+        const downloadLink = isReady
+            ? `https://api.torbox.app/v1/api/webdl/requestdl?token=${this.user.apiKey}&web_id=${dl.id}&file_id=0&redirect=true`
+            : undefined;
+
+        return {
+            id: dl.id.toString(),
+            name: dl.name,
+            originalLink: dl.original_url,
+            downloadLink,
+            size: dl.size || undefined,
+            status: this.mapWebDownloadStatus(dl.download_state, dl.download_finished),
+            progress: dl.progress * 100,
+            createdAt: new Date(dl.created_at),
+            error: dl.error || undefined,
+        };
+    }
+
+    private mapWebDownloadStatus(state: string, finished: boolean): WebDownloadStatus {
+        if (finished) return "completed";
+        const stateLower = state.toLowerCase();
+        if (stateLower === "downloading" || stateLower === "metadl") return "processing";
+        if (stateLower === "cached" || stateLower === "completed") return "completed";
+        if (stateLower === "error" || stateLower === "failed") return "failed";
+        if (stateLower === "pending" || stateLower === "queued") return "pending";
+        return "processing";
     }
 
     private mapToDebridFile(torrent: TorBoxTorrent): DebridFile {

@@ -148,3 +148,29 @@ export class RateLimitError extends DebridError {
         this.retryAfter = retryAfter;
     }
 }
+
+// Web download types (unified across clients)
+export type WebDownload = {
+    id: string;
+    name: string;
+    originalLink: string;
+    downloadLink?: string;
+    size?: number;
+    status: WebDownloadStatus;
+    progress?: number;
+    createdAt: Date;
+    host?: string;
+    error?: string;
+};
+
+export type WebDownloadStatus = "pending" | "processing" | "completed" | "failed" | "cached";
+
+export type WebDownloadAddResult = {
+    link: string;
+    success: boolean;
+    downloadLink?: string;
+    name?: string;
+    size?: number;
+    error?: string;
+    id?: string;
+};
