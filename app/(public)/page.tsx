@@ -71,9 +71,7 @@ export default function Home() {
                                     {tech.name}
                                 </span>
                             ))}
-                            <Badge variant="outline" className="text-[10px] tracking-wider">
-                                Open Source
-                            </Badge>
+                            <Badge className="tracking-wider">Open Source</Badge>
                         </div>
                     </div>
 
@@ -93,13 +91,13 @@ export default function Home() {
                         </p>
 
                         <div className="flex flex-wrap items-center gap-3 pt-4">
-                            <Button asChild size="lg" className="h-12 px-6 text-sm tracking-wide">
+                            <Button asChild size="lg" className="h-12 tracking-wide">
                                 <Link href="/dashboard">
                                     Open App
                                     <ArrowRightIcon className="size-4 ml-2" />
                                 </Link>
                             </Button>
-                            <Button asChild variant="ghost" size="lg" className="h-12 px-6 text-sm tracking-wide">
+                            <Button asChild variant="ghost" size="lg" className="h-12 tracking-wide">
                                 <Link
                                     href="https://github.com/viperadnan-git/debridui"
                                     target="_blank"

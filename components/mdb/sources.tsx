@@ -267,9 +267,9 @@ export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, mediaTitl
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col gap-0 rounded-sm">
+            <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col gap-0">
                 <div className="flex-none px-6 pt-6 pb-4 border-b border-border/50">
-                    <DialogTitle className="text-xl font-light">
+                    <DialogTitle>
                         Sources
                         {tvParams && (
                             <span className="text-muted-foreground">

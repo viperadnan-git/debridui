@@ -31,7 +31,7 @@ const SeasonsSection = memo(function SeasonsSection({
 
     return (
         <ScrollCarousel className="-mx-4 lg:mx-0">
-            <div className="flex w-max gap-3 pb-4 max-lg:px-4">
+            <div className="flex w-max gap-3 pb-4 px-4 lg:pl-2 lg:pr-0">
                 {isLoading
                     ? Array.from({ length: 6 }).map((_, i) => (
                           <Skeleton key={i} className="w-28 sm:w-32 md:w-36 aspect-2/3 rounded-sm shrink-0" />
