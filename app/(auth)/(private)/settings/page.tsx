@@ -3,7 +3,7 @@
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2, Clock, Info } from "lucide-react";
+import { Monitor, Moon, Sun, Play, Trash2, Clock, Info, Settings } from "lucide-react";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { MediaPlayer } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,7 @@ export default function SettingsPage() {
 
     return (
         <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
-            <PageHeader title="Settings" description="Manage your application preferences" />
+            <PageHeader icon={Settings} title="Settings" description="Manage your application preferences" />
 
             {/* Appearance Section */}
             <section className="space-y-4">

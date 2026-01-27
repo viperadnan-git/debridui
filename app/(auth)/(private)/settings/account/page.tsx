@@ -9,7 +9,7 @@ import { setPassword } from "@/lib/actions/user";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserCog } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -207,7 +207,7 @@ export default function AccountPage() {
 
     return (
         <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
-            <PageHeader title="Account" description="Manage your profile and security settings" />
+            <PageHeader icon={UserCog} title="Account" description="Manage your profile and security settings" />
 
             {/* Profile Section */}
             <section className="space-y-4">

@@ -7,12 +7,15 @@ interface PageHeaderProps {
     action?: React.ReactNode;
 }
 
-export function PageHeader({ title, description, action }: PageHeaderProps) {
+export function PageHeader({ icon: Icon, title, description, action }: PageHeaderProps) {
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                <div className="space-y-1">
-                    <h1 className="text-2xl sm:text-3xl font-light">{title}</h1>
+                <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                        {Icon && <Icon className="size-6 text-primary" strokeWidth={1.5} />}
+                        <h1 className="text-2xl sm:text-3xl font-light">{title}</h1>
+                    </div>
                     <p className="text-sm text-muted-foreground">{description}</p>
                 </div>
                 {action && <div className="shrink-0">{action}</div>}

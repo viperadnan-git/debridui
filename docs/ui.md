@@ -184,6 +184,36 @@ text-foreground/70   /* 70% for less prominent text */
 text-muted-foreground/* Dedicated muted color */
 ```
 
+#### Primary Color Accents
+
+Use `primary` color sparingly to add visual interest and break the monotony of neutral tones:
+
+```css
+/* Icon accents — page headers, feature highlights */
+text-primary         /* Icons alongside headings */
+
+/* Subtle backgrounds — tags, indicators */
+bg-primary/10        /* Very subtle primary tint */
+bg-primary/20        /* Slightly more visible tint */
+
+/* Accent borders — selected states, highlights */
+border-primary/50    /* Subtle primary border */
+ring-primary         /* Selection rings */
+```
+
+**When to use primary accents:**
+
+- Page header icons (creates visual hierarchy)
+- Selected/active state indicators
+- Feature highlights and call-to-action elements
+- Interactive element focus states
+
+**When NOT to use:**
+
+- Body text or descriptions
+- Decorative borders (use `border-border/50` instead)
+- Background fills for large areas
+
 #### Accessibility
 
 - All text meets WCAG 2.1 AA contrast requirements (4.5:1 for normal text, 3:1 for large text)
@@ -292,7 +322,35 @@ Shadows are subtle and increase opacity in dark mode:
 
 ## 2. Component Specifications
 
-### 2.1 Section Divider
+### 2.1 Page Header
+
+Page headers with icon accent for visual interest.
+
+```tsx
+<div className="space-y-6">
+    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="space-y-2">
+            <div className="flex items-center gap-3">
+                <Icon className="size-6 text-primary" strokeWidth={1.5} />
+                <h1 className="text-2xl sm:text-3xl font-light">{title}</h1>
+            </div>
+            <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+    </div>
+    <div className="h-px bg-border/50" />
+</div>
+```
+
+**Key Patterns:**
+
+- Icon uses `text-primary` for visual accent
+- `strokeWidth={1.5}` for refined icon appearance
+- `size-6` (24px) icon balances with heading size
+- Description on second line for clear hierarchy
+- Optional action slot for buttons (right-aligned on desktop)
+
+### 2.2 Section Divider
 
 The signature layout pattern — centered label with horizontal lines.
 
@@ -315,7 +373,7 @@ The signature layout pattern — centered label with horizontal lines.
 - Between grouped content areas
 - Page structure organization
 
-### 2.2 Button
+### 2.3 Button
 
 Based on shadcn/ui with editorial refinements.
 
@@ -395,7 +453,7 @@ className = "focus-visible:ring-3 focus-visible:ring-ring/50";
 </Button>
 ```
 
-### 2.3 Badge & Inline Metadata
+### 2.4 Badge & Inline Metadata
 
 For editorial minimalism, prefer inline text with separators over badge components.
 
@@ -437,7 +495,7 @@ For editorial minimalism, prefer inline text with separators over badge componen
 </span>
 ```
 
-### 2.4 Media Card
+### 2.5 Media Card
 
 Displays movie/show posters with hover interactions.
 
@@ -481,7 +539,7 @@ Displays movie/show posters with hover interactions.
 sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 180px"
 ```
 
-### 2.5 Media Header
+### 2.6 Media Header
 
 Hero section for movie/show detail pages.
 
@@ -529,7 +587,7 @@ Hero section for movie/show detail pages.
 </div>
 ```
 
-### 2.6 Media Stats
+### 2.7 Media Stats
 
 Left-border accent pattern for statistics.
 
@@ -548,7 +606,7 @@ Left-border accent pattern for statistics.
 </div>
 ```
 
-### 2.7 Screenshot Gallery
+### 2.8 Screenshot Gallery
 
 Tab-based image carousel with crossfade transitions.
 
@@ -577,7 +635,7 @@ Tab-based image carousel with crossfade transitions.
 )} />
 ```
 
-### 2.8 Search Bar
+### 2.9 Search Bar
 
 Faux input button that opens search dialog.
 
@@ -591,7 +649,7 @@ Faux input button that opens search dialog.
 </button>
 ```
 
-### 2.9 Season Card
+### 2.10 Season Card
 
 Poster cards for TV show seasons with selection state.
 
@@ -632,7 +690,7 @@ Poster cards for TV show seasons with selection state.
 - Selected state uses `ring-primary` and label uses `bg-primary`
 - Gradient always visible for text readability
 
-### 2.10 Episode Card
+### 2.11 Episode Card
 
 Collapsible episode rows with thumbnail and metadata.
 
@@ -677,7 +735,7 @@ Collapsible episode rows with thumbnail and metadata.
 </Collapsible>
 ```
 
-### 2.11 Sources List
+### 2.12 Sources List
 
 Clean list for streaming/download sources.
 
@@ -725,7 +783,7 @@ Clean list for streaming/download sources.
 - Subtle borders: `border-border/50`
 - Hover state: `hover:bg-muted/30`
 
-### 2.12 Skeleton
+### 2.13 Skeleton
 
 Loading placeholder with pulse animation.
 
@@ -1172,6 +1230,7 @@ When creating new components, ensure:
 - [ ] Memoized if receiving props that rarely change
 - [ ] Responsive at all breakpoints (mobile-first)
 - [ ] Selected states use `ring-2 ring-primary` with offset
+- [ ] Primary color accents for icons/highlights (use sparingly for visual interest)
 
 ---
 

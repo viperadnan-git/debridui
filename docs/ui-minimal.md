@@ -2,6 +2,8 @@
 
 > Minimal context for AI sessions. Full docs: [ui.md](./ui.md)
 
+**⚠️ Maintainer Note:** This is a condensed version of [ui.md](./ui.md). Always update the main `ui.md` first, then sync changes here. Never modify this file without updating the source doc.
+
 ## Aesthetic
 
 **Editorial Minimalism** — `font-light` headings, `tracking-widest` labels, `border-border/50` subtle borders, generous whitespace.
@@ -62,6 +64,11 @@
 "text-muted-foreground"                                       // Secondary
 "text-muted-foreground hover:text-foreground transition-colors" // Link
 
+// Primary accents (use sparingly for visual interest)
+"text-primary"           // Icons, highlights, interactive elements
+"bg-primary/10"          // Subtle primary background
+"border-primary/50"      // Accent borders
+
 // Separator
 {a} <span className="text-border">·</span> {b}
 ```
@@ -69,6 +76,13 @@
 ## Components
 
 ```tsx
+// Page header with icon accent
+<div className="flex items-center gap-3">
+  <Icon className="size-6 text-primary" strokeWidth={1.5} />
+  <h1 className="text-2xl sm:text-3xl font-light">{title}</h1>
+</div>
+<p className="text-sm text-muted-foreground">{description}</p>
+
 // Button + icon (standard shadcn sizes)
 <Button size="lg" className="tracking-wide">
   {label} <ArrowRightIcon className="size-4 ml-2" />
@@ -268,3 +282,4 @@ loading="lazy" | loading="eager"
 - [ ] Memoize if stable props
 - [ ] Mobile-first responsive
 - [ ] Selected: `ring-2 ring-primary ring-offset-1`
+- [ ] Primary accents for icons/highlights (sparingly)

@@ -123,6 +123,7 @@ export default function AddonsPage() {
     return (
         <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
             <PageHeader
+                icon={Puzzle}
                 title="Stremio Addons"
                 description="Manage your Stremio addons to fetch sources from multiple providers"
                 action={

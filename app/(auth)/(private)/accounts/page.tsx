@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountCard } from "@/components/accounts/account-card";
 import { PageHeader } from "@/components/page-header";
@@ -28,6 +28,7 @@ export default function AccountsPage() {
     return (
         <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
             <PageHeader
+                icon={KeyRound}
                 title="Accounts"
                 description="Manage your debrid service accounts"
                 action={

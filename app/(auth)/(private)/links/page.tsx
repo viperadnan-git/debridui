@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { SectionDivider } from "@/components/section-divider";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Link2 } from "lucide-react";
 import { WebDownloadsProvider, useWebDownloads } from "@/components/web-downloads/web-downloads-provider";
 import { AddLinksForm } from "@/components/web-downloads/add-links-form";
 import { DownloadList } from "@/components/web-downloads/download-list";
@@ -14,6 +14,7 @@ function LinksContent() {
     return (
         <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
             <PageHeader
+                icon={Link2}
                 title="Links"
                 description="Unlock and download files from supported hosters"
                 action={
