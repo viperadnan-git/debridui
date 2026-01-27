@@ -55,7 +55,7 @@ export const SeasonCard = memo(function SeasonCard({
                 <img
                     src={posterUrl}
                     alt={seasonName}
-                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-[1.03]"
+                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-hover"
                     loading="lazy"
                 />
 
@@ -66,7 +66,7 @@ export const SeasonCard = memo(function SeasonCard({
                 <div className="absolute top-2.5 left-2.5">
                     <span
                         className={cn(
-                            "text-[10px] font-medium tracking-[0.2em] px-2 py-1 rounded-sm backdrop-blur-sm",
+                            "text-xs font-medium tracking-wider px-2 py-1 rounded-sm backdrop-blur-sm",
                             isSelected ? "bg-primary text-primary-foreground" : "bg-black/60 text-white/90"
                         )}>
                         {seasonLabel}
@@ -76,7 +76,7 @@ export const SeasonCard = memo(function SeasonCard({
                 {/* Rating - minimal style */}
                 {season.rating && (
                     <div className="absolute top-2.5 right-2.5">
-                        <span className="text-[10px] font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                        <span className="text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
                             {season.rating.toFixed(1)}
                         </span>
                     </div>
@@ -86,10 +86,10 @@ export const SeasonCard = memo(function SeasonCard({
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                     <div className="space-y-1">
                         {season.episode_count && (
-                            <p className="text-[11px] text-white/90 font-medium">{season.episode_count} Episodes</p>
+                            <p className="text-xs text-white/90 font-medium">{season.episode_count} Episodes</p>
                         )}
                         {season.first_aired && (
-                            <p className="text-[10px] text-white/60">{formatYear(season.first_aired)}</p>
+                            <p className="text-xs text-white/60">{formatYear(season.first_aired)}</p>
                         )}
                     </div>
                 </div>

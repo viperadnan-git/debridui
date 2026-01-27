@@ -31,6 +31,8 @@ Always search existing components before creating new ones:
 - `components/common/` — Utilities (ScrollCarousel, wrappers)
 - `components/mdb/` — Media patterns (cards, headers, sections)
 
+**IMPORTANT:** Before implementing any new UI, read the existing `components/ui/` files. All shadcn components have been pre-styled with the editorial minimalist aesthetic — `rounded-sm`, `border-border/50`, `font-light`, `duration-300`, etc. are already baked in. Don't add redundant class overrides.
+
 ### 2. Compose, Don't Duplicate
 
 Build complex UIs by combining simpler components:
@@ -53,7 +55,7 @@ If markup appears 3+ times, extract it into a component:
 // This pattern → extract to SectionDivider
 <div className="flex items-center gap-4">
     <div className="h-px flex-1 bg-border/50" />
-    <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">{label}</span>
+    <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
     <div className="h-px flex-1 bg-border/50" />
 </div>
 ```
@@ -74,7 +76,7 @@ Use `className` and `variant` props to customize, not source changes:
 Use design tokens consistently:
 
 - Colors: `text-muted-foreground`, `bg-muted/30`, `border-border/50`
-- Typography: `text-[10px] tracking-[0.3em] uppercase` for labels
+- Typography: `text-xs tracking-widest uppercase` for labels
 - Spacing: Multiples of 4px (`gap-4`, `p-6`, `py-12`)
 
 ### 6. Place Components Correctly
@@ -84,6 +86,63 @@ Use design tokens consistently:
 | Generic, reusable        | `components/ui/` or `components/common/` |
 | Domain-specific          | `components/[feature]/`                  |
 | Used once, page-specific | Colocate in `app/[route]/`               |
+
+---
+
+## Pre-Styled shadcn/ui Components
+
+All base UI primitives in `components/ui/` have been customized for the editorial minimalist aesthetic. **Always build upon these components** — they include the design system tokens so you don't need to re-apply them.
+
+### What's Already Baked In
+
+| Component        | Pre-styled Defaults                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Button**       | `rounded-sm`, `duration-300`, `border-border/50` (outline), `hover:bg-muted/50` (ghost), sizes: sm=`h-8`, default=`h-9`, lg=`h-10` |
+| **Input**        | `rounded-sm`, `border-border/50`, `duration-300`, `h-9`, focus ring styling                                                        |
+| **Badge**        | `rounded-sm`, `text-xs`, `px-2.5 py-0.5`, `tracking-wide`, default variant=`outline` with `border-border/50`                       |
+| **Card**         | `rounded-sm`, `border-border/50`, `font-light` title                                                                               |
+| **Dialog**       | `rounded-sm`, `border-border/50`, `font-light` title, backdrop blur                                                                |
+| **Sheet**        | `border-border/50`, `font-light` title, `duration-300` animations                                                                  |
+| **Select**       | `rounded-sm`, `border-border/50`, `duration-300`, `hover:bg-muted/50` items                                                        |
+| **DropdownMenu** | `rounded-sm`, `border-border/50`, `duration-200` items, `hover:bg-muted/50`                                                        |
+| **Checkbox**     | `rounded-sm`, `border-border/50`, `duration-300`                                                                                   |
+| **Separator**    | `bg-border/50`                                                                                                                     |
+| **Skeleton**     | `rounded-sm`, `bg-muted/50`                                                                                                        |
+| **Tooltip**      | `rounded-sm`                                                                                                                       |
+| **Alert**        | `rounded-sm`, `border-border/50`                                                                                                   |
+| **Command**      | `rounded-sm`, `border-border/50` (input), `duration-200` items                                                                     |
+
+### Usage Guidelines
+
+```tsx
+// ✓ CORRECT: Use shadcn components directly
+<Button variant="outline" size="sm">Add</Button>
+<Badge>PG-13</Badge>
+<Dialog><DialogContent>...</DialogContent></Dialog>
+
+// ✗ WRONG: Don't add redundant overrides
+<Button className="rounded-sm border-border/50">  // Already in base
+<Badge className="h-5 text-xs">              // Already in base
+<DialogContent className="rounded-sm">            // Already in base
+```
+
+### When to Add Custom Classes
+
+Only add classes for:
+
+- **Layout specifics**: `className="w-full"`, `className="ml-auto"`
+- **Contextual sizing**: `className="h-12"` for hero CTAs
+- **Extra spacing**: `className="tracking-wide"` for emphasis
+- **Custom colors**: `className="text-blue-500"` for type indicators
+
+### Read Before Implementing
+
+Before creating any UI:
+
+1. Check if a shadcn component exists in `components/ui/`
+2. Read the component file to understand its pre-baked styles
+3. Compose existing components rather than building from scratch
+4. Only add className overrides for truly custom behavior
 
 ---
 
@@ -141,15 +200,17 @@ text-muted-foreground/* Dedicated muted color */
 
 #### Type Scale
 
-| Name      | Size                           | Weight              | Tracking                                 | Usage                     |
-| --------- | ------------------------------ | ------------------- | ---------------------------------------- | ------------------------- |
-| Display   | `text-3xl` to `text-5xl`       | `font-light` (300)  | Default                                  | Hero titles, page headers |
-| Heading 1 | `text-2xl` to `text-3xl`       | `font-light` (300)  | Default                                  | Section titles            |
-| Heading 2 | `text-xl` to `text-2xl`        | `font-light` (300)  | Default                                  | Subsection titles         |
-| Heading 3 | `text-lg`                      | `font-medium` (500) | Default                                  | Card titles, list headers |
-| Body      | `text-sm` to `text-base`       | `font-normal` (400) | Default                                  | Paragraphs, descriptions  |
-| Caption   | `text-xs`                      | `font-normal` (400) | Default                                  | Metadata, timestamps      |
-| Label     | `text-[10px]` to `text-[11px]` | `font-medium` (500) | `tracking-[0.2em]` to `tracking-[0.3em]` | Section labels, badges    |
+| Name      | Size                     | Weight              | Tracking                              | Usage                                        |
+| --------- | ------------------------ | ------------------- | ------------------------------------- | -------------------------------------------- |
+| Display   | `text-3xl` to `text-5xl` | `font-light` (300)  | Default                               | Hero titles, page headers                    |
+| Heading 1 | `text-2xl` to `text-3xl` | `font-light` (300)  | Default                               | Section titles                               |
+| Heading 2 | `text-xl` to `text-2xl`  | `font-light` (300)  | Default                               | Subsection titles                            |
+| Heading 3 | `text-lg`                | `font-medium` (500) | Default                               | Card titles, list headers                    |
+| Body      | `text-sm` to `text-base` | `font-normal` (400) | Default                               | Paragraphs, descriptions                     |
+| Caption   | `text-xs`                | `font-normal` (400) | Default                               | Metadata, timestamps, captions               |
+| Label     | `text-xs`                | `font-medium` (500) | `tracking-wider` to `tracking-widest` | Editorial labels (with tracking + uppercase) |
+
+**Important**: Always use standard Tailwind text sizes (`text-xs`, `text-sm`, `text-base`, `text-lg`, etc.). Never use custom arbitrary values like `text-xs` or `text-xs`.
 
 #### Editorial Label Pattern
 
@@ -157,12 +218,12 @@ The signature design element — ultra-wide letter-spacing for labels:
 
 ```tsx
 // Section divider label
-<span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+<span className="text-xs tracking-widest uppercase text-muted-foreground">
   Section Name
 </span>
 
 // Category label
-<span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+<span className="text-xs tracking-wider uppercase text-muted-foreground">
   01
 </span>
 ```
@@ -237,7 +298,7 @@ The signature layout pattern — centered label with horizontal lines.
 ```tsx
 <div className="flex items-center gap-4">
     <div className="h-px flex-1 bg-border/50" />
-    <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Label Text</span>
+    <span className="text-xs tracking-widest uppercase text-muted-foreground">Label Text</span>
     <div className="h-px flex-1 bg-border/50" />
 </div>
 ```
@@ -276,21 +337,21 @@ Based on shadcn/ui with editorial refinements.
 | `lg`      | 40px   | `px-6`  | Hero CTAs         |
 | `icon`    | 36px   | —       | Icon-only buttons |
 
-#### Compact Button Pattern
+#### Small Button Pattern
 
-For inline actions (sources, cards), use smaller custom sizing:
+Use standard `size="sm"` for smaller contexts:
 
 ```tsx
-// Compact action button - h-7 (28px)
-<Button variant="outline" size="sm" className="h-7 gap-1.5 px-2.5 text-xs border-border/50">
-  <Icon className="size-3" />
+// Small action button - h-8 (32px)
+<Button variant="outline" size="sm">
+  <Icon className="size-4" />
   <span>{label}</span>
 </Button>
 
-// Icon-only compact
-<button className="size-7 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-  <Icon className="size-3.5" />
-</button>
+// Icon-only button
+<Button variant="ghost" size="icon">
+  <Icon className="size-4" />
+</Button>
 ```
 
 #### States
@@ -306,7 +367,7 @@ className = "hover:bg-primary/90";
 className = "disabled:pointer-events-none disabled:opacity-50";
 
 // Focus
-className = "focus-visible:ring-[3px] focus-visible:ring-ring/50";
+className = "focus-visible:ring-3 focus-visible:ring-ring/50";
 ```
 
 #### Editorial Button Patterns
@@ -355,7 +416,7 @@ For editorial minimalism, prefer inline text with separators over badge componen
 </span>
 
 // Cached indicator - inline, not badge
-<span className="inline-flex items-center gap-1 text-[10px] tracking-wide text-green-600 dark:text-green-500">
+<span className="inline-flex items-center gap-1 text-xs tracking-wide text-green-600 dark:text-green-500">
   <Zap className="size-2.5" />
   Cached
 </span>
@@ -365,7 +426,7 @@ For editorial minimalism, prefer inline text with separators over badge componen
 
 ```tsx
 // Certification badge
-<Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 border-border/50">
+<Badge variant="outline" className="text-xs px-1.5 py-0 h-5 border-border/50">
   PG-13
 </Badge>
 
@@ -380,13 +441,13 @@ For editorial minimalism, prefer inline text with separators over badge componen
 Displays movie/show posters with hover interactions.
 
 ```tsx
-<div className="relative overflow-hidden transition-transform duration-300 ease-out hover:scale-[1.03]">
+<div className="relative overflow-hidden transition-transform duration-300 ease-out hover:scale-hover">
   <div className="aspect-2/3 relative overflow-hidden bg-muted/50 rounded-sm">
     <Image ... />
 
     {/* Rank badge */}
     {rank && (
-      <span className="absolute top-2 left-2 text-[10px] font-medium tracking-[0.2em] text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+      <span className="absolute top-2 left-2 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
         {String(rank).padStart(2, '0')}
       </span>
     )}
@@ -452,7 +513,7 @@ Hero section for movie/show detail pages.
 
 ```tsx
 // Type label
-<div className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+<div className="text-xs tracking-widest uppercase text-muted-foreground">
   Film
 </div>
 
@@ -473,7 +534,7 @@ Left-border accent pattern for statistics.
 
 ```tsx
 <div className="pl-3 border-l border-border/50">
-    <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">{label}</div>
+    <div className="text-xs tracking-wider uppercase text-muted-foreground mb-1">{label}</div>
     <div className="text-sm font-medium">{value}</div>
 </div>
 ```
@@ -523,7 +584,7 @@ Faux input button that opens search dialog.
 <button className="w-full max-w-xl mx-auto flex items-center gap-3 h-12 px-4 text-sm text-muted-foreground bg-muted/30 hover:bg-muted/50 border border-border/50 rounded-sm transition-colors">
     <SearchIcon className="size-4" />
     <span>Search movies and shows...</span>
-    <kbd className="ml-auto hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border/50 bg-muted/50 px-1.5 font-mono text-[10px] text-muted-foreground">
+    <kbd className="ml-auto hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border/50 bg-muted/50 px-1.5 font-mono text-xs text-muted-foreground">
         <span className="text-xs">⌘</span>K
     </kbd>
 </button>
@@ -540,7 +601,7 @@ Poster cards for TV show seasons with selection state.
             "aspect-2/3 relative overflow-hidden bg-muted/30 rounded-sm transition-all duration-300",
             isSelected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : "hover:ring-1 hover:ring-border"
         )}>
-        <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-[1.03]" />
+        <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-hover" />
 
         {/* Always-visible gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -548,7 +609,7 @@ Poster cards for TV show seasons with selection state.
         {/* Season label - editorial style */}
         <span
             className={cn(
-                "absolute top-2.5 left-2.5 text-[10px] font-medium tracking-[0.2em] px-2 py-1 rounded-sm backdrop-blur-sm",
+                "absolute top-2.5 left-2.5 text-xs font-medium tracking-wider px-2 py-1 rounded-sm backdrop-blur-sm",
                 isSelected ? "bg-primary text-primary-foreground" : "bg-black/60 text-white/90"
             )}>
             {String(number).padStart(2, "0")}
@@ -556,8 +617,8 @@ Poster cards for TV show seasons with selection state.
 
         {/* Bottom info - always visible */}
         <div className="absolute bottom-0 left-0 right-0 p-3">
-            <p className="text-[11px] text-white/90 font-medium">{episodeCount} Episodes</p>
-            <p className="text-[10px] text-white/60">{year}</p>
+            <p className="text-xs text-white/90 font-medium">{episodeCount} Episodes</p>
+            <p className="text-xs text-white/60">{year}</p>
         </div>
     </div>
 </div>
@@ -582,17 +643,17 @@ Collapsible episode rows with thumbnail and metadata.
                 <div className="flex flex-col sm:flex-row">
                     {/* Thumbnail */}
                     <div className="relative w-full sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30 overflow-hidden">
-                        <img className="object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                        <img className="object-cover transition-transform duration-300 group-hover:scale-hover" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
                         {/* Episode label */}
-                        <span className="absolute top-2.5 left-2.5 text-[10px] font-medium tracking-[0.2em] text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                        <span className="absolute top-2.5 left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
                             E{String(number).padStart(2, "0")}
                         </span>
 
                         {/* Hover action */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <span className="text-[10px] tracking-[0.2em] uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
+                            <span className="text-xs tracking-wider uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
                                 Sources
                             </span>
                         </div>
@@ -646,8 +707,8 @@ Clean list for streaming/download sources.
                 </span>
                 {/* Action buttons */}
                 <div className="flex gap-2 sm:ml-auto">
-                    <Button variant="outline" size="sm" className="h-7 gap-1.5 px-2.5 text-xs border-border/50">
-                        <PlayIcon className="size-3" /> Play
+                    <Button variant="outline" size="sm">
+                        <PlayIcon className="size-4" /> Play
                     </Button>
                 </div>
             </div>
@@ -659,7 +720,7 @@ Clean list for streaming/download sources.
 **Key Patterns:**
 
 - Inline metadata with `·` separators instead of badges
-- Small buttons: `h-7`, `text-xs`, `size-3` icons
+- Standard small buttons: `size="sm"` (h-8), `size-4` icons
 - Subtle borders: `border-border/50`
 - Hover state: `hover:bg-muted/30`
 
@@ -869,7 +930,7 @@ className = "translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opaci
 ### 4.3 Focus States
 
 ```tsx
-className = "outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
+className = "outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3";
 ```
 
 ### 4.4 Loading States
@@ -897,7 +958,7 @@ className = "animate-pulse bg-muted/50";
 
 **Problem:** Media interfaces often feel cluttered, with competing elements fighting for attention.
 
-**Solution:** Editorial minimalism uses typography hierarchy and negative space to create focus. Wide letter-spacing on labels (`tracking-[0.3em]`) creates visual distinction without adding visual weight.
+**Solution:** Editorial minimalism uses typography hierarchy and negative space to create focus. Wide letter-spacing on labels (`tracking-widest`) creates visual distinction without adding visual weight.
 
 **Result:** Users can scan content quickly; the interface feels premium and intentional.
 
@@ -954,7 +1015,7 @@ className = "animate-pulse bg-muted/50";
 ### 6.2 Focus Visibility
 
 ```tsx
-className = "focus-visible:ring-[3px] focus-visible:ring-ring/50";
+className = "focus-visible:ring-3 focus-visible:ring-ring/50";
 ```
 
 - Focus rings only appear on keyboard navigation
@@ -1068,7 +1129,7 @@ className = "max-w-6xl mx-auto";
 **Editorial Label:**
 
 ```tsx
-className = "text-[10px] tracking-[0.3em] uppercase text-muted-foreground";
+className = "text-xs tracking-widest uppercase text-muted-foreground";
 ```
 
 **Subtle Border:**
@@ -1100,11 +1161,11 @@ When creating new components, ensure:
 - [ ] Has appropriate focus states for keyboard navigation
 - [ ] Follows spacing scale (multiples of 4px)
 - [ ] Uses `font-light` for headings, standard weight for body
-- [ ] Labels use `text-[10px] tracking-[0.3em] uppercase text-muted-foreground`
+- [ ] Labels use `text-xs tracking-widest uppercase text-muted-foreground`
 - [ ] Borders use `border-border/50` for subtle appearance
 - [ ] Uses `rounded-sm` (not `rounded-lg`) for cards and containers
 - [ ] Prefers inline metadata with `·` separators over badge components
-- [ ] Action buttons use compact sizing (`h-7`, `text-xs`, `size-3` icons)
+- [ ] Standard shadcn button sizes (sm=`h-8`, default=`h-9`, lg=`h-10`)
 - [ ] Transitions use `duration-300` for standard animations
 - [ ] Includes loading skeleton if data-dependent
 - [ ] Memoized if receiving props that rarely change

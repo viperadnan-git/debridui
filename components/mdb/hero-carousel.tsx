@@ -65,16 +65,16 @@ const DesktopHeroCarousel = memo(function DesktopHeroCarousel({ item, index }: D
                     <div className="max-w-2xl space-y-4 lg:space-y-5">
                         {/* Type Label */}
                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] tracking-[0.3em] uppercase text-white/60">
+                            <span className="text-xs tracking-widest uppercase text-white/60">
                                 {type === "movie" ? "Film" : "Series"}
                             </span>
-                            <span className="text-[10px] tracking-[0.2em] text-white/40">
+                            <span className="text-xs tracking-wider text-white/40">
                                 {String(index + 1).padStart(2, "0")} / 10
                             </span>
                         </div>
 
                         {/* Title */}
-                        <h1 className="text-4xl lg:text-6xl xl:text-7xl font-light text-white leading-[1.05]">
+                        <h1 className="text-4xl lg:text-6xl xl:text-7xl font-light text-white leading-tightest">
                             {media.title}
                         </h1>
 
@@ -155,10 +155,10 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
                 {/* Bottom content */}
                 <div className="space-y-3 mt-auto">
                     <div className="flex items-center gap-3">
-                        <span className="text-[10px] tracking-[0.3em] uppercase text-white/60">
+                        <span className="text-xs tracking-widest uppercase text-white/60">
                             {type === "movie" ? "Film" : "Series"}
                         </span>
-                        <span className="text-[10px] tracking-[0.2em] text-white/40">
+                        <span className="text-xs tracking-wider text-white/40">
                             {String(index + 1).padStart(2, "0")}
                         </span>
                     </div>

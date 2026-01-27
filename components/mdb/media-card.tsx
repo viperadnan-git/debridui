@@ -27,7 +27,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
         <Link href={linkHref} className="block group">
             <div
                 className={cn(
-                    "relative overflow-hidden transition-transform duration-300 ease-out hover:scale-[1.03] [content-visibility:auto] [contain-intrinsic-size:120px_180px]",
+                    "relative overflow-hidden transition-transform duration-300 ease-out hover:scale-hover [content-visibility:auto] [contain-intrinsic-size:120px_180px]",
                     className
                 )}>
                 <div className="aspect-2/3 relative overflow-hidden bg-muted/50 rounded-sm">
@@ -44,7 +44,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
                     {/* Rank badge - editorial style */}
                     {rank && (
                         <div className="absolute top-2 left-2 z-10">
-                            <span className="text-[10px] font-medium tracking-[0.2em] text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                            <span className="text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
                                 {String(rank).padStart(2, "0")}
                             </span>
                         </div>
@@ -59,7 +59,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
                             {media.title}
                         </h3>
 
-                        <div className="flex items-center gap-2 text-[11px] text-white/70">
+                        <div className="flex items-center gap-2 text-xs text-white/70">
                             {media.year && <span>{media.year}</span>}
                             {media.rating && (
                                 <>

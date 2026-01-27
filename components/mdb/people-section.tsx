@@ -101,9 +101,7 @@ function PersonCard({ person, type }: PersonCardProps) {
                     </h4>
 
                     {role && (
-                        <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                            {role}
-                        </p>
+                        <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 leading-relaxed">{role}</p>
                     )}
                 </div>
             </div>

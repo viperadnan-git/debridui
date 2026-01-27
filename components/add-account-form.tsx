@@ -82,13 +82,13 @@ export function AddAccountForm() {
         <div className="flex flex-col gap-6">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-5">
                         <FormField
                             control={form.control}
                             name="type"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Account Type</FormLabel>
+                                    <FormLabel className="text-xs text-muted-foreground">Account Type</FormLabel>
                                     <FormControl>
                                         <Select onValueChange={field.onChange} value={field.value}>
                                             <SelectTrigger>
@@ -113,9 +113,9 @@ export function AddAccountForm() {
                             name="apiKey"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>API Key</FormLabel>
+                                    <FormLabel className="text-xs text-muted-foreground">API Key</FormLabel>
                                     <FormControl>
-                                        <Input {...field} />
+                                        <Input {...field} placeholder="Enter your API key" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -129,11 +129,15 @@ export function AddAccountForm() {
                             {form.formState.isSubmitting || addAccount.isPending ? "Adding account..." : "Add Account"}
                         </Button>
 
-                        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                            <span className="bg-background text-muted-foreground relative z-10 px-2">Or</span>
+                        <div className="flex items-center gap-4 py-2">
+                            <div className="h-px flex-1 bg-border/50" />
+                            <span className="text-xs tracking-widest uppercase text-muted-foreground">
+                                Or continue with
+                            </span>
+                            <div className="h-px flex-1 bg-border/50" />
                         </div>
 
-                        <div className="grid gap-4 grid-cols-1">
+                        <div className="grid gap-2 grid-cols-1">
                             <Button
                                 variant="outline"
                                 type="button"
@@ -143,9 +147,7 @@ export function AddAccountForm() {
                                 {isLoadingOAuth === "alldebrid" ? (
                                     <Loader2 className="size-4 animate-spin" />
                                 ) : (
-                                    <>
-                                        Continue with <span className="font-bold">AllDebrid</span>
-                                    </>
+                                    "AllDebrid"
                                 )}
                             </Button>
                             <Button
@@ -154,16 +156,10 @@ export function AddAccountForm() {
                                 className="w-full"
                                 onClick={handleTorBoxLogin}
                                 disabled={!!isLoadingOAuth || addAccount.isPending}>
-                                {isLoadingOAuth === "torbox" ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        Continue with <span className="font-bold">TorBox</span>
-                                    </>
-                                )}
+                                {isLoadingOAuth === "torbox" ? <Loader2 className="size-4 animate-spin" /> : "TorBox"}
                             </Button>
-                            <Button variant="outline" type="button" className="w-full" disabled={true}>
-                                Continue with <span className="font-bold">RealDebrid</span>
+                            <Button variant="outline" type="button" className="w-full opacity-50" disabled={true}>
+                                RealDebrid
                             </Button>
                         </div>
                     </div>

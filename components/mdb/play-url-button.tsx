@@ -23,7 +23,7 @@ export const PlayUrlButton = memo(
 
         return (
             <Button size="sm" onClick={handlePlay} title="Play">
-                <PlayIcon className="size-3" />
+                <PlayIcon className="size-4" />
                 Play
             </Button>
         );

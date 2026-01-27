@@ -36,7 +36,7 @@ export const MediaSection = memo(function MediaSection({
     if (error) {
         return (
             <section className="space-y-4">
-                <div className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">{label || title}</div>
+                <div className="text-xs tracking-widest uppercase text-muted-foreground">{label || title}</div>
                 <div className="text-sm text-muted-foreground">Failed to load content</div>
             </section>
         );
@@ -47,9 +47,7 @@ export const MediaSection = memo(function MediaSection({
             {/* Section Header */}
             <div className="flex items-end justify-between gap-4">
                 <div className="space-y-1">
-                    {label && (
-                        <div className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">{label}</div>
-                    )}
+                    {label && <div className="text-xs tracking-widest uppercase text-muted-foreground">{label}</div>}
                     <h2 className="text-xl sm:text-2xl font-light">{title}</h2>
                 </div>
                 {viewAllHref && (
@@ -57,7 +55,7 @@ export const MediaSection = memo(function MediaSection({
                         href={viewAllHref}
                         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors pb-1">
                         View all
-                        <ArrowRightIcon className="size-3" />
+                        <ArrowRightIcon className="size-4" />
                     </Link>
                 )}
             </div>

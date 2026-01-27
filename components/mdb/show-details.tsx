@@ -72,7 +72,7 @@ const EpisodesSection = memo(function EpisodesSection({
                     {seasonLabel}
                 </h3>
                 {episodes && (
-                    <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+                    <span className="text-xs tracking-wider uppercase text-muted-foreground">
                         {episodes.length} Episodes
                     </span>
                 )}
@@ -127,9 +127,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
             <section className="space-y-6">
                 <div className="flex items-center gap-4">
                     <div className="h-px flex-1 bg-border/50" />
-                    <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
-                        Seasons & Episodes
-                    </span>
+                    <span className="text-xs tracking-widest uppercase text-muted-foreground">Seasons & Episodes</span>
                     <div className="h-px flex-1 bg-border/50" />
                 </div>
 
@@ -145,7 +143,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
             <section className="space-y-6">
                 <div className="flex items-center gap-4">
                     <div className="h-px flex-1 bg-border/50" />
-                    <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Cast & Crew</span>
+                    <span className="text-xs tracking-widest uppercase text-muted-foreground">Cast & Crew</span>
                     <div className="h-px flex-1 bg-border/50" />
                 </div>
                 <PeopleSection mediaId={mediaId} type="shows" />

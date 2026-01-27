@@ -20,13 +20,13 @@ export const MovieDetails = memo(function MovieDetails({ media, mediaId }: Movie
                 <section className="space-y-6">
                     <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+                        <span className="text-xs tracking-widest uppercase text-muted-foreground">
                             Available Sources
                         </span>
                         <div className="h-px flex-1 bg-border/50" />
                     </div>
                     <div id="sources">
-                        <Sources imdbId={media.ids.imdb} mediaType="movie" mediaTitle={media.title || "Movie"} />
+                        <Sources imdbId={media.ids?.imdb} mediaType="movie" mediaTitle={media.title || "Movie"} />
                     </div>
                 </section>
             )}
@@ -34,7 +34,7 @@ export const MovieDetails = memo(function MovieDetails({ media, mediaId }: Movie
             <section className="space-y-6">
                 <div className="flex items-center gap-4">
                     <div className="h-px flex-1 bg-border/50" />
-                    <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Cast & Crew</span>
+                    <span className="text-xs tracking-widest uppercase text-muted-foreground">Cast & Crew</span>
                     <div className="h-px flex-1 bg-border/50" />
                 </div>
                 <PeopleSection mediaId={mediaId} type="movies" />

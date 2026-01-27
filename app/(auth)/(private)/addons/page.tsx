@@ -5,12 +5,10 @@ import { useUserAddons, useAddAddon, useRemoveAddon, useToggleAddon, useUpdateAd
 import { AddonClient } from "@/lib/addons/client";
 import { type Addon } from "@/lib/addons/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Plus, Loader2, CheckCircle2, AlertCircle, Puzzle, Info, RefreshCw } from "lucide-react";
+import { Plus, Loader2, CheckCircle2, Puzzle, Info, RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { AddonCard, AddonCardSkeleton } from "@/components/addon-card";
 import { CachedBadge } from "@/components/display";
@@ -18,6 +16,17 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const DEFAULT_ADDON_MANIFEST =
     "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4/manifest.json";
+
+// Section divider component
+function SectionDivider({ label }: { label: string }) {
+    return (
+        <div className="flex items-center gap-4 py-2">
+            <div className="h-px flex-1 bg-border/50" />
+            <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
+            <div className="h-px flex-1 bg-border/50" />
+        </div>
+    );
+}
 
 export default function AddonsPage() {
     const { data: serverAddons = [], isLoading, refetch } = useUserAddons();
@@ -122,190 +131,178 @@ export default function AddonsPage() {
     };
 
     return (
-        <div className="container mx-auto max-w-5xl space-y-8 pb-16">
+        <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
             <PageHeader
-                icon={Puzzle}
                 title="Stremio Addons"
                 description="Manage your Stremio addons to fetch sources from multiple providers"
                 action={
-                    <Button
-                        onClick={handleRefresh}
-                        disabled={isRefreshing || isLoading}
-                        variant="outline"
-                        size="sm"
-                        className="w-full sm:w-auto">
-                        <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+                    <Button onClick={handleRefresh} disabled={isRefreshing || isLoading} variant="outline">
+                        <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} />
                         Refresh
                     </Button>
                 }
             />
 
-            {/* Settings Grid */}
-            <div className="grid gap-6 md:grid-cols-2">
-                {/* Add New Addon */}
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-                                <Plus className="h-5 w-5 text-primary" />
+            {/* Add New Addon Section */}
+            <section className="space-y-4">
+                <SectionDivider label="Add Addon" />
+
+                {!isAdding ? (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        {/* Custom addon card */}
+                        <button
+                            onClick={() => setIsAdding(true)}
+                            className="group relative flex flex-col items-center justify-center gap-3 rounded-sm border border-dashed border-border/50 p-6 text-center transition-all duration-300 hover:border-primary/50 hover:bg-muted/30">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-muted/50 transition-colors group-hover:bg-primary/10">
+                                <Plus className="size-5 text-muted-foreground transition-colors group-hover:text-primary" />
                             </div>
                             <div>
-                                <CardTitle>Add New Addon</CardTitle>
-                                <CardDescription>Enter a Stremio addon URL</CardDescription>
+                                <p className="text-sm font-light">Add Custom Addon</p>
+                                <p className="text-xs text-muted-foreground mt-1">Enter a Stremio addon URL</p>
                             </div>
+                        </button>
+
+                        {/* Torrentio preset card */}
+                        <button
+                            onClick={() => handleAddAddon(DEFAULT_ADDON_MANIFEST)}
+                            disabled={validating}
+                            className="group relative flex flex-col items-center justify-center gap-3 rounded-sm border border-border/50 p-6 text-center transition-all duration-300 hover:border-primary/50 hover:bg-muted/30 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-muted/50 transition-colors group-hover:bg-primary/10">
+                                {validating ? (
+                                    <Loader2 className="size-5 text-muted-foreground animate-spin" />
+                                ) : (
+                                    <Puzzle className="size-5 text-muted-foreground transition-colors group-hover:text-primary" />
+                                )}
+                            </div>
+                            <div>
+                                <p className="text-sm font-light">
+                                    {validating ? "Adding Torrentio..." : "Add Torrentio"}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">Popular multi-source addon</p>
+                            </div>
+                        </button>
+                    </div>
+                ) : (
+                    <div className="rounded-sm border border-border/50 overflow-hidden">
+                        <div className="bg-muted/30 px-4 py-3 border-b border-border/50">
+                            <p className="text-xs tracking-wider uppercase text-muted-foreground">Custom Addon URL</p>
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                        {!isAdding ? (
-                            <div className="flex flex-col gap-2 md:flex-row">
-                                <Button onClick={() => setIsAdding(true)} variant="default" className="gap-2">
-                                    <Plus className="h-4 w-4" />
-                                    Add Addon
-                                </Button>
-                                <Button
-                                    onClick={() => handleAddAddon(DEFAULT_ADDON_MANIFEST)}
-                                    variant="outline"
-                                    className="gap-2"
-                                    disabled={validating}>
+                        <div className="p-4 space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="addon-url" className="sr-only">
+                                    Addon URL
+                                </Label>
+                                <Input
+                                    id="addon-url"
+                                    type="url"
+                                    placeholder="https://addon.example.com/manifest.json"
+                                    value={newAddonUrl}
+                                    onChange={(e) => setNewAddonUrl(e.target.value)}
+                                    disabled={validating}
+                                    className="font-mono text-sm"
+                                    autoFocus
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    The URL will be validated by fetching the addon manifest
+                                </p>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                                <Button onClick={() => handleAddAddon()} disabled={validating || !newAddonUrl.trim()}>
                                     {validating ? (
                                         <>
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            Adding...
+                                            <Loader2 className="size-4 animate-spin" />
+                                            Validating...
                                         </>
                                     ) : (
                                         <>
-                                            <Puzzle className="h-4 w-4" />
-                                            Add Torrentio
+                                            <CheckCircle2 className="size-4" />
+                                            Add Addon
                                         </>
                                     )}
                                 </Button>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="space-y-3">
-                                    <Label htmlFor="addon-url" className="text-sm font-medium">
-                                        Addon URL
-                                    </Label>
-                                    <Input
-                                        id="addon-url"
-                                        type="url"
-                                        placeholder="https://addon.example.com/manifest.json"
-                                        value={newAddonUrl}
-                                        onChange={(e) => setNewAddonUrl(e.target.value)}
-                                        disabled={validating}
-                                        className="font-mono text-sm"
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        The URL will be validated by fetching the addon manifest
-                                    </p>
-                                </div>
-                                <div className="flex flex-col md:flex-row gap-2">
-                                    <Button
-                                        onClick={() => handleAddAddon()}
-                                        disabled={validating || !newAddonUrl.trim()}
-                                        size="sm"
-                                        className="gap-2">
-                                        {validating ? (
-                                            <>
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                Validating...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CheckCircle2 className="h-4 w-4" />
-                                                Add Addon
-                                            </>
-                                        )}
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                            setIsAdding(false);
-                                            setNewAddonUrl("");
-                                        }}
-                                        disabled={validating}>
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Addons List */}
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-                                <Puzzle className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <CardTitle>Your Addons</CardTitle>
-                                <CardDescription>
-                                    {isLoading
-                                        ? "Loading..."
-                                        : sortedAddons.length === 0
-                                          ? "No addons configured yet"
-                                          : `${sortedAddons.filter((a) => a.enabled).length} of ${sortedAddons.length} addon(s) enabled`}
-                                </CardDescription>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setIsAdding(false);
+                                        setNewAddonUrl("");
+                                    }}
+                                    disabled={validating}>
+                                    Cancel
+                                </Button>
                             </div>
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                        {isLoading ? (
-                            <div className="space-y-3">
-                                {[1, 2, 3].map((i) => (
-                                    <AddonCardSkeleton key={i} />
-                                ))}
-                            </div>
-                        ) : sortedAddons.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
-                                    <AlertCircle className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                                <p className="font-medium">No addons added yet</p>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                    Add your first addon to start fetching sources
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {sortedAddons.map((addon, index) => (
-                                    <AddonCard
-                                        key={addon.id}
-                                        addon={addon}
-                                        onToggle={handleToggleAddon}
-                                        onRemove={handleRemoveAddon}
-                                        onMoveUp={handleMoveUp}
-                                        onMoveDown={handleMoveDown}
-                                        isFirst={index === 0}
-                                        isLast={index === sortedAddons.length - 1}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                    </div>
+                )}
+            </section>
 
-                {/* Info Alert */}
-                <Alert className="md:col-span-2">
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>About Stremio Addons</AlertTitle>
-                    <AlertDescription className="space-y-2">
-                        <p>
-                            Stremio addons follow a standard protocol. Sources from all enabled addons will be merged
-                            and displayed together in the order listed above. Use the arrow buttons to reorder addons.
+            {/* Addons List Section */}
+            <section className="space-y-4">
+                <SectionDivider label="Your Addons" />
+
+                <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                        {isLoading
+                            ? "Loading..."
+                            : sortedAddons.length === 0
+                              ? "No addons configured yet"
+                              : `${sortedAddons.filter((a) => a.enabled).length} of ${sortedAddons.length} addon(s) enabled`}
+                    </p>
+                </div>
+
+                {isLoading ? (
+                    <div className="space-y-3">
+                        {[1, 2, 3].map((i) => (
+                            <AddonCardSkeleton key={i} />
+                        ))}
+                    </div>
+                ) : sortedAddons.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <p className="text-sm font-light text-foreground">No addons added yet</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Add your first addon to start fetching sources
                         </p>
-                        <p>
-                            <strong>Cached sources</strong> (marked with <CachedBadge />) are detected by checking if
-                            the source name contains &quot;instant&quot; or &quot;+&quot;, or if the name/description
-                            includes ✅ or ⚡ emojis. Cached sources are instantly available for download from your
-                            debrid service.
-                        </p>
-                    </AlertDescription>
-                </Alert>
-            </div>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {sortedAddons.map((addon, index) => (
+                            <AddonCard
+                                key={addon.id}
+                                addon={addon}
+                                onToggle={handleToggleAddon}
+                                onRemove={handleRemoveAddon}
+                                onMoveUp={handleMoveUp}
+                                onMoveDown={handleMoveDown}
+                                isFirst={index === 0}
+                                isLast={index === sortedAddons.length - 1}
+                            />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* Info Section */}
+            <section className="space-y-4">
+                <SectionDivider label="Information" />
+
+                <div className="rounded-sm border border-border/50 p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                        <Info className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                        <div className="space-y-2 text-xs text-muted-foreground">
+                            <p>
+                                Stremio addons follow a standard protocol. Sources from all enabled addons will be
+                                merged and displayed together in the order listed above. Use the arrow buttons to
+                                reorder addons.
+                            </p>
+                            <p>
+                                <strong className="text-foreground">Cached sources</strong> (marked with <CachedBadge />
+                                ) are detected by checking if the source name contains &quot;instant&quot; or
+                                &quot;+&quot;, or if the name/description includes checkmark or lightning emojis. Cached
+                                sources are instantly available for download from your debrid service.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             {/* Delete Confirmation Dialog */}
             <ConfirmDialog

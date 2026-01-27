@@ -60,7 +60,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 <Button asChild variant="outline" size="lg" className="w-full">
                                     <Link href={media.trailer} target="_blank" rel="noopener">
                                         Watch Trailer
-                                        <ArrowUpRightIcon className="size-3 ml-1.5 opacity-50" />
+                                        <ArrowUpRightIcon className="size-4 ml-1.5 opacity-50" />
                                     </Link>
                                 </Button>
                             )}
@@ -68,7 +68,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 <Button asChild variant="ghost" size="lg" className="w-full text-muted-foreground">
                                     <Link href={media.homepage} target="_blank" rel="noopener">
                                         Official Site
-                                        <ArrowUpRightIcon className="size-3 ml-1.5 opacity-50" />
+                                        <ArrowUpRightIcon className="size-4 ml-1.5 opacity-50" />
                                     </Link>
                                 </Button>
                             )}
@@ -79,7 +79,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                     <div className="space-y-6">
                         {/* Title & Type */}
                         <div className="space-y-3">
-                            <div className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+                            <div className="text-xs tracking-widest uppercase text-muted-foreground">
                                 {type === "movie" ? "Film" : "Series"}
                             </div>
                             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light leading-tight">{media.title}</h1>
@@ -140,9 +140,9 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                         {/* External Links */}
                         {media.ids && (
                             <div className="flex flex-wrap items-center gap-5 pt-2">
-                                {media.ids.imdb && (
+                                {media.ids?.imdb && (
                                     <Link
-                                        href={`https://www.imdb.com/title/${media.ids.imdb}`}
+                                        href={`https://www.imdb.com/title/${media.ids?.imdb}`}
                                         target="_blank"
                                         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                                         <ImdbIcon className="size-4" />
@@ -175,9 +175,9 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                         Trakt
                                     </Link>
                                 )}
-                                {type === "show" && media.ids.imdb && (
+                                {type === "show" && media.ids?.imdb && (
                                     <Link
-                                        href={`https://tvcharts.co/show/${media.ids.imdb}`}
+                                        href={`https://tvcharts.co/show/${media.ids?.imdb}`}
                                         target="_blank"
                                         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                                         <ArrowUpRightIcon className="size-4 opacity-60" />
@@ -193,7 +193,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 <Button asChild variant="outline">
                                     <Link href={media.trailer} target="_blank" rel="noopener">
                                         Trailer
-                                        <ArrowUpRightIcon className="size-3 ml-1 opacity-50" />
+                                        <ArrowUpRightIcon className="size-4 ml-1 opacity-50" />
                                     </Link>
                                 </Button>
                             )}
@@ -201,7 +201,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 <Button asChild variant="ghost" className="text-muted-foreground">
                                     <Link href={media.homepage} target="_blank" rel="noopener">
                                         Website
-                                        <ArrowUpRightIcon className="size-3 ml-1 opacity-50" />
+                                        <ArrowUpRightIcon className="size-4 ml-1 opacity-50" />
                                     </Link>
                                 </Button>
                             )}

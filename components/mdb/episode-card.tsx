@@ -33,7 +33,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                 <img
                                     src={screenshotUrl}
                                     alt={episode.title}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-hover"
                                     loading="lazy"
                                 />
 
@@ -42,7 +42,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
 
                                 {/* Episode number - editorial style */}
                                 <div className="absolute top-2.5 left-2.5">
-                                    <span className="text-[10px] font-medium tracking-[0.2em] text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                                    <span className="text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
                                         E{episodeLabel}
                                     </span>
                                 </div>
@@ -50,7 +50,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                 {/* Rating - minimal style */}
                                 {episode.rating && (
                                     <div className="absolute top-2.5 right-2.5">
-                                        <span className="text-[10px] font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                                        <span className="text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
                                             {episode.rating.toFixed(1)}
                                         </span>
                                     </div>
@@ -58,7 +58,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
 
                                 {/* Hover action */}
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <span className="text-[10px] tracking-[0.2em] uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
+                                    <span className="text-xs tracking-wider uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
                                         {isOpen ? "Hide" : "Sources"}
                                     </span>
                                 </div>
@@ -106,7 +106,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                     {isOpen && imdbId && (
                         <div className="border-t border-border/50 bg-muted/20">
                             <div className="px-4 py-3">
-                                <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+                                <span className="text-xs tracking-widest uppercase text-muted-foreground">
                                     Available Sources
                                 </span>
                             </div>

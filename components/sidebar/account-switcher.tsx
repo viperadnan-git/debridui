@@ -41,11 +41,11 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                         <DropdownMenuTrigger asChild>
                             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
-                                <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-accent/50 ring-1 ring-sidebar-border/50 shrink-0">
+                                <div className="flex size-9 items-center justify-center rounded-sm bg-muted/50 shrink-0">
                                     <ServiceIcon type={currentUser.type as AccountType} className="size-5" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
-                                    <span className="truncate font-semibold" title={currentUser.username}>
+                                    <span className="truncate font-light" title={currentUser.username}>
                                         {currentUser.username}
                                     </span>
                                     <span className="truncate text-xs text-muted-foreground">
@@ -56,11 +56,11 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                             </SidebarMenuButton>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
-                            className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-xl p-2"
+                            className="w-(--radix-dropdown-menu-trigger-width) min-w-64 p-2"
                             align="start"
                             side={isMobile ? "bottom" : "right"}
                             sideOffset={8}>
-                            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase px-2 py-1.5">
+                            <DropdownMenuLabel className="text-xs tracking-wider uppercase text-muted-foreground px-2 py-1.5">
                                 Accounts
                             </DropdownMenuLabel>
                             {userAccounts.map((account) => (
@@ -70,13 +70,13 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                                         handleNavigation();
                                         switchAccount(account.id);
                                     }}
-                                    className="gap-3 p-2.5 rounded-lg flex items-center justify-between cursor-pointer">
+                                    className="gap-3 p-2.5 flex items-center justify-between cursor-pointer">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30 shrink-0">
+                                        <div className="flex size-8 items-center justify-center rounded-sm bg-muted/50 shrink-0">
                                             <ServiceIcon type={account.type as AccountType} className="size-4" />
                                         </div>
                                         <div className="flex flex-col min-w-0 flex-1">
-                                            <span className="text-sm font-semibold truncate">
+                                            <span className="text-sm font-light truncate">
                                                 {formatAccountType(account.type)}
                                             </span>
                                             <span className="text-xs text-muted-foreground truncate">
@@ -91,12 +91,12 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                             ))}
                             <DropdownMenuSeparator className="my-2" />
 
-                            <DropdownMenuItem className="gap-3 p-2.5 rounded-lg cursor-pointer" asChild>
+                            <DropdownMenuItem className="gap-3 p-2.5 cursor-pointer" asChild>
                                 <Link href="/accounts/add" onClick={handleNavigation}>
-                                    <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30">
+                                    <div className="flex size-8 items-center justify-center rounded-sm border border-dashed border-border/50">
                                         <Plus className="size-4" />
                                     </div>
-                                    <div className="font-semibold">Add account</div>
+                                    <div className="font-light">Add account</div>
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>

@@ -129,7 +129,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                                     size="sm"
                                     onClick={() => retryMutation.mutate(canRetry.map((f) => f.id))}
                                     disabled={retryMutation.isPending}
-                                    className="text-xs sm:text-sm h-7 sm:h-8">
+                                    className="text-xs sm:text-sm">
                                     <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                     Retry ({canRetry.length})
                                 </Button>
@@ -140,7 +140,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                                     size="sm"
                                     onClick={() => deleteMutation.mutate(fullySelectedFiles.map((f) => f.id))}
                                     disabled={deleteMutation.isPending}
-                                    className="text-xs sm:text-sm h-7 sm:h-8">
+                                    className="text-xs sm:text-sm">
                                     <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                     Delete ({fullySelectedFiles.length})
                                 </Button>

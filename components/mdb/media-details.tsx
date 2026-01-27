@@ -73,7 +73,7 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
                 <div className="text-center space-y-3">
-                    <div className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Error</div>
+                    <div className="text-xs tracking-widest uppercase text-muted-foreground">Error</div>
                     <p className="text-xl font-light">Failed to load details</p>
                     <p className="text-sm text-muted-foreground">{error.message}</p>
                 </div>

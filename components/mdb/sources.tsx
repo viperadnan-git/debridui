@@ -66,9 +66,9 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
         return (
             <div className="flex items-center gap-1.5">
                 <button
-                    className="size-7 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                    className="size-8 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-3.5" />
+                    <Trash2Icon className="size-4.5" />
                 </button>
                 <Button
                     variant="outline"
@@ -78,7 +78,7 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
                             router.push(`/files?q=id:${torrentId}`);
                         }
                     }}>
-                    <DownloadIcon className="size-3" />
+                    <DownloadIcon className="size-4" />
                     View
                 </Button>
             </div>
@@ -88,14 +88,14 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
     if (status === "added") {
         return (
             <div className="flex items-center gap-1.5">
-                <div className="flex items-center h-7 gap-1.5 px-2.5 rounded-sm bg-primary/10 text-primary">
-                    <HardDriveDownloadIcon className="size-3 animate-pulse" />
-                    <span className="text-[10px] tracking-wide">Processing</span>
+                <div className="flex items-center h-8 gap-1.5 px-2.5 rounded-sm bg-primary/10 text-primary">
+                    <HardDriveDownloadIcon className="size-4 animate-pulse" />
+                    <span className="text-xs">Processing</span>
                 </div>
                 <button
-                    className="size-7 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                    className="size-8 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-3.5" />
+                    <Trash2Icon className="size-4.5" />
                 </button>
             </div>
         );
@@ -105,12 +105,12 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
         <Button variant="outline" size="sm" onClick={() => handleAdd()} disabled={status === "loading"}>
             {status === "loading" ? (
                 <>
-                    <Loader2 className="size-3 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                     Adding
                 </>
             ) : (
                 <>
-                    <Plus className="size-3" />
+                    <Plus className="size-4" />
                     Add
                 </>
             )}
@@ -202,7 +202,7 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
             {/* Loading indicator */}
             {isLoading && (
                 <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/20">
-                    <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+                    <Loader2 className="size-4.5 animate-spin text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Loading sources...</span>
                 </div>
             )}
@@ -226,7 +226,7 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
             {/* Failed addons warning */}
             {!isLoading && failedAddons.length > 0 && (
                 <div className="flex items-center justify-center gap-2 px-4 py-3 bg-yellow-500/10 border-t border-border/50">
-                    <AlertTriangle className="size-3.5 text-yellow-600" />
+                    <AlertTriangle className="size-4.5 text-yellow-600" />
                     <span className="text-xs text-yellow-600">Failed: {failedAddons.join(", ")}</span>
                 </div>
             )}

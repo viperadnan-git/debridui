@@ -39,9 +39,7 @@ export function MediaStats({ media, type }: MediaStatsProps) {
         <div className="flex flex-wrap gap-6 pt-2">
             {stats.map((stat) => (
                 <div key={stat.label} className="pl-3 border-l border-border/50">
-                    <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">
-                        {stat.label}
-                    </div>
+                    <div className="text-xs tracking-wider uppercase text-muted-foreground mb-1">{stat.label}</div>
                     <div className="text-sm font-medium">{stat.value}</div>
                 </div>
             ))}

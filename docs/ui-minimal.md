@@ -4,18 +4,48 @@
 
 ## Aesthetic
 
-**Editorial Minimalism** — `font-light` headings, `tracking-[0.3em]` labels, `border-border/50` subtle borders, generous whitespace.
+**Editorial Minimalism** — `font-light` headings, `tracking-widest` labels, `border-border/50` subtle borders, generous whitespace.
+
+## shadcn/ui Components (Pre-Styled)
+
+**IMPORTANT:** All `components/ui/` primitives are pre-styled for editorial minimalism. Read components before implementing new UI.
+
+| Component    | Pre-baked Defaults                                                                     |
+| ------------ | -------------------------------------------------------------------------------------- |
+| Button       | `rounded-sm`, `duration-300`, sizes: sm=`h-8`, default=`h-9`, lg=`h-10`, icon=`size-9` |
+| Input        | `rounded-sm`, `border-border/50`, `h-9`, `duration-300`                                |
+| Badge        | `rounded-sm`, `text-xs`, `px-2.5 py-0.5`, default=`outline`                            |
+| Card         | `rounded-sm`, `border-border/50`, title=`font-light`                                   |
+| Dialog       | `rounded-sm`, `border-border/50`, title=`font-light text-xl`                           |
+| Select       | `rounded-sm`, `border-border/50`, `duration-300`, sizes: sm=`h-8`, default=`h-9`       |
+| DropdownMenu | `rounded-sm`, `border-border/50`, items=`hover:bg-muted/50`                            |
+| Skeleton     | `rounded-sm`, `bg-muted/50`                                                            |
+| Separator    | `bg-border/50`                                                                         |
+
+```tsx
+// ✓ Use directly - styles are baked in
+<Button variant="outline" size="sm">Add</Button>
+<Badge>PG-13</Badge>
+<Input placeholder="Search..." />
+
+// ✗ Don't add redundant overrides
+<Button className="rounded-sm">        // Already in base
+<Badge className="h-5 text-xs">   // Already in base
+```
 
 ## Tokens
 
 ```tsx
-// Label (signature)
-"text-[10px] tracking-[0.3em] uppercase text-muted-foreground"
+// Editorial label (signature) - ONLY with tracking + uppercase
+"text-xs tracking-widest uppercase text-muted-foreground"
+
+// Content text (descriptions, metadata, helper text) - use text-xs minimum
+"text-xs text-muted-foreground"
 
 // Section divider
 <div className="flex items-center gap-4">
   <div className="h-px flex-1 bg-border/50" />
-  <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">{label}</span>
+  <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
   <div className="h-px flex-1 bg-border/50" />
 </div>
 
@@ -39,8 +69,8 @@
 ## Components
 
 ```tsx
-// Button + icon
-<Button size="lg" className="h-12 px-6 text-sm tracking-wide">
+// Button + icon (standard shadcn sizes)
+<Button size="lg" className="tracking-wide">
   {label} <ArrowRightIcon className="size-4 ml-2" />
 </Button>
 
@@ -49,25 +79,25 @@
   {label} <ArrowUpRightIcon className="size-3 ml-1 opacity-50" />
 </Button>
 
-// Badge
-<Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 border-border/50">
+// Badge (default=outline, pre-styled)
+<Badge>{label}</Badge>
 
 // Tag (no component)
 <span className="text-xs text-muted-foreground px-2.5 py-1 bg-muted/30 rounded-sm">
 
 // Stat
 <div className="pl-3 border-l border-border/50">
-  <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">{label}</div>
+  <div className="text-xs tracking-wider uppercase text-muted-foreground mb-1">{label}</div>
   <div className="text-sm font-medium">{value}</div>
 </div>
 
 // Rank badge
-<span className="text-[10px] font-medium tracking-[0.2em] text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+<span className="text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
   {String(rank).padStart(2, '0')}
 </span>
 
 // Card hover
-"transition-transform duration-300 ease-out hover:scale-[1.03]"
+"transition-transform duration-300 ease-out hover:scale-hover"
 "opacity-0 group-hover:opacity-100 transition-opacity duration-300"
 
 // Skeleton
@@ -86,17 +116,17 @@
 </span>
 
 // Cached indicator (inline, not badge)
-<span className="inline-flex items-center gap-1 text-[10px] tracking-wide text-green-600">
-  <Zap className="size-2.5" /> Cached
+<span className="inline-flex items-center gap-1 text-xs tracking-wide text-green-600">
+  <Zap className="size-3" /> Cached
 </span>
 
-// Small action button
-<Button variant="outline" size="sm" className="h-7 gap-1.5 px-2.5 text-xs border-border/50">
-  <Icon className="size-3" /> {label}
+// Small action button (standard sm size: h-8, text-xs)
+<Button variant="outline" size="sm">
+  <Icon className="size-4" /> {label}
 </Button>
 
 // Season/Episode label badge
-<span className="text-[10px] font-medium tracking-[0.2em] px-2 py-1 rounded-sm bg-black/60 backdrop-blur-sm text-white/90">
+<span className="text-xs font-medium tracking-wider px-2 py-1 rounded-sm bg-black/60 backdrop-blur-sm text-white/90">
   {String(number).padStart(2, '0')}
 </span>
 
@@ -153,11 +183,12 @@ duration - 500; // Slow
 
 ## Rules
 
-1. **Reuse** — `components/ui/`, `components/common/`, `components/mdb/`
-2. **Compose** — Combine components, don't duplicate
-3. **Extract** — 3+ repeats → new component
-4. **Extend** — Use `className`/`variant`, don't modify source
-5. **Place** — Generic → `ui/`/`common/`, Domain → `[feature]/`, Page → colocate
+1. **Read First** — Before implementing, read `components/ui/` files to understand pre-baked styles
+2. **Reuse** — Always use shadcn components from `components/ui/`, then `components/common/`, `components/mdb/`
+3. **Compose** — Combine components, don't duplicate
+4. **Extract** — 3+ repeats → new component
+5. **Extend** — Use `className`/`variant` for customization, don't add redundant base styles
+6. **Place** — Generic → `ui/`/`common/`, Domain → `[feature]/`, Page → colocate
 
 ## Structure
 
@@ -185,7 +216,7 @@ app/(auth)/(private)/   # Auth required
     "aspect-2/3 relative overflow-hidden bg-muted/30 rounded-sm transition-all duration-300",
     isSelected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : "hover:ring-1 hover:ring-border"
   )}>
-    <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-[1.03]" />
+    <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-hover" />
     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
     {/* Label top-left, info bottom */}
   </div>
@@ -220,15 +251,18 @@ loading="lazy" | loading="eager"
 
 ## Checklist
 
+- [ ] **Read `components/ui/` first** — check what's already styled
+- [ ] Use shadcn components — don't rebuild primitives
+- [ ] No redundant overrides — styles are pre-baked
 - [ ] Semantic HTML
 - [ ] Dark/light support
-- [ ] Focus: `focus-visible:ring-[3px] focus-visible:ring-ring/50`
+- [ ] Focus: `focus-visible:ring-3 focus-visible:ring-ring/50`
 - [ ] 4px spacing scale
 - [ ] `font-light` headings
 - [ ] `border-border/50` borders
 - [ ] `rounded-sm` (not `rounded-lg`)
 - [ ] Inline metadata with `·` separators (not badges)
-- [ ] Compact buttons: `h-7`, `text-xs`, `size-3` icons
+- [ ] Standard shadcn button sizes (sm=`h-8`, default=`h-9`, lg=`h-10`)
 - [ ] `duration-300` transitions
 - [ ] Skeleton if async
 - [ ] Memoize if stable props

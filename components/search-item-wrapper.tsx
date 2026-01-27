@@ -35,11 +35,7 @@ function SearchItemWrapperComponent<T>({
                 value={commandValue}
                 keywords={commandKeywords}
                 onSelect={onSelect ? handleSelect : undefined}
-                className={cn(
-                    "flex items-center gap-2 sm:gap-3 px-1 sm:px-3 py-2 sm:py-3",
-                    onSelect && "cursor-pointer",
-                    className
-                )}>
+                className={cn("flex items-center gap-3 px-3 py-2.5", onSelect && "cursor-pointer", className)}>
                 {children}
             </CommandItem>
         );
@@ -49,7 +45,7 @@ function SearchItemWrapperComponent<T>({
         <div
             onClick={onSelect ? handleSelect : undefined}
             className={cn(
-                "flex items-center gap-2 sm:gap-3 px-3 py-3 rounded-md hover:bg-muted transition-colors",
+                "flex items-center gap-3 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors",
                 onSelect && "cursor-pointer",
                 className
             )}>

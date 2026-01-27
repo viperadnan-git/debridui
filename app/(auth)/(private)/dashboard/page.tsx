@@ -60,7 +60,7 @@ const DashboardPage = memo(function DashboardPage() {
                     className="w-full max-w-xl mx-auto flex items-center gap-3 h-12 px-4 text-sm text-muted-foreground bg-muted/30 hover:bg-muted/50 border border-border/50 rounded-sm transition-colors">
                     <SearchIcon className="size-4" />
                     <span>Search movies and shows...</span>
-                    <kbd className="ml-auto hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border/50 bg-muted/50 px-1.5 font-mono text-[10px] text-muted-foreground">
+                    <kbd className="ml-auto hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border/50 bg-muted/50 px-1.5 font-mono text-xs text-muted-foreground">
                         <span className="text-xs">⌘</span>K
                     </kbd>
                 </button>
@@ -74,9 +74,7 @@ const DashboardPage = memo(function DashboardPage() {
                 <div className="space-y-8">
                     <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
-                            Trending Now
-                        </span>
+                        <span className="text-xs tracking-widest uppercase text-muted-foreground">Trending Now</span>
                         <div className="h-px flex-1 bg-border/50" />
                     </div>
 
@@ -101,7 +99,7 @@ const DashboardPage = memo(function DashboardPage() {
                 <div className="space-y-8">
                     <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Popular</span>
+                        <span className="text-xs tracking-widest uppercase text-muted-foreground">Popular</span>
                         <div className="h-px flex-1 bg-border/50" />
                     </div>
 
@@ -124,7 +122,7 @@ const DashboardPage = memo(function DashboardPage() {
                 <div className="space-y-8">
                     <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Box Office</span>
+                        <span className="text-xs tracking-widest uppercase text-muted-foreground">Box Office</span>
                         <div className="h-px flex-1 bg-border/50" />
                     </div>
 
@@ -140,7 +138,7 @@ const DashboardPage = memo(function DashboardPage() {
                 <div className="space-y-8">
                     <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+                        <span className="text-xs tracking-widest uppercase text-muted-foreground">
                             Most Watched This Week
                         </span>
                         <div className="h-px flex-1 bg-border/50" />
@@ -165,7 +163,7 @@ const DashboardPage = memo(function DashboardPage() {
                 <div className="space-y-8">
                     <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+                        <span className="text-xs tracking-widest uppercase text-muted-foreground">
                             Most Played This Week
                         </span>
                         <div className="h-px flex-1 bg-border/50" />
@@ -190,9 +188,7 @@ const DashboardPage = memo(function DashboardPage() {
                 <div className="space-y-8">
                     <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
-                            Coming Soon
-                        </span>
+                        <span className="text-xs tracking-widest uppercase text-muted-foreground">Coming Soon</span>
                         <div className="h-px flex-1 bg-border/50" />
                     </div>
 

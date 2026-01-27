@@ -111,8 +111,8 @@ export function StatusBadge({ status, hide }: { status: DebridFileStatus; hide?:
 
 export const CachedBadge = memo(function CachedBadge() {
     return (
-        <span className="inline-flex items-center gap-1 text-[10px] tracking-wide text-green-600 dark:text-green-500">
-            <Zap className="size-2.5" />
+        <span className="inline-flex items-center gap-1 text-xs tracking-wide text-green-600 dark:text-green-500">
+            <Zap className="size-3" />
             <span>Cached</span>
         </span>
     );

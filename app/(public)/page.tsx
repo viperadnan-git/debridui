@@ -59,7 +59,7 @@ export default function Home() {
                 <div className="max-w-6xl mx-auto w-full">
                     {/* Top bar */}
                     <div className="flex items-center justify-between mb-16 md:mb-24">
-                        <div className="flex items-center gap-4 text-[11px] text-muted-foreground tracking-wide uppercase">
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground tracking-wide uppercase">
                             {techStack.map((tech, i) => (
                                 <span key={tech.name} className="hidden sm:flex items-center gap-1.5">
                                     {i > 0 && <span className="text-border mr-4">·</span>}
@@ -134,7 +134,7 @@ export default function Home() {
             <div className="px-6 md:px-12 lg:px-20">
                 <div className="max-w-6xl mx-auto flex items-center gap-4">
                     <div className="flex-1 h-px bg-border/50" />
-                    <span className="text-[10px] text-muted-foreground tracking-[0.2em] uppercase">How it works</span>
+                    <span className="text-xs text-muted-foreground tracking-wider uppercase">How it works</span>
                     <div className="flex-1 h-px bg-border/50" />
                 </div>
             </div>
@@ -145,9 +145,7 @@ export default function Home() {
                     <div className="grid md:grid-cols-3 gap-12 md:gap-8">
                         {steps.map((step) => (
                             <div key={step.num} className="group">
-                                <div className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
-                                    {step.num}
-                                </div>
+                                <div className="text-xs text-muted-foreground tracking-widest mb-4">{step.num}</div>
                                 <h3 className="text-lg font-medium mb-2">{step.title}</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                             </div>
@@ -160,7 +158,7 @@ export default function Home() {
             <div className="px-6 md:px-12 lg:px-20">
                 <div className="max-w-6xl mx-auto flex items-center gap-4">
                     <div className="flex-1 h-px bg-border/50" />
-                    <span className="text-[10px] text-muted-foreground tracking-[0.2em] uppercase">Features</span>
+                    <span className="text-xs text-muted-foreground tracking-wider uppercase">Features</span>
                     <div className="flex-1 h-px bg-border/50" />
                 </div>
             </div>
@@ -171,7 +169,7 @@ export default function Home() {
                     <div className="grid md:grid-cols-3 gap-12 md:gap-16">
                         {features.map((section) => (
                             <div key={section.category}>
-                                <h3 className="text-[10px] text-primary tracking-[0.3em] uppercase mb-6">
+                                <h3 className="text-xs text-primary tracking-widest uppercase mb-6">
                                     {section.category}
                                 </h3>
                                 <ul className="space-y-3">
@@ -201,10 +199,10 @@ export default function Home() {
                             <Button
                                 asChild
                                 variant="outline"
-                                className="h-11 px-5 border-[#5865F2]/30 text-[#5865F2] hover:bg-[#5865F2]/10 hover:text-[#5865F2]">
-                                <Link href="https://discord.gg/viperadnan" target="_blank" rel="noopener noreferrer">
+                                className="h-11 px-5 border-#5865F2/30 text-#5865F2 hover:bg-#5865F2/10 hover:text-#5865F2">
+                                <Link href="https://#5865F2.gg/viperadnan" target="_blank" rel="noopener noreferrer">
                                     <img
-                                        src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/discord.svg"
+                                        src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/#5865F2.svg"
                                         alt=""
                                         className="size-4 mr-2"
                                         style={{
@@ -252,7 +250,7 @@ export default function Home() {
             <section className="px-6 py-12 md:px-12 lg:px-20 border-t border-border/50 bg-muted/20">
                 <div className="max-w-6xl mx-auto">
                     <div className="max-w-2xl">
-                        <h3 className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
+                        <h3 className="text-xs text-muted-foreground tracking-widest uppercase mb-3">
                             Important Notice
                         </h3>
                         <p className="text-sm text-muted-foreground leading-relaxed mb-4">

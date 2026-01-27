@@ -24,6 +24,35 @@ interface SearchResultsProps {
     className?: string;
 }
 
+function SectionDivider({ label }: { label: string }) {
+    return (
+        <div className="flex items-center gap-4 py-2">
+            <div className="h-px flex-1 bg-border/50" />
+            <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
+            <div className="h-px flex-1 bg-border/50" />
+        </div>
+    );
+}
+
+function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Search className="size-8 text-muted-foreground/40 mb-4" />
+            <span className="text-sm font-light text-foreground">{title}</span>
+            <span className="text-xs text-muted-foreground mt-1">{subtitle}</span>
+        </div>
+    );
+}
+
+function LoadingIndicator() {
+    return (
+        <div className="flex items-center justify-center gap-2 py-3 text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            <span className="text-xs tracking-wide">Searching...</span>
+        </div>
+    );
+}
+
 export function SearchResults({
     query,
     fileResults,
@@ -48,16 +77,8 @@ export function SearchResults({
     // Show initial state when query is too short
     if (trimmedQuery.length <= 2) {
         return (
-            <div
-                className={cn(
-                    "flex flex-col items-center justify-center py-8 sm:py-12 text-sm text-muted-foreground",
-                    className
-                )}>
-                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-muted mb-2 sm:mb-3">
-                    <Search className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <span className="font-medium text-sm sm:text-base">Start searching</span>
-                <span className="text-xs mt-1 text-center px-4">Type at least 3 characters to see results</span>
+            <div className={cn("", className)}>
+                <EmptyState title="Start searching" subtitle="Type at least 3 characters to see results" />
             </div>
         );
     }
@@ -69,9 +90,9 @@ export function SearchResults({
                     <>
                         {/* Loading indicator at the top */}
                         {(isFileSearching || isTraktSearching || isSourceSearching) && (
-                            <div className="flex items-center justify-center py-2 text-xs text-muted-foreground border-b sticky top-0 bg-background z-10">
-                                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
-                                <span className="text-xs">Searching...</span>
+                            <div className="flex items-center justify-center py-2 text-xs text-muted-foreground border-b border-border/50 sticky top-0 bg-background z-10">
+                                <Loader2 className="size-4 animate-spin mr-1.5" />
+                                <span className="text-xs tracking-wide">Searching...</span>
                             </div>
                         )}
 
@@ -79,7 +100,7 @@ export function SearchResults({
                         {hasFileResults && (
                             <CommandGroup
                                 heading="Your Files"
-                                className="**:[[cmdk-group-heading]]:px-1 sm:**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-1.5 sm:**:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-muted-foreground">
+                                className="**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:tracking-wider **:[[cmdk-group-heading]]:uppercase **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group-heading]]:font-normal">
                                 {fileResults.map((file) => (
                                     <SearchFileItem key={file.id} file={file} onSelect={onFileSelect} variant="modal" />
                                 ))}
@@ -89,8 +110,8 @@ export function SearchResults({
                         {/* Trakt results section */}
                         {hasTraktResults && (
                             <CommandGroup
-                                heading="Movies & TV Shows"
-                                className="**:[[cmdk-group-heading]]:px-1 sm:**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-1.5 sm:**:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-muted-foreground">
+                                heading="Movies & Shows"
+                                className="**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:tracking-wider **:[[cmdk-group-heading]]:uppercase **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group-heading]]:font-normal">
                                 {traktResults.map((result) => {
                                     const media = result.movie || result.show;
                                     const type = result.movie ? "movie" : "show";
@@ -109,8 +130,8 @@ export function SearchResults({
                         {/* Source results */}
                         {hasSourceResults && (
                             <CommandGroup
-                                heading="Source Results"
-                                className="**:[[cmdk-group-heading]]:px-1 sm:**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-1.5 sm:**:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-muted-foreground">
+                                heading="Sources"
+                                className="**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:tracking-wider **:[[cmdk-group-heading]]:uppercase **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group-heading]]:font-normal">
                                 {sourceResults.map((result) => (
                                     <SearchSourceItem key={result.hash} result={result} variant="modal" />
                                 ))}
@@ -119,14 +140,14 @@ export function SearchResults({
 
                         {/* End of results */}
                         {bothLoaded && hasAnyResults && (
-                            <div className="flex items-center justify-center py-6 text-xs text-muted-foreground border-t">
+                            <div className="flex items-center justify-center py-4 text-xs text-muted-foreground border-t border-border/50">
                                 <span>
                                     {(() => {
                                         const totalCount =
                                             (fileResults?.length || 0) +
                                             (traktResults?.length || 0) +
                                             (sourceResults?.length || 0);
-                                        return `End of results • ${totalCount} item${totalCount !== 1 ? "s" : ""} found`;
+                                        return `${totalCount} result${totalCount !== 1 ? "s" : ""}`;
                                     })()}
                                 </span>
                             </div>
@@ -134,15 +155,7 @@ export function SearchResults({
 
                         {/* No results */}
                         {bothLoaded && !hasAnyResults && (
-                            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-sm text-muted-foreground">
-                                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-muted mb-2 sm:mb-3">
-                                    <Search className="h-5 w-5 sm:h-6 sm:w-6" />
-                                </div>
-                                <span className="font-medium text-sm sm:text-base">No results found</span>
-                                <span className="text-xs mt-1 text-center px-4">
-                                    Try different keywords or check your spelling
-                                </span>
-                            </div>
+                            <EmptyState title="No results found" subtitle="Try different keywords" />
                         )}
                     </>
                 )}
@@ -152,22 +165,17 @@ export function SearchResults({
 
     // Page variant
     return (
-        <div className={cn("space-y-6", className)}>
+        <div className={cn("space-y-8", className)}>
             {isSearching && (
                 <>
-                    {/* Loading indicator at the top */}
-                    {(isFileSearching || isTraktSearching || isSourceSearching) && (
-                        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground sticky top-0 z-10">
-                            <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
-                            <span className="text-xs">Searching...</span>
-                        </div>
-                    )}
+                    {/* Loading indicator */}
+                    {(isFileSearching || isTraktSearching || isSourceSearching) && <LoadingIndicator />}
 
                     {/* File results section */}
                     {hasFileResults && (
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-semibold text-muted-foreground px-3">Your Files</h2>
-                            <div className="space-y-1 border rounded-lg p-2">
+                        <section className="space-y-4">
+                            <SectionDivider label="Your Files" />
+                            <div className="border border-border/50 rounded-sm overflow-hidden">
                                 {fileResults.map((file) => (
                                     <SearchFileItem key={file.id} file={file} onSelect={onFileSelect} variant="page" />
                                 ))}
@@ -177,9 +185,9 @@ export function SearchResults({
 
                     {/* Trakt results section */}
                     {hasTraktResults && (
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-semibold text-muted-foreground px-3">Movies & TV Shows</h2>
-                            <div className="space-y-1 border rounded-lg p-2">
+                        <section className="space-y-4">
+                            <SectionDivider label="Movies & Shows" />
+                            <div className="border border-border/50 rounded-sm overflow-hidden">
                                 {traktResults.map((result) => {
                                     const media = result.movie || result.show;
                                     const type = result.movie ? "movie" : "show";
@@ -198,9 +206,9 @@ export function SearchResults({
 
                     {/* Source results */}
                     {hasSourceResults && (
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-semibold text-muted-foreground px-3">Source Results</h2>
-                            <div className="space-y-1 border rounded-lg p-2">
+                        <section className="space-y-4">
+                            <SectionDivider label="Sources" />
+                            <div className="border border-border/50 rounded-sm overflow-hidden">
                                 {sourceResults.map((result) => (
                                     <SearchSourceItem key={result.hash} result={result} variant="page" />
                                 ))}
@@ -210,14 +218,14 @@ export function SearchResults({
 
                     {/* End of results */}
                     {bothLoaded && hasAnyResults && (
-                        <div className="flex items-center justify-center py-6 text-sm text-muted-foreground border-t pt-6">
+                        <div className="flex items-center justify-center py-6 text-xs text-muted-foreground">
                             <span>
                                 {(() => {
                                     const totalCount =
                                         (fileResults?.length || 0) +
                                         (traktResults?.length || 0) +
                                         (sourceResults?.length || 0);
-                                    return `${totalCount} item${totalCount !== 1 ? "s" : ""} found`;
+                                    return `${totalCount} result${totalCount !== 1 ? "s" : ""}`;
                                 })()}
                             </span>
                         </div>
@@ -225,15 +233,7 @@ export function SearchResults({
 
                     {/* No results */}
                     {bothLoaded && !hasAnyResults && (
-                        <div className="flex flex-col items-center justify-center py-12 text-sm text-muted-foreground">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
-                                <Search className="h-6 w-6" />
-                            </div>
-                            <span className="font-medium text-base">No results found</span>
-                            <span className="text-sm mt-1 text-center px-4">
-                                Try different keywords or check your spelling
-                            </span>
-                        </div>
+                        <EmptyState title="No results found" subtitle="Try different keywords or check your spelling" />
                     )}
                 </>
             )}

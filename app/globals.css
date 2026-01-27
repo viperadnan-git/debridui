@@ -100,6 +100,20 @@
 }
 
 @theme inline {
+    /* Override letter-spacing scale for editorial design */
+    --letter-spacing-wide: 0.1em;
+    --letter-spacing-wider: 0.2em;
+    --letter-spacing-widest: 0.3em;
+
+    /* Ring width */
+    --ring-width-3: 3px;
+
+    /* Scale for hover effects */
+    --scale-hover: 1.03;
+
+    /* Line height */
+    --line-height-tightest: 1.05;
+
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);

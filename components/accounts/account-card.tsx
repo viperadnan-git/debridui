@@ -4,10 +4,7 @@ import { useState, useCallback } from "react";
 import * as React from "react";
 import { ArrowRightLeft, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { AccountType } from "@/lib/types";
 import { formatAccountType, cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -42,81 +39,80 @@ export const AccountCard = React.memo(function AccountCard({ account, isCurrentA
 
     return (
         <>
-            <Card
+            <div
                 className={cn(
-                    "relative transition-all flex flex-col h-full",
-                    isCurrentAccount && "border-primary/50 ring-2 ring-primary/20"
+                    "relative flex flex-col h-full rounded-sm border border-border/50 bg-card p-4 transition-all duration-300",
+                    isCurrentAccount && "ring-2 ring-primary ring-offset-1 ring-offset-background"
                 )}>
                 {isCurrentAccount && (
-                    <Badge className="absolute -top-2.5 left-4" variant="default">
+                    <span className="absolute -top-2.5 left-4 text-xs tracking-wider uppercase px-2 py-0.5 bg-primary text-primary-foreground rounded-sm">
                         Active
-                    </Badge>
+                    </span>
                 )}
 
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                            <ServiceIcon type={account.type as AccountType} className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <CardTitle className="truncate" title={userInfo?.username || "Loading..."}>
-                                {userInfo?.username || "Loading..."}
-                            </CardTitle>
-                            <CardDescription className="truncate" title={formatAccountType(account.type)}>
-                                {formatAccountType(account.type)}
-                            </CardDescription>
-                        </div>
+                {/* Header */}
+                <div className="flex items-start gap-3 mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-muted/50 shrink-0">
+                        <ServiceIcon type={account.type as AccountType} className="h-5 w-5 text-muted-foreground" />
                     </div>
-                </CardHeader>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="font-light text-lg truncate" title={userInfo?.username || "Loading..."}>
+                            {userInfo?.username || "Loading..."}
+                        </h3>
+                        <p className="text-xs text-muted-foreground truncate" title={formatAccountType(account.type)}>
+                            {formatAccountType(account.type)}
+                        </p>
+                    </div>
+                </div>
 
-                <CardContent className="flex flex-col flex-1 pt-0">
+                {/* Content */}
+                <div className="flex-1">
                     {userInfo ? (
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between items-center">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Email</span>
-                                <span className="font-medium truncate" title={userInfo.email}>
+                                <span className="truncate ml-2" title={userInfo.email}>
                                     {userInfo.email}
                                 </span>
                             </div>
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Status</span>
-                                <Badge variant={userInfo.isPremium ? "secondary" : "outline"}>
+                                <span className={userInfo.isPremium ? "text-green-600" : "text-muted-foreground"}>
                                     {userInfo.isPremium ? "Premium" : "Free"}
-                                </Badge>
+                                </span>
                             </div>
                             {userInfo.premiumExpiresAt && (
-                                <div className="flex justify-between items-center">
+                                <div className="flex justify-between items-center text-sm">
                                     <span className="text-muted-foreground">Expires</span>
-                                    <span className="font-medium">{format(userInfo.premiumExpiresAt, "PP")}</span>
+                                    <span>{format(userInfo.premiumExpiresAt, "PP")}</span>
                                 </div>
                             )}
                         </div>
                     ) : (
-                        <div className="text-sm text-muted-foreground">Loading account info...</div>
+                        <p className="text-sm text-muted-foreground">Loading account info...</p>
                     )}
+                </div>
 
-                    <div className="mt-auto pt-3 space-y-3">
-                        <Separator />
-
-                        <div className="flex flex-wrap gap-2 justify-end">
-                            {!isCurrentAccount && (
-                                <Button variant="outline" onClick={handleSwitch}>
-                                    <ArrowRightLeft className="h-4 w-4 mr-2" />
-                                    Switch
-                                </Button>
-                            )}
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => setRemoveDialogOpen(true)}
-                                className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                                aria-label="Remove account">
-                                <Trash2 className="h-4 w-4" />
+                {/* Actions */}
+                <div className="mt-4 pt-3 border-t border-border/50">
+                    <div className="flex gap-2 justify-end">
+                        {!isCurrentAccount && (
+                            <Button variant="outline" onClick={handleSwitch}>
+                                <ArrowRightLeft className="size-4" />
+                                Switch
                             </Button>
-                        </div>
+                        )}
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setRemoveDialogOpen(true)}
+                            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            aria-label="Remove account">
+                            <Trash2 className="size-4" />
+                        </Button>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
             <ConfirmDialog
                 open={removeDialogOpen}
