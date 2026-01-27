@@ -1,0 +1,22 @@
+#:schema node_modules/wrangler/config-schema.json
+
+name = "debridui"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+main = ".open-next/worker.js"
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+# Environment variables
+# Set actual values via Cloudflare dashboard or `wrangler secret put`
+[vars]
+# NEXT_PUBLIC_TRAKT_CLIENT_ID=""
+# NEXT_PUBLIC_CORS_PROXY_URL=""
+# NEXT_PUBLIC_DISCORD_URL=""
+# NEXT_PUBLIC_ANALYTICS_SCRIPT=""
+# NEXT_PUBLIC_APP_URL=""
+# NEXT_PUBLIC_GOOGLE_CLIENT_ID=""
+NEXT_PUBLIC_DISABLE_EMAIL_SIGNUP="true"
+# DATABASE_URL=""
+# BETTER_AUTH_SECRET=""
+# GOOGLE_CLIENT_SECRET=""
