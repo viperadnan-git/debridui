@@ -4,6 +4,7 @@ import { type TraktMedia } from "@/lib/trakt";
 import { PeopleSection } from "./people-section";
 import { Sources } from "./sources";
 import { MediaHeader } from "./media-header";
+import { SectionDivider } from "@/components/section-divider";
 import { memo } from "react";
 
 interface MovieDetailsProps {
@@ -18,13 +19,7 @@ export const MovieDetails = memo(function MovieDetails({ media, mediaId }: Movie
 
             {media.ids?.imdb && (
                 <section className="space-y-6">
-                    <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-xs tracking-widest uppercase text-muted-foreground">
-                            Available Sources
-                        </span>
-                        <div className="h-px flex-1 bg-border/50" />
-                    </div>
+                    <SectionDivider label="Available Sources" />
                     <div id="sources">
                         <Sources imdbId={media.ids?.imdb} mediaType="movie" mediaTitle={media.title || "Movie"} />
                     </div>
@@ -32,11 +27,7 @@ export const MovieDetails = memo(function MovieDetails({ media, mediaId }: Movie
             )}
 
             <section className="space-y-6">
-                <div className="flex items-center gap-4">
-                    <div className="h-px flex-1 bg-border/50" />
-                    <span className="text-xs tracking-widest uppercase text-muted-foreground">Cast & Crew</span>
-                    <div className="h-px flex-1 bg-border/50" />
-                </div>
+                <SectionDivider label="Cast & Crew" />
                 <PeopleSection mediaId={mediaId} type="movies" />
             </section>
         </div>

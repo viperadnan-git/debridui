@@ -8,6 +8,7 @@ import { SeasonCard } from "./season-card";
 import { EpisodeCard } from "./episode-card";
 import { PeopleSection } from "./people-section";
 import { MediaHeader } from "./media-header";
+import { SectionDivider } from "@/components/section-divider";
 import { useState, memo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -125,11 +126,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
             <MediaHeader media={media} mediaId={mediaId} type="show" />
 
             <section className="space-y-6">
-                <div className="flex items-center gap-4">
-                    <div className="h-px flex-1 bg-border/50" />
-                    <span className="text-xs tracking-widest uppercase text-muted-foreground">Seasons & Episodes</span>
-                    <div className="h-px flex-1 bg-border/50" />
-                </div>
+                <SectionDivider label="Seasons & Episodes" />
 
                 <SeasonsSection
                     selectedSeason={selectedSeason}
@@ -141,11 +138,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
             </section>
 
             <section className="space-y-6">
-                <div className="flex items-center gap-4">
-                    <div className="h-px flex-1 bg-border/50" />
-                    <span className="text-xs tracking-widest uppercase text-muted-foreground">Cast & Crew</span>
-                    <div className="h-px flex-1 bg-border/50" />
-                </div>
+                <SectionDivider label="Cast & Crew" />
                 <PeopleSection mediaId={mediaId} type="shows" />
             </section>
         </div>

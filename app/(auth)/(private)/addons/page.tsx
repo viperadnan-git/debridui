@@ -13,20 +13,10 @@ import { PageHeader } from "@/components/page-header";
 import { AddonCard, AddonCardSkeleton } from "@/components/addon-card";
 import { CachedBadge } from "@/components/display";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { SectionDivider } from "@/components/section-divider";
 
 const DEFAULT_ADDON_MANIFEST =
     "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4/manifest.json";
-
-// Section divider component
-function SectionDivider({ label }: { label: string }) {
-    return (
-        <div className="flex items-center gap-4 py-2">
-            <div className="h-px flex-1 bg-border/50" />
-            <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
-            <div className="h-px flex-1 bg-border/50" />
-        </div>
-    );
-}
 
 export default function AddonsPage() {
     const { data: serverAddons = [], isLoading, refetch } = useUserAddons();

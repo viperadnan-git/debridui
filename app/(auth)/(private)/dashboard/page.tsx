@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { MediaSection } from "@/components/mdb/media-section";
 import { SearchDialog } from "@/components/mdb/search-dialog";
 import { MdbFooter } from "@/components/mdb/mdb-footer";
+import { SectionDivider } from "@/components/section-divider";
 import { memo, useState } from "react";
 import {
     useTraktTrendingMovies,
@@ -118,11 +119,7 @@ const DashboardPage = memo(function DashboardPage() {
             <div className="lg:px-6 space-y-12">
                 {/* Trending */}
                 <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-xs tracking-widest uppercase text-muted-foreground">Trending Now</span>
-                        <div className="h-px flex-1 bg-border/50" />
-                    </div>
+                    <SectionDivider label="Trending Now" />
 
                     <MediaSection
                         title="Movies"
@@ -143,11 +140,7 @@ const DashboardPage = memo(function DashboardPage() {
 
                 {/* Popular */}
                 <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-xs tracking-widest uppercase text-muted-foreground">Popular</span>
-                        <div className="h-px flex-1 bg-border/50" />
-                    </div>
+                    <SectionDivider label="Popular" />
 
                     <MediaSection
                         title="Movies"
@@ -166,11 +159,7 @@ const DashboardPage = memo(function DashboardPage() {
 
                 {/* Box Office */}
                 <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-xs tracking-widest uppercase text-muted-foreground">Box Office</span>
-                        <div className="h-px flex-1 bg-border/50" />
-                    </div>
+                    <SectionDivider label="Box Office" />
 
                     <MediaSection
                         title="Top Grossing"
@@ -182,13 +171,7 @@ const DashboardPage = memo(function DashboardPage() {
 
                 {/* Most Watched */}
                 <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-xs tracking-widest uppercase text-muted-foreground">
-                            Most Watched This Week
-                        </span>
-                        <div className="h-px flex-1 bg-border/50" />
-                    </div>
+                    <SectionDivider label="Most Watched This Week" />
 
                     <MediaSection
                         title="Movies"
@@ -207,13 +190,7 @@ const DashboardPage = memo(function DashboardPage() {
 
                 {/* Most Played */}
                 <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-xs tracking-widest uppercase text-muted-foreground">
-                            Most Played This Week
-                        </span>
-                        <div className="h-px flex-1 bg-border/50" />
-                    </div>
+                    <SectionDivider label="Most Played This Week" />
 
                     <MediaSection
                         title="Movies"
@@ -232,11 +209,7 @@ const DashboardPage = memo(function DashboardPage() {
 
                 {/* Coming Soon */}
                 <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-border/50" />
-                        <span className="text-xs tracking-widest uppercase text-muted-foreground">Coming Soon</span>
-                        <div className="h-px flex-1 bg-border/50" />
-                    </div>
+                    <SectionDivider label="Coming Soon" />
 
                     <MediaSection
                         title="Movies"

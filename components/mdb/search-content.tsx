@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "@bprogress/next/app";
 import { CommandInput, CommandList } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ export function SearchContent({
     autoFocus = false,
 }: SearchContentProps) {
     const router = useRouter();
+    const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState(defaultQuery);
     const [debouncedQuery, setDebouncedQuery] = useState(defaultQuery);
 
@@ -107,9 +108,15 @@ export function SearchContent({
     // Page variant
     return (
         <div className={cn("space-y-8", className)}>
-            <form className="relative" onSubmit={(e) => e.preventDefault()}>
+            <form
+                className="relative"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    inputRef.current?.blur();
+                }}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
+                    ref={inputRef}
                     type="search"
                     placeholder="Search movies, TV shows, and files..."
                     value={query}

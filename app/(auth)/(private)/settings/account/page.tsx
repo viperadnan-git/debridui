@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { setPassword } from "@/lib/actions/user";
 import { PageHeader } from "@/components/page-header";
+import { SectionDivider } from "@/components/section-divider";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
@@ -14,17 +15,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { formatDistanceToNow, format } from "date-fns";
-
-// Section divider component
-function SectionDivider({ label }: { label: string }) {
-    return (
-        <div className="flex items-center gap-4 py-2">
-            <div className="h-px flex-1 bg-border/50" />
-            <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
-            <div className="h-px flex-1 bg-border/50" />
-        </div>
-    );
-}
 
 const AUTH_ACCOUNTS_KEY = ["auth-accounts"];
 const USER_SESSIONS_KEY = ["user-sessions"];

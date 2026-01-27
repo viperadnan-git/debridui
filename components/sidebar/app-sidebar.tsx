@@ -6,7 +6,7 @@ import { NavMain } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
-import { FolderOpen, SearchIcon, HomeIcon, SettingsIcon, UsersIcon, Puzzle, Download } from "lucide-react";
+import { FolderOpen, SearchIcon, HomeIcon, SettingsIcon, UsersIcon, Puzzle, Link2 } from "lucide-react";
 import { useSearch } from "@/components/mdb/search-provider";
 
 const data = {
@@ -27,9 +27,9 @@ const data = {
             icon: FolderOpen,
         },
         {
-            title: "Downloads",
-            url: "/downloads",
-            icon: Download,
+            title: "Links",
+            url: "/links",
+            icon: Link2,
         },
         {
             title: "Addons",

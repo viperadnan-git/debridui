@@ -8,6 +8,7 @@ import { type TraktSearchResult } from "@/lib/trakt";
 import { SearchFileItem } from "./search-file-item";
 import { SearchMediaItem } from "./search-media-item";
 import { SearchSourceItem } from "./search-source-item";
+import { SectionDivider } from "@/components/section-divider";
 import { cn } from "@/lib/utils";
 
 interface SearchResultsProps {
@@ -22,16 +23,6 @@ interface SearchResultsProps {
     onMediaSelect: (result: TraktSearchResult) => void;
     variant?: "modal" | "page";
     className?: string;
-}
-
-function SectionDivider({ label }: { label: string }) {
-    return (
-        <div className="flex items-center gap-4 py-2">
-            <div className="h-px flex-1 bg-border/50" />
-            <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
-            <div className="h-px flex-1 bg-border/50" />
-        </div>
-    );
 }
 
 function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {

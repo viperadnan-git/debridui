@@ -12,6 +12,7 @@ import { AllDebridClient, TorBoxClient } from "@/lib/clients";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "next/navigation";
 import { useAddUserAccount } from "@/hooks/use-user-accounts";
+import { SectionDivider } from "@/components/section-divider";
 import { useState } from "react";
 import { toast } from "sonner";
 import { handleError } from "@/lib/utils/error-handling";
@@ -129,13 +130,7 @@ export function AddAccountForm() {
                             {form.formState.isSubmitting || addAccount.isPending ? "Adding account..." : "Add Account"}
                         </Button>
 
-                        <div className="flex items-center gap-4 py-2">
-                            <div className="h-px flex-1 bg-border/50" />
-                            <span className="text-xs tracking-widest uppercase text-muted-foreground">
-                                Or continue with
-                            </span>
-                            <div className="h-px flex-1 bg-border/50" />
-                        </div>
+                        <SectionDivider label="Or continue with" />
 
                         <div className="grid gap-2 grid-cols-1">
                             <Button

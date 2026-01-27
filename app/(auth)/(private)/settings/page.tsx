@@ -14,22 +14,12 @@ import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { formatDistanceToNow, format } from "date-fns";
 import { PageHeader } from "@/components/page-header";
+import { SectionDivider } from "@/components/section-divider";
 import { detectPlatform } from "@/lib/utils/media-player";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
 const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
-
-// Section divider component
-function SectionDivider({ label }: { label: string }) {
-    return (
-        <div className="flex items-center gap-4 py-2">
-            <div className="h-px flex-1 bg-border/50" />
-            <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
-            <div className="h-px flex-1 bg-border/50" />
-        </div>
-    );
-}
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();

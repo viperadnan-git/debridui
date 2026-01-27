@@ -8,13 +8,13 @@ import { WebDownloadsProvider, useWebDownloads } from "@/components/web-download
 import { AddLinksForm } from "@/components/web-downloads/add-links-form";
 import { DownloadList } from "@/components/web-downloads/download-list";
 
-function DownloadsContent() {
+function LinksContent() {
     const { refetch, isRefetching, isLoading } = useWebDownloads();
 
     return (
         <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
             <PageHeader
-                title="Web Downloads"
+                title="Links"
                 description="Unlock and download files from supported hosters"
                 action={
                     <Button onClick={() => refetch()} disabled={isRefetching || isLoading} variant="outline">
@@ -37,10 +37,10 @@ function DownloadsContent() {
     );
 }
 
-export default function DownloadsPage() {
+export default function LinksPage() {
     return (
         <WebDownloadsProvider>
-            <DownloadsContent />
+            <LinksContent />
         </WebDownloadsProvider>
     );
 }
