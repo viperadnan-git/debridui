@@ -3,21 +3,25 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const screenshots = [
-    { id: "dashboard", label: "Dashboard", src: "https://placehold.co/1920x1080/0a0a0a/1a1a1a?text=Dashboard" },
-    { id: "explorer", label: "Explorer", src: "https://placehold.co/1920x1080/0a0a0a/1a1a1a?text=Explorer" },
-    { id: "search", label: "Search", src: "https://placehold.co/1920x1080/0a0a0a/1a1a1a?text=Search" },
-    { id: "media", label: "Media", src: "https://placehold.co/1920x1080/0a0a0a/1a1a1a?text=Media" },
-];
+interface GalleryItem {
+    id: string;
+    label: string;
+    src: string;
+}
 
-export function ScreenshotGallery() {
+interface GalleryProps {
+    items: GalleryItem[];
+    className?: string;
+}
+
+export function Gallery({ items, className }: GalleryProps) {
     const [active, setActive] = useState(0);
 
     return (
-        <div className="space-y-6">
+        <div className={cn("space-y-6", className)}>
             {/* Tab Navigation */}
             <div className="flex items-center justify-center gap-1 sm:gap-2">
-                {screenshots.map((item, index) => (
+                {items.map((item, index) => (
                     <button
                         key={item.id}
                         onClick={() => setActive(index)}
@@ -38,7 +42,7 @@ export function ScreenshotGallery() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none z-10" />
 
                 <div className="relative">
-                    {screenshots.map((item, index) => (
+                    {items.map((item, index) => (
                         <img
                             key={item.id}
                             src={item.src}
@@ -55,7 +59,7 @@ export function ScreenshotGallery() {
 
                 {/* Progress Indicators */}
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
-                    {screenshots.map((_, index) => (
+                    {items.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setActive(index)}

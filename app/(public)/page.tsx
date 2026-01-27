@@ -3,7 +3,36 @@ import Link from "next/link";
 import { ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScreenshotGallery } from "@/components/screenshot-gallery";
+import { Gallery } from "@/components/gallery";
+import { DISCORD_URL } from "@/lib/constants";
+
+const screenshots = [
+    {
+        id: "dashboard",
+        label: "Dashboard",
+        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-1.jpg",
+    },
+    {
+        id: "explorer",
+        label: "Explorer",
+        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-2.jpg",
+    },
+    {
+        id: "media",
+        label: "Media",
+        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-3.jpg",
+    },
+    {
+        id: "search",
+        label: "Search",
+        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-4.jpg",
+    },
+    {
+        id: "addons",
+        label: "Addons",
+        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-5.jpg",
+    },
+];
 
 const techStack = [
     { name: "Next.js", icon: "nextdotjs" },
@@ -126,7 +155,7 @@ export default function Home() {
             {/* Preview */}
             <section className="px-6 pb-20 md:px-12 lg:px-20">
                 <div className="max-w-6xl mx-auto">
-                    <ScreenshotGallery />
+                    <Gallery items={screenshots} />
                 </div>
             </section>
 
@@ -196,22 +225,18 @@ export default function Home() {
                             Get help, share feedback, and stay updated.
                         </p>
                         <div className="flex flex-wrap gap-3">
-                            <Button
-                                asChild
-                                variant="outline"
-                                className="h-11 px-5 border-#5865F2/30 text-#5865F2 hover:bg-#5865F2/10 hover:text-#5865F2">
-                                <Link href="https://#5865F2.gg/viperadnan" target="_blank" rel="noopener noreferrer">
-                                    <img
-                                        src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/#5865F2.svg"
-                                        alt=""
-                                        className="size-4 mr-2"
-                                        style={{
-                                            filter: "invert(39%) sepia(52%) saturate(2066%) hue-rotate(218deg) brightness(99%) contrast(93%)",
-                                        }}
-                                    />
-                                    Discord
-                                </Link>
-                            </Button>
+                            {DISCORD_URL && (
+                                <Button asChild className="h-11 px-5 bg-[#5865F2] hover:bg-[#4752C4] text-white">
+                                    <Link href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
+                                        <img
+                                            src="https://cdn.simpleicons.org/discord/white"
+                                            alt=""
+                                            className="size-4 mr-2"
+                                        />
+                                        Discord
+                                    </Link>
+                                </Button>
+                            )}
                             <Button asChild variant="outline" className="h-11 px-5">
                                 <Link
                                     href="https://github.com/viperadnan-git/debridui"
