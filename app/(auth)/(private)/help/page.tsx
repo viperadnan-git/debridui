@@ -15,12 +15,12 @@ export default function HelpPage() {
 
             <div className="grid gap-6 md:grid-cols-2">
                 {DISCORD_URL && (
-                    <Card className="md:col-span-2 lg:col-span-1 border-#5865F2/20 bg-#5865F2/5">
+                    <Card className="md:col-span-2 lg:col-span-1 border-[#5865F2]/20 bg-[#5865F2]/5">
                         <CardHeader>
                             <div className="flex items-center gap-2">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-#5865F2/10">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#5865F2]/10">
                                     <img
-                                        src="https://cdn.simpleicons.org/#5865F2/5865F2"
+                                        src="https://cdn.simpleicons.org/discord/5865F2"
                                         alt="Discord"
                                         className="h-5 w-5"
                                     />
@@ -34,23 +34,23 @@ export default function HelpPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2 text-sm text-muted-foreground">
                                 <div className="flex items-start gap-2">
-                                    <MessageCircle className="h-4 w-4 mt-0.5 text-#5865F2" />
+                                    <MessageCircle className="h-4 w-4 mt-0.5 text-[#5865F2]" />
                                     <span>Get quick answers from the community</span>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <Bug className="h-4 w-4 mt-0.5 text-#5865F2" />
+                                    <Bug className="h-4 w-4 mt-0.5 text-[#5865F2]" />
                                     <span>Report bugs and get real-time support</span>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <Lightbulb className="h-4 w-4 mt-0.5 text-#5865F2" />
+                                    <Lightbulb className="h-4 w-4 mt-0.5 text-[#5865F2]" />
                                     <span>Request features and share ideas</span>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <BookOpen className="h-4 w-4 mt-0.5 text-#5865F2" />
+                                    <BookOpen className="h-4 w-4 mt-0.5 text-[#5865F2]" />
                                     <span>Most FAQs are already answered there</span>
                                 </div>
                             </div>
-                            <Button className="w-full gap-2 bg-#5865F2 hover:bg-[#4752C4] text-white" asChild>
+                            <Button className="w-full gap-2 bg-[#5865F2] hover:bg-[#4752C4] text-white" asChild>
                                 <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
                                     Join Discord Server
                                     <ExternalLink className="h-4 w-4" />

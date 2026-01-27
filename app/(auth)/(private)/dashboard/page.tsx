@@ -18,7 +18,10 @@ import {
     useTraktMostPlayedMovies,
     useTraktMostPlayedShows,
 } from "@/hooks/use-trakt";
-import { SearchIcon } from "lucide-react";
+import { SearchIcon, Bug } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DISCORD_URL } from "@/lib/constants";
+import Image from "next/image";
 
 const HeroCarousel = dynamic(
     () => import("@/components/mdb/hero-carousel").then((m) => ({ default: m.HeroCarousel })),
@@ -52,6 +55,49 @@ const DashboardPage = memo(function DashboardPage() {
         <div className="pb-8">
             {/* Hero Carousel */}
             <HeroCarousel />
+
+            {/* Welcome Section */}
+            <div className="py-8 lg:px-6">
+                <div className="max-w-2xl mx-auto text-center space-y-4">
+                    <div className="flex justify-center">
+                        <Image
+                            src="/logo.svg"
+                            alt="DebridUI"
+                            width={180}
+                            height={40}
+                            className="h-7 w-auto dark:invert opacity-90"
+                            priority
+                        />
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
+                        A modern interface for discovering and streaming media through your debrid services. Browse
+                        trending content, manage your files, and enjoy seamless playback.
+                    </p>
+                    <div className="flex items-center justify-center gap-3">
+                        {DISCORD_URL && (
+                            <Button size="sm" className="gap-2 bg-[#5865F2] hover:bg-[#4752C4] text-white" asChild>
+                                <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
+                                    <img
+                                        src="https://simpleicons.org/icons/discord.svg"
+                                        alt=""
+                                        className="size-3.5 invert"
+                                    />
+                                    <span>Join Community</span>
+                                </a>
+                            </Button>
+                        )}
+                        <Button variant="outline" size="sm" className="gap-2" asChild>
+                            <a
+                                href="https://github.com/viperadnan-git/debridui/issues"
+                                target="_blank"
+                                rel="noopener noreferrer">
+                                <Bug className="size-3.5" />
+                                <span>Report Bug</span>
+                            </a>
+                        </Button>
+                    </div>
+                </div>
+            </div>
 
             {/* Search */}
             <div className="py-8 lg:px-6">

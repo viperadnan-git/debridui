@@ -73,8 +73,8 @@ export const SearchMediaItem = memo(function SearchMediaItem({
                     )}
                 </div>
 
-                {/* Overview - only show on page variant */}
-                {variant === "page" && media.overview && (
+                {/* Overview */}
+                {media.overview && (
                     <p className="text-xs text-muted-foreground/80 line-clamp-2 leading-relaxed mt-1.5">
                         {media.overview}
                     </p>

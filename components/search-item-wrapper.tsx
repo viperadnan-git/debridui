@@ -35,7 +35,11 @@ function SearchItemWrapperComponent<T>({
                 value={commandValue}
                 keywords={commandKeywords}
                 onSelect={onSelect ? handleSelect : undefined}
-                className={cn("flex items-center gap-3 px-3 py-2.5", onSelect && "cursor-pointer", className)}>
+                className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-none border-b border-border/50 last:border-0 data-[selected=true]:bg-muted/30",
+                    onSelect && "cursor-pointer",
+                    className
+                )}>
                 {children}
             </CommandItem>
         );

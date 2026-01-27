@@ -85,62 +85,69 @@ export function SearchResults({
 
     if (variant === "modal") {
         return (
-            <div className={className}>
+            <div className={cn("space-y-6 py-4 sm:px-4", className)}>
                 {isSearching && (
                     <>
-                        {/* Loading indicator at the top */}
-                        {(isFileSearching || isTraktSearching || isSourceSearching) && (
-                            <div className="flex items-center justify-center py-2 text-xs text-muted-foreground border-b border-border/50 sticky top-0 bg-background z-10">
-                                <Loader2 className="size-4 animate-spin mr-1.5" />
-                                <span className="text-xs tracking-wide">Searching...</span>
-                            </div>
-                        )}
+                        {/* Loading indicator */}
+                        {(isFileSearching || isTraktSearching || isSourceSearching) && <LoadingIndicator />}
 
                         {/* File results section */}
                         {hasFileResults && (
-                            <CommandGroup
-                                heading="Your Files"
-                                className="**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:tracking-wider **:[[cmdk-group-heading]]:uppercase **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group-heading]]:font-normal">
-                                {fileResults.map((file) => (
-                                    <SearchFileItem key={file.id} file={file} onSelect={onFileSelect} variant="modal" />
-                                ))}
+                            <CommandGroup className="space-y-3 p-0">
+                                <span className="text-xs tracking-widest uppercase text-muted-foreground">
+                                    Your Files
+                                </span>
+                                <div className="border border-border/50 rounded-sm overflow-hidden">
+                                    {fileResults.map((file) => (
+                                        <SearchFileItem
+                                            key={file.id}
+                                            file={file}
+                                            onSelect={onFileSelect}
+                                            variant="modal"
+                                        />
+                                    ))}
+                                </div>
                             </CommandGroup>
                         )}
 
                         {/* Trakt results section */}
                         {hasTraktResults && (
-                            <CommandGroup
-                                heading="Movies & Shows"
-                                className="**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:tracking-wider **:[[cmdk-group-heading]]:uppercase **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group-heading]]:font-normal">
-                                {traktResults.map((result) => {
-                                    const media = result.movie || result.show;
-                                    const type = result.movie ? "movie" : "show";
-                                    return (
-                                        <SearchMediaItem
-                                            key={`${type}-${media?.ids?.trakt}`}
-                                            result={result}
-                                            onSelect={onMediaSelect}
-                                            variant="modal"
-                                        />
-                                    );
-                                })}
+                            <CommandGroup className="space-y-3 p-0">
+                                <span className="text-xs tracking-widest uppercase text-muted-foreground">
+                                    Movies & Shows
+                                </span>
+                                <div className="border border-border/50 rounded-sm overflow-hidden">
+                                    {traktResults.map((result) => {
+                                        const media = result.movie || result.show;
+                                        const type = result.movie ? "movie" : "show";
+                                        return (
+                                            <SearchMediaItem
+                                                key={`${type}-${media?.ids?.trakt}`}
+                                                result={result}
+                                                onSelect={onMediaSelect}
+                                                variant="modal"
+                                            />
+                                        );
+                                    })}
+                                </div>
                             </CommandGroup>
                         )}
 
                         {/* Source results */}
                         {hasSourceResults && (
-                            <CommandGroup
-                                heading="Sources"
-                                className="**:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:tracking-wider **:[[cmdk-group-heading]]:uppercase **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group-heading]]:font-normal">
-                                {sourceResults.map((result) => (
-                                    <SearchSourceItem key={result.hash} result={result} variant="modal" />
-                                ))}
+                            <CommandGroup className="space-y-3 p-0">
+                                <span className="text-xs tracking-widest uppercase text-muted-foreground">Sources</span>
+                                <div className="border border-border/50 rounded-sm overflow-hidden">
+                                    {sourceResults.map((result) => (
+                                        <SearchSourceItem key={result.hash} result={result} variant="modal" />
+                                    ))}
+                                </div>
                             </CommandGroup>
                         )}
 
                         {/* End of results */}
                         {bothLoaded && hasAnyResults && (
-                            <div className="flex items-center justify-center py-4 text-xs text-muted-foreground border-t border-border/50">
+                            <div className="flex items-center justify-center py-4 text-xs text-muted-foreground">
                                 <span>
                                     {(() => {
                                         const totalCount =

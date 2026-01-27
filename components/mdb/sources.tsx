@@ -65,11 +65,13 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
     if (status === "cached") {
         return (
             <div className="flex items-center gap-1.5">
-                <button
-                    className="size-8 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="group/delete hover:!bg-destructive/10"
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-4.5" />
-                </button>
+                    <Trash2Icon className="size-4 text-destructive/70 group-hover/delete:text-destructive" />
+                </Button>
                 <Button
                     variant="outline"
                     size="sm"
@@ -92,11 +94,13 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
                     <HardDriveDownloadIcon className="size-4 animate-pulse" />
                     <span className="text-xs">Processing</span>
                 </div>
-                <button
-                    className="size-8 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="group/delete hover:!bg-destructive/10"
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-4.5" />
-                </button>
+                    <Trash2Icon className="size-4 text-destructive/70 group-hover/delete:text-destructive" />
+                </Button>
             </div>
         );
     }
