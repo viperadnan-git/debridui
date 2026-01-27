@@ -218,7 +218,8 @@ components/
 └── sidebar/     # Nav
 
 app/(public)/           # No auth
-app/(auth)/(private)/   # Auth required
+app/(auth)/             # Authenticated (require login)
+app/(auth)/(app)/       # With sidebar layout
 ```
 
 ## Cards

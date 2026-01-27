@@ -1244,9 +1244,9 @@ app/
 ├── (public)/                   # Public routes (no auth required)
 │   ├── login/                  # Login page
 │   └── signup/                 # Signup page
-├── (auth)/                     # Auth-aware routes
+├── (auth)/                     # Authenticated routes (require login)
 │   ├── onboarding/             # User onboarding flow
-│   └── (private)/              # Protected routes (require login)
+│   └── (app)/                  # Routes with sidebar layout
 │       ├── dashboard/          # Media discovery home
 │       ├── files/              # File explorer
 │       ├── accounts/           # Debrid account management
