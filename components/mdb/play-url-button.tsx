@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { Button } from "@/components/ui/button";
-import { CirclePlay } from "lucide-react";
+import { PlayIcon } from "lucide-react";
 import { playUrl } from "@/lib/utils/media-player";
 
 interface PlayUrlButtonProps {
@@ -22,8 +22,8 @@ export const PlayUrlButton = memo(
         };
 
         return (
-            <Button size="sm" variant="default" onClick={handlePlay} className="h-8 gap-1.5 px-3" title="Play">
-                <CirclePlay className="h-4 w-4" />
+            <Button size="sm" onClick={handlePlay} className="h-7 gap-1.5 px-2.5 text-xs" title="Play">
+                <PlayIcon className="size-3" />
                 <span>Play</span>
             </Button>
         );

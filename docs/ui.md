@@ -276,6 +276,23 @@ Based on shadcn/ui with editorial refinements.
 | `lg`      | 40px   | `px-6`  | Hero CTAs         |
 | `icon`    | 36px   | —       | Icon-only buttons |
 
+#### Compact Button Pattern
+
+For inline actions (sources, cards), use smaller custom sizing:
+
+```tsx
+// Compact action button - h-7 (28px)
+<Button variant="outline" size="sm" className="h-7 gap-1.5 px-2.5 text-xs border-border/50">
+  <Icon className="size-3" />
+  <span>{label}</span>
+</Button>
+
+// Icon-only compact
+<button className="size-7 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+  <Icon className="size-3.5" />
+</button>
+```
+
 #### States
 
 ```tsx
@@ -316,20 +333,35 @@ className = "focus-visible:ring-[3px] focus-visible:ring-ring/50";
 </Button>
 ```
 
-### 2.3 Badge
+### 2.3 Badge & Inline Metadata
 
-Inline labels and tags.
+For editorial minimalism, prefer inline text with separators over badge components.
 
-#### Variants
+#### When to Use Badges
 
-| Variant       | Usage              |
-| ------------- | ------------------ |
-| `default`     | Primary emphasis   |
-| `secondary`   | Secondary emphasis |
-| `outline`     | Metadata, ratings  |
-| `destructive` | Errors, warnings   |
+| Use Case                    | Approach                             |
+| --------------------------- | ------------------------------------ |
+| Certifications              | Badge component with outline variant |
+| Status indicators           | Inline text with color               |
+| Metadata (size, resolution) | Inline text with `·` separators      |
+| Genre tags                  | Span with muted background           |
 
-#### Editorial Badge Styling
+#### Inline Metadata Pattern (Preferred)
+
+```tsx
+// Metadata with editorial separators - cleaner than badges
+<span className="text-xs text-muted-foreground">
+  {resolution} <span className="text-border">·</span> {size} <span className="text-border">·</span> {addon}
+</span>
+
+// Cached indicator - inline, not badge
+<span className="inline-flex items-center gap-1 text-[10px] tracking-wide text-green-600 dark:text-green-500">
+  <Zap className="size-2.5" />
+  Cached
+</span>
+```
+
+#### Badge Component (When Needed)
 
 ```tsx
 // Certification badge
@@ -337,12 +369,7 @@ Inline labels and tags.
   PG-13
 </Badge>
 
-// Open source badge
-<Badge variant="outline" className="text-[10px] tracking-wider">
-  Open Source
-</Badge>
-
-// Genre tag (custom, not using Badge component)
+// Genre tag (custom span, not Badge)
 <span className="text-xs text-muted-foreground px-2.5 py-1 bg-muted/30 rounded-sm">
   Action
 </span>
@@ -502,7 +529,141 @@ Faux input button that opens search dialog.
 </button>
 ```
 
-### 2.9 Skeleton
+### 2.9 Season Card
+
+Poster cards for TV show seasons with selection state.
+
+```tsx
+<div className="group cursor-pointer w-28 sm:w-32 md:w-36 pt-1">
+    <div
+        className={cn(
+            "aspect-2/3 relative overflow-hidden bg-muted/30 rounded-sm transition-all duration-300",
+            isSelected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : "hover:ring-1 hover:ring-border"
+        )}>
+        <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-[1.03]" />
+
+        {/* Always-visible gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+        {/* Season label - editorial style */}
+        <span
+            className={cn(
+                "absolute top-2.5 left-2.5 text-[10px] font-medium tracking-[0.2em] px-2 py-1 rounded-sm backdrop-blur-sm",
+                isSelected ? "bg-primary text-primary-foreground" : "bg-black/60 text-white/90"
+            )}>
+            {String(number).padStart(2, "0")}
+        </span>
+
+        {/* Bottom info - always visible */}
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+            <p className="text-[11px] text-white/90 font-medium">{episodeCount} Episodes</p>
+            <p className="text-[10px] text-white/60">{year}</p>
+        </div>
+    </div>
+</div>
+```
+
+**Key Patterns:**
+
+- `pt-1` on outer container prevents ring clipping
+- `ring-offset-1 ring-offset-background` creates visible gap
+- Selected state uses `ring-primary` and label uses `bg-primary`
+- Gradient always visible for text readability
+
+### 2.10 Episode Card
+
+Collapsible episode rows with thumbnail and metadata.
+
+```tsx
+<Collapsible>
+    <div className="rounded-sm border border-border/50 overflow-hidden">
+        <CollapsibleTrigger asChild>
+            <button className="w-full text-left">
+                <div className="flex flex-col sm:flex-row">
+                    {/* Thumbnail */}
+                    <div className="relative w-full sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30 overflow-hidden">
+                        <img className="object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                        {/* Episode label */}
+                        <span className="absolute top-2.5 left-2.5 text-[10px] font-medium tracking-[0.2em] text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                            E{String(number).padStart(2, "0")}
+                        </span>
+
+                        {/* Hover action */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <span className="text-[10px] tracking-[0.2em] uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
+                                Sources
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="flex-1 p-4 space-y-2">
+                        <h4 className="text-sm font-medium">{title}</h4>
+                        <span className="text-xs text-muted-foreground">
+                            {date} <span className="text-border">·</span> {runtime}m
+                        </span>
+                        {overview && <p className="text-xs text-muted-foreground line-clamp-2">{overview}</p>}
+                    </div>
+                </div>
+            </button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>{/* Sources section */}</CollapsibleContent>
+    </div>
+</Collapsible>
+```
+
+### 2.11 Sources List
+
+Clean list for streaming/download sources.
+
+```tsx
+<div className="border border-border/50 rounded-sm overflow-hidden">
+    {/* Loading state */}
+    {isLoading && (
+        <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/20">
+            <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Loading sources...</span>
+        </div>
+    )}
+
+    {/* Source rows */}
+    {sources.map((source) => (
+        <div className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">
+            <div className="text-sm">{source.title}</div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                {/* Inline metadata with separators */}
+                <span className="text-xs text-muted-foreground">
+                    {source.isCached && (
+                        <>
+                            <CachedIndicator /> <span className="text-border">·</span>
+                        </>
+                    )}
+                    {source.resolution} <span className="text-border">·</span> {source.size}{" "}
+                    <span className="text-border">·</span> {source.addon}
+                </span>
+                {/* Action buttons */}
+                <div className="flex gap-2 sm:ml-auto">
+                    <Button variant="outline" size="sm" className="h-7 gap-1.5 px-2.5 text-xs border-border/50">
+                        <PlayIcon className="size-3" /> Play
+                    </Button>
+                </div>
+            </div>
+        </div>
+    ))}
+</div>
+```
+
+**Key Patterns:**
+
+- Inline metadata with `·` separators instead of badges
+- Small buttons: `h-7`, `text-xs`, `size-3` icons
+- Subtle borders: `border-border/50`
+- Hover state: `hover:bg-muted/30`
+
+### 2.12 Skeleton
 
 Loading placeholder with pulse animation.
 
@@ -514,6 +675,28 @@ Loading placeholder with pulse animation.
 <Skeleton className="aspect-2/3 rounded-sm" />       // Poster
 <Skeleton className="h-10 w-3/4" />                  // Title
 <Skeleton className="h-4 w-full max-w-2xl" />        // Text line
+
+// Episode card skeleton
+<div className="rounded-sm border border-border/50 overflow-hidden">
+  <div className="flex flex-col sm:flex-row">
+    <Skeleton className="w-full sm:w-48 md:w-56 aspect-video rounded-none" />
+    <div className="flex-1 p-4 space-y-3">
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
+      <Skeleton className="h-3 w-full" />
+    </div>
+  </div>
+</div>
+
+// Sources skeleton
+<div className="flex flex-col gap-2 px-4 py-3 border-b border-border/50">
+  <Skeleton className="h-4 w-3/4" />
+  <div className="flex items-center gap-2">
+    <Skeleton className="h-3 w-20" />
+    <Skeleton className="h-3 w-16" />
+    <Skeleton className="h-3 w-24" />
+  </div>
+</div>
 ```
 
 ---
@@ -919,10 +1102,14 @@ When creating new components, ensure:
 - [ ] Uses `font-light` for headings, standard weight for body
 - [ ] Labels use `text-[10px] tracking-[0.3em] uppercase text-muted-foreground`
 - [ ] Borders use `border-border/50` for subtle appearance
+- [ ] Uses `rounded-sm` (not `rounded-lg`) for cards and containers
+- [ ] Prefers inline metadata with `·` separators over badge components
+- [ ] Action buttons use compact sizing (`h-7`, `text-xs`, `size-3` icons)
 - [ ] Transitions use `duration-300` for standard animations
 - [ ] Includes loading skeleton if data-dependent
 - [ ] Memoized if receiving props that rarely change
 - [ ] Responsive at all breakpoints (mobile-first)
+- [ ] Selected states use `ring-2 ring-primary` with offset
 
 ---
 

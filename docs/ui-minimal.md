@@ -79,6 +79,29 @@
   <img src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/{icon}.svg" className="size-4 opacity-60 dark:invert" />
   {label}
 </Link>
+
+// Inline metadata (prefer over badges)
+<span className="text-xs text-muted-foreground">
+  {resolution} <span className="text-border">·</span> {size} <span className="text-border">·</span> {addon}
+</span>
+
+// Cached indicator (inline, not badge)
+<span className="inline-flex items-center gap-1 text-[10px] tracking-wide text-green-600">
+  <Zap className="size-2.5" /> Cached
+</span>
+
+// Small action button
+<Button variant="outline" size="sm" className="h-7 gap-1.5 px-2.5 text-xs border-border/50">
+  <Icon className="size-3" /> {label}
+</Button>
+
+// Season/Episode label badge
+<span className="text-[10px] font-medium tracking-[0.2em] px-2 py-1 rounded-sm bg-black/60 backdrop-blur-sm text-white/90">
+  {String(number).padStart(2, '0')}
+</span>
+
+// Selected state ring
+"ring-2 ring-primary ring-offset-1 ring-offset-background"
 ```
 
 ## Layout
@@ -153,6 +176,39 @@ app/(public)/           # No auth
 app/(auth)/(private)/   # Auth required
 ```
 
+## Cards
+
+```tsx
+// Season card - poster with overlay info
+<div className="group cursor-pointer w-28 sm:w-32 md:w-36 pt-1">
+  <div className={cn(
+    "aspect-2/3 relative overflow-hidden bg-muted/30 rounded-sm transition-all duration-300",
+    isSelected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : "hover:ring-1 hover:ring-border"
+  )}>
+    <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-[1.03]" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+    {/* Label top-left, info bottom */}
+  </div>
+</div>
+
+// Episode card - horizontal with collapsible
+<div className="rounded-sm border border-border/50 overflow-hidden">
+  <div className="flex flex-col sm:flex-row">
+    <div className="relative w-full sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30" />
+    <div className="flex-1 p-4 space-y-2">
+      <h4 className="text-sm font-medium">{title}</h4>
+      <span className="text-xs text-muted-foreground">{date} · {runtime}m</span>
+    </div>
+  </div>
+</div>
+
+// Sources list item
+<div className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/30">
+  <div className="text-sm">{title}</div>
+  <div className="text-xs text-muted-foreground">{meta} · {meta} · {addon}</div>
+</div>
+```
+
 ## Performance
 
 ```tsx
@@ -170,7 +226,11 @@ loading="lazy" | loading="eager"
 - [ ] 4px spacing scale
 - [ ] `font-light` headings
 - [ ] `border-border/50` borders
+- [ ] `rounded-sm` (not `rounded-lg`)
+- [ ] Inline metadata with `·` separators (not badges)
+- [ ] Compact buttons: `h-7`, `text-xs`, `size-3` icons
 - [ ] `duration-300` transitions
 - [ ] Skeleton if async
 - [ ] Memoize if stable props
 - [ ] Mobile-first responsive
+- [ ] Selected: `ring-2 ring-primary ring-offset-1`

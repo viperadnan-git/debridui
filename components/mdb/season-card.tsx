@@ -1,8 +1,6 @@
 "use client";
 
 import { type TraktSeason } from "@/lib/trakt";
-import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Star } from "lucide-react";
 import { cn, formatYear } from "@/lib/utils";
 import { memo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,12 +24,13 @@ export const SeasonCard = memo(function SeasonCard({
 }: SeasonCardProps) {
     const queryClient = useQueryClient();
 
-    const seasonName = season.number === 0 ? "Specials" : `${season.number}`;
+    const seasonName = season.number === 0 ? "Specials" : `Season ${season.number}`;
+    const seasonLabel = season.number === 0 ? "SP" : String(season.number).padStart(2, "0");
     const posterUrl =
         getPosterUrl(season.images) ||
-        `https://placehold.co/200x300/1a1a1a/white?text=${encodeURIComponent(seasonName)}`;
+        `https://placehold.co/200x300/1a1a1a/white?text=${encodeURIComponent(seasonLabel)}`;
 
-    // Prefetch season episodes on hover to eliminate 200-500ms waterfall
+    // Prefetch season episodes on hover
     const prefetchSeason = () => {
         if (!mediaId) return;
 
@@ -43,68 +42,55 @@ export const SeasonCard = memo(function SeasonCard({
 
     return (
         <div
-            className={cn("group cursor-pointer transition-all hover:scale-105 w-32 sm:w-36 md:w-40", className)}
+            className={cn("group cursor-pointer w-28 sm:w-32 md:w-36 pt-1", className)}
             onClick={onClick}
             onMouseEnter={prefetchSeason}>
             <div
                 className={cn(
-                    "aspect-2/3 relative overflow-hidden bg-muted rounded-lg shadow-md transition-all",
-                    isSelected ? "ring-2 ring-primary shadow-lg" : "hover:shadow-lg"
+                    "aspect-2/3 relative overflow-hidden bg-muted/30 rounded-sm transition-all duration-300",
+                    isSelected
+                        ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                        : "hover:ring-1 hover:ring-border"
                 )}>
-                {}
                 <img
                     src={posterUrl}
-                    alt={`Season ${season.number}`}
-                    className="object-cover w-full h-full"
+                    alt={seasonName}
+                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-[1.03]"
                     loading="lazy"
                 />
 
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                {/* Season number badge */}
-                <div className="absolute top-2 left-2">
-                    <Badge
-                        variant={isSelected ? "default" : "outline"}
+                {/* Season number - editorial style */}
+                <div className="absolute top-2.5 left-2.5">
+                    <span
                         className={cn(
-                            "text-xs font-bold shadow-sm",
-                            !isSelected && "bg-black/50 border-white/20 text-white"
+                            "text-[10px] font-medium tracking-[0.2em] px-2 py-1 rounded-sm backdrop-blur-sm",
+                            isSelected ? "bg-primary text-primary-foreground" : "bg-black/60 text-white/90"
                         )}>
-                        {seasonName}
-                    </Badge>
+                        {seasonLabel}
+                    </span>
                 </div>
 
-                {/* Rating badge - always visible */}
+                {/* Rating - minimal style */}
                 {season.rating && (
-                    <div className="absolute top-2 right-2">
-                        <Badge variant="outline" className="text-xs bg-black/50 border-white/20 text-white">
-                            <Star className="h-3 w-3 fill-yellow-500 text-yellow-500 mr-1" />
+                    <div className="absolute top-2.5 right-2.5">
+                        <span className="text-[10px] font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
                             {season.rating.toFixed(1)}
-                        </Badge>
+                        </span>
                     </div>
                 )}
 
-                {/* Hover details */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Bottom info - always visible */}
+                <div className="absolute bottom-0 left-0 right-0 p-3">
                     <div className="space-y-1">
                         {season.episode_count && (
-                            <p className="text-white text-xs font-medium">{season.episode_count} Episodes</p>
+                            <p className="text-[11px] text-white/90 font-medium">{season.episode_count} Episodes</p>
                         )}
-
-                        <div className="flex items-center gap-3 text-white/80 text-xs">
-                            {season.first_aired && (
-                                <div className="flex items-center gap-1">
-                                    <CalendarDays className="h-3 w-3" />
-                                    {formatYear(season.first_aired)}
-                                </div>
-                            )}
-
-                            {season.votes && (
-                                <div className="flex items-center gap-1">
-                                    <span>{season.votes.toLocaleString()} votes</span>
-                                </div>
-                            )}
-                        </div>
+                        {season.first_aired && (
+                            <p className="text-[10px] text-white/60">{formatYear(season.first_aired)}</p>
+                        )}
                     </div>
                 </div>
             </div>

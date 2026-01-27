@@ -5,23 +5,12 @@ import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
 import { useAddonSources } from "@/hooks/use-addons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-    Plus,
-    Loader2,
-    HardDriveDownloadIcon,
-    Trash2Icon,
-    DownloadIcon,
-    X,
-    AlertTriangle,
-    HardDrive,
-    Monitor,
-} from "lucide-react";
+import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { CachedBadge } from "@/components/display";
 import { PlayUrlButton } from "./play-url-button";
 import { UrlPreviewDialog } from "@/components/preview/url-preview-dialog";
@@ -75,25 +64,23 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
 
     if (status === "cached") {
         return (
-            <div className="flex items-center gap-1.5 justify-end">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+            <div className="flex items-center gap-1.5">
+                <button
+                    className="size-7 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="h-4 w-4" />
-                </Button>
+                    <Trash2Icon className="size-3.5" />
+                </button>
                 <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 gap-1.5 px-3"
+                    className="h-7 gap-1.5 px-2.5 text-xs border-border/50"
                     onClick={() => {
                         if (torrentId) {
                             router.push(`/files?q=id:${torrentId}`);
                         }
                     }}>
-                    <DownloadIcon className="h-4 w-4" />
-                    <span>View Files</span>
+                    <DownloadIcon className="size-3" />
+                    <span>View</span>
                 </Button>
             </div>
         );
@@ -101,37 +88,35 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
 
     if (status === "added") {
         return (
-            <div className="flex items-center gap-1.5 justify-end">
-                <div className="flex items-center justify-center h-8 gap-1.5 px-2.5 rounded-md bg-blue-500/10 text-blue-600">
-                    <HardDriveDownloadIcon className="h-4 w-4 animate-pulse" />
-                    <span className="text-xs font-medium">Processing</span>
+            <div className="flex items-center gap-1.5">
+                <div className="flex items-center h-7 gap-1.5 px-2.5 rounded-sm bg-primary/10 text-primary">
+                    <HardDriveDownloadIcon className="size-3 animate-pulse" />
+                    <span className="text-[10px] tracking-wide">Processing</span>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                <button
+                    className="size-7 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="h-4 w-4" />
-                </Button>
+                    <Trash2Icon className="size-3.5" />
+                </button>
             </div>
         );
     }
 
     return (
         <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
             onClick={() => handleAdd()}
             disabled={status === "loading"}
-            className="h-8 gap-1.5 px-3">
+            className="h-7 gap-1.5 px-2.5 text-xs border-border/50">
             {status === "loading" ? (
                 <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Adding...</span>
+                    <Loader2 className="size-3 animate-spin" />
+                    <span>Adding</span>
                 </>
             ) : (
                 <>
-                    <Plus className="h-4 w-4" />
+                    <Plus className="size-3" />
                     <span>Add</span>
                 </>
             )}
@@ -143,64 +128,50 @@ export function SourceRow({
     source,
     mediaTitle,
     onOpenPreview,
-    isFirst,
-    isLast,
 }: {
     source: AddonSource;
     mediaTitle: string;
     onOpenPreview?: (url: string, title: string) => void;
-    isFirst?: boolean;
-    isLast?: boolean;
 }) {
-    return (
-        <div
-            className={cn(
-                "flex flex-col gap-2 px-3 sm:px-4 md:px-5 py-3 border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors",
-                isFirst && "pt-3 sm:pt-3.5 md:pt-4",
-                isLast && "pb-3 sm:pb-3.5 md:pb-4"
-            )}>
-            {/* Row 1: Title */}
-            <div className="font-medium text-sm leading-tight wrap-break-word">{source.title}</div>
+    // Build metadata string with editorial separators
+    const metaParts: string[] = [];
+    if (source.resolution) metaParts.push(source.resolution);
+    if (source.size) metaParts.push(source.size);
+    metaParts.push(source.addonName);
 
-            {/* Row 2: Description (if exists) */}
+    return (
+        <div className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">
+            {/* Title */}
+            <div className="text-sm leading-tight break-words">{source.title}</div>
+
+            {/* Description */}
             {source.description && (
-                <div className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
+                <div className="text-xs text-muted-foreground whitespace-pre-wrap break-words">
                     {source.description}
                 </div>
             )}
 
-            {/* Row 3: Badges and Buttons - stacked on mobile, side-by-side on tablet/desktop */}
-            <div className="flex flex-col md:flex-row md:items-center gap-2">
-                {/* Badges */}
-                <div className="flex flex-wrap items-center gap-1.5 md:flex-1">
-                    {/* Cached Badge */}
-                    {source.isCached && <CachedBadge />}
-
-                    {/* Resolution Badge */}
-                    {source.resolution && (
-                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5" title="Resolution">
-                            <Monitor className="h-2.5 w-2.5 mr-0.5" />
-                            {source.resolution}
-                        </Badge>
+            {/* Metadata & Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                {/* Metadata with editorial separators */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-1 text-xs text-muted-foreground">
+                    {source.isCached && (
+                        <>
+                            <CachedBadge />
+                            <span className="text-border">·</span>
+                        </>
                     )}
-
-                    {/* Size Badge */}
-                    {source.size && (
-                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5" title="Size">
-                            <HardDrive className="h-2.5 w-2.5 mr-0.5" />
-                            {source.size}
-                        </Badge>
-                    )}
-
-                    {/* Addon Badge */}
-                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
-                        {source.addonName}
-                    </Badge>
+                    {metaParts.map((part, i) => (
+                        <span key={part} className="flex items-center">
+                            {part}
+                            {i < metaParts.length - 1 && <span className="text-border ml-2">·</span>}
+                        </span>
+                    ))}
                 </div>
 
                 {/* Action Buttons */}
                 {(source.url || source.magnet) && (
-                    <div className="flex items-center gap-2 justify-end md:shrink-0">
+                    <div className="flex items-center gap-2 justify-end sm:shrink-0">
                         {source.url && (
                             <PlayUrlButton url={source.url} title={mediaTitle} onOpenPreview={onOpenPreview} />
                         )}
@@ -233,22 +204,19 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
     }, []);
 
     return (
-        <div className={cn("border rounded-lg overflow-hidden bg-card", className)}>
+        <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
             {/* Loading indicator */}
             {isLoading && (
-                <div className="flex items-center justify-center gap-2 px-3 sm:px-4 md:px-5 py-3 border-b border-border/40 bg-muted/30">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Loading sources from addons...</span>
+                <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/20">
+                    <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Loading sources...</span>
                 </div>
             )}
 
             {!isLoading && sources?.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
-                        <X className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <p className="font-medium">No sources available</p>
-                    <p className="text-sm text-muted-foreground mt-1">Configure addons to fetch sources</p>
+                    <p className="text-sm text-muted-foreground">No sources available</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">Configure addons to fetch sources</p>
                 </div>
             )}
 
@@ -258,20 +226,18 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
                     source={source}
                     mediaTitle={mediaTitle}
                     onOpenPreview={isBrowserPlayer ? handleOpenPreview : undefined}
-                    isFirst={index === 0 && !isLoading}
-                    isLast={index === sources.length - 1 && failedAddons.length === 0}
                 />
             ))}
 
             {/* Failed addons warning */}
             {!isLoading && failedAddons.length > 0 && (
-                <div className="flex items-center justify-center gap-2 px-3 sm:px-4 md:px-5 py-3 bg-yellow-500/10">
-                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                    <span className="text-sm text-yellow-600">Failed to load add-ons: {failedAddons.join(", ")}</span>
+                <div className="flex items-center justify-center gap-2 px-4 py-3 bg-yellow-500/10 border-t border-border/50">
+                    <AlertTriangle className="size-3.5 text-yellow-600" />
+                    <span className="text-xs text-yellow-600">Failed: {failedAddons.join(", ")}</span>
                 </div>
             )}
 
-            {/* Shared preview dialog - only render if browser player */}
+            {/* Shared preview dialog */}
             {isBrowserPlayer && previewUrl && (
                 <UrlPreviewDialog
                     open={!!previewUrl}
@@ -286,19 +252,15 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
 
 export function SourcesSkeleton({ count = 5, className }: SourcesSkeletonProps) {
     return (
-        <div className={cn("border rounded-lg overflow-hidden bg-card", className)}>
+        <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
             {Array.from({ length: count }).map((_, i) => (
-                <div
-                    key={i}
-                    className={cn(
-                        "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-5 py-2.5 border-b border-border/40 last:border-0",
-                        i === 0 && "pt-3 sm:pt-3.5 md:pt-4",
-                        i === count - 1 && "pb-3 sm:pb-3.5 md:pb-4"
-                    )}>
-                    <div className="flex-1">
-                        <Skeleton className="h-12 w-full" />
+                <div key={i} className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-0">
+                    <Skeleton className="h-4 w-3/4" />
+                    <div className="flex items-center gap-2">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-24" />
                     </div>
-                    <Skeleton className="h-8 w-16 sm:w-24" />
                 </div>
             ))}
         </div>
@@ -311,28 +273,34 @@ export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, mediaTitl
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col gap-0">
-                <div className="flex-none px-6 pt-6 pb-4 border-b">
-                    <DialogTitle className="text-xl sm:text-2xl font-bold">
-                        Available Sources
+            <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col gap-0 rounded-sm">
+                <div className="flex-none px-6 pt-6 pb-4 border-b border-border/50">
+                    <DialogTitle className="text-xl font-light">
+                        Sources
                         {tvParams && (
-                            <span className="text-muted-foreground font-normal">
+                            <span className="text-muted-foreground">
                                 {" "}
-                                - S{tvParams.season}E{tvParams.episode}
+                                · S{String(tvParams.season).padStart(2, "0")}E
+                                {String(tvParams.episode).padStart(2, "0")}
                             </span>
                         )}
                     </DialogTitle>
-                    <DialogDescription className="mt-2">
-                        Select a source to add to your download queue. Higher peer count indicates better availability.
+                    <DialogDescription className="mt-2 text-xs text-muted-foreground">
+                        Select a source to add to your download queue
                     </DialogDescription>
                 </div>
                 <div className="flex-1 overflow-y-auto min-h-0 px-6 py-4">
-                    <Sources imdbId={imdbId} mediaType={mediaType} tvParams={tvParams} mediaTitle={mediaTitle} />
+                    <Sources
+                        imdbId={imdbId}
+                        mediaType={mediaType}
+                        tvParams={tvParams}
+                        mediaTitle={mediaTitle}
+                        className="border-0"
+                    />
                 </div>
-                <div className="flex-none px-6 py-4 border-t bg-muted/20">
+                <div className="flex-none px-6 py-4 border-t border-border/50 bg-muted/20">
                     <DialogClose asChild>
-                        <Button variant="outline" className="w-full sm:w-auto sm:ml-auto sm:flex">
-                            <X className="size-4 mr-2" />
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto sm:ml-auto sm:flex h-9">
                             Close
                         </Button>
                     </DialogClose>
