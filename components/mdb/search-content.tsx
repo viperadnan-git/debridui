@@ -107,17 +107,17 @@ export function SearchContent({
     // Page variant
     return (
         <div className={cn("space-y-8", className)}>
-            <div className="relative">
+            <form className="relative" onSubmit={(e) => e.preventDefault()}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
-                    type="text"
+                    type="search"
                     placeholder="Search movies, TV shows, and files..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     autoFocus={autoFocus}
                     className="pl-11 h-12 text-base border-border/50 bg-transparent"
                 />
-            </div>
+            </form>
 
             <SearchResults
                 query={debouncedQuery}
