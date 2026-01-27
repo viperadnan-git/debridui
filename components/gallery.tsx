@@ -48,7 +48,7 @@ export function Gallery({ items, className }: GalleryProps) {
                         key={item.id}
                         onClick={() => setActive(index)}
                         className={cn(
-                            "px-4 py-2 text-sm tracking-wide transition-all duration-300",
+                            "px-4 py-2 text-sm tracking-wider uppercase transition-all duration-300",
                             "border-b-2 -mb-px",
                             active === index
                                 ? "text-foreground border-foreground"
@@ -65,7 +65,7 @@ export function Gallery({ items, className }: GalleryProps) {
                     onClick={() => active > 0 && setActive(active - 1)}
                     disabled={active === 0}
                     className={cn(
-                        "text-xs tracking-wider w-20 text-right truncate transition-all duration-300",
+                        "text-xs tracking-wider uppercase w-20 text-right truncate transition-all duration-300",
                         active > 0
                             ? "text-muted-foreground/50 hover:text-muted-foreground"
                             : "opacity-0 pointer-events-none"
@@ -81,7 +81,7 @@ export function Gallery({ items, className }: GalleryProps) {
                     onClick={() => active < items.length - 1 && setActive(active + 1)}
                     disabled={active === items.length - 1}
                     className={cn(
-                        "text-xs tracking-wider w-20 text-left truncate transition-all duration-300",
+                        "text-xs tracking-wider uppercase w-20 text-left truncate transition-all duration-300",
                         active < items.length - 1
                             ? "text-muted-foreground/50 hover:text-muted-foreground"
                             : "opacity-0 pointer-events-none"
