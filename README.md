@@ -48,7 +48,7 @@ A modern, fast debrid client with integrated media discovery. Built with Next.js
 ### Prerequisites
 
 - Node.js 20+ or Bun
-- A debrid account (AllDebrid, TorBox supported)
+- A debrid account (AllDebrid, TorBox, Premiumize supported)
 
 ### Configuration
 
@@ -83,17 +83,45 @@ Open [http://localhost:3000](http://localhost:3000) to access the app.
 
 ### Deployment
 
-**Vercel (Recommended):**
+#### Vercel
 
 1. Push code to GitHub
 2. Import project on [Vercel](https://vercel.com)
 3. Configure environment variables
 4. Deploy
 
-**Self-hosted:**
+#### Cloudflare Workers
+
+1. Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) and login:
+
+    ```bash
+    wrangler login
+    ```
+
+2. Configure environment variables in `wrangler.toml` or via Cloudflare dashboard
+
+3. Build and deploy:
+    ```bash
+    bun run cf:deploy
+    ```
+
+For local development with Cloudflare Workers runtime:
 
 ```bash
-bun run build
+bun run cf:dev      # Local development
+bun run cf:preview  # Preview with remote resources
+```
+
+#### Self-hosted (Docker)
+
+```bash
+docker compose up -d
+```
+
+Or build manually:
+
+```bash
+bun run build:standalone
 bun start
 ```
 
