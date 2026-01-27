@@ -126,6 +126,7 @@ interface TorBoxWebDownload {
 
 export default class TorBoxClient extends BaseClient {
     private readonly baseUrl = getProxyUrl("https://api.torbox.app/v1/api");
+    private readonly apiBaseUrl = "https://api.torbox.app/v1/api";
 
     // TorBox downloads on server, needs refresh for progress
     readonly refreshInterval = 5000;
@@ -133,6 +134,20 @@ export default class TorBoxClient extends BaseClient {
 
     constructor(user: User) {
         super(user);
+    }
+
+    /**
+     * Build a download URL for torrents or web downloads
+     */
+    private buildDownloadUrl(
+        type: "torrent" | "webdl",
+        id: string | number,
+        fileId: string | number,
+        redirect: boolean = true
+    ): string {
+        const endpoint = type === "torrent" ? "torrents/requestdl" : "webdl/requestdl";
+        const idParam = type === "torrent" ? "torrent_id" : "web_id";
+        return `${this.apiBaseUrl}/${endpoint}?token=${this.user.apiKey}&${idParam}=${id}&file_id=${fileId}&redirect=${redirect}`;
     }
 
     private async makeRequest<T>(
@@ -319,7 +334,7 @@ export default class TorBoxClient extends BaseClient {
         if (resolve) {
             downloadUrl = await this.getResolvedDownloadLink(torrentId, targetFileId);
         } else {
-            downloadUrl = `https://api.torbox.app/v1/api/torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=true`;
+            downloadUrl = this.buildDownloadUrl("torrent", torrentId, targetFileId);
         }
 
         // Use file node's properties directly - no API call needed!
@@ -333,9 +348,7 @@ export default class TorBoxClient extends BaseClient {
     private async getResolvedDownloadLink(torrentId: string, targetFileId: string): Promise<string> {
         return this.makeRequest<string>(
             `torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=false`,
-            {
-                method: "GET",
-            }
+            { method: "GET" }
         );
     }
 
@@ -608,10 +621,7 @@ export default class TorBoxClient extends BaseClient {
 
     private mapToWebDownload(dl: TorBoxWebDownload): WebDownload {
         const isReady = dl.download_finished && dl.download_present;
-        // Construct download URL for ready files - use redirect=true for direct download
-        const downloadLink = isReady
-            ? `https://api.torbox.app/v1/api/webdl/requestdl?token=${this.user.apiKey}&web_id=${dl.id}&file_id=0&redirect=true`
-            : undefined;
+        const downloadLink = isReady ? this.buildDownloadUrl("webdl", dl.id, 0) : undefined;
 
         return {
             id: dl.id.toString(),
