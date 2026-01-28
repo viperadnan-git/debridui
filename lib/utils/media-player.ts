@@ -2,41 +2,84 @@ import { MediaPlayer, Platform } from "../types";
 import { useSettingsStore } from "../stores/settings";
 import { toast } from "sonner";
 
-const PLATFORM_PATTERNS = {
-    ANDROID: /Android/i,
-    IOS: /iPhone|iPad|iPod/i,
-    MACOS: /Mac OS X/i,
-    WINDOWS: /Windows/i,
-    LINUX: /Linux/i,
-} as const;
+export interface ParsedUserAgent {
+    browser: string;
+    os: string;
+    device: string;
+    platform: Platform;
+    /** e.g. "Chrome on macOS" */
+    summary: string;
+}
 
-let cachedPlatform: Platform | null = null;
+const BROWSER_PATTERNS: [RegExp, string][] = [
+    [/Edg(?:e|A|iOS)?\/[\d.]+/i, "Edge"],
+    [/OPR\/[\d.]+|Opera\/[\d.]+/i, "Opera"],
+    [/Brave\/[\d.]+/i, "Brave"],
+    [/Vivaldi\/[\d.]+/i, "Vivaldi"],
+    [/SamsungBrowser\/[\d.]+/i, "Samsung Internet"],
+    [/Firefox\/[\d.]+/i, "Firefox"],
+    [/CriOS\/[\d.]+/i, "Chrome"],
+    [/FxiOS\/[\d.]+/i, "Firefox"],
+    [/Chrome\/[\d.]+/i, "Chrome"],
+    [/Safari\/[\d.]+/i, "Safari"],
+];
 
+const OS_PATTERNS: [RegExp, string, Platform][] = [
+    [/Android\s?[\d.]*/i, "Android", Platform.ANDROID],
+    [/iPhone|iPad|iPod/i, "iOS", Platform.IOS],
+    [/Mac OS X[\s_][\d._]+|Macintosh/i, "macOS", Platform.MACOS],
+    [/Windows NT\s?[\d.]*/i, "Windows", Platform.WINDOWS],
+    [/CrOS/i, "Chrome OS", Platform.LINUX],
+    [/Linux/i, "Linux", Platform.LINUX],
+];
+
+const DEVICE_PATTERNS: [RegExp, string][] = [
+    [/iPad/i, "Tablet"],
+    [/iPhone/i, "Phone"],
+    [/iPod/i, "Phone"],
+    [/Android.*Mobile/i, "Phone"],
+    [/Android/i, "Tablet"],
+    [/Mobile/i, "Phone"],
+];
+
+const UNKNOWN_UA: ParsedUserAgent = {
+    browser: "Unknown",
+    os: "Unknown",
+    device: "Desktop",
+    platform: Platform.UNKNOWN,
+    summary: "Unknown device",
+};
+
+export const parseUserAgent = (ua: string | null | undefined): ParsedUserAgent => {
+    if (!ua) return UNKNOWN_UA;
+
+    const browser = BROWSER_PATTERNS.find(([re]) => re.test(ua))?.[1] ?? "Unknown";
+    const osMatch = OS_PATTERNS.find(([re]) => re.test(ua));
+    const os = osMatch?.[1] ?? "Unknown";
+    const platform = osMatch?.[2] ?? Platform.UNKNOWN;
+    const device = DEVICE_PATTERNS.find(([re]) => re.test(ua))?.[1] ?? "Desktop";
+
+    const summary =
+        browser !== "Unknown" && os !== "Unknown"
+            ? `${browser} on ${os}`
+            : browser !== "Unknown"
+              ? browser
+              : os !== "Unknown"
+                ? os
+                : "Unknown device";
+
+    return { browser, os, device, platform, summary };
+};
+
+let cachedPlatform: ParsedUserAgent | null = null;
+
+/** Detect the current browser's platform (cached after first call) */
 export const detectPlatform = (): Platform => {
-    if (cachedPlatform !== null) return cachedPlatform;
+    if (cachedPlatform !== null) return cachedPlatform.platform;
 
-    if (typeof navigator === "undefined") {
-        cachedPlatform = Platform.UNKNOWN;
-        return cachedPlatform;
-    }
+    cachedPlatform = typeof navigator !== "undefined" ? parseUserAgent(navigator.userAgent) : UNKNOWN_UA;
 
-    const userAgent = navigator.userAgent;
-
-    if (PLATFORM_PATTERNS.ANDROID.test(userAgent)) {
-        cachedPlatform = Platform.ANDROID;
-    } else if (PLATFORM_PATTERNS.IOS.test(userAgent)) {
-        cachedPlatform = Platform.IOS;
-    } else if (PLATFORM_PATTERNS.MACOS.test(userAgent)) {
-        cachedPlatform = Platform.MACOS;
-    } else if (PLATFORM_PATTERNS.WINDOWS.test(userAgent)) {
-        cachedPlatform = Platform.WINDOWS;
-    } else if (PLATFORM_PATTERNS.LINUX.test(userAgent)) {
-        cachedPlatform = Platform.LINUX;
-    } else {
-        cachedPlatform = Platform.UNKNOWN;
-    }
-
-    return cachedPlatform;
+    return cachedPlatform.platform;
 };
 
 export const isMobileOrTablet = (): boolean => {

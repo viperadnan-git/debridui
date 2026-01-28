@@ -9,9 +9,11 @@ import { setPassword } from "@/lib/actions/user";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
 import { clearAppCache } from "@/lib/utils";
+import { parseUserAgent } from "@/lib/utils/media-player";
 import { toast } from "sonner";
-import { UserCog, AlertTriangle } from "lucide-react";
+import { UserCog, AlertTriangle, Monitor, Smartphone, Tablet, Clock, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
     Dialog,
     DialogContent,
@@ -26,7 +28,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 
 const AUTH_ACCOUNTS_KEY = ["auth-accounts"];
 const USER_SESSIONS_KEY = ["user-sessions"];
@@ -469,13 +471,13 @@ export default function AccountPage() {
                         <>
                             {[1, 2].map((i) => (
                                 <div key={i} className="rounded-sm border border-border/50 p-4">
-                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex items-start gap-4">
+                                        <Skeleton className="size-10 rounded-sm shrink-0" />
                                         <div className="space-y-2 flex-1">
-                                            <Skeleton className="h-5 w-48" />
-                                            <Skeleton className="h-3 w-40" />
-                                            <Skeleton className="h-3 w-28" />
+                                            <Skeleton className="h-4 w-40" />
+                                            <Skeleton className="h-3 w-56" />
                                         </div>
-                                        <Skeleton className="h-9 w-20" />
+                                        <Skeleton className="h-8 w-16 shrink-0" />
                                     </div>
                                 </div>
                             ))}
@@ -486,43 +488,67 @@ export default function AccountPage() {
                         <>
                             {sessions.map((sessionItem) => {
                                 const isCurrent = sessionItem.token === session?.session?.token;
+                                const parsed = parseUserAgent(sessionItem.userAgent);
+                                const DeviceIcon =
+                                    parsed.device === "Phone"
+                                        ? Smartphone
+                                        : parsed.device === "Tablet"
+                                          ? Tablet
+                                          : Monitor;
+
                                 return (
                                     <div
                                         key={sessionItem.id}
-                                        className="flex flex-col gap-3 rounded-sm border border-border/50 p-4 min-w-0">
-                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between min-w-0">
+                                        className={`rounded-sm border p-3 sm:p-4 transition-colors ${isCurrent ? "border-primary/30 bg-primary/[0.03]" : "border-border/50 hover:border-border"}`}>
+                                        {/* Top row: icon + summary + badge + revoke */}
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className={`flex size-9 shrink-0 items-center justify-center rounded-sm ${isCurrent ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                                                <DeviceIcon className="size-4" strokeWidth={1.5} />
+                                            </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="font-light flex items-center gap-2 flex-wrap">
-                                                    <span className="truncate">
-                                                        {sessionItem.userAgent || "Unknown Device"}
-                                                    </span>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-light truncate text-sm">{parsed.summary}</p>
                                                     {isCurrent && (
-                                                        <span className="text-xs tracking-wide uppercase bg-primary/10 text-primary px-2 py-0.5 rounded-sm whitespace-nowrap">
+                                                        <Badge
+                                                            variant="default"
+                                                            className="text-[10px] tracking-widest uppercase px-1.5 py-0 shrink-0">
                                                             Current
-                                                        </span>
+                                                        </Badge>
                                                     )}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground break-all">
-                                                    {sessionItem.ipAddress || "Unknown IP"}{" "}
-                                                    <span className="text-border">·</span>{" "}
-                                                    {format(new Date(sessionItem.createdAt), "PPp")}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Expires{" "}
-                                                    {formatDistanceToNow(new Date(sessionItem.expiresAt), {
-                                                        addSuffix: true,
-                                                    })}
+                                                </div>
+                                                <p className="text-[11px] text-muted-foreground/50 truncate">
+                                                    {sessionItem.userAgent || "Unknown user agent"}
                                                 </p>
                                             </div>
                                             {!isCurrent && (
                                                 <Button
                                                     onClick={() => revokeSessionMutation.mutate(sessionItem.token)}
                                                     variant="destructive"
+                                                    size="sm"
                                                     disabled={revokeSessionMutation.isPending}
-                                                    className="w-full sm:w-auto">
+                                                    className="shrink-0">
                                                     Revoke
                                                 </Button>
                                             )}
+                                        </div>
+
+                                        {/* Meta row */}
+                                        <div className="mt-2 ml-12 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                                            {sessionItem.ipAddress && (
+                                                <span className="inline-flex items-center gap-1">
+                                                    <MapPin className="size-3 shrink-0" />
+                                                    {sessionItem.ipAddress}
+                                                </span>
+                                            )}
+                                            <span className="inline-flex items-center gap-1">
+                                                <Clock className="size-3 shrink-0" />
+                                                {formatDistanceToNow(new Date(sessionItem.createdAt), {
+                                                    addSuffix: true,
+                                                })}
+                                                <span className="text-border">·</span>
+                                                {new Date(sessionItem.createdAt).toLocaleString()}
+                                            </span>
                                         </div>
                                     </div>
                                 );
@@ -533,6 +559,7 @@ export default function AccountPage() {
                                     <Button
                                         onClick={() => revokeOtherSessionsMutation.mutate()}
                                         variant="destructive"
+                                        size="sm"
                                         disabled={revokeOtherSessionsMutation.isPending}>
                                         {revokeOtherSessionsMutation.isPending
                                             ? "Revoking..."
