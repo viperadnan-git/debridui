@@ -47,6 +47,7 @@ export const isMobileOrTablet = (): boolean => {
 const PLAYER_PLATFORM_SUPPORT: Record<MediaPlayer, Platform[]> = {
     [MediaPlayer.BROWSER]: [Platform.ANDROID, Platform.IOS, Platform.MACOS, Platform.WINDOWS, Platform.LINUX],
     [MediaPlayer.IINA]: [Platform.MACOS],
+    [MediaPlayer.INFUSE]: [Platform.IOS, Platform.MACOS],
     [MediaPlayer.VLC]: [Platform.ANDROID, Platform.IOS, Platform.MACOS, Platform.WINDOWS, Platform.LINUX],
     [MediaPlayer.MPV]: [Platform.MACOS, Platform.WINDOWS, Platform.LINUX],
     [MediaPlayer.POTPLAYER]: [Platform.WINDOWS],
@@ -79,6 +80,7 @@ type PlayerUrlGenerator = (url: string, fileName: string) => string;
 
 const PLAYER_URLS: Record<Exclude<MediaPlayer, MediaPlayer.BROWSER>, PlayerUrlGenerator> = {
     [MediaPlayer.IINA]: (url) => `iina://weblink?url=${encodeURIComponent(url)}`,
+    [MediaPlayer.INFUSE]: (url) => `infuse://x-callback-url/play?url=${encodeURIComponent(url)}`,
     [MediaPlayer.VLC]: (url, fileName) => generateVlcUrl(url, fileName),
     [MediaPlayer.MPV]: (url) => `mpv://${encodeURIComponent(url)}`,
     [MediaPlayer.POTPLAYER]: (url) => `potplayer://${encodeURIComponent(url)}`,

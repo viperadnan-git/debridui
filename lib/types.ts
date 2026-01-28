@@ -17,6 +17,7 @@ export enum FileType {
 export enum MediaPlayer {
     BROWSER = "Browser",
     IINA = "IINA",
+    INFUSE = "Infuse",
     VLC = "VLC",
     MPV = "MPV",
     POTPLAYER = "PotPlayer",

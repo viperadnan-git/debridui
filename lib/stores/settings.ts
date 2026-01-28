@@ -58,6 +58,11 @@ const settingsConfig: SettingsConfig = {
                 description: "macOS - Powerful media player for macOS",
             },
             {
+                value: MediaPlayer.INFUSE,
+                label: "Infuse",
+                description: "iOS, macOS - Premium video player for Apple devices",
+            },
+            {
                 value: MediaPlayer.POTPLAYER,
                 label: "PotPlayer",
                 description: "Windows - Advanced media player for Windows",
