@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Link2, Save, ClipboardPaste, X } from "lucide-react";
+import { getTextFromClipboard } from "@/lib/utils";
 
 function parseLinks(text: string): string[] {
     return text
@@ -66,16 +67,9 @@ export function AddLinksForm() {
     };
 
     const handlePaste = async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            if (!text.trim()) {
-                toast.error("Clipboard is empty");
-                return;
-            }
-            setLinksText((prev) => (prev ? prev.trimEnd() + "\n" + text : text));
-        } catch {
-            toast.error("Failed to read clipboard");
-        }
+        const text = await getTextFromClipboard();
+        if (!text) return;
+        setLinksText((prev) => (prev ? prev.trimEnd() + "\n" + text : text));
     };
 
     const isBusy = isAdding || isSaving;
@@ -106,7 +100,7 @@ export function AddLinksForm() {
                             value={linksText}
                             onChange={(e) => setLinksText(e.target.value)}
                             disabled={isBusy}
-                            className="font-mono text-xs sm:text-sm min-h-[100px] sm:min-h-[120px] resize-y pr-16"
+                            className="font-mono text-xs sm:text-sm min-h-[100px] sm:min-h-[120px] resize-y pr-14"
                         />
                         <div className="absolute top-2 right-2 flex gap-0.5">
                             {linksText.trim() && (

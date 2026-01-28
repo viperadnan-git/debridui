@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +17,6 @@ export function AddContent() {
     const [links, setLinks] = useState("");
     const [isAddingLinks, setIsAddingLinks] = useState(false);
     const [isUploadingFiles, setIsUploadingFiles] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const { client, currentAccount } = useAuthGuaranteed();
 
     const handleOperationResults = (results: OperationResult, itemType: "link" | "file", toastId: string | number) => {
@@ -87,10 +86,6 @@ export function AddContent() {
             const fileArray = Array.from(files);
             const results = await client.uploadTorrentFiles(fileArray);
             handleOperationResults(results, "file", toastId);
-
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
         } catch (error) {
             toast.error("Failed to upload files", { id: toastId });
             console.error(error);
@@ -101,8 +96,8 @@ export function AddContent() {
 
     const handlePaste = async () => {
         const text = await getTextFromClipboard();
-        setLinks(text);
-        await addLinks(text);
+        if (!text) return;
+        setLinks((prev) => (prev ? prev.trimEnd() + "\n" + text : text));
     };
 
     const handleAddLinks = async () => {
@@ -114,7 +109,9 @@ export function AddContent() {
             <CardContent className="space-y-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                     <div className="flex flex-col space-y-1 md:space-y-2">
-                        <label className="text-sm font-bold">Upload Torrent Files</label>
+                        <label className="text-xs tracking-widest uppercase text-muted-foreground">
+                            Upload Torrent Files
+                        </label>
                         <Dropzone
                             onDropAccepted={handleFileSelect}
                             disabled={isUploadingFiles}
@@ -123,23 +120,21 @@ export function AddContent() {
                                 "application/x-bittorrent": [".torrent"],
                             }}
                             className="max-sm:h-24">
-                            <FileUp className="size-5 md:size-8 text-gray-400" />
-                            <h3 className="font-bold text-sm md:text-md">Upload Torrent Files</h3>
-                            <p className="text-xs md:text-sm font-medium text-muted-foreground">
-                                Drag and drop or click to upload torrent files
-                            </p>
+                            <FileUp className="size-5 md:size-8 text-muted-foreground" />
+                            <p className="text-sm font-medium">Drop .torrent files here</p>
+                            <p className="text-xs md:text-sm text-muted-foreground">or click to browse</p>
                         </Dropzone>
                     </div>
 
                     <div className="flex flex-col space-y-2">
-                        <label className="text-sm font-bold">Add Links (HTTP/Magnet)</label>
+                        <label className="text-xs tracking-widest uppercase text-muted-foreground">Add Links</label>
                         <div className="relative flex-1">
                             <Textarea
                                 placeholder="Enter links (one per line)"
                                 value={links}
                                 onChange={(e) => setLinks(e.target.value)}
                                 rows={4}
-                                className="font-mono text-sm max-h-28 md:h-full pr-16"
+                                className="font-mono text-sm max-h-28 md:h-full pr-14"
                             />
                             <div className="absolute top-2 right-2 flex gap-0.5">
                                 {links.trim() && (

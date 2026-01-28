@@ -6,6 +6,7 @@ import { DebridLinkInfo, FileType } from "../types";
 import { ACCOUNT_TYPE_LABELS, CORS_PROXY_URL, EXTENSION_TO_FILE_TYPE } from "../constants";
 import { del } from "idb-keyval";
 import { queryClient } from "../query-client";
+import { toast } from "sonner";
 
 export * from "./color";
 export * from "./media-player";
@@ -107,8 +108,18 @@ export const isNonMP4Video = (filenameOrUrl: string): boolean => {
     return !filenameOrUrl.toLowerCase().endsWith(".mp4");
 };
 
-export const getTextFromClipboard = async (): Promise<string> => {
-    return await navigator.clipboard.readText();
+export const getTextFromClipboard = async (): Promise<string | null> => {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (!text.trim()) {
+            toast.error("Clipboard is empty");
+            return null;
+        }
+        return text;
+    } catch {
+        toast.error("Failed to read clipboard");
+        return null;
+    }
 };
 
 export async function chunkedPromise<T>({
