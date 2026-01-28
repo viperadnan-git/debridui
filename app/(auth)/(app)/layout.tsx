@@ -11,9 +11,9 @@ import { FilePreviewDialog } from "@/components/preview/file-preview-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
 import { SplashScreen } from "@/components/splash-screen";
 
-// Private routes layout - requires at least one account
+// App layout - requires at least one account
 // Uses AuthProvider from parent (auth) layout
-export default function PrivateLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const { userAccounts, currentAccount, currentUser, client } = useAuth();
 
@@ -26,17 +26,9 @@ export default function PrivateLayout({ children }: { children: React.ReactNode 
         }
     }, [hasAccounts, router]);
 
-    if (!hasAccounts) {
-        return <SplashScreen />;
-    }
-
-    // Wait for account selection
-    if (!currentAccount) {
-        return <SplashScreen />;
-    }
-
-    // Wait for user info to load
-    if (!currentUser || !client) {
+    // Single check for all required data to prevent flicker
+    const isReady = hasAccounts && currentAccount && currentUser && client;
+    if (!isReady) {
         return <SplashScreen />;
     }
 

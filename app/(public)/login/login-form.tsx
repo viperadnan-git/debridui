@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ const loginSchema = z.object({
 
 export default function LoginForm() {
     const router = useRouter();
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -44,6 +46,7 @@ export default function LoginForm() {
             }
 
             if (data) {
+                setIsRedirecting(true);
                 toast.success("Logged in successfully");
                 router.push("/dashboard");
             }
@@ -51,6 +54,8 @@ export default function LoginForm() {
             toast.error("An unexpected error occurred");
         }
     }
+
+    const isDisabled = form.formState.isSubmitting || isRedirecting;
 
     return (
         <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
@@ -74,7 +79,7 @@ export default function LoginForm() {
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                        <GoogleSignInButton mode="signin" callbackURL="/dashboard" />
+                        <GoogleSignInButton callbackURL="/dashboard" disabled={isDisabled} />
 
                         {/* Runtime comparison for Docker env injection support */}
                         {!!GOOGLE_CLIENT_ID && (
@@ -119,8 +124,8 @@ export default function LoginForm() {
                                 )}
                             />
 
-                            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                                {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
+                            <Button type="submit" className="w-full" disabled={isDisabled}>
+                                {isDisabled ? "Signing in..." : "Sign In"}
                             </Button>
                         </div>
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { GOOGLE_CLIENT_ID } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
@@ -8,12 +7,10 @@ import { toast } from "sonner";
 
 interface GoogleSignInButtonProps {
     callbackURL?: string;
-    mode?: "signin" | "signup";
+    disabled?: boolean;
 }
 
-export function GoogleSignInButton({ callbackURL = "/dashboard", mode = "signin" }: GoogleSignInButtonProps) {
-    const [isLoading, setIsLoading] = useState(false);
-
+export function GoogleSignInButton({ callbackURL = "/dashboard", disabled }: GoogleSignInButtonProps) {
     // Runtime comparison for Docker env injection support
     // Placeholder strings are replaced at container startup, so comparison must happen here
     if (!GOOGLE_CLIENT_ID) {
@@ -21,7 +18,6 @@ export function GoogleSignInButton({ callbackURL = "/dashboard", mode = "signin"
     }
 
     async function handleGoogleSignIn() {
-        setIsLoading(true);
         try {
             await authClient.signIn.social({
                 provider: "google",
@@ -30,12 +26,11 @@ export function GoogleSignInButton({ callbackURL = "/dashboard", mode = "signin"
         } catch (error) {
             toast.error("Failed to sign in with Google");
             console.error("Google sign-in error:", error);
-            setIsLoading(false);
         }
     }
 
     return (
-        <Button type="button" variant="outline" onClick={handleGoogleSignIn} disabled={isLoading} className="w-full">
+        <Button type="button" variant="outline" onClick={handleGoogleSignIn} disabled={disabled} className="w-full">
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -54,7 +49,7 @@ export function GoogleSignInButton({ callbackURL = "/dashboard", mode = "signin"
                     fill="#EA4335"
                 />
             </svg>
-            {isLoading ? (mode === "signin" ? "Signing in..." : "Signing up...") : "Continue with Google"}
+            Continue with Google
         </Button>
     );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ const signupSchema = z.object({
 
 export default function SignupForm() {
     const router = useRouter();
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     // Runtime comparisons for Docker env injection support
     // Placeholder strings are replaced at container startup, so comparisons must happen here
@@ -53,6 +55,7 @@ export default function SignupForm() {
             }
 
             if (data) {
+                setIsRedirecting(true);
                 toast.success("Account created successfully");
                 router.push("/dashboard");
             }
@@ -60,6 +63,8 @@ export default function SignupForm() {
             toast.error("An unexpected error occurred");
         }
     }
+
+    const isDisabled = form.formState.isSubmitting || isRedirecting;
 
     return (
         <div className="bg-background grid grid-rows-[1fr_auto] min-h-svh p-6 md:p-10">
@@ -84,7 +89,7 @@ export default function SignupForm() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                            <GoogleSignInButton mode="signup" callbackURL="/dashboard" />
+                            <GoogleSignInButton callbackURL="/dashboard" disabled={isDisabled} />
 
                             {!isEmailSignupDisabled && isGoogleOAuthEnabled && (
                                 <div className="relative">
@@ -143,8 +148,8 @@ export default function SignupForm() {
                                         )}
                                     />
 
-                                    <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                                        {form.formState.isSubmitting ? "Creating account..." : "Sign Up"}
+                                    <Button type="submit" className="w-full" disabled={isDisabled}>
+                                        {isDisabled ? "Creating account..." : "Sign Up"}
                                     </Button>
                                 </div>
                             )}

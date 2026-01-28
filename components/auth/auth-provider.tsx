@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useEffect, useState, useMemo, useCallback, startTransition } from "react";
 import { authClient } from "@/lib/auth-client";
-import { useUserAccounts, useDebridUserInfo } from "@/hooks/use-user-accounts";
+import { useUserAccounts, useDebridUserInfo, useRemoveUserAccount } from "@/hooks/use-user-accounts";
 import type { UserAccount } from "@/lib/db";
 import type { User } from "@/lib/types";
 import { getClientInstance } from "@/lib/clients";
 import type { DebridClient } from "@/lib/clients";
 import { SplashScreen } from "@/components/splash-screen";
+import { SplashErrorScreen } from "@/components/splash-error-screen";
 import { useRouter } from "next/navigation";
 import { clearAppCache } from "@/lib/utils";
 import { toast } from "sonner";
@@ -54,7 +55,7 @@ interface AuthProviderProps {
 // `client-swr-dedup` - Single AuthProvider for all authenticated routes
 export function AuthProvider({ children }: AuthProviderProps) {
     const router = useRouter();
-    const { data: session, isPending: isSessionPending } = authClient.useSession();
+    const { data: session, isPending: isSessionPending, error: sessionError } = authClient.useSession();
     // Only fetch accounts when session exists
     const { data: userAccounts = [], isLoading: isAccountsLoading, refetch } = useUserAccounts(!!session);
 
@@ -88,7 +89,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
 
     // Use React Query to fetch and cache debrid user info
-    const { data: currentUser = null, isLoading: isLoadingUser } = useDebridUserInfo(currentAccount);
+    const {
+        data: currentUser = null,
+        isLoading: isLoadingUser,
+        isError: isUserError,
+        error: userError,
+        refetch: refetchUser,
+    } = useDebridUserInfo(currentAccount);
+
+    // Mutation for removing accounts (used in error recovery)
+    const { mutate: removeAccount } = useRemoveUserAccount();
+
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (!isSessionPending && !session) {
+            router.push("/login");
+        }
+    }, [session, isSessionPending, router]);
 
     // Sync currentAccountId to localStorage when it changes
     useEffect(() => {
@@ -159,9 +176,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
         ]
     );
 
-    // Show splash during initial session and accounts load
-    if (isSessionPending || isAccountsLoading) {
+    // Show error screen when session check fails
+    if (sessionError) {
+        return (
+            <SplashErrorScreen
+                title="Session Error"
+                error={sessionError instanceof Error ? sessionError : new Error("Failed to verify session")}
+                onRetry={() => window.location.reload()}
+            />
+        );
+    }
+
+    // Show splash during: session check, no session (redirect), accounts loading, user info loading
+    if (isSessionPending || !session || isAccountsLoading || (accountsLength > 0 && isLoadingUser)) {
         return <SplashScreen />;
+    }
+
+    // Show error screen when account fetch fails
+    if (isUserError && currentAccount) {
+        return (
+            <SplashErrorScreen
+                title="Debrid Account Error"
+                error={userError}
+                onRetry={refetchUser}
+                onDelete={() => removeAccount(currentAccount.id)}
+                onLogout={logout}
+            />
+        );
     }
 
     return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
