@@ -8,7 +8,8 @@ import {
     DebridFileAddStatus,
     AccountType,
     User,
-    AuthError,
+    DebridError,
+    DebridAuthError,
     WebDownload,
     WebDownloadAddResult,
 } from "@/lib/types";
@@ -587,9 +588,9 @@ export default class AllDebridClient extends BaseClient {
             const message = data.error?.message || "API request failed";
             const code = data.error?.code || "Unknown";
             if (["AUTH_MISSING_APIKEY", "AUTH_BAD_APIKEY", "AUTH_BLOCKED", "AUTH_USER_BANNED"].includes(code)) {
-                throw new AuthError(message, code);
+                throw new DebridAuthError(message, AccountType.ALLDEBRID);
             }
-            throw new Error(message);
+            throw new DebridError(message, AccountType.ALLDEBRID);
         }
     }
 

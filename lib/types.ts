@@ -122,30 +122,28 @@ export type DebridFileAddStatus = {
 };
 
 export class DebridError extends Error {
-    code: string;
-    statusCode?: number;
+    type?: AccountType;
 
-    constructor(message: string, code: string, statusCode?: number) {
-        super(message);
+    constructor(message: string, type?: AccountType) {
+        super(type ? `${type}: ${message}` : message);
         this.name = "DebridError";
-        this.code = code;
-        this.statusCode = statusCode;
+        this.type = type;
     }
 }
 
-export class AuthError extends DebridError {
-    constructor(message: string, code: string, statusCode?: number) {
-        super(message, code, statusCode);
-        this.name = "AuthError";
+export class DebridAuthError extends DebridError {
+    constructor(message: string, type?: AccountType) {
+        super(message, type);
+        this.name = "DebridAuthError";
     }
 }
 
-export class RateLimitError extends DebridError {
+export class DebridRateLimitError extends DebridError {
     retryAfter?: number;
 
-    constructor(message: string, code: string, retryAfter?: number) {
-        super(message, code, 429);
-        this.name = "RateLimitError";
+    constructor(message: string, type?: AccountType, retryAfter?: number) {
+        super(message, type);
+        this.name = "DebridRateLimitError";
         this.retryAfter = retryAfter;
     }
 }

@@ -8,9 +8,9 @@ import {
     DebridFileAddStatus,
     AccountType,
     User,
-    AuthError,
+    DebridAuthError,
     DebridError,
-    RateLimitError,
+    DebridRateLimitError,
     WebDownload,
     WebDownloadAddResult,
     WebDownloadStatus,
@@ -166,31 +166,7 @@ export default class TorBoxClient extends BaseClient {
             },
         });
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new AuthError("Invalid or expired API key", "AUTH_INVALID_APIKEY", response.status);
-            }
-            if (response.status === 429) {
-                const retryAfter = response.headers.get("Retry-After");
-                throw new RateLimitError(
-                    "Rate limit exceeded",
-                    "RATE_LIMIT_EXCEEDED",
-                    retryAfter ? parseInt(retryAfter) : undefined
-                );
-            }
-            throw new DebridError(`API request failed: ${response.statusText}`, "API_REQUEST_FAILED", response.status);
-        }
-
-        const data: TorBoxResponse<T> = await response.json();
-
-        if (!data.success) {
-            const errorMessage = data.detail || data.error || "Unknown error";
-            if (errorMessage.includes("auth") || errorMessage.includes("token")) {
-                throw new AuthError(errorMessage, "AUTH_ERROR");
-            }
-            throw new DebridError(errorMessage, "API_ERROR");
-        }
-
+        const data = await TorBoxClient.validateResponse<T>(response);
         return (options.returnRaw ? data : data.data) as T;
     }
 
@@ -202,14 +178,10 @@ export default class TorBoxClient extends BaseClient {
             },
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to get user info: ${response.statusText}`);
-        }
+        const data = await TorBoxClient.validateResponse<TorBoxUser>(response);
 
-        const data: TorBoxResponse<TorBoxUser> = await response.json();
-
-        if (!data.success || !data.data) {
-            throw new Error("Failed to get user information");
+        if (!data.data) {
+            throw new DebridError("No user data returned", AccountType.TORBOX);
         }
 
         const user = data.data;
@@ -327,7 +299,7 @@ export default class TorBoxClient extends BaseClient {
         const [torrentId, targetFileId] = fileNode.id.split(":");
 
         if (!torrentId || !targetFileId) {
-            throw new DebridError("Invalid file ID format. Expected 'torrentId:fileId'", "INVALID_FILE_ID");
+            throw new DebridError("Invalid file ID format. Expected 'torrentId:fileId'", AccountType.TORBOX);
         }
 
         let downloadUrl: string;
@@ -550,20 +522,8 @@ export default class TorBoxClient extends BaseClient {
             },
         });
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new AuthError("Invalid or expired API key", "AUTH_INVALID_APIKEY", response.status);
-            }
-            throw new DebridError(`Search request failed: ${response.statusText}`, "SEARCH_FAILED", response.status);
-        }
-
-        const data: TorBoxSearchResponse = await response.json();
-
-        if (!data.success || !data.data) {
-            throw new DebridError(data.message || "Search failed", "SEARCH_ERROR");
-        }
-
-        return data.data.torrents || [];
+        const data = await TorBoxClient.validateResponse<TorBoxSearchResponse["data"]>(response);
+        return data.data?.torrents || [];
     }
 
     // Web download methods
@@ -711,5 +671,55 @@ export default class TorBoxClient extends BaseClient {
                 console.log("Unknown download state:", downloadState);
                 return "unknown";
         }
+    }
+
+    private static async validateResponse<T>(response: Response): Promise<TorBoxResponse<T>> {
+        let data: TorBoxResponse<T>;
+        try {
+            data = await response.json();
+        } catch {
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new DebridAuthError("Invalid or expired API key", AccountType.TORBOX);
+                }
+                if (response.status === 429) {
+                    const retryAfter = response.headers.get("Retry-After");
+                    throw new DebridRateLimitError(
+                        "Rate limit exceeded",
+                        AccountType.TORBOX,
+                        retryAfter ? parseInt(retryAfter) : undefined
+                    );
+                }
+                throw new DebridError(`API request failed: ${response.statusText}`, AccountType.TORBOX);
+            }
+            throw new DebridError("Invalid JSON response", AccountType.TORBOX);
+        }
+
+        // API response errors (works for both ok and non-ok responses)
+        if (!data.success) {
+            const errorCode = data.error || "";
+            const errorMessage = data.detail || "Unknown error";
+
+            if (errorCode === "AUTH_ERROR" || errorMessage.toLowerCase().includes("token") || response.status === 401) {
+                throw new DebridAuthError(errorMessage, AccountType.TORBOX);
+            }
+
+            if (
+                errorCode === "RATE_LIMIT" ||
+                errorMessage.toLowerCase().includes("rate limit") ||
+                response.status === 429
+            ) {
+                const retryAfter = response.headers.get("Retry-After");
+                throw new DebridRateLimitError(
+                    errorMessage,
+                    AccountType.TORBOX,
+                    retryAfter ? parseInt(retryAfter) : undefined
+                );
+            }
+
+            throw new DebridError(errorMessage, AccountType.TORBOX);
+        }
+
+        return data;
     }
 }
