@@ -1,13 +1,38 @@
 import { SVGProps } from "react";
 
+/**
+ * Centralized icon exports to reduce bundle size
+ * Only export icons that are used in multiple places
+ */
+export {
+    Loader2,
+    ChevronRight,
+    ChevronDown,
+    Copy,
+    Download,
+    CirclePlay,
+    X,
+    Plus,
+    Trash2,
+    Search,
+    Settings,
+    User,
+    LogOut,
+    Menu,
+    Home,
+    Film,
+    Tv,
+    FileText,
+    Folder,
+    FolderOpen,
+    Check,
+    ExternalLink,
+} from "lucide-react";
+
+// Custom brand icons
 export function GitHubIcon(props: SVGProps<SVGSVGElement>) {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="1em"
-            height="1em"
-            viewBox="0 0 24 24"
-            {...props}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>
             {/* Icon from Simple Icons by Simple Icons Collaborators - https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md */}
             <path
                 fill="currentColor"

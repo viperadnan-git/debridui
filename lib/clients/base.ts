@@ -1,7 +1,20 @@
-import { User, DebridFileAddStatus, DebridFile, DebridFileNode, DebridLinkInfo } from "@/lib/types";
+import {
+    User,
+    DebridFileAddStatus,
+    DebridFile,
+    DebridFileNode,
+    DebridLinkInfo,
+    WebDownload,
+    WebDownloadAddResult,
+} from "@/lib/types";
 
 export default abstract class BaseClient {
     protected readonly user: User;
+
+    // Web download capabilities - override in subclasses
+    readonly refreshInterval: number | false = false;
+    readonly supportsEphemeralLinks: boolean = false;
+
     constructor(user: User) {
         this.user = user;
     }
@@ -74,4 +87,12 @@ export default abstract class BaseClient {
     abstract findTorrents(searchQuery: string): Promise<DebridFile[]>;
     abstract findTorrentById?(torrentId: string): Promise<DebridFile | null>;
     abstract getDownloadLink(params: { fileNode: DebridFileNode; resolve?: boolean }): Promise<DebridLinkInfo>;
+
+    // Web download methods
+    abstract addWebDownloads(links: string[]): Promise<WebDownloadAddResult[]>;
+    abstract getWebDownloadList(): Promise<WebDownload[]>;
+    abstract deleteWebDownload(id: string): Promise<void>;
+
+    // Optional: Save links (AllDebrid only)
+    saveWebDownloadLinks?(links: string[]): Promise<void>;
 }

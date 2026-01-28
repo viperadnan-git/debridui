@@ -9,7 +9,7 @@ import { useState } from "react";
 import { queryClient } from "@/lib/query-client";
 import { processFileNodes } from "@/lib/utils/file";
 import { getTorrentFilesCacheKey } from "@/lib/utils/cache-keys";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 
 interface FileListRowProps {
     file: DebridFile;
@@ -27,7 +27,7 @@ const collectNodeIds = (nodes: DebridNode[], result: string[] = []): string[] =>
 };
 
 export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
-    const { currentUser } = useAuthContext();
+    const { currentAccount } = useAuthGuaranteed();
     const isSelected = useFileSelectionState(file.id);
     const [isExpanded, setIsExpanded] = useState(
         autoExpand && (file.status === "completed" || file.status === "seeding")
@@ -37,7 +37,7 @@ export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
     const handleSelectFile = () => {
         // Use files from DebridFile if available, otherwise check cache
         const fileNodes =
-            file.files || queryClient.getQueryData<DebridNode[]>(getTorrentFilesCacheKey(currentUser.id, file.id));
+            file.files || queryClient.getQueryData<DebridNode[]>(getTorrentFilesCacheKey(currentAccount.id, file.id));
         const processedFileNodes = processFileNodes({ fileNodes: fileNodes || [] });
         toggleFileSelection(file.id, processedFileNodes ? collectNodeIds(processedFileNodes) : [], processedFileNodes);
     };

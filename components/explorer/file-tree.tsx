@@ -9,7 +9,7 @@ import { cn, getFileType } from "@/lib/utils";
 import { formatSize, playUrl, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
 import { FileType, MediaPlayer } from "@/lib/types";
 import { useSettingsStore } from "@/lib/stores/settings";
@@ -120,12 +120,12 @@ const FileActionButton = memo(function FileActionButton({
     node: DebridFileNode;
     action: "copy" | "download" | "play";
 }) {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentAccount } = useAuthGuaranteed();
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const downloadLinkMaxAge = useSettingsStore((state) => state.get("downloadLinkMaxAge"));
 
     const { data: linkInfo, refetch } = useQuery({
-        queryKey: getDownloadLinkCacheKey(currentUser.id, node.id, false),
+        queryKey: getDownloadLinkCacheKey(currentAccount.id, node.id, false),
         queryFn: () => client.getDownloadLink({ fileNode: node }),
         enabled: false,
         gcTime: downloadLinkMaxAge,
@@ -290,7 +290,7 @@ const VirtualizedNode = memo(function VirtualizedNode({
 
             {isFile ? (
                 <>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">{formatSize(node.size)}</span>
+                    <span className="text-xs text-muted-foreground">{formatSize(node.size)}</span>
                     <div className="flex gap-2 md:gap-0.5">
                         {isVideoWithBrowserPlayer && (
                             <PreviewButton node={node} allNodes={allFileNodes} fileId={fileId} />
@@ -304,7 +304,7 @@ const VirtualizedNode = memo(function VirtualizedNode({
                     </div>
                 </>
             ) : (
-                <span className="text-[10px] sm:text-xs text-muted-foreground">{node.children.length} items</span>
+                <span className="text-xs text-muted-foreground">{node.children.length} items</span>
             )}
         </div>
     );

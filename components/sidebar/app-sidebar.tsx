@@ -3,19 +3,13 @@
 import * as React from "react";
 
 import { NavMain } from "@/components/sidebar/nav-main";
+import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
-import { FolderOpen, SearchIcon, HomeIcon, SettingsIcon, UsersIcon, Puzzle } from "lucide-react";
+import { FolderOpen, SearchIcon, HomeIcon, SettingsIcon, UsersIcon, Puzzle, Link2 } from "lucide-react";
 import { useSearch } from "@/components/mdb/search-provider";
-import { SidebarFooterContent } from "./sidebar-footer";
 
-// This is sample data.
 const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
-    },
     navMain: [
         {
             title: "Dashboard",
@@ -31,6 +25,11 @@ const data = {
             title: "Files",
             url: "/files",
             icon: FolderOpen,
+        },
+        {
+            title: "Links",
+            url: "/links",
+            icon: Link2,
         },
         {
             title: "Addons",
@@ -67,9 +66,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarContent>
                 <NavMain items={data.navMain} onAction={handleNavAction} />
             </SidebarContent>
-            {/* <NavUser user={data.user} /> */}
             <SidebarFooter className="border-t border-sidebar-border/50">
-                <SidebarFooterContent />
+                <NavUser />
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>

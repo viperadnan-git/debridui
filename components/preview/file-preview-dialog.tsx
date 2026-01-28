@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef } from "react";
 import { usePreviewStore } from "@/lib/stores/preview";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useQuery } from "@tanstack/react-query";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -15,7 +15,7 @@ import { formatSize, downloadLinks } from "@/lib/utils";
 import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
 
 export function FilePreviewDialog() {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentAccount } = useAuthGuaranteed();
     const { get } = useSettingsStore();
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
 
@@ -27,7 +27,7 @@ export function FilePreviewDialog() {
 
     // Fetch download link for current file
     const { data: linkInfo, isLoading } = useQuery({
-        queryKey: getDownloadLinkCacheKey(currentUser.id, currentFile?.id || "", true),
+        queryKey: getDownloadLinkCacheKey(currentAccount.id, currentFile?.id || "", true),
         queryFn: () => client.getDownloadLink({ fileNode: currentFile!, resolve: true }),
         enabled: isOpen && !!currentFile?.id,
         gcTime: downloadLinkMaxAge,

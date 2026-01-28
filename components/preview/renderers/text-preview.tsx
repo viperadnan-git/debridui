@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DebridFileNode, AccountType } from "@/lib/types";
 import { Loader2, AlertCircle } from "lucide-react";
-import { useUserStore } from "@/lib/stores/users";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { getProxyUrl } from "@/lib/utils";
 
 interface TextPreviewProps {
@@ -17,7 +17,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [content, setContent] = useState<string>("");
-    const currentUser = useUserStore((state) => state.currentUser);
+    const { currentUser } = useAuthGuaranteed();
 
     useEffect(() => {
         const fetchContent = async () => {
@@ -25,7 +25,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
                 setLoading(true);
                 setError(null);
 
-                const useProxy = currentUser?.type === AccountType.ALLDEBRID;
+                const useProxy = currentUser.type === AccountType.ALLDEBRID;
                 const fetchUrl = useProxy ? getProxyUrl(downloadUrl) : downloadUrl;
 
                 const response = await fetch(fetchUrl);
@@ -46,7 +46,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
         };
 
         fetchContent();
-    }, [downloadUrl, currentUser?.type, onLoad, onError]);
+    }, [downloadUrl, currentUser.type, onLoad, onError]);
 
     if (loading) {
         return (

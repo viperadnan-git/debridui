@@ -8,6 +8,7 @@ import { SeasonCard } from "./season-card";
 import { EpisodeCard } from "./episode-card";
 import { PeopleSection } from "./people-section";
 import { MediaHeader } from "./media-header";
+import { SectionDivider } from "@/components/section-divider";
 import { useState, memo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -30,26 +31,23 @@ const SeasonsSection = memo(function SeasonsSection({
     if (!isLoading && (!seasons || seasons.length === 0)) return null;
 
     return (
-        <div>
-            <h3 className="text-base sm:text-lg font-semibold mb-3">Seasons</h3>
-            <ScrollCarousel className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-4 pb-4">
-                    {isLoading
-                        ? Array.from({ length: 6 }).map((_, i) => (
-                              <Skeleton key={i} className="w-32 sm:w-36 md:w-40 aspect-2/3 rounded-lg shrink-0" />
-                          ))
-                        : seasons?.map((season) => (
-                              <SeasonCard
-                                  key={season.number}
-                                  season={season}
-                                  isSelected={selectedSeason === season.number}
-                                  onClick={() => setSelectedSeason(season.number)}
-                                  mediaId={mediaId}
-                              />
-                          ))}
-                </div>
-            </ScrollCarousel>
-        </div>
+        <ScrollCarousel className="-mx-4 lg:mx-0">
+            <div className="flex w-max gap-3 pb-4 px-4 lg:pl-2 lg:pr-0">
+                {isLoading
+                    ? Array.from({ length: 6 }).map((_, i) => (
+                          <Skeleton key={i} className="w-28 sm:w-32 md:w-36 aspect-2/3 rounded-sm shrink-0" />
+                      ))
+                    : seasons?.map((season) => (
+                          <SeasonCard
+                              key={season.number}
+                              season={season}
+                              isSelected={selectedSeason === season.number}
+                              onClick={() => setSelectedSeason(season.number)}
+                              mediaId={mediaId}
+                          />
+                      ))}
+            </div>
+        </ScrollCarousel>
     );
 });
 
@@ -66,25 +64,30 @@ const EpisodesSection = memo(function EpisodesSection({
 
     if (!isLoading && (!episodes || episodes.length === 0)) return null;
 
+    const seasonLabel = selectedSeason === 0 ? "Specials" : `Season ${selectedSeason}`;
+
     return (
-        <div>
-            <h3 className="text-base sm:text-lg font-semibold mb-4" id="sources">
-                {selectedSeason === 0 ? "Specials" : `Season ${selectedSeason}`} Episodes
-            </h3>
-            <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h3 className="text-sm font-light text-muted-foreground" id="sources">
+                    {seasonLabel}
+                </h3>
+                {episodes && (
+                    <span className="text-xs tracking-wider uppercase text-muted-foreground">
+                        {episodes.length} Episodes
+                    </span>
+                )}
+            </div>
+            <div className="flex flex-col gap-3">
                 {isLoading
                     ? Array.from({ length: 3 }).map((_, i) => (
-                          <div key={i} className="bg-card rounded-lg border overflow-hidden">
-                              <div className="flex flex-col sm:flex-row sm:gap-4">
-                                  <Skeleton className="w-full sm:w-56 md:w-64 aspect-video" />
-                                  <div className="flex-1 p-3 sm:py-3 sm:pr-4 sm:pl-0 space-y-3">
-                                      <Skeleton className="h-6 w-3/4" />
-                                      <Skeleton className="h-4 w-full" />
-                                      <Skeleton className="h-4 w-full" />
-                                      <div className="flex gap-4">
-                                          <Skeleton className="h-4 w-24" />
-                                          <Skeleton className="h-4 w-16" />
-                                      </div>
+                          <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
+                              <div className="flex flex-col sm:flex-row">
+                                  <Skeleton className="w-full sm:w-48 md:w-56 aspect-video rounded-none" />
+                                  <div className="flex-1 p-4 space-y-3">
+                                      <Skeleton className="h-4 w-3/4" />
+                                      <Skeleton className="h-3 w-1/2" />
+                                      <Skeleton className="h-3 w-full" />
                                   </div>
                               </div>
                           </div>
@@ -119,11 +122,11 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
     );
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="space-y-12">
             <MediaHeader media={media} mediaId={mediaId} type="show" />
 
-            <div className="space-y-4">
-                <h2 className="text-lg sm:text-xl font-bold">Seasons & Episodes</h2>
+            <section className="space-y-6">
+                <SectionDivider label="Seasons & Episodes" />
 
                 <SeasonsSection
                     selectedSeason={selectedSeason}
@@ -132,9 +135,12 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                 />
 
                 <EpisodesSection selectedSeason={selectedSeason} mediaId={mediaId} media={media} />
-            </div>
+            </section>
 
-            <PeopleSection mediaId={mediaId} type="shows" />
+            <section className="space-y-6">
+                <SectionDivider label="Cast & Crew" />
+                <PeopleSection mediaId={mediaId} type="shows" />
+            </section>
         </div>
     );
 });

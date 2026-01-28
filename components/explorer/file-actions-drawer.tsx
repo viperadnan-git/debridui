@@ -3,15 +3,14 @@
 import { useMemo, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, RotateCcw } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { FileActions } from "./file-actions";
 import { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useFileStore } from "@/lib/stores/files";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useShallow } from "zustand/react/shallow";
 import { useSelectionStore } from "@/lib/stores/selection";
+import { useToastMutation } from "@/lib/utils/mutation-factory";
+import { removeTorrentWithCleanup, retryTorrentsWithCleanup } from "@/lib/utils/file-mutations";
 
 interface FileActionsDrawerProps {
     files: DebridFile[];
@@ -44,13 +43,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
             return totalNodes === 0 || (selectedNodes && selectedNodes.size === totalNodes);
         });
     }, [selectedFileIds, selectedNodesByFile, totalNodesByFile]);
-    const { client } = useAuthContext();
-    const { removeTorrent, retryFiles } = useFileStore(
-        useShallow((state) => ({
-            removeTorrent: state.removeTorrent,
-            retryFiles: state.retryFiles,
-        }))
-    );
+    const { client, currentAccount } = useAuthGuaranteed();
 
     const hasAnySelection = selectedFileIds.size > 0 || selectedNodeIds.size > 0;
 
@@ -68,36 +61,30 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
         };
     }, [files, fullySelectedFileIds]);
 
-    // Delete mutation
-    const deleteMutation = useMutation({
-        mutationFn: async (fileIds: string[]) => {
-            const promises = fileIds.map((id) => removeTorrent(client, id));
+    const deleteMutation = useToastMutation(
+        async (fileIds: string[]) => {
+            const promises = fileIds.map((id) => removeTorrentWithCleanup(client, currentAccount.id, id));
             await Promise.all(promises);
             return fileIds;
         },
-        onSuccess: (fileIds) => {
-            // Selection clearing is now handled in the store's removeTorrent
-            toast.success(`Deleted ${fileIds.length} file(s)`);
-        },
-        onError: (error: Error) => {
-            toast.error(`Failed to delete: ${error.message}`);
-        },
-    });
+        {
+            loading: "Deleting files...",
+            success: (fileIds) => `Deleted ${fileIds.length} file(s)`,
+            error: "Failed to delete",
+        }
+    );
 
-    // Retry mutation
-    const retryMutation = useMutation({
-        mutationFn: async (fileIds: string[]) => {
-            return retryFiles(client, fileIds);
+    const retryMutation = useToastMutation(
+        async (fileIds: string[]) => {
+            const results = await retryTorrentsWithCleanup(client, currentAccount.id, fileIds);
+            return { results, count: fileIds.length };
         },
-        onSuccess: (results) => {
-            Object.entries(results).forEach(([magnet, message]) => {
-                toast.success(`Retrying ${magnet}: ${message}`);
-            });
-        },
-        onError: (error: Error) => {
-            toast.error(`Failed to retry: ${error.message}`);
-        },
-    });
+        {
+            loading: "Retrying files...",
+            success: ({ count }) => `Retrying ${count} file(s)`,
+            error: "Failed to retry",
+        }
+    );
 
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -142,7 +129,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                                     size="sm"
                                     onClick={() => retryMutation.mutate(canRetry.map((f) => f.id))}
                                     disabled={retryMutation.isPending}
-                                    className="text-xs sm:text-sm h-7 sm:h-8">
+                                    className="text-xs sm:text-sm">
                                     <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                     Retry ({canRetry.length})
                                 </Button>
@@ -153,7 +140,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                                     size="sm"
                                     onClick={() => deleteMutation.mutate(fullySelectedFiles.map((f) => f.id))}
                                     disabled={deleteMutation.isPending}
-                                    className="text-xs sm:text-sm h-7 sm:h-8">
+                                    className="text-xs sm:text-sm">
                                     <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                     Delete ({fullySelectedFiles.length})
                                 </Button>

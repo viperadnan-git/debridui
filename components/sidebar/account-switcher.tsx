@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Plus, Check, LogOut } from "lucide-react";
+import { ChevronsUpDown, Plus, Check } from "lucide-react";
+import Link from "next/link";
 
 import {
     DropdownMenu,
@@ -13,48 +14,38 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { formatAccountType } from "@/lib/utils";
-import { useRouter } from "@bprogress/next/app";
-import { useUserStore } from "@/lib/stores/users";
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ServiceIcon } from "@/components/accounts/service-icon";
 import { AccountType } from "@/lib/types";
+import { useAuth } from "@/components/auth/auth-provider";
 
-export function AccountSwitcher() {
-    const users = useUserStore((state) => state.users);
-    const currentUser = useUserStore((state) => state.currentUser);
-    const switchAccount = useUserStore((state) => state.switchUser);
-    const removeUser = useUserStore((state) => state.removeUser);
+export const AccountSwitcher = React.memo(function AccountSwitcher() {
+    const { userAccounts, currentUser, currentAccount, switchAccount } = useAuth();
+    const { isMobile, setOpenMobile } = useSidebar();
+    const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
-    const { isMobile } = useSidebar();
-    const router = useRouter();
-    const [removeDialogOpen, setRemoveDialogOpen] = React.useState(false);
-
-    const handleLogout = () => {
-        if (currentUser) {
-            removeUser(currentUser.id);
-            if (users.length === 1) {
-                router.push("/login");
-            }
-        }
-        setRemoveDialogOpen(false);
-    };
-
-    if (!currentUser) {
+    if (!currentUser || !currentAccount) {
         return null;
     }
+
+    const handleNavigation = () => {
+        setDropdownOpen(false);
+        if (isMobile) {
+            setTimeout(() => setOpenMobile(false), 150);
+        }
+    };
 
     return (
         <>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <DropdownMenu>
+                    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                         <DropdownMenuTrigger asChild>
                             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
-                                <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-accent/50 ring-1 ring-sidebar-border/50 shrink-0">
+                                <div className="flex size-9 items-center justify-center rounded-sm bg-muted/50 shrink-0">
                                     <ServiceIcon type={currentUser.type as AccountType} className="size-5" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
-                                    <span className="truncate font-semibold" title={currentUser.username}>
+                                    <span className="truncate font-light" title={currentUser.username}>
                                         {currentUser.username}
                                     </span>
                                     <span className="truncate text-xs text-muted-foreground">
@@ -65,69 +56,53 @@ export function AccountSwitcher() {
                             </SidebarMenuButton>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
-                            className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-xl p-2"
+                            className="w-(--radix-dropdown-menu-trigger-width) min-w-64 p-2"
                             align="start"
                             side={isMobile ? "bottom" : "right"}
                             sideOffset={8}>
-                            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase px-2 py-1.5">
+                            <DropdownMenuLabel className="text-xs tracking-wider uppercase text-muted-foreground px-2 py-1.5">
                                 Accounts
                             </DropdownMenuLabel>
-                            {users.map((user) => (
+                            {userAccounts.map((account) => (
                                 <DropdownMenuItem
-                                    key={user.id}
-                                    onClick={() => switchAccount(user.id)}
-                                    className="gap-3 p-2.5 rounded-lg flex items-center justify-between cursor-pointer">
+                                    key={account.id}
+                                    onClick={() => {
+                                        handleNavigation();
+                                        switchAccount(account.id);
+                                    }}
+                                    className="gap-3 p-2.5 flex items-center justify-between cursor-pointer">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30 shrink-0">
-                                            <ServiceIcon type={user.type} className="size-4" />
+                                        <div className="flex size-8 items-center justify-center rounded-sm bg-muted/50 shrink-0">
+                                            <ServiceIcon type={account.type as AccountType} className="size-4" />
                                         </div>
                                         <div className="flex flex-col min-w-0 flex-1">
-                                            <span className="text-sm font-semibold truncate" title={user.username}>
-                                                {user.username}
+                                            <span className="text-sm font-light truncate">
+                                                {formatAccountType(account.type)}
                                             </span>
                                             <span className="text-xs text-muted-foreground truncate">
-                                                {formatAccountType(user.type)}
+                                                {account.type}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5 shrink-0">
-                                        {user.id === currentUser.id && <Check className="size-4 text-primary" />}
+                                        {account.id === currentAccount.id && <Check className="size-4 text-primary" />}
                                     </div>
                                 </DropdownMenuItem>
                             ))}
                             <DropdownMenuSeparator className="my-2" />
 
-                            <DropdownMenuItem
-                                className="gap-3 p-2.5 rounded-lg cursor-pointer"
-                                onClick={() => router.push("/accounts/add")}>
-                                <div className="flex size-8 items-center justify-center rounded-lg border bg-sidebar-accent/30">
-                                    <Plus className="size-4" />
-                                </div>
-                                <div className="font-semibold">Add account</div>
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                                className="gap-3 p-2.5 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                                onClick={() => setRemoveDialogOpen(true)}>
-                                <div className="flex size-8 items-center justify-center rounded-lg border border-destructive/20 bg-destructive/10">
-                                    <LogOut className="size-4" />
-                                </div>
-                                <div className="font-semibold">Remove account</div>
+                            <DropdownMenuItem className="gap-3 p-2.5 cursor-pointer" asChild>
+                                <Link href="/accounts/add" onClick={handleNavigation}>
+                                    <div className="flex size-8 items-center justify-center rounded-sm border border-dashed border-border/50">
+                                        <Plus className="size-4" />
+                                    </div>
+                                    <div className="font-light">Add account</div>
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </SidebarMenuItem>
             </SidebarMenu>
-
-            <ConfirmDialog
-                open={removeDialogOpen}
-                onOpenChange={setRemoveDialogOpen}
-                title="Remove Account"
-                description="Are you sure you want to remove this account? You'll need to login again with your API key to access it."
-                confirmText="Remove"
-                onConfirm={handleLogout}
-                variant="destructive"
-            />
         </>
     );
-}
+});

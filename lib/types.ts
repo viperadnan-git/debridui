@@ -122,30 +122,54 @@ export type DebridFileAddStatus = {
 };
 
 export class DebridError extends Error {
-    code: string;
-    statusCode?: number;
+    type?: AccountType;
 
-    constructor(message: string, code: string, statusCode?: number) {
-        super(message);
+    constructor(message: string, type?: AccountType) {
+        super(type ? `${type}: ${message}` : message);
         this.name = "DebridError";
-        this.code = code;
-        this.statusCode = statusCode;
+        this.type = type;
     }
 }
 
-export class AuthError extends DebridError {
-    constructor(message: string, code: string, statusCode?: number) {
-        super(message, code, statusCode);
-        this.name = "AuthError";
+export class DebridAuthError extends DebridError {
+    constructor(message: string, type?: AccountType) {
+        super(message, type);
+        this.name = "DebridAuthError";
     }
 }
 
-export class RateLimitError extends DebridError {
+export class DebridRateLimitError extends DebridError {
     retryAfter?: number;
 
-    constructor(message: string, code: string, retryAfter?: number) {
-        super(message, code, 429);
-        this.name = "RateLimitError";
+    constructor(message: string, type?: AccountType, retryAfter?: number) {
+        super(message, type);
+        this.name = "DebridRateLimitError";
         this.retryAfter = retryAfter;
     }
 }
+
+// Web download types (unified across clients)
+export type WebDownload = {
+    id: string;
+    name: string;
+    originalLink: string;
+    downloadLink?: string;
+    size?: number;
+    status: WebDownloadStatus;
+    progress?: number;
+    createdAt: Date;
+    host?: string;
+    error?: string;
+};
+
+export type WebDownloadStatus = "pending" | "processing" | "completed" | "failed" | "cached";
+
+export type WebDownloadAddResult = {
+    link: string;
+    success: boolean;
+    downloadLink?: string;
+    name?: string;
+    size?: number;
+    error?: string;
+    id?: string;
+};

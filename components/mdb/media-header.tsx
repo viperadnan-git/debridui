@@ -1,11 +1,11 @@
 import { type TraktMedia } from "@/lib/trakt";
 import { Badge } from "@/components/ui/badge";
-import { Star, Calendar, Clock, Film, Tv, ExternalLink, Home, Globe } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MediaStats } from "./media-stats";
 import { memo } from "react";
 import { getPosterUrl, getBackdropUrl } from "@/lib/utils/trakt";
+import { ArrowUpRightIcon, Star } from "lucide-react";
 
 interface MediaHeaderProps {
     media: TraktMedia;
@@ -16,192 +16,199 @@ interface MediaHeaderProps {
 export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeaderProps) {
     const posterUrl =
         getPosterUrl(media.images) ||
-        `https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(media.title)}`;
+        `https://placehold.co/300x450/0a0a0a/1a1a1a?text=${encodeURIComponent(media.title)}`;
     const backdropUrl = getBackdropUrl(media.images);
 
     return (
         <div className="relative">
+            {/* Backdrop */}
             {backdropUrl && (
                 <>
                     <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen overflow-hidden -mt-6">
                         <img
                             src={backdropUrl}
-                            alt={media.title}
-                            className="w-full h-full object-cover opacity-60"
-                            loading="lazy"
+                            alt=""
+                            className="w-full h-full object-cover opacity-50"
+                            loading="eager"
                             decoding="async"
                         />
                     </div>
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-t from-background via-background/50 to-transparent -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/40 to-transparent -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/60 via-transparent to-background/60 -mt-6" />
                 </>
             )}
 
-            <div className={backdropUrl ? "relative pt-[20vh] sm:pt-[22vh] md:pt-[25vh] pb-8" : "pb-8"}>
-                <div className="grid md:grid-cols-[200px_1fr] lg:grid-cols-[300px_1fr] gap-3 md:gap-6">
-                    <div className="space-y-2 md:space-y-4">
-                        <div className="max-sm:max-w-[50vw] aspect-2/3 overflow-hidden rounded-lg">
+            {/* Content */}
+            <div className={backdropUrl ? "relative pt-[22vh] sm:pt-[26vh] md:pt-[30vh] pb-8" : "pb-8"}>
+                <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr] gap-6 md:gap-8">
+                    {/* Poster Column */}
+                    <div className="space-y-4">
+                        <div className="max-sm:max-w-[45vw] aspect-2/3 overflow-hidden rounded-sm bg-muted/50">
                             <img
                                 src={posterUrl}
                                 alt={media.title}
                                 className="w-full h-full object-cover"
-                                loading="lazy"
+                                loading="eager"
                                 decoding="async"
                             />
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                            {media.homepage && (
-                                <Link href={media.homepage} target="_blank" rel="noopener">
-                                    <Button variant="outline" className="w-full gap-2">
-                                        <Home className="h-4 w-4" />
-                                        Official Website
-                                    </Button>
-                                </Link>
-                            )}
-
+                        {/* Action Buttons */}
+                        <div className="hidden md:flex flex-col gap-2">
                             {media.trailer && (
-                                <Link href={media.trailer} target="_blank" rel="noopener">
-                                    <Button variant="outline" className="w-full gap-2">
-                                        <ExternalLink className="h-4 w-4" />
+                                <Button asChild variant="outline" size="lg" className="w-full">
+                                    <Link href={media.trailer} target="_blank" rel="noopener">
                                         Watch Trailer
-                                    </Button>
-                                </Link>
+                                        <ArrowUpRightIcon className="size-4 ml-1.5 opacity-50" />
+                                    </Link>
+                                </Button>
+                            )}
+                            {media.homepage && (
+                                <Button asChild variant="ghost" size="lg" className="w-full text-muted-foreground">
+                                    <Link href={media.homepage} target="_blank" rel="noopener">
+                                        Official Site
+                                        <ArrowUpRightIcon className="size-4 ml-1.5 opacity-50" />
+                                    </Link>
+                                </Button>
                             )}
                         </div>
                     </div>
 
-                    <div className="space-y-4 md:space-y-6">
-                        <div>
-                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{media.title}</h1>
-
-                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                                {media.year && (
-                                    <div className="flex items-center gap-1 text-xs sm:text-sm">
-                                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                                        {media.year}
-                                    </div>
-                                )}
-
-                                {media.rating && (
-                                    <div className="flex items-center gap-1 text-xs sm:text-sm">
-                                        <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-500 text-yellow-500" />
-                                        <span className="font-semibold">{media.rating.toFixed(1)}</span>
-                                        <span className="text-muted-foreground">/10</span>
-                                        {media.votes && (
-                                            <span className="text-muted-foreground text-xs sm:text-sm">
-                                                ({media.votes.toLocaleString()} votes)
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-
-                                {media.runtime && (
-                                    <div className="flex items-center gap-1 text-xs sm:text-sm">
-                                        <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                                        {media.runtime} min
-                                    </div>
-                                )}
-
-                                {media.certification && (
-                                    <Badge className="text-xs border-0 bg-amber-200 text-amber-900 dark:bg-amber-500 dark:text-amber-950">
-                                        {media.certification}
-                                    </Badge>
-                                )}
-
-                                <Badge variant="secondary" className="text-xs">
-                                    {type === "movie" ? (
-                                        <Film className="h-3 w-3 mr-1" />
-                                    ) : (
-                                        <Tv className="h-3 w-3 mr-1" />
-                                    )}
-                                    {type === "movie" ? "Movie" : "TV Show"}
-                                </Badge>
+                    {/* Info Column */}
+                    <div className="space-y-6">
+                        {/* Title & Type */}
+                        <div className="space-y-3">
+                            <div className="text-xs tracking-widest uppercase text-muted-foreground">
+                                {type === "movie" ? "Film" : "Series"}
                             </div>
+                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light leading-tight">{media.title}</h1>
+                        </div>
 
-                            {media.genres && media.genres.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                    {media.genres.map((genre) => (
-                                        <Badge
-                                            key={genre}
-                                            variant="outline"
-                                            className="border-muted-foreground/20 bg-muted/30 text-foreground">
-                                            {genre}
-                                        </Badge>
-                                    ))}
-                                </div>
+                        {/* Metadata Line */}
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                            {media.year && <span>{media.year}</span>}
+                            {media.rating && (
+                                <>
+                                    <span className="text-border">·</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <Star className="size-4 fill-[#F5C518] text-[#F5C518]" />
+                                        <span className="text-foreground font-medium">{media.rating.toFixed(1)}</span>
+                                        <span className="text-muted-foreground/60">/10</span>
+                                    </span>
+                                </>
+                            )}
+                            {media.runtime && (
+                                <>
+                                    <span className="text-border">·</span>
+                                    <span>{media.runtime}m</span>
+                                </>
+                            )}
+                            {media.certification && (
+                                <>
+                                    <span className="text-border">·</span>
+                                    <Badge>{media.certification}</Badge>
+                                </>
                             )}
                         </div>
 
-                        {media.overview && (
-                            <div>
-                                <h2 className="text-xl font-semibold mb-2">Overview</h2>
-                                <p className="text-muted-foreground leading-relaxed">{media.overview}</p>
+                        {/* Genres */}
+                        {media.genres && media.genres.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {media.genres.map((genre) => (
+                                    <span
+                                        key={genre}
+                                        className="text-xs text-foreground/80 px-2.5 py-1 bg-muted/50 rounded-sm">
+                                        {genre}
+                                    </span>
+                                ))}
                             </div>
                         )}
 
+                        {/* Overview */}
+                        {media.overview && (
+                            <div className="space-y-2">
+                                <p className="text-sm sm:text-base text-foreground/80 leading-relaxed max-w-2xl">
+                                    {media.overview}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Stats */}
                         <MediaStats media={media} type={type} />
 
+                        {/* External Links */}
                         {media.ids && (
-                            <div>
-                                <h2 className="text-xl font-semibold mb-2">External</h2>
-                                <div className="flex flex-wrap gap-2">
-                                    {media.ids.imdb && (
-                                        <Link href={`https://www.imdb.com/title/${media.ids.imdb}`} target="_blank">
-                                            <Button
-                                                size="sm"
-                                                className="h-8 gap-2 bg-[#F5C518] text-black hover:bg-[#F5C518]/90">
-                                                <img
-                                                    src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/imdb.svg"
-                                                    alt="IMDb"
-                                                    className="h-4 w-4"
-                                                />
-                                                IMDb
-                                            </Button>
-                                        </Link>
-                                    )}
-                                    {media.ids.tmdb && (
-                                        <Link
-                                            href={`https://www.themoviedb.org/${type}/${media.ids.tmdb}`}
-                                            target="_blank">
-                                            <Button
-                                                size="sm"
-                                                className="h-8 gap-2 bg-[#01B4E4] text-white hover:bg-[#01B4E4]/90">
-                                                <img
-                                                    src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/themoviedatabase.svg"
-                                                    alt="TMDB"
-                                                    className="h-4 w-4 invert"
-                                                />
-                                                TMDB
-                                            </Button>
-                                        </Link>
-                                    )}
-                                    {media.ids.trakt && (
-                                        <Link
-                                            href={`https://trakt.tv/${type === "movie" ? "movies" : "shows"}/${media.ids.trakt}`}
-                                            target="_blank">
-                                            <Button
-                                                size="sm"
-                                                className="h-8 gap-2 bg-[#9F42C6] text-white hover:bg-[#9F42C6]/90">
-                                                <img
-                                                    src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/trakt.svg"
-                                                    alt="Trakt"
-                                                    className="h-4 w-4 invert"
-                                                />
-                                                Trakt
-                                            </Button>
-                                        </Link>
-                                    )}
-                                    {type === "show" && media.ids.imdb && (
-                                        <Link href={`https://tvcharts.co/show/${media.ids.imdb}`} target="_blank">
-                                            <Button variant="outline" size="sm" className="h-8 gap-2">
-                                                <Globe className="h-4 w-4" />
-                                                TV Charts
-                                            </Button>
-                                        </Link>
-                                    )}
-                                </div>
+                            <div className="flex flex-wrap items-center gap-5 pt-2">
+                                {media.ids?.imdb && (
+                                    <Link
+                                        href={`https://www.imdb.com/title/${media.ids?.imdb}`}
+                                        target="_blank"
+                                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                        <img
+                                            src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/imdb.svg"
+                                            alt=""
+                                            className="size-4 opacity-60 dark:invert"
+                                        />
+                                        IMDb
+                                    </Link>
+                                )}
+                                {media.ids.tmdb && (
+                                    <Link
+                                        href={`https://www.themoviedb.org/${type}/${media.ids.tmdb}`}
+                                        target="_blank"
+                                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                        <img
+                                            src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/themoviedatabase.svg"
+                                            alt=""
+                                            className="size-4 opacity-60 dark:invert"
+                                        />
+                                        TMDB
+                                    </Link>
+                                )}
+                                {media.ids.trakt && (
+                                    <Link
+                                        href={`https://trakt.tv/${type === "movie" ? "movies" : "shows"}/${media.ids.trakt}`}
+                                        target="_blank"
+                                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                        <img
+                                            src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/trakt.svg"
+                                            alt=""
+                                            className="size-4 opacity-60 dark:invert"
+                                        />
+                                        Trakt
+                                    </Link>
+                                )}
+                                {type === "show" && media.ids?.imdb && (
+                                    <Link
+                                        href={`https://tvcharts.co/show/${media.ids?.imdb}`}
+                                        target="_blank"
+                                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                        <ArrowUpRightIcon className="size-4 opacity-60" />
+                                        TV Charts
+                                    </Link>
+                                )}
                             </div>
                         )}
+
+                        {/* Mobile Action Buttons */}
+                        <div className="flex md:hidden flex-wrap gap-2 pt-2">
+                            {media.trailer && (
+                                <Button asChild variant="outline">
+                                    <Link href={media.trailer} target="_blank" rel="noopener">
+                                        Trailer
+                                        <ArrowUpRightIcon className="size-4 ml-1 opacity-50" />
+                                    </Link>
+                                </Button>
+                            )}
+                            {media.homepage && (
+                                <Button asChild variant="ghost" className="text-muted-foreground">
+                                    <Link href={media.homepage} target="_blank" rel="noopener">
+                                        Website
+                                        <ArrowUpRightIcon className="size-4 ml-1 opacity-50" />
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

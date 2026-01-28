@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { getFindTorrentsCacheKey } from "@/lib/utils/cache-keys";
 import { type DebridFile, AccountType } from "@/lib/types";
 import { traktClient } from "@/lib/trakt";
@@ -14,7 +14,7 @@ interface UseSearchLogicOptions {
 }
 
 export function useSearchLogic({ query, enabled = true }: UseSearchLogicOptions) {
-    const { client, currentUser } = useAuthContext();
+    const { client, currentUser, currentAccount } = useAuthGuaranteed();
     const trimmedQuery = query.trim();
     const minQueryLength = 3;
     const shouldSearch = enabled && trimmedQuery.length >= minQueryLength;
@@ -30,7 +30,7 @@ export function useSearchLogic({ query, enabled = true }: UseSearchLogicOptions)
 
     // File search using debrid client
     const { data: fileResults, isLoading: isFileSearching } = useQuery<DebridFile[]>({
-        queryKey: getFindTorrentsCacheKey(currentUser.id, query),
+        queryKey: getFindTorrentsCacheKey(currentAccount.id, query),
         queryFn: () => client.findTorrents(query),
         enabled: shouldSearch,
         staleTime: 0,
@@ -40,7 +40,7 @@ export function useSearchLogic({ query, enabled = true }: UseSearchLogicOptions)
     const isTorBoxUser = currentUser.type === AccountType.TORBOX;
 
     const { data: sourceResults, isLoading: isSourceSearching } = useQuery<TorBoxSearchResult[]>({
-        queryKey: ["torbox", "search", currentUser.id, query],
+        queryKey: ["torbox", "search", currentAccount.id, query],
         queryFn: () => (client as TorBoxClient).searchTorrents(query),
         enabled: shouldSearch && isTorBoxUser,
         staleTime: 60 * 60 * 1000,

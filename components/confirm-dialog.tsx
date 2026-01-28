@@ -10,6 +10,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -32,9 +33,11 @@ export function ConfirmDialog({
     onConfirm,
     variant = "default",
 }: ConfirmDialogProps) {
+    const isMobile = useIsMobile();
+
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
-            <AlertDialogContent>
+            <AlertDialogContent size={isMobile ? "sm" : "default"}>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{title}</AlertDialogTitle>
                     <AlertDialogDescription>{description}</AlertDialogDescription>
@@ -43,11 +46,7 @@ export function ConfirmDialog({
                     <AlertDialogCancel>{cancelText}</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={onConfirm}
-                        className={
-                            variant === "destructive"
-                                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                : ""
-                        }>
+                        variant={variant === "destructive" ? "destructive" : "default"}>
                         {confirmText}
                     </AlertDialogAction>
                 </AlertDialogFooter>

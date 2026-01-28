@@ -1,13 +1,11 @@
 "use client";
 
 import { memo } from "react";
-import { CommandItem } from "@/components/ui/command";
-import { Badge } from "@/components/ui/badge";
-import { HardDrive, Users } from "lucide-react";
-import { cn, formatSize } from "@/lib/utils";
+import { HardDrive, Users, Zap } from "lucide-react";
+import { formatSize } from "@/lib/utils";
 import { type TorBoxSearchResult } from "@/lib/clients/torbox";
 import { AddSourceButton } from "./sources";
-import { CachedBadge } from "@/components/display";
+import { SearchItemWrapper } from "@/components/search-item-wrapper";
 
 interface SearchSourceItemProps {
     result: TorBoxSearchResult;
@@ -18,39 +16,44 @@ interface SearchSourceItemProps {
 const SourceContent = memo(function SourceContent({ result }: { result: TorBoxSearchResult }) {
     return (
         <div className="flex-1 min-w-0">
-            <div className="font-medium text-xs sm:text-sm mb-1.5 leading-tight wrap-break-word">
-                {result.raw_title}
-            </div>
-            <div className="flex items-start gap-2">
+            {/* Title */}
+            <div className="font-medium text-sm mb-1.5 leading-tight break-words">{result.raw_title}</div>
+
+            <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-1 mb-1.5">
-                        {result.cached && <CachedBadge />}
-                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
-                            {result.type}
-                        </Badge>
+                    {/* Cached indicator + type inline */}
+                    <div className="flex items-center gap-2 mb-1">
+                        {result.cached && (
+                            <span className="inline-flex items-center gap-1 text-xs tracking-wide text-green-600">
+                                <Zap className="size-4" /> Cached
+                            </span>
+                        )}
+                        <span className="text-xs tracking-wide uppercase text-muted-foreground">{result.type}</span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                            <HardDrive className="size-3" />
-                            <span>{formatSize(result.size)}</span>
-                        </div>
+
+                    {/* Metadata with editorial separators */}
+                    <div className="flex flex-wrap items-center text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                            <HardDrive className="size-4" />
+                            {formatSize(result.size)}
+                        </span>
                         {result.files > 1 && (
                             <>
-                                <span>•</span>
+                                <span className="text-border mx-1.5">·</span>
                                 <span>{result.files} files</span>
                             </>
                         )}
-                        <span>•</span>
-                        <div className="flex items-center gap-1">
-                            <Users className="size-3" />
-                            <span>
-                                {result.last_known_seeders}/{result.last_known_peers}
-                            </span>
-                        </div>
-                        <span>•</span>
+                        <span className="text-border mx-1.5">·</span>
+                        <span className="flex items-center gap-1">
+                            <Users className="size-4" />
+                            {result.last_known_seeders}/{result.last_known_peers}
+                        </span>
+                        <span className="text-border mx-1.5">·</span>
                         <span>{result.age}</span>
                     </div>
                 </div>
+
+                {/* Action button */}
                 <div className="shrink-0">
                     <AddSourceButton magnet={result.magnet} />
                 </div>
@@ -64,23 +67,13 @@ export const SearchSourceItem = memo(function SearchSourceItem({
     variant = "modal",
     className,
 }: SearchSourceItemProps) {
-    const content = <SourceContent result={result} />;
-
-    if (variant === "modal") {
-        return (
-            <CommandItem
-                key={`source-${result.hash}`}
-                value={`source-${result.hash}-${result.title}`}
-                keywords={[result.title, result.raw_title, result.hash]}
-                className={cn("flex items-center gap-2 px-1 sm:px-3 py-2 sm:py-3", className)}>
-                {content}
-            </CommandItem>
-        );
-    }
-
     return (
-        <div className={cn("flex items-center gap-2 px-3 py-3 rounded-md hover:bg-muted transition-colors", className)}>
-            {content}
-        </div>
+        <SearchItemWrapper
+            variant={variant}
+            commandValue={`source-${result.hash}-${result.title}`}
+            commandKeywords={[result.title, result.raw_title, result.hash]}
+            className={className}>
+            <SourceContent result={result} />
+        </SearchItemWrapper>
     );
 });

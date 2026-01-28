@@ -1,4 +1,4 @@
-import { AccountType, DebridFileStatus } from "@/lib/types";
+import { AccountType, DebridFileStatus, WebDownloadStatus } from "@/lib/types";
 import {
     DownloadIcon,
     PauseIcon,
@@ -111,11 +111,63 @@ export function StatusBadge({ status, hide }: { status: DebridFileStatus; hide?:
 
 export const CachedBadge = memo(function CachedBadge() {
     return (
-        <Badge
-            variant="secondary"
-            className="text-xs px-1.5 py-0.5 h-5 bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
-            <Zap className="h-2.5 w-2.5 mr-0.5" />
+        <span className="inline-flex items-center gap-1 text-xs tracking-wide text-green-600 dark:text-green-500">
+            <Zap className="size-3" />
             <span>Cached</span>
-        </Badge>
+        </span>
     );
 });
+
+const getWebDownloadStatusConfig = cache((status: WebDownloadStatus) => {
+    switch (status) {
+        case "pending":
+            return {
+                icon: ClockIcon,
+                color: "bg-slate-600/10 text-slate-600 border-slate-600/20 dark:bg-slate-400/10 dark:text-slate-400 dark:border-slate-400/20",
+                name: "Pending",
+            };
+        case "processing":
+            return {
+                icon: DownloadIcon,
+                color: "bg-blue-600/10 text-blue-600 border-blue-600/20 dark:bg-blue-400/10 dark:text-blue-400 dark:border-blue-400/20",
+                name: "Processing",
+                animate: true,
+            };
+        case "completed":
+            return {
+                icon: CircleCheckIcon,
+                color: "bg-green-600/10 text-green-600 border-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:border-green-400/20",
+                name: "Ready",
+            };
+        case "cached":
+            return {
+                icon: Zap,
+                color: "bg-emerald-600/10 text-emerald-600 border-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20",
+                name: "Cached",
+            };
+        case "failed":
+            return {
+                icon: OctagonAlertIcon,
+                color: "bg-red-600/10 text-red-600 border-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:border-red-400/20",
+                name: "Failed",
+            };
+    }
+});
+
+export function WebDownloadStatusBadge({ status }: { status: WebDownloadStatus }) {
+    const config = getWebDownloadStatusConfig(status);
+    if (!config) return null;
+    const Icon = config.icon;
+
+    return (
+        <Badge
+            className={cn(
+                "inline-flex items-center gap-1.5 px-2.5 py-1 md:gap-1.5 rounded-xl text-xs font-medium focus-visible:outline-none",
+                config.color,
+                config.animate && "animate-pulse"
+            )}>
+            <Icon className="size-3.5" strokeWidth={2.5} />
+            <span className="hidden md:inline leading-none">{config.name}</span>
+        </Badge>
+    );
+}

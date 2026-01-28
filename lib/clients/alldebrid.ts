@@ -8,11 +8,13 @@ import {
     DebridFileAddStatus,
     AccountType,
     User,
-    AuthError,
+    DebridError,
+    DebridAuthError,
+    WebDownload,
+    WebDownloadAddResult,
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
-import { useUserStore } from "../stores/users";
 import Fuse from "fuse.js";
 
 // Response type definitions
@@ -88,6 +90,11 @@ export default class AllDebridClient extends BaseClient {
     private readonly torrentsCache = new Map<number, TorrentStatus>();
     private torrentOrder: number[] = []; // Maintains order with newest first
 
+    // AllDebrid unlocks instantly, no refresh needed
+    // Unlocked links are ephemeral (not saved to API unless explicitly saved)
+    readonly refreshInterval = false as const;
+    readonly supportsEphemeralLinks = true;
+
     constructor(user: User) {
         super(user);
         this.sessionId = Math.floor(Math.random() * 1000000);
@@ -110,15 +117,8 @@ export default class AllDebridClient extends BaseClient {
         }
 
         const data = await response.json();
-        try {
-            AllDebridClient.validateResponse(data);
-            return data.data;
-        } catch (error) {
-            if (error instanceof AuthError) {
-                useUserStore.getState().removeUser(this.user.id);
-            }
-            throw error;
-        }
+        AllDebridClient.validateResponse(data);
+        return data.data;
     }
 
     static async getUser(apiKey: string): Promise<User> {
@@ -363,6 +363,91 @@ export default class AllDebridClient extends BaseClient {
         );
     }
 
+    // Web download methods - AllDebrid uses instant link unlock
+    async addWebDownloads(links: string[]): Promise<WebDownloadAddResult[]> {
+        const results = await Promise.allSettled(
+            links.map(async (link) => {
+                const formData = new FormData();
+                formData.append("link", link);
+
+                const response = await this.makeRequest<{
+                    link: string;
+                    filename: string;
+                    filesize: number;
+                    host: string;
+                    id: string;
+                }>("link/unlock", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                return {
+                    link,
+                    success: true,
+                    downloadLink: response.link,
+                    name: response.filename,
+                    size: response.filesize,
+                    id: response.id || link,
+                };
+            })
+        );
+
+        return results.map((result, index) => {
+            if (result.status === "fulfilled") {
+                return result.value;
+            }
+            return {
+                link: links[index],
+                success: false,
+                error: result.reason?.message || "Failed to unlock link",
+            };
+        });
+    }
+
+    async getWebDownloadList(): Promise<WebDownload[]> {
+        const data = await this.makeRequest<{
+            links: Array<{
+                link: string;
+                filename: string;
+                size: number;
+                date: number;
+                host: string;
+            }>;
+        }>("user/links");
+
+        if (!data?.links) return [];
+
+        return data.links.map((link) => ({
+            id: link.link,
+            name: link.filename,
+            originalLink: link.link,
+            size: link.size,
+            status: "completed" as const,
+            createdAt: new Date(link.date * 1000),
+            host: link.host,
+        }));
+    }
+
+    async deleteWebDownload(id: string): Promise<void> {
+        const formData = new FormData();
+        formData.append("links[]", id);
+
+        await this.makeRequest("user/links/delete", {
+            method: "POST",
+            body: formData,
+        });
+    }
+
+    async saveWebDownloadLinks(links: string[]): Promise<void> {
+        const formData = new FormData();
+        links.forEach((link) => formData.append("links[]", link));
+
+        await this.makeRequest("user/links/save", {
+            method: "POST",
+            body: formData,
+        });
+    }
+
     private mapToDebridFile(torrent: TorrentStatus): DebridFile {
         const status = this.mapStatusCode(torrent.statusCode);
         let progress: number | undefined;
@@ -503,9 +588,9 @@ export default class AllDebridClient extends BaseClient {
             const message = data.error?.message || "API request failed";
             const code = data.error?.code || "Unknown";
             if (["AUTH_MISSING_APIKEY", "AUTH_BAD_APIKEY", "AUTH_BLOCKED", "AUTH_USER_BANNED"].includes(code)) {
-                throw new AuthError(message, code);
+                throw new DebridAuthError(message, AccountType.ALLDEBRID);
             }
-            throw new Error(message);
+            throw new DebridError(message, AccountType.ALLDEBRID);
         }
     }
 

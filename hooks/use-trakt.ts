@@ -1,31 +1,26 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { traktClient } from "@/lib/trakt";
 
-// Cache configuration
-const CACHE_TIMES = {
-    trending: 6 * 60 * 60 * 1000,
-    popular: 6 * 60 * 60 * 1000,
-    watched: 6 * 60 * 60 * 1000,
-    anticipated: 6 * 60 * 60 * 1000,
-    boxoffice: 6 * 60 * 60 * 1000,
-    details: 24 * 60 * 60 * 1000,
-    search: 5 * 60 * 1000,
-};
+// Cache duration constants
+const CACHE_DURATION = {
+    SHORT: 5 * 60 * 1000, // 5 minutes
+    STANDARD: 6 * 60 * 60 * 1000, // 6 hours
+    LONG: 24 * 60 * 60 * 1000, // 24 hours
+} as const;
 
 // Generic Trakt query hook factory
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createTraktHook<T extends any[], R>(
     keyParts: string[],
     fn: (...args: T) => Promise<R>,
-    cacheType: keyof typeof CACHE_TIMES
+    cacheDuration: number
 ) {
     return (...args: T): UseQueryResult<R> => {
-        const cache = CACHE_TIMES[cacheType];
         return useQuery({
             queryKey: ["trakt", ...keyParts, ...args],
             queryFn: () => fn(...args),
-            staleTime: cache,
-            gcTime: cache * 2,
+            staleTime: cacheDuration,
+            gcTime: cacheDuration * 2,
         });
     };
 }
@@ -34,72 +29,80 @@ function createTraktHook<T extends any[], R>(
 export const useTraktTrendingMovies = createTraktHook(
     ["movies", "trending"],
     (limit = 20) => traktClient.getTrendingMovies(limit),
-    "trending"
+    CACHE_DURATION.STANDARD
 );
 
 export const useTraktTrendingShows = createTraktHook(
     ["shows", "trending"],
     (limit = 20) => traktClient.getTrendingShows(limit),
-    "trending"
+    CACHE_DURATION.STANDARD
 );
 
 export const useTraktPopularMovies = createTraktHook(
     ["movies", "popular"],
     (limit = 20) => traktClient.getPopularMovies(limit),
-    "popular"
+    CACHE_DURATION.STANDARD
 );
 
 export const useTraktPopularShows = createTraktHook(
     ["shows", "popular"],
     (limit = 20) => traktClient.getPopularShows(limit),
-    "popular"
+    CACHE_DURATION.STANDARD
 );
 
 export const useTraktMostWatchedMovies = createTraktHook(
     ["movies", "watched"],
     (period = "weekly", limit = 20) => traktClient.getMostWatchedMovies(period, limit),
-    "watched"
+    CACHE_DURATION.STANDARD
 );
 
 export const useTraktMostWatchedShows = createTraktHook(
     ["shows", "watched"],
     (period = "weekly", limit = 20) => traktClient.getMostWatchedShows(period, limit),
-    "watched"
+    CACHE_DURATION.STANDARD
 );
 
 export const useTraktAnticipatedMovies = createTraktHook(
     ["movies", "anticipated"],
     (limit = 20) => traktClient.getAnticipatedMovies(limit),
-    "anticipated"
+    CACHE_DURATION.STANDARD
 );
 
 export const useTraktAnticipatedShows = createTraktHook(
     ["shows", "anticipated"],
     (limit = 20) => traktClient.getAnticipatedShows(limit),
-    "anticipated"
+    CACHE_DURATION.STANDARD
 );
 
 export const useTraktBoxOfficeMovies = createTraktHook(
     ["movies", "boxoffice"],
     () => traktClient.getBoxOfficeMovies(),
-    "boxoffice"
+    CACHE_DURATION.STANDARD
 );
 
 // Details hooks
-export const useTraktMovieDetails = createTraktHook(["movie"], (slug: string) => traktClient.getMovie(slug), "details");
+export const useTraktMovieDetails = createTraktHook(
+    ["movie"],
+    (slug: string) => traktClient.getMovie(slug),
+    CACHE_DURATION.LONG
+);
 
-export const useTraktShowDetails = createTraktHook(["show"], (slug: string) => traktClient.getShow(slug), "details");
+export const useTraktShowDetails = createTraktHook(
+    ["show"],
+    (slug: string) => traktClient.getShow(slug),
+    CACHE_DURATION.LONG
+);
 
 export const useTraktShowSeasons = createTraktHook(
     ["show", "seasons"],
     (slug: string) => traktClient.getShowSeasons(slug),
-    "details"
+    CACHE_DURATION.LONG
 );
 
 export const useTraktSeasonEpisodes = createTraktHook(
     ["season", "episodes"],
     (slug: string, season: number) => traktClient.getShowEpisodes(slug, season),
-    "details"
+    CACHE_DURATION.LONG
 );
 
 // Aliases for backward compatibility
@@ -108,33 +111,30 @@ export const useTraktMostPlayedShows = useTraktMostWatchedShows;
 
 // Combined hooks
 export function useTraktTrendingMixed(limit = 20) {
-    const cache = CACHE_TIMES.trending;
     return useQuery({
         queryKey: ["trakt", "mixed", "trending", limit],
         queryFn: () => traktClient.getTrendingMixed(limit),
-        staleTime: cache,
-        gcTime: cache * 2,
+        staleTime: CACHE_DURATION.STANDARD,
+        gcTime: CACHE_DURATION.STANDARD * 2,
     });
 }
 
 export function useTraktMedia(slug: string, type: "movie" | "show") {
-    const cache = CACHE_TIMES.details;
     return useQuery({
         queryKey: ["trakt", "media", slug, type],
         queryFn: () => (type === "movie" ? traktClient.getMovie(slug) : traktClient.getShow(slug)),
-        staleTime: cache,
-        gcTime: cache * 2,
+        staleTime: CACHE_DURATION.LONG,
+        gcTime: CACHE_DURATION.LONG * 2,
     });
 }
 
 export const useTraktShowEpisodes = useTraktSeasonEpisodes;
 
 export function useTraktPeople(id: string, type: "movies" | "shows" = "movies") {
-    const cache = CACHE_TIMES.details;
     return useQuery({
         queryKey: ["trakt", "people", id, type],
         queryFn: () => traktClient.getPeople(id, type),
-        staleTime: cache,
-        gcTime: cache * 2,
+        staleTime: CACHE_DURATION.LONG,
+        gcTime: CACHE_DURATION.LONG * 2,
     });
 }

@@ -74,7 +74,7 @@ export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {
 
 export const TRASH_SIZE_THRESHOLD = 1024 * 1024; // 1MB in bytes
 export const QUERY_CACHE_MAX_AGE = 1000 * 60 * 60 * 24; // 24 hours
-export const QUERY_CACHE_STALE_TIME = 1000 * 60 * 5; // 5 minutes
+export const QUERY_CACHE_STALE_TIME = 1000 * 60 * 60; // 1 hour
 export const PAGE_SIZE = 50;
 export const USER_AGENT = "DebridUI";
 export const CAROUSEL_AUTO_DELAY = 3000; // 3 seconds
@@ -82,3 +82,9 @@ export const CAROUSEL_AUTO_DELAY = 3000; // 3 seconds
 // External links
 export const DISCORD_URL = process.env.NEXT_PUBLIC_DISCORD_URL;
 export const CORS_PROXY_URL = process.env.NEXT_PUBLIC_CORS_PROXY_URL || "https://corsproxy.io/?url=";
+
+// Auth config - raw values for Docker runtime env injection
+// These values are stored as-is (not compared) so that sed can replace placeholders at container startup
+// Comparisons must happen at runtime in components, NOT here (otherwise they'd be evaluated at build time)
+export const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+export const DISABLE_EMAIL_SIGNUP = process.env.NEXT_PUBLIC_DISABLE_EMAIL_SIGNUP ?? "";

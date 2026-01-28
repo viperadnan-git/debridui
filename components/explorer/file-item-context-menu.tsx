@@ -1,8 +1,6 @@
 "use client";
 
 import React, { Fragment } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Copy, Download, RotateCw, Trash2, List, Loader2 } from "lucide-react";
 import {
     ContextMenu,
@@ -12,10 +10,11 @@ import {
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { DebridFile } from "@/lib/types";
-import { useAuthContext } from "@/lib/contexts/auth";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { downloadM3UPlaylist, fetchTorrentDownloadLinks } from "@/lib/utils/file";
-import { useFileStore } from "@/lib/stores/files";
+import { useToastMutation } from "@/lib/utils/mutation-factory";
+import { removeTorrentWithCleanup, retryTorrentsWithCleanup } from "@/lib/utils/file-mutations";
 
 interface FileItemContextMenuProps {
     file: DebridFile;
@@ -24,104 +23,70 @@ interface FileItemContextMenuProps {
 }
 
 export function FileItemContextMenu({ file, children, className }: FileItemContextMenuProps) {
-    const { client, currentUser } = useAuthContext();
-    const { removeTorrent, retryFiles } = useFileStore();
+    const { client, currentAccount } = useAuthGuaranteed();
 
-    // Copy mutation
-    const copyMutation = useMutation({
-        mutationFn: async () => {
-            const toastId = toast.loading("Loading file links...");
-            try {
-                const links = await fetchTorrentDownloadLinks(file.id, client, currentUser.id);
-                copyLinksToClipboard(links);
-                toast.success(`${links.length} link(s) copied to clipboard`, {
-                    id: toastId,
-                });
-                return links;
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to copy: ${errorMessage}`, { id: toastId });
-                throw error;
-            }
+    const copyMutation = useToastMutation(
+        async () => {
+            const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
+            copyLinksToClipboard(links);
+            return links;
         },
-    });
+        {
+            loading: "Loading file links...",
+            success: (links) => `${links.length} link(s) copied to clipboard`,
+            error: "Failed to copy",
+        }
+    );
 
-    // Download mutation
-    const downloadMutation = useMutation({
-        mutationFn: async () => {
-            const toastId = toast.loading("Loading file links...");
-            try {
-                const links = await fetchTorrentDownloadLinks(file.id, client, currentUser.id);
-                downloadLinks(links);
-                toast.success(`Downloading ${links.length} file(s)`, {
-                    id: toastId,
-                });
-                return links;
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to download: ${errorMessage}`, {
-                    id: toastId,
-                });
-                throw error;
-            }
+    const downloadMutation = useToastMutation(
+        async () => {
+            const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
+            downloadLinks(links);
+            return links;
         },
-    });
+        {
+            loading: "Loading file links...",
+            success: (links) => `Downloading ${links.length} file(s)`,
+            error: "Failed to download",
+        }
+    );
 
-    // Download playlist mutation
-    const playlistMutation = useMutation({
-        mutationFn: async () => {
-            const toastId = toast.loading("Loading file links...");
-            try {
-                const links = await fetchTorrentDownloadLinks(file.id, client, currentUser.id);
-                downloadM3UPlaylist(links, file.name);
-                toast.success("Playlist downloaded", { id: toastId });
-                return links;
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to download playlist: ${errorMessage}`, {
-                    id: toastId,
-                });
-                throw error;
-            }
+    const playlistMutation = useToastMutation(
+        async () => {
+            const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
+            downloadM3UPlaylist(links, file.name);
+            return links;
         },
-    });
+        {
+            loading: "Loading file links...",
+            success: "Playlist downloaded",
+            error: "Failed to download playlist",
+        }
+    );
 
-    // Delete mutation
-    const deleteMutation = useMutation({
-        mutationFn: async () => {
-            const toastId = toast.loading("Deleting file...");
-            try {
-                const message = await removeTorrent(client, file.id);
-                toast.success(message || "File deleted", { id: toastId });
-                return message;
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to delete: ${errorMessage}`, {
-                    id: toastId,
-                });
-                throw error;
-            }
+    const deleteMutation = useToastMutation(
+        async () => {
+            const message = await removeTorrentWithCleanup(client, currentAccount.id, file.id);
+            return message;
         },
-    });
+        {
+            loading: "Deleting file...",
+            success: (message) => message || "File deleted",
+            error: "Failed to delete",
+        }
+    );
 
-    // Retry mutation (only for failed files)
-    const retryMutation = useMutation({
-        mutationFn: async () => {
-            const toastId = toast.loading("Retrying file...");
-            try {
-                const result = await retryFiles(client, [file.id]);
-                const message = result[file.id] || "Retry initiated";
-                toast.success(message, { id: toastId });
-                return message;
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                toast.error(`Failed to retry: ${errorMessage}`, {
-                    id: toastId,
-                });
-                throw error;
-            }
+    const retryMutation = useToastMutation(
+        async () => {
+            const result = await retryTorrentsWithCleanup(client, currentAccount.id, [file.id]);
+            return result[file.id] || "Retry initiated";
         },
-    });
+        {
+            loading: "Retrying file...",
+            success: (message) => message,
+            error: "Failed to retry",
+        }
+    );
 
     const isAnyActionPending =
         copyMutation.isPending ||

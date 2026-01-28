@@ -31,21 +31,21 @@ export const VideoCodecWarning = memo(function VideoCodecWarning({
                     <Button
                         size="sm"
                         variant="secondary"
-                        className="h-7 text-xs"
+                        className="text-xs"
                         onClick={() => onSwitchPlayer(MediaPlayer.VLC)}>
                         Use VLC
                     </Button>
                     <Button
                         size="sm"
                         variant="secondary"
-                        className="h-7 text-xs"
+                        className="text-xs"
                         onClick={() => onSwitchPlayer(MediaPlayer.MPV)}>
                         Use MPV
                     </Button>
                     <Button
                         size="sm"
                         variant="secondary"
-                        className="h-7 text-xs"
+                        className="text-xs"
                         onClick={() => onSwitchPlayer(MediaPlayer.IINA)}>
                         Use IINA
                     </Button>

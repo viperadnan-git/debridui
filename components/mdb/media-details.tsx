@@ -17,26 +17,49 @@ interface MediaDetailsProps {
 const MediaSkeleton = memo(function MediaSkeleton() {
     return (
         <div className="relative min-h-screen">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen -mt-6 h-[40vh] max-h-[600px]">
-                <Skeleton className="w-full h-full" />
+            {/* Backdrop skeleton */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen -mt-6 h-[40vh]">
+                <Skeleton className="w-full h-full rounded-none" />
             </div>
 
-            <div className="relative pt-[20vh] sm:pt-[22vh] md:pt-[25vh] pb-20 space-y-6">
-                <div className="grid md:grid-cols-[200px_1fr] lg:grid-cols-[300px_1fr] gap-3 md:gap-6">
-                    <Skeleton className="aspect-2/3 rounded-lg w-full max-w-[50vw] sm:max-w-none" />
+            <div className="relative pt-[22vh] sm:pt-[26vh] md:pt-[30vh] pb-8">
+                <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr] gap-6 md:gap-8">
+                    {/* Poster */}
                     <div className="space-y-4">
-                        <Skeleton className="h-8 sm:h-10 w-3/4" />
-                        <div className="flex gap-3 sm:gap-4">
-                            <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
-                            <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
-                            <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
+                        <Skeleton className="aspect-2/3 rounded-sm max-sm:max-w-[45vw]" />
+                        <Skeleton className="h-10 w-full hidden md:block" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-6">
+                        <div className="space-y-3">
+                            <Skeleton className="h-3 w-16" />
+                            <Skeleton className="h-10 sm:h-12 w-3/4" />
                         </div>
-                        <Skeleton className="h-20 sm:h-24 w-full" />
-                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                            <Skeleton className="h-16 sm:h-20" />
-                            <Skeleton className="h-16 sm:h-20" />
-                            <Skeleton className="h-16 sm:h-20" />
-                            <Skeleton className="h-16 sm:h-20" />
+                        <div className="flex gap-3">
+                            <Skeleton className="h-5 w-12" />
+                            <Skeleton className="h-5 w-16" />
+                            <Skeleton className="h-5 w-14" />
+                        </div>
+                        <div className="flex gap-2">
+                            <Skeleton className="h-6 w-16 rounded-sm" />
+                            <Skeleton className="h-6 w-20 rounded-sm" />
+                            <Skeleton className="h-6 w-14 rounded-sm" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-full max-w-2xl" />
+                            <Skeleton className="h-4 w-full max-w-xl" />
+                            <Skeleton className="h-4 w-3/4 max-w-lg" />
+                        </div>
+                        <div className="flex gap-6 pt-2">
+                            <div className="space-y-1">
+                                <Skeleton className="h-3 w-12" />
+                                <Skeleton className="h-4 w-8" />
+                            </div>
+                            <div className="space-y-1">
+                                <Skeleton className="h-3 w-12" />
+                                <Skeleton className="h-4 w-8" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,9 +72,10 @@ export const MediaDetails = memo(function MediaDetails({ media, mediaId, type, i
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
-                <div className="text-center space-y-2">
-                    <p className="text-2xl font-semibold">Failed to load details</p>
-                    <p className="text-muted-foreground">{error.message}</p>
+                <div className="text-center space-y-3">
+                    <div className="text-xs tracking-widest uppercase text-muted-foreground">Error</div>
+                    <p className="text-xl font-light">Failed to load details</p>
+                    <p className="text-sm text-muted-foreground">{error.message}</p>
                 </div>
             </div>
         );
