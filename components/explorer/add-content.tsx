@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
-import { Link, FileUp, Loader2, ClipboardIcon } from "lucide-react";
+import { Link, FileUp, Loader2, ClipboardPaste, X } from "lucide-react";
 import { Dropzone } from "../ui/dropzone";
 import { getTextFromClipboard } from "@/lib/utils";
 
@@ -133,35 +133,50 @@ export function AddContent() {
 
                     <div className="flex flex-col space-y-2">
                         <label className="text-sm font-bold">Add Links (HTTP/Magnet)</label>
-                        <Textarea
-                            placeholder="Enter links (one per line)"
-                            value={links}
-                            onChange={(e) => setLinks(e.target.value)}
-                            rows={4}
-                            className="font-mono text-sm max-h-28 md:h-full"
-                        />
-                        <div className="flex flex-row gap-2">
-                            <Button
-                                onClick={handleAddLinks}
-                                disabled={isAddingLinks || !links.trim()}
-                                className="flex-1">
-                                {isAddingLinks ? (
-                                    <>
-                                        <Loader2 className="mr-2 size-4 animate-spin" />
-                                        Adding...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Link className="mr-2 size-4" />
-                                        Add Links
-                                    </>
+                        <div className="relative flex-1">
+                            <Textarea
+                                placeholder="Enter links (one per line)"
+                                value={links}
+                                onChange={(e) => setLinks(e.target.value)}
+                                rows={4}
+                                className="font-mono text-sm max-h-28 md:h-full pr-16"
+                            />
+                            <div className="absolute top-2 right-2 flex gap-0.5">
+                                {links.trim() && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon-xs"
+                                        onClick={() => setLinks("")}
+                                        disabled={isAddingLinks}
+                                        className="text-muted-foreground hover:text-foreground"
+                                        aria-label="Clear">
+                                        <X className="size-3.5" />
+                                    </Button>
                                 )}
-                            </Button>
-                            <Button variant="outline" disabled={isAddingLinks} onClick={handlePaste}>
-                                <ClipboardIcon className="mr-2 size-4" />
-                                Paste
-                            </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    onClick={handlePaste}
+                                    disabled={isAddingLinks}
+                                    className="text-muted-foreground hover:text-foreground"
+                                    aria-label="Paste from clipboard">
+                                    <ClipboardPaste className="size-3.5" />
+                                </Button>
+                            </div>
                         </div>
+                        <Button onClick={handleAddLinks} disabled={isAddingLinks || !links.trim()} className="w-full">
+                            {isAddingLinks ? (
+                                <>
+                                    <Loader2 className="size-4 animate-spin" />
+                                    Adding...
+                                </>
+                            ) : (
+                                <>
+                                    <Link className="size-4" />
+                                    Add Links
+                                </>
+                            )}
+                        </Button>
                     </div>
                 </div>
             </CardContent>

@@ -2,6 +2,8 @@
 
 > Minimal context for AI sessions. Full docs: [ui.md](./ui.md)
 
+**Rule:** Always use the `frontend-design` skill when creating or modifying UI components.
+
 **⚠️ Maintainer Note:** This is a condensed version of [ui.md](./ui.md). Always update the main `ui.md` first, then sync changes here. Never modify this file without updating the source doc.
 
 ## Aesthetic

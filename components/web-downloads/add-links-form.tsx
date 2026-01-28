@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Link2, Save } from "lucide-react";
+import { Loader2, Link2, Save, ClipboardPaste, X } from "lucide-react";
 
 function parseLinks(text: string): string[] {
     return text
@@ -65,32 +65,78 @@ export function AddLinksForm() {
         }
     };
 
-    const isDisabled = isAdding || isSaving || !linksText.trim();
+    const handlePaste = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (!text.trim()) {
+                toast.error("Clipboard is empty");
+                return;
+            }
+            setLinksText((prev) => (prev ? prev.trimEnd() + "\n" + text : text));
+        } catch {
+            toast.error("Failed to read clipboard");
+        }
+    };
+
+    const isBusy = isAdding || isSaving;
+    const isDisabled = isBusy || !linksText.trim();
+    const linkCount = parseLinks(linksText).length;
 
     return (
         <div className="rounded-sm border border-border/50 overflow-hidden">
-            <div className="bg-muted/30 px-4 py-3 border-b border-border/50">
-                <p className="text-xs tracking-wider uppercase text-muted-foreground">Paste Links</p>
+            <div className="flex items-center justify-between bg-muted/30 px-4 py-3 border-b border-border/50">
+                <p className="text-xs tracking-widest uppercase text-muted-foreground">Paste Links</p>
+                {linkCount > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                        {linkCount} link{linkCount !== 1 ? "s" : ""}
+                    </span>
+                )}
             </div>
             <div className="p-4 space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="links" className="sr-only">
                         Links
                     </Label>
-                    <Textarea
-                        id="links"
-                        placeholder="Paste links here (one per line)&#10;https://example.com/file1.zip&#10;https://example.com/file2.zip"
-                        value={linksText}
-                        onChange={(e) => setLinksText(e.target.value)}
-                        disabled={isAdding || isSaving}
-                        className="font-mono text-sm min-h-[120px] resize-y"
-                    />
+                    <div className="relative">
+                        <Textarea
+                            id="links"
+                            placeholder={
+                                "Paste links here (one per line)\nhttps://example.com/file1.zip\nhttps://example.com/file2.zip"
+                            }
+                            value={linksText}
+                            onChange={(e) => setLinksText(e.target.value)}
+                            disabled={isBusy}
+                            className="font-mono text-xs sm:text-sm min-h-[100px] sm:min-h-[120px] resize-y pr-16"
+                        />
+                        <div className="absolute top-2 right-2 flex gap-0.5">
+                            {linksText.trim() && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    onClick={() => setLinksText("")}
+                                    disabled={isBusy}
+                                    className="text-muted-foreground hover:text-foreground"
+                                    aria-label="Clear">
+                                    <X className="size-3.5" />
+                                </Button>
+                            )}
+                            <Button
+                                variant="ghost"
+                                size="icon-xs"
+                                onClick={handlePaste}
+                                disabled={isBusy}
+                                className="text-muted-foreground hover:text-foreground"
+                                aria-label="Paste from clipboard">
+                                <ClipboardPaste className="size-3.5" />
+                            </Button>
+                        </div>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                         Enter URLs from supported hosters. Each link will be processed.
                     </p>
                 </div>
-                <div className="flex gap-2 pt-2">
-                    <Button onClick={handleUnlock} disabled={isDisabled}>
+                <div className="flex flex-wrap gap-2">
+                    <Button onClick={handleUnlock} disabled={isDisabled} className="flex-1 sm:flex-none">
                         {isAdding ? (
                             <>
                                 <Loader2 className="size-4 animate-spin" />
@@ -104,7 +150,11 @@ export function AddLinksForm() {
                         )}
                     </Button>
                     {saveLinks ? (
-                        <Button onClick={handleSave} disabled={isDisabled} variant="outline">
+                        <Button
+                            onClick={handleSave}
+                            disabled={isDisabled}
+                            variant="outline"
+                            className="flex-1 sm:flex-none">
                             {isSaving ? (
                                 <>
                                     <Loader2 className="size-4 animate-spin" />
@@ -113,14 +163,9 @@ export function AddLinksForm() {
                             ) : (
                                 <>
                                     <Save className="size-4" />
-                                    Save for Later
+                                    Save
                                 </>
                             )}
-                        </Button>
-                    ) : null}
-                    {linksText.trim() ? (
-                        <Button variant="ghost" onClick={() => setLinksText("")} disabled={isAdding || isSaving}>
-                            Clear
                         </Button>
                     ) : null}
                 </div>
