@@ -18,15 +18,15 @@ const MediaSkeleton = memo(function MediaSkeleton() {
     return (
         <div className="relative min-h-screen">
             {/* Backdrop skeleton */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen -mt-6 h-[35vh]">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen -mt-6 h-[40vh]">
                 <Skeleton className="w-full h-full rounded-none" />
             </div>
 
-            <div className="relative pt-[18vh] sm:pt-[20vh] md:pt-[22vh] pb-12 space-y-8">
+            <div className="relative pt-[22vh] sm:pt-[26vh] md:pt-[30vh] pb-8">
                 <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr] gap-6 md:gap-8">
                     {/* Poster */}
                     <div className="space-y-4">
-                        <Skeleton className="aspect-2/3 rounded-sm w-full max-w-[45vw] sm:max-w-none" />
+                        <Skeleton className="aspect-2/3 rounded-sm max-sm:max-w-[45vw]" />
                         <Skeleton className="h-10 w-full hidden md:block" />
                     </div>
 
