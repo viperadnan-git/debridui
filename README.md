@@ -49,7 +49,7 @@ A modern, fast debrid client with integrated media discovery and streaming capab
 
 - Node.js 20+ or Bun
 - PostgreSQL 14+
-- A debrid account (AllDebrid, TorBox supported)
+- A debrid account (AllDebrid, TorBox, Premiumize supported)
 
 ### Configuration
 
@@ -85,7 +85,7 @@ Open [http://localhost:3000](http://localhost:3000) to access the app.
 
 ### Deployment
 
-**Vercel (Recommended):**
+#### Vercel
 
 1. Push code to GitHub
 2. Import project on [Vercel](https://vercel.com)
@@ -93,7 +93,29 @@ Open [http://localhost:3000](http://localhost:3000) to access the app.
 4. Configure environment variables
 5. Deploy
 
-**Standalone (Self-hosted):**
+#### Cloudflare Workers
+
+1. Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) and login:
+
+    ```bash
+    wrangler login
+    ```
+
+2. Configure environment variables in `wrangler.toml` or via Cloudflare dashboard
+
+3. Build and deploy:
+    ```bash
+    bun run cf:deploy
+    ```
+
+For local development with Cloudflare Workers runtime:
+
+```bash
+bun run cf:dev      # Local development
+bun run cf:preview  # Preview with remote resources
+```
+
+#### Standalone (Self-hosted)
 
 This app uses Next.js standalone output for optimized self-hosting.
 
@@ -108,6 +130,34 @@ bun run build
 
 # Start the server
 NODE_ENV=production node .next/standalone/server.js
+```
+
+2. Configure environment variables in `wrangler.toml` or via Cloudflare dashboard
+
+3. Build and deploy:
+    ```bash
+    bun run cf:deploy
+    ```
+
+For local development with Cloudflare Workers runtime:
+
+```bash
+bun run cf:dev      # Local development
+bun run cf:preview  # Preview with remote resources
+```
+
+#### Self-hosted (Docker)
+
+```bash
+docker compose up -d
+```
+
+Or build manually:
+
+```bash
+bun run build:standalone
+bun start
+>>>>>>> b4598e3 (cloudflare workers support)
 ```
 
 ## CORS Proxy
