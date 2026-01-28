@@ -9,8 +9,7 @@ import { getClientInstance } from "@/lib/clients";
 import type { DebridClient } from "@/lib/clients";
 import { SplashScreen } from "@/components/splash-screen";
 import { useRouter } from "next/navigation";
-import { queryClient } from "@/lib/query-client";
-import { del } from "idb-keyval";
+import { clearAppCache } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface AuthContextType {
@@ -117,11 +116,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsLoggingOut(true);
         const toastId = toast.loading("Logging out...");
         try {
-            // Clear all React Query caches
-            await del("DEBRIDUI_CACHE"); // Clear IndexedDB persistence
-            queryClient.clear(); // Clear all in-memory query cache
-
-            // Sign out from Better Auth
+            await clearAppCache();
             await authClient.signOut();
 
             toast.success("Logged out successfully", { id: toastId });

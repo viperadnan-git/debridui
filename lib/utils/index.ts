@@ -4,9 +4,19 @@ import { AccountType } from "../schemas";
 import { formatDistanceToNow } from "date-fns";
 import { DebridLinkInfo, FileType } from "../types";
 import { ACCOUNT_TYPE_LABELS, CORS_PROXY_URL, EXTENSION_TO_FILE_TYPE } from "../constants";
+import { del } from "idb-keyval";
+import { queryClient } from "../query-client";
 
 export * from "./color";
 export * from "./media-player";
+
+/**
+ * Clear all app caches (IndexedDB persistence and in-memory query cache)
+ */
+export const clearAppCache = async () => {
+    await del("DEBRIDUI_CACHE");
+    queryClient.clear();
+};
 
 export const cn = (...inputs: ClassValue[]) => {
     return twMerge(clsx(inputs));

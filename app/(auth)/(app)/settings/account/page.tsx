@@ -8,6 +8,7 @@ import { authClient } from "@/lib/auth-client";
 import { setPassword } from "@/lib/actions/user";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
+import { clearAppCache } from "@/lib/utils";
 import { toast } from "sonner";
 import { UserCog, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -233,6 +234,7 @@ export default function AccountPage() {
             toast.error(`Failed to delete account: ${error.message}`, { id: toastId });
             setIsDeleting(false);
         } else {
+            await clearAppCache();
             toast.success("Account deleted", { id: toastId });
         }
     };
