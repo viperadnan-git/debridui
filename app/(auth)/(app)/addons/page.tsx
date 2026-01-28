@@ -61,11 +61,10 @@ export default function AddonsPage() {
                 return;
             }
 
-            const newAddon: Omit<Addon, "id"> = {
+            const newAddon: Omit<Addon, "id" | "order"> = {
                 name: manifest.name,
                 url: addonUrl,
                 enabled: true,
-                order: serverAddons.length,
             };
 
             await addAddonMutation.mutateAsync(newAddon);

@@ -22,12 +22,13 @@ export function useUserAddons(enabled = true) {
 
 /**
  * Add a new addon
+ * Order is calculated server-side to avoid stale data issues
  */
 export function useAddAddon() {
     const queryClient = useQueryClient();
 
     return useToastMutation(
-        (addon: Omit<Addon, "id">) => addAddon(addon),
+        (addon: Omit<Addon, "id" | "order">) => addAddon(addon),
         { error: "Failed to add addon" },
         {
             onSuccess: async () => {

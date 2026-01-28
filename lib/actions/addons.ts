@@ -29,7 +29,7 @@ export async function getUserAddons() {
 /**
  * Add a new addon
  */
-export async function addAddon(addon: Omit<Addon, "id">) {
+export async function addAddon(addon: Omit<Addon, "id" | "order">) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -38,12 +38,18 @@ export async function addAddon(addon: Omit<Addon, "id">) {
         redirect("/login");
     }
 
+    // Calculate next order atomically
+    const [maxOrder] = await db
+        .select({ max: sql<number>`COALESCE(MAX(${addons.order}), -1)` })
+        .from(addons)
+        .where(eq(addons.userId, session.user.id));
+
     await db.insert(addons).values({
         userId: session.user.id,
         name: addon.name,
         url: addon.url,
         enabled: addon.enabled,
-        order: addon.order,
+        order: (maxOrder?.max ?? -1) + 1,
     });
 
     revalidatePath("/", "layout");
