@@ -9,9 +9,19 @@ import { setPassword } from "@/lib/actions/user";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
 import { toast } from "sonner";
-import { Loader2, UserCog } from "lucide-react";
+import { Loader2, UserCog, AlertTriangle } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { formatDistanceToNow, format } from "date-fns";
@@ -47,6 +57,9 @@ const profileSchema = z.object({
 
 export default function AccountPage() {
     const queryClient = useQueryClient();
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deletePassword, setDeletePassword] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Get current session/user
     const { data: session } = authClient.useSession();
@@ -202,6 +215,24 @@ export default function AccountPage() {
             toast.success("Password set successfully", { id: toastId });
             passwordSetForm.reset();
             queryClient.invalidateQueries({ queryKey: AUTH_ACCOUNTS_KEY });
+        }
+    };
+
+    const handleDeleteAccount = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsDeleting(true);
+        const toastId = toast.loading("Deleting account...");
+
+        const { error } = await authClient.deleteUser({
+            password: deletePassword,
+            callbackURL: "/",
+        });
+
+        if (error) {
+            toast.error(`Failed to delete account: ${error.message}`, { id: toastId });
+            setIsDeleting(false);
+        } else {
+            toast.success("Account deleted", { id: toastId });
         }
     };
 
@@ -490,6 +521,81 @@ export default function AccountPage() {
                             )}
                         </>
                     )}
+                </div>
+            </section>
+
+            {/* Delete Account Section */}
+            <section className="space-y-4">
+                <SectionDivider label="Danger Zone" />
+
+                <div className="rounded-sm border border-destructive/30 p-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-1">
+                            <p className="font-light">Delete Account</p>
+                            <p className="text-xs text-muted-foreground">
+                                Permanently delete your account and all associated data
+                            </p>
+                        </div>
+                        {isLoadingAccounts ? (
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                        ) : hasPassword ? (
+                            <Dialog
+                                open={deleteDialogOpen}
+                                onOpenChange={(open) => {
+                                    setDeleteDialogOpen(open);
+                                    if (!open) setDeletePassword("");
+                                }}>
+                                <DialogTrigger asChild>
+                                    <Button variant="destructive" className="w-full sm:w-auto">
+                                        Delete Account
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle className="flex items-center gap-2">
+                                            <AlertTriangle className="size-5 text-destructive" />
+                                            Delete Account
+                                        </DialogTitle>
+                                        <DialogDescription>
+                                            This action cannot be undone. All your data will be permanently deleted.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={handleDeleteAccount} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label htmlFor="delete-password" className="text-sm">
+                                                Enter your password to confirm:
+                                            </label>
+                                            <Input
+                                                id="delete-password"
+                                                type="password"
+                                                value={deletePassword}
+                                                onChange={(e) => setDeletePassword(e.target.value)}
+                                                placeholder="Password"
+                                                disabled={isDeleting}
+                                                required
+                                            />
+                                        </div>
+                                        <DialogFooter>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setDeleteDialogOpen(false)}
+                                                disabled={isDeleting}>
+                                                Cancel
+                                            </Button>
+                                            <Button type="submit" variant="destructive" disabled={isDeleting}>
+                                                {isDeleting ? "Deleting..." : "Delete Account"}
+                                            </Button>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">
+                                Set a password above to enable account deletion
+                            </p>
+                        )}
+                    </div>
                 </div>
             </section>
         </div>
