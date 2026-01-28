@@ -5,6 +5,7 @@ import * as React from "react";
 import { ArrowRightLeft, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AccountType } from "@/lib/types";
 import { formatAccountType, cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -56,9 +57,13 @@ export const AccountCard = React.memo(function AccountCard({ account, isCurrentA
                         <ServiceIcon type={account.type as AccountType} className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-light text-lg truncate" title={userInfo?.username || "Loading..."}>
-                            {userInfo?.username || "Loading..."}
-                        </h3>
+                        {userInfo ? (
+                            <h3 className="font-light text-lg truncate" title={userInfo.username}>
+                                {userInfo.username}
+                            </h3>
+                        ) : (
+                            <Skeleton className="h-6 w-32" />
+                        )}
                         <p className="text-xs text-muted-foreground truncate" title={formatAccountType(account.type)}>
                             {formatAccountType(account.type)}
                         </p>
@@ -89,7 +94,20 @@ export const AccountCard = React.memo(function AccountCard({ account, isCurrentA
                             )}
                         </div>
                     ) : (
-                        <p className="text-sm text-muted-foreground">Loading account info...</p>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                                <Skeleton className="h-4 w-12" />
+                                <Skeleton className="h-4 w-32" />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <Skeleton className="h-4 w-12" />
+                                <Skeleton className="h-4 w-16" />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <Skeleton className="h-4 w-14" />
+                                <Skeleton className="h-4 w-20" />
+                            </div>
+                        </div>
                     )}
                 </div>
 

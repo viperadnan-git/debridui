@@ -28,18 +28,18 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                         <img
                             src={backdropUrl}
                             alt=""
-                            className="w-full h-full object-cover opacity-40"
+                            className="w-full h-full object-cover opacity-50"
                             loading="eager"
                             decoding="async"
                         />
                     </div>
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/60 to-background/20 -mt-6" />
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/80 via-transparent to-background/80 -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/40 to-transparent -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/60 via-transparent to-background/60 -mt-6" />
                 </>
             )}
 
             {/* Content */}
-            <div className={backdropUrl ? "relative pt-[18vh] sm:pt-[20vh] md:pt-[22vh] pb-6" : "pb-6"}>
+            <div className={backdropUrl ? "relative pt-[22vh] sm:pt-[26vh] md:pt-[30vh] pb-8" : "pb-8"}>
                 <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr] gap-6 md:gap-8">
                     {/* Poster Column */}
                     <div className="space-y-4">
@@ -117,7 +117,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                                 {media.genres.map((genre) => (
                                     <span
                                         key={genre}
-                                        className="text-xs text-muted-foreground px-2.5 py-1 bg-muted/30 rounded-sm">
+                                        className="text-xs text-foreground/80 px-2.5 py-1 bg-muted/50 rounded-sm">
                                         {genre}
                                     </span>
                                 ))}

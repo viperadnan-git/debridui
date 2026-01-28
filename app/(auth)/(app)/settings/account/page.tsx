@@ -9,7 +9,8 @@ import { setPassword } from "@/lib/actions/user";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
 import { toast } from "sonner";
-import { Loader2, UserCog, AlertTriangle } from "lucide-react";
+import { UserCog, AlertTriangle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Dialog,
     DialogContent,
@@ -310,19 +311,26 @@ export default function AccountPage() {
             <section className="space-y-4">
                 <SectionDivider label="Password" />
 
-                <p className="text-xs text-muted-foreground">
-                    {isLoadingAccounts
-                        ? "Loading..."
-                        : hasPassword
-                          ? "Change your account password"
-                          : "Set a password for your account"}
-                </p>
-
                 {isLoadingAccounts ? (
-                    <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <div className="space-y-4 max-w-md">
+                        <Skeleton className="h-3 w-48" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-9 w-full" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-9 w-full" />
+                        </div>
+                        <Skeleton className="h-9 w-32" />
                     </div>
-                ) : hasPassword ? (
+                ) : (
+                    <p className="text-xs text-muted-foreground">
+                        {hasPassword ? "Change your account password" : "Set a password for your account"}
+                    </p>
+                )}
+
+                {isLoadingAccounts ? null : hasPassword ? (
                     <Form {...passwordChangeForm}>
                         <form
                             onSubmit={passwordChangeForm.handleSubmit(handleChangePassword)}
@@ -456,9 +464,20 @@ export default function AccountPage() {
 
                 <div className="space-y-3">
                     {isLoadingSessions ? (
-                        <div className="flex items-center justify-center py-8">
-                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                        </div>
+                        <>
+                            {[1, 2].map((i) => (
+                                <div key={i} className="rounded-sm border border-border/50 p-4">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="space-y-2 flex-1">
+                                            <Skeleton className="h-5 w-48" />
+                                            <Skeleton className="h-3 w-40" />
+                                            <Skeleton className="h-3 w-28" />
+                                        </div>
+                                        <Skeleton className="h-9 w-20" />
+                                    </div>
+                                </div>
+                            ))}
+                        </>
                     ) : sessions.length === 0 ? (
                         <p className="text-sm text-muted-foreground py-4">No active sessions found</p>
                     ) : (
@@ -537,7 +556,7 @@ export default function AccountPage() {
                             </p>
                         </div>
                         {isLoadingAccounts ? (
-                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            <Skeleton className="h-9 w-32" />
                         ) : hasPassword ? (
                             <Dialog
                                 open={deleteDialogOpen}
