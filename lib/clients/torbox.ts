@@ -210,7 +210,7 @@ export default class TorBoxClient extends BaseClient {
         return {
             pin: "TORBOX_API_KEY",
             check: "direct_api_key",
-            redirect_url: "https://torbox.app/settings/api",
+            redirect_url: "https://torbox.app/settings?section=account",
         };
     }
 
