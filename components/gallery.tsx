@@ -97,14 +97,16 @@ export function Gallery({ items, className }: GalleryProps) {
                 onTouchEnd={handleTouchEnd}>
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none z-10" />
 
-                <div className="relative">
+                <div className="relative aspect-[16/9]">
                     {items.map((item, index) => (
                         <img
                             key={item.id}
                             src={item.src}
                             alt={`DebridUI ${item.label}`}
+                            width={1920}
+                            height={1080}
                             className={cn(
-                                "w-full aspect-[16/9] object-cover transition-opacity duration-500",
+                                "w-full h-full object-cover transition-opacity duration-500",
                                 active === index ? "opacity-90" : "opacity-0 absolute inset-0"
                             )}
                         />

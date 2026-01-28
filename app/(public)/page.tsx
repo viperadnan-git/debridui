@@ -94,13 +94,15 @@ export default function Home() {
                                     {i > 0 && <span className="text-border mr-4">·</span>}
                                     <img
                                         src={`https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/${tech.icon}.svg`}
-                                        alt=""
+                                        alt={`${tech.name} logo`}
+                                        width={12}
+                                        height={12}
                                         className="size-3 opacity-50 dark:invert"
                                     />
                                     {tech.name}
                                 </span>
                             ))}
-                            <Badge className="tracking-wider">Open Source</Badge>
+                            <Badge className="tracking-wider transition-none">Open Source</Badge>
                         </div>
                     </div>
 
@@ -133,7 +135,9 @@ export default function Home() {
                                     rel="noopener noreferrer">
                                     <img
                                         src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/github.svg"
-                                        alt=""
+                                        alt="GitHub logo"
+                                        width={16}
+                                        height={16}
                                         className="size-4 dark:invert mr-2 opacity-70"
                                     />
                                     Source
@@ -230,7 +234,9 @@ export default function Home() {
                                     <Link href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
                                         <img
                                             src="https://cdn.simpleicons.org/discord/white"
-                                            alt=""
+                                            alt="Discord logo"
+                                            width={16}
+                                            height={16}
                                             className="size-4 mr-2"
                                         />
                                         Discord
@@ -244,7 +250,9 @@ export default function Home() {
                                     rel="noopener noreferrer">
                                     <img
                                         src="https://cdn.jsdelivr.net/npm/simple-icons@v14/icons/github.svg"
-                                        alt=""
+                                        alt="GitHub logo"
+                                        width={16}
+                                        height={16}
                                         className="size-4 dark:invert mr-2 opacity-70"
                                     />
                                     GitHub
