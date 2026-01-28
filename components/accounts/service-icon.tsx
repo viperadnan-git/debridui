@@ -5,6 +5,7 @@ import Image from "next/image";
 const SERVICE_ICONS: Record<AccountType, string> = {
     [AccountType.TORBOX]: "https://wsrv.nl/?url=https://i.ibb.co/YgB6zFK/icon.png&w=280&h=280&maxage=1y",
     [AccountType.ALLDEBRID]: "https://wsrv.nl/?url=https://i.ibb.co/tTDfYx0v/icon.jpg&w=280&h=280&maxage=1y",
+    [AccountType.PREMIUMIZE]: "https://wsrv.nl/?url=https://www.premiumize.me/favicon.ico&w=280&h=280&maxage=1y",
 };
 
 interface ServiceIconProps {
