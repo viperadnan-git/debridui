@@ -9,7 +9,7 @@ const siteConfig = {
     name: "DebridUI",
     description:
         "A modern debrid client with multi-account support, integrated media discovery, real-time file tracking, and direct streaming to your favorite media players.",
-    url: "https://debridui.vercel.app",
+    url: "https://debridui.viperadnan.com",
     ogImage: "/banner.jpg",
     keywords: [
         "debrid",

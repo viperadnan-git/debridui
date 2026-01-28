@@ -1,7 +1,7 @@
 # DebridUI
 
 <p align="center">
-  <a href="https://debridui.vercel.app"><img src="https://img.shields.io/website?url=https%3A%2F%2Fviperadnan.com&label=Deployment&color=brightgreen" alt="Deployment" /></a>
+  <a href="https://debridui.viperadnan.com"><img src="https://img.shields.io/website?url=https%3A%2F%2Fviperadnan.com&label=Deployment&color=brightgreen" alt="Deployment" /></a>
   <a href="https://nextjs.org"><img src="https://img.shields.io/github/package-json/dependency-version/viperadnan-git/debridui/next?logo=next.js&logoColor=white&label=Next.js&color=black" alt="Next.js" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/github/package-json/dependency-version/viperadnan-git/debridui/dev/typescript?logo=typescript&logoColor=white&label=TypeScript&color=3178C6" alt="TypeScript" /></a>
   <a href="https://tailwindcss.com"><img src="https://img.shields.io/github/package-json/dependency-version/viperadnan-git/debridui/dev/tailwindcss?logo=tailwind-css&logoColor=white&label=Tailwind&color=06B6D4" alt="Tailwind CSS" /></a>
@@ -16,7 +16,7 @@ A modern, fast debrid client with integrated media discovery and streaming capab
 
 ## Community Hosted Instances
 
-- [https://debridui.vercel.app](https://debridui.vercel.app) - Hosted by creator
+- [https://debridui.viperadnan.com](https://debridui.viperadnan.com) - Hosted by creator
 
 ## Features
 
