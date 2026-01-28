@@ -28,6 +28,7 @@ const PLAYER_SETUP_INSTRUCTIONS: Partial<Record<MediaPlayer, (platform: Platform
             <>
                 If MPV isn&apos;t opening videos, you need to register the protocol handler. Open {terminal}
                 {adminNote} and run: <code className="rounded bg-muted px-1.5 py-0.5">mpv --register</code>
+                <br />
                 <a
                     href="https://mpv.io/manual/stable/#options-register"
                     target="_blank"

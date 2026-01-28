@@ -44,7 +44,7 @@ export const isMobileOrTablet = (): boolean => {
     return platform === Platform.ANDROID || platform === Platform.IOS;
 };
 
-const PLAYER_PLATFORM_SUPPORT: Record<MediaPlayer, Platform[]> = {
+export const PLAYER_PLATFORM_SUPPORT: Record<MediaPlayer, Platform[]> = {
     [MediaPlayer.BROWSER]: [Platform.ANDROID, Platform.IOS, Platform.MACOS, Platform.WINDOWS, Platform.LINUX],
     [MediaPlayer.IINA]: [Platform.MACOS],
     [MediaPlayer.INFUSE]: [Platform.IOS, Platform.MACOS],
@@ -94,16 +94,6 @@ export const playUrl = ({ url, fileName, player }: { url: string; fileName: stri
 
     if (selectedPlayer === MediaPlayer.BROWSER) {
         toast.error("Browser preview is not supported for this file. Please select a different player.");
-        return;
-    }
-
-    const currentPlatform = detectPlatform();
-
-    if (!isSupportedPlayer(selectedPlayer, currentPlatform)) {
-        const supportedPlatforms = PLAYER_PLATFORM_SUPPORT[selectedPlayer].join(", ");
-        toast.error(
-            `${selectedPlayer} is not supported on ${currentPlatform}. Supported platforms: ${supportedPlatforms}`
-        );
         return;
     }
 

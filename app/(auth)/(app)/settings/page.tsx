@@ -15,7 +15,7 @@ import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { formatDistanceToNow, format } from "date-fns";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
-import { detectPlatform } from "@/lib/utils/media-player";
+import { detectPlatform, isSupportedPlayer, PLAYER_PLATFORM_SUPPORT } from "@/lib/utils/media-player";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
@@ -35,6 +35,7 @@ export default function SettingsPage() {
     const [isClearing, setIsClearing] = useState(false);
     const platform = detectPlatform();
     const setupInstruction = getPlayerSetupInstruction(mediaPlayer, platform);
+    const isPlayerSupported = isSupportedPlayer(mediaPlayer, platform);
 
     const handleClearCache = async (key?: string[]) => {
         setIsClearing(true);
@@ -131,6 +132,16 @@ export default function SettingsPage() {
                         </p>
                     </div>
                 </div>
+
+                {!isPlayerSupported && (
+                    <div className="flex items-start gap-3 rounded-sm border border-yellow-500/50 bg-yellow-500/10 p-3 text-xs text-yellow-600 dark:text-yellow-500">
+                        <Info className="size-3.5 shrink-0 mt-0.5" />
+                        <p>
+                            {mediaPlayer} is not officially supported on {platform}. Supported platforms:{" "}
+                            {PLAYER_PLATFORM_SUPPORT[mediaPlayer].join(", ")}
+                        </p>
+                    </div>
+                )}
 
                 {setupInstruction && (
                     <div className="flex items-start gap-3 rounded-sm border border-border/50 p-3 text-xs text-muted-foreground">
