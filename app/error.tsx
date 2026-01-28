@@ -6,25 +6,25 @@ import { AlertCircle } from "lucide-react";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
     useEffect(() => {
-        // Log the error to an error reporting service
         console.error(error);
     }, [error]);
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen gap-8 p-4">
-            <div className="flex flex-col items-center justify-center gap-4 text-center">
-                <AlertCircle className="h-16 w-16 text-destructive" />
-                <h1 className="text-4xl font-bold">Something went wrong!</h1>
-                <p className="text-lg text-muted-foreground max-w-md">
-                    {error.message || "An unexpected error occurred"}
-                </p>
+        <div className="flex flex-col items-center justify-center min-h-screen gap-10 p-6">
+            <div className="flex flex-col items-center gap-6 text-center max-w-md">
+                <AlertCircle className="size-10 text-destructive" strokeWidth={1.5} />
+                <div className="space-y-3">
+                    <h1 className="text-2xl sm:text-3xl font-light">Something went wrong</h1>
+                    <p className="text-sm text-muted-foreground">{error.message || "An unexpected error occurred"}</p>
+                </div>
                 {error.digest && (
-                    <p className="text-sm text-muted-foreground">
-                        Error ID: <code className="bg-muted px-2 py-1 rounded">{error.digest}</code>
+                    <p className="text-xs text-muted-foreground">
+                        Error ID{" "}
+                        <code className="bg-muted/30 px-2 py-0.5 rounded-sm text-foreground">{error.digest}</code>
                     </p>
                 )}
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
                 <Button onClick={reset}>Try again</Button>
                 <Button variant="outline" asChild>
                     <a href="/dashboard">Go to Dashboard</a>
