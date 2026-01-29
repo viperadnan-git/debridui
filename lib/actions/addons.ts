@@ -45,17 +45,27 @@ export async function addAddon(addon: Omit<Addon, "id" | "order">) {
         .from(addons)
         .where(eq(addons.userId, session.user.id));
 
+    const newOrder = (maxOrder?.max ?? -1) + 1;
+    const newId = uuidv7();
+
     await db.insert(addons).values({
-        id: uuidv7(),
+        id: newId,
         userId: session.user.id,
         name: addon.name,
         url: addon.url,
         enabled: addon.enabled,
-        order: (maxOrder?.max ?? -1) + 1,
+        order: newOrder,
     });
 
     revalidatePath("/", "layout");
-    return { success: true };
+
+    return {
+        id: newId,
+        name: addon.name,
+        url: addon.url,
+        enabled: addon.enabled,
+        order: newOrder,
+    } satisfies Addon;
 }
 
 /**

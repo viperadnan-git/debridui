@@ -22,7 +22,6 @@ export function useUserAddons(enabled = true) {
 
 /**
  * Add a new addon
- * Order is calculated server-side to avoid stale data issues
  */
 export function useAddAddon() {
     const queryClient = useQueryClient();
@@ -31,28 +30,42 @@ export function useAddAddon() {
         (addon: Omit<Addon, "id" | "order">) => addAddon(addon),
         { error: "Failed to add addon" },
         {
-            onSuccess: async () => {
-                await queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY });
+            onSuccess: (newAddon) => {
+                queryClient.setQueryData<Addon[]>(USER_ADDONS_KEY, (old = []) => [...old, newAddon]);
             },
         }
     );
 }
 
 /**
- * Remove an addon
+ * Remove an addon with optimistic update
  */
 export function useRemoveAddon() {
     const queryClient = useQueryClient();
 
-    return useToastMutation(
-        (addonId: string) => removeAddon(addonId),
+    return useToastMutation<{ success: boolean }, string, { previousAddons: Addon[] | undefined }>(
+        (addonId) => removeAddon(addonId),
         { error: "Failed to remove addon" },
         {
-            onSuccess: async (_, addonId) => {
-                // Invalidate all queries related to this addon
-                await queryClient.invalidateQueries({ queryKey: ["addon", addonId] });
-                // Refetch user addons list
-                await queryClient.refetchQueries({ queryKey: USER_ADDONS_KEY });
+            onMutate: async (addonId) => {
+                await queryClient.cancelQueries({ queryKey: USER_ADDONS_KEY });
+
+                const previousAddons = queryClient.getQueryData<Addon[]>(USER_ADDONS_KEY);
+
+                queryClient.setQueryData<Addon[]>(USER_ADDONS_KEY, (old = []) =>
+                    old.filter((addon) => addon.id !== addonId)
+                );
+
+                return { previousAddons };
+            },
+            onError: (_error, _variables, context) => {
+                if (context?.previousAddons) {
+                    queryClient.setQueryData(USER_ADDONS_KEY, context.previousAddons);
+                }
+            },
+            onSettled: (_, __, addonId) => {
+                queryClient.invalidateQueries({ queryKey: ["addon", addonId] });
+                queryClient.invalidateQueries({ queryKey: USER_ADDONS_KEY });
             },
         }
     );
