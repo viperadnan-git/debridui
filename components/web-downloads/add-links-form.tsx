@@ -30,19 +30,24 @@ export function AddLinksForm() {
         try {
             const results = await addDownloads(links);
             let successCount = 0;
-            for (const r of results) {
-                if (r.success) successCount++;
-            }
-            const failCount = results.length - successCount;
+            const errors: string[] = [];
 
-            if (successCount > 0 && failCount === 0) {
+            for (const r of results) {
+                if (r.success) {
+                    successCount++;
+                } else if (r.error) {
+                    errors.push(r.error);
+                }
+            }
+
+            // Show individual error toasts
+            for (const error of errors) {
+                toast.error(error);
+            }
+
+            if (successCount > 0) {
                 toast.success(`Unlocked ${successCount} link${successCount > 1 ? "s" : ""}`);
                 setLinksText("");
-            } else if (successCount > 0 && failCount > 0) {
-                toast.warning(`Unlocked ${successCount}, ${failCount} failed`);
-                setLinksText("");
-            } else {
-                toast.error("Failed to unlock links");
             }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to unlock links");
