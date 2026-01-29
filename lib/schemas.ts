@@ -3,6 +3,7 @@ import { z } from "zod";
 export enum AccountType {
     ALLDEBRID = "alldebrid",
     TORBOX = "torbox",
+    REALDEBRID = "real-debrid",
 }
 
 export const userSchema = z.object({

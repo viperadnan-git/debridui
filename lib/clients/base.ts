@@ -8,15 +8,58 @@ import {
     WebDownloadAddResult,
 } from "@/lib/types";
 
+/**
+ * Sliding-window rate limiter. Serializes calls through a promise chain
+ * so concurrent callers never race on the timestamp array.
+ */
+export class RateLimiter {
+    private timestamps: number[] = [];
+    private pending: Promise<void> = Promise.resolve();
+
+    constructor(
+        private readonly maxRequests: number,
+        private readonly intervalMs: number
+    ) {}
+
+    acquire(): Promise<void> {
+        this.pending = this.pending.then(
+            () => this.wait(),
+            () => this.wait()
+        );
+        return this.pending;
+    }
+
+    private async wait(): Promise<void> {
+        const now = Date.now();
+        this.timestamps = this.timestamps.filter((t) => now - t < this.intervalMs);
+
+        if (this.timestamps.length >= this.maxRequests) {
+            const delay = this.timestamps[0] + this.intervalMs - now;
+            if (delay > 0) {
+                await new Promise((r) => setTimeout(r, delay));
+            }
+        }
+
+        this.timestamps.push(Date.now());
+    }
+}
+
+interface BaseClientOptions {
+    user: User;
+    rateLimiter?: { maxRequests: number; intervalMs: number };
+}
+
 export default abstract class BaseClient {
     protected readonly user: User;
+    protected readonly rateLimiter: RateLimiter;
 
     // Web download capabilities - override in subclasses
     readonly refreshInterval: number | false = false;
     readonly supportsEphemeralLinks: boolean = false;
 
-    constructor(user: User) {
+    constructor({ user, rateLimiter = { maxRequests: 250, intervalMs: 60000 } }: BaseClientOptions) {
         this.user = user;
+        this.rateLimiter = new RateLimiter(rateLimiter.maxRequests, rateLimiter.intervalMs);
     }
 
     protected async downloadFile(uri: string): Promise<File> {

@@ -133,7 +133,7 @@ export default class TorBoxClient extends BaseClient {
     readonly supportsEphemeralLinks = false;
 
     constructor(user: User) {
-        super(user);
+        super({ user });
     }
 
     /**
@@ -154,6 +154,7 @@ export default class TorBoxClient extends BaseClient {
         path: string,
         options: RequestInit & { returnRaw?: boolean } = { returnRaw: false }
     ): Promise<T> {
+        await this.rateLimiter.acquire();
         const { apiKey } = this.user;
         const url = `${this.baseUrl}${encodeURIComponent(`/${path}`)}`;
 

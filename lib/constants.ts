@@ -3,6 +3,7 @@ import { FileType, AccountType } from "./types";
 export const ACCOUNT_TYPE_LABELS = {
     [AccountType.ALLDEBRID]: "AllDebrid",
     [AccountType.TORBOX]: "TorBox",
+    [AccountType.REALDEBRID]: "Real-Debrid",
 };
 
 export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {

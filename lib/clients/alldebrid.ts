@@ -96,11 +96,12 @@ export default class AllDebridClient extends BaseClient {
     readonly supportsEphemeralLinks = true;
 
     constructor(user: User) {
-        super(user);
+        super({ user });
         this.sessionId = Math.floor(Math.random() * 1000000);
     }
 
     private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+        await this.rateLimiter.acquire();
         const { apiKey } = this.user;
         const url = `https://api.alldebrid.com/v4.1/${path}?agent=${USER_AGENT}`;
 
