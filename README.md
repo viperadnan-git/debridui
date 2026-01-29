@@ -49,7 +49,7 @@ A modern, fast debrid client with integrated media discovery and streaming capab
 
 - Node.js 20+ or Bun
 - PostgreSQL 14+
-- A debrid account (AllDebrid, TorBox supported)
+- A debrid account (Real-Debrid, TorBox, AllDebrid supported)
 
 ### Configuration
 

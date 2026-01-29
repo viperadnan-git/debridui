@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AccountType, addUserSchema } from "@/lib/schemas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
-import { AllDebridClient, TorBoxClient, RealDebridClient } from "@/lib/clients";
+import { RealDebridClient, TorBoxClient, AllDebridClient } from "@/lib/clients";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "next/navigation";
 import { useAddUserAccount } from "@/hooks/use-user-accounts";
@@ -150,12 +150,12 @@ export function AddAccountForm() {
                                 variant="outline"
                                 type="button"
                                 className="w-full"
-                                onClick={handleAllDebridLogin}
+                                onClick={handleRealDebridLogin}
                                 disabled={!!isLoadingOAuth || addAccount.isPending}>
-                                {isLoadingOAuth === "alldebrid" ? (
+                                {isLoadingOAuth === "realdebrid" ? (
                                     <Loader2 className="size-4 animate-spin" />
                                 ) : (
-                                    "AllDebrid"
+                                    "Real-Debrid"
                                 )}
                             </Button>
                             <Button
@@ -170,12 +170,12 @@ export function AddAccountForm() {
                                 variant="outline"
                                 type="button"
                                 className="w-full"
-                                onClick={handleRealDebridLogin}
+                                onClick={handleAllDebridLogin}
                                 disabled={!!isLoadingOAuth || addAccount.isPending}>
-                                {isLoadingOAuth === "realdebrid" ? (
+                                {isLoadingOAuth === "alldebrid" ? (
                                     <Loader2 className="size-4 animate-spin" />
                                 ) : (
-                                    "Real-Debrid"
+                                    "AllDebrid"
                                 )}
                             </Button>
                         </div>

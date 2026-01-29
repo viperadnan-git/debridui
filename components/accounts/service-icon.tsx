@@ -1,12 +1,7 @@
 import { AccountType } from "@/lib/types";
+import { ACCOUNT_TYPE_ICONS } from "@/lib/constants";
 import { User } from "lucide-react";
 import Image from "next/image";
-
-const SERVICE_ICONS: Record<AccountType, string> = {
-    [AccountType.TORBOX]: "https://wsrv.nl/?url=https://i.ibb.co/YgB6zFK/icon.png&w=280&h=280&maxage=1y",
-    [AccountType.ALLDEBRID]: "https://wsrv.nl/?url=https://i.ibb.co/tTDfYx0v/icon.jpg&w=280&h=280&maxage=1y",
-    [AccountType.REALDEBRID]: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/real-debrid.png",
-};
 
 interface ServiceIconProps {
     type: AccountType;
@@ -14,7 +9,7 @@ interface ServiceIconProps {
 }
 
 export function ServiceIcon({ type, className = "h-5 w-5" }: ServiceIconProps) {
-    const iconUrl = SERVICE_ICONS[type];
+    const iconUrl = ACCOUNT_TYPE_ICONS[type];
 
     if (!iconUrl) {
         return <User className={className} />;

@@ -1,9 +1,15 @@
 import { FileType, AccountType } from "./types";
 
 export const ACCOUNT_TYPE_LABELS = {
-    [AccountType.ALLDEBRID]: "AllDebrid",
-    [AccountType.TORBOX]: "TorBox",
     [AccountType.REALDEBRID]: "Real-Debrid",
+    [AccountType.TORBOX]: "TorBox",
+    [AccountType.ALLDEBRID]: "AllDebrid",
+};
+
+export const ACCOUNT_TYPE_ICONS: Record<AccountType, string> = {
+    [AccountType.REALDEBRID]: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/real-debrid.png",
+    [AccountType.TORBOX]: "https://wsrv.nl/?url=https://i.ibb.co/YgB6zFK/icon.png&w=280&h=280&maxage=1y",
+    [AccountType.ALLDEBRID]: "https://wsrv.nl/?url=https://i.ibb.co/tTDfYx0v/icon.jpg&w=280&h=280&maxage=1y",
 };
 
 export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {

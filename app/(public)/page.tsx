@@ -4,7 +4,8 @@ import { ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Gallery } from "@/components/gallery";
-import { DISCORD_URL } from "@/lib/constants";
+import { DISCORD_URL, ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS } from "@/lib/constants";
+import { AccountType } from "@/lib/types";
 
 const screenshots = [
     {
@@ -76,7 +77,7 @@ const features = [
 
 const steps = [
     { num: "01", title: "Sign up", desc: "Create account or use Google" },
-    { num: "02", title: "Connect", desc: "Link AllDebrid or TorBox" },
+    { num: "02", title: "Connect", desc: "Link Real-Debrid, TorBox, or AllDebrid" },
     { num: "03", title: "Stream", desc: "Browse and play content" },
 ];
 
@@ -146,11 +147,22 @@ export default function Home() {
                             </Button>
                         </div>
 
-                        <div className="flex items-center gap-3 pt-2 text-sm text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-2 text-sm text-muted-foreground">
                             <span>Supports</span>
-                            <span className="font-medium text-foreground">AllDebrid</span>
-                            <span className="text-border">·</span>
-                            <span className="font-medium text-foreground">TorBox</span>
+                            {Object.values(AccountType).map((type, i) => (
+                                <span key={type} className="inline-flex items-center gap-1.5">
+                                    {i > 0 && <span className="text-border mr-1.5">·</span>}
+                                    <Image
+                                        src={ACCOUNT_TYPE_ICONS[type]}
+                                        alt={ACCOUNT_TYPE_LABELS[type]}
+                                        width={16}
+                                        height={16}
+                                        className="size-4 rounded-sm"
+                                        unoptimized
+                                    />
+                                    <span className="font-medium text-foreground">{ACCOUNT_TYPE_LABELS[type]}</span>
+                                </span>
+                            ))}
                         </div>
                     </div>
                 </div>
