@@ -1,13 +1,15 @@
 "use client";
 
-import { memo, useState } from "react";
-import { WebDownload } from "@/lib/types";
-import { formatSize, cn } from "@/lib/utils";
+import { memo, useState, useMemo } from "react";
+import { WebDownload, FileType, MediaPlayer } from "@/lib/types";
+import { formatSize, cn, getFileType, playUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WebDownloadStatusBadge } from "@/components/display";
-import { Copy, ExternalLink, Trash2, Loader2, Download } from "lucide-react";
+import { UrlPreviewDialog, canPreviewInBrowser } from "@/components/preview/url-preview-dialog";
+import { useSettingsStore } from "@/lib/stores/settings";
+import { Copy, Trash2, Loader2, Download, Play, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 interface DownloadItemProps {
@@ -25,10 +27,16 @@ export const DownloadItem = memo(function DownloadItem({
     isSelected = false,
     onToggleSelect,
 }: DownloadItemProps) {
-    const [loading, setLoading] = useState<"copy" | "download" | "open" | null>(null);
+    const [loading, setLoading] = useState<"copy" | "download" | "preview" | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const { get } = useSettingsStore();
 
-    const getLink = async (action: "copy" | "download" | "open") => {
+    const fileType = useMemo(() => getFileType(download.name), [download.name]);
+    const isPreviewable = useMemo(() => canPreviewInBrowser(download.name), [download.name]);
+    const isVideo = fileType === FileType.VIDEO;
+
+    const getLink = async (action: "copy" | "download" | "preview") => {
         setLoading(action);
         try {
             const link = await onGetLink(download);
@@ -60,10 +68,15 @@ export const DownloadItem = memo(function DownloadItem({
         }
     };
 
-    const handleOpen = async () => {
-        const link = await getLink("open");
-        if (link) {
-            window.open(link, "_blank");
+    const handlePreview = async () => {
+        const link = await getLink("preview");
+        if (!link) return;
+
+        const mediaPlayer = get("mediaPlayer");
+        if (isVideo && mediaPlayer !== MediaPlayer.BROWSER) {
+            playUrl({ url: link, fileName: download.name, player: mediaPlayer });
+        } else {
+            setPreviewUrl(link);
         }
     };
 
@@ -136,6 +149,23 @@ export const DownloadItem = memo(function DownloadItem({
                     <div className="flex items-center gap-0.5 shrink-0">
                         {isReady && (
                             <>
+                                {isPreviewable && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
+                                        onClick={handlePreview}
+                                        disabled={isActionDisabled}
+                                        title={isVideo ? "Play" : "Preview"}>
+                                        {loading === "preview" ? (
+                                            <Loader2 className="size-3.5 md:size-4 animate-spin" />
+                                        ) : isVideo ? (
+                                            <Play className="size-3.5 md:size-4" />
+                                        ) : (
+                                            <Eye className="size-3.5 md:size-4" />
+                                        )}
+                                    </Button>
+                                )}
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -162,19 +192,6 @@ export const DownloadItem = memo(function DownloadItem({
                                         <Download className="size-3.5 md:size-4" />
                                     )}
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
-                                    onClick={handleOpen}
-                                    disabled={isActionDisabled}
-                                    title="Open">
-                                    {loading === "open" ? (
-                                        <Loader2 className="size-3.5 md:size-4 animate-spin" />
-                                    ) : (
-                                        <ExternalLink className="size-3.5 md:size-4" />
-                                    )}
-                                </Button>
                             </>
                         )}
                         <Button
@@ -193,6 +210,14 @@ export const DownloadItem = memo(function DownloadItem({
                     </div>
                 </div>
             </div>
+
+            {/* Preview Dialog */}
+            <UrlPreviewDialog
+                open={previewUrl !== null}
+                onOpenChange={(open) => !open && setPreviewUrl(null)}
+                url={previewUrl || ""}
+                title={download.name}
+            />
         </div>
     );
 });

@@ -15,7 +15,7 @@ import { CachedBadge } from "@/components/display";
 import { PlayUrlButton } from "./play-url-button";
 import { UrlPreviewDialog } from "@/components/preview/url-preview-dialog";
 import { useSettingsStore } from "@/lib/stores/settings";
-import { MediaPlayer } from "@/lib/types";
+import { MediaPlayer, FileType } from "@/lib/types";
 
 interface SourcesProps {
     imdbId: string;
@@ -242,6 +242,7 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
                     onOpenChange={handleClosePreview}
                     url={previewUrl}
                     title={previewTitle}
+                    fileType={FileType.VIDEO}
                 />
             )}
         </div>

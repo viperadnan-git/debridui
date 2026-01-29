@@ -1,6 +1,6 @@
 "use client";
 
-import { DebridFileNode } from "@/lib/types";
+import { DebridFileNode, FileType } from "@/lib/types";
 import { getFileType } from "@/lib/utils";
 import { getPreviewRenderer } from "@/lib/preview/registry";
 import { AlertCircle } from "lucide-react";
@@ -8,10 +8,12 @@ import { AlertCircle } from "lucide-react";
 interface PreviewContentProps {
     file: DebridFileNode;
     downloadUrl: string;
+    /** Override auto-detected file type */
+    fileType?: FileType;
 }
 
-export function PreviewContent({ file, downloadUrl }: PreviewContentProps) {
-    const fileType = getFileType(file.name);
+export function PreviewContent({ file, downloadUrl, fileType: explicitFileType }: PreviewContentProps) {
+    const fileType = explicitFileType ?? getFileType(file.name);
     const renderer = getPreviewRenderer(fileType);
 
     if (!renderer) {

@@ -1,58 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, AlertCircle, Loader2 } from "lucide-react";
-import { MediaPlayer } from "@/lib/types";
-import { useSettingsStore } from "@/lib/stores/settings";
-import { isNonMP4Video } from "@/lib/utils";
-import { VideoCodecWarning } from "./video-codec-warning";
+import { X } from "lucide-react";
+import { DebridFileNode, FileType } from "@/lib/types";
+import { getFileType } from "@/lib/utils";
+import { canPreviewFile } from "@/lib/preview/registry";
+import { PreviewContent } from "./preview-content";
 
 interface UrlPreviewDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     url: string;
     title: string;
+    /** Override auto-detected file type (useful when title doesn't have an extension) */
+    fileType?: FileType;
 }
 
-export function UrlPreviewDialog({ open, onOpenChange, url, title }: UrlPreviewDialogProps) {
-    const [error, setError] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [showCodecWarning, setShowCodecWarning] = useState(true);
-    const { set } = useSettingsStore();
+export function UrlPreviewDialog({
+    open,
+    onOpenChange,
+    url,
+    title,
+    fileType: explicitFileType,
+}: UrlPreviewDialogProps) {
+    const fileType = explicitFileType ?? getFileType(title);
 
-    const hasCodecIssue = isNonMP4Video(url);
-
-    // Keyboard navigation
-    useEffect(() => {
-        if (!open) return;
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape") {
-                e.preventDefault();
-                onOpenChange(false);
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [open, onOpenChange]);
-
-    const handleLoad = () => {
-        setLoading(false);
-    };
-
-    const handleError = () => {
-        setError(true);
-        setLoading(false);
-    };
-
-    const switchToPlayer = (player: MediaPlayer) => {
-        set("mediaPlayer", player);
-        setShowCodecWarning(false);
-        onOpenChange(false);
-    };
+    // Create a mock file node for PreviewContent
+    const fileNode = useMemo<DebridFileNode>(
+        () => ({
+            id: url,
+            name: title,
+            size: undefined,
+            type: "file",
+            children: [],
+        }),
+        [url, title]
+    );
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -80,39 +65,15 @@ export function UrlPreviewDialog({ open, onOpenChange, url, title }: UrlPreviewD
 
                 {/* Preview Content */}
                 <div className="flex-1 relative overflow-hidden min-h-0 bg-black" key={url}>
-                    {loading && !error ? (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <Loader2 className="h-8 w-8 animate-spin text-white" />
-                        </div>
-                    ) : null}
-
-                    {error ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-white">
-                            <AlertCircle className="h-12 w-12 mb-2" />
-                            <p className="text-sm">Failed to load video</p>
-                            <p className="text-xs text-white/70 mt-1">{title}</p>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center h-full">
-                            <video
-                                src={url}
-                                controls
-                                autoPlay
-                                className="w-full h-full object-contain"
-                                onLoadedData={handleLoad}
-                                onError={handleError}
-                            />
-                        </div>
-                    )}
-
-                    {/* Codec Warning Banner */}
-                    <VideoCodecWarning
-                        show={hasCodecIssue && showCodecWarning}
-                        onClose={() => setShowCodecWarning(false)}
-                        onSwitchPlayer={switchToPlayer}
-                    />
+                    {url && <PreviewContent file={fileNode} downloadUrl={url} fileType={fileType} />}
                 </div>
             </DialogContent>
         </Dialog>
     );
+}
+
+/** Check if a file name can be previewed in browser */
+export function canPreviewInBrowser(name: string): boolean {
+    const fileType = getFileType(name);
+    return canPreviewFile(fileType);
 }
