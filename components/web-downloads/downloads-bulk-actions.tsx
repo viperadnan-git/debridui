@@ -29,13 +29,15 @@ export function DownloadsBulkActions({ selectedDownloads, onClearSelection }: Do
 
     // Handle visibility with animation
     useEffect(() => {
+        let timeout: NodeJS.Timeout;
         if (hasSelection) {
             setIsVisible(true);
-            setTimeout(() => setIsAnimating(true), 10);
+            timeout = setTimeout(() => setIsAnimating(true), 10);
         } else {
             setIsAnimating(false);
-            setTimeout(() => setIsVisible(false), 300);
+            timeout = setTimeout(() => setIsVisible(false), 300);
         }
+        return () => clearTimeout(timeout);
     }, [hasSelection]);
 
     const handleCopyLinks = async () => {

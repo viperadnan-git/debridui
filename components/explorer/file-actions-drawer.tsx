@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, RotateCcw } from "lucide-react";
 import { FileActions } from "./file-actions";
@@ -86,35 +86,16 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
         }
     );
 
-    const [isVisible, setIsVisible] = useState(false);
-    const [isAnimating, setIsAnimating] = useState(false);
-
-    // Handle visibility with animation
-    useEffect(() => {
-        if (hasAnySelection) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setIsVisible(true);
-            // Small delay to trigger animation
-            setTimeout(() => setIsAnimating(true), 10);
-        } else {
-            setIsAnimating(false);
-            // Wait for animation to complete before hiding
-            setTimeout(() => setIsVisible(false), 300);
-        }
-    }, [hasAnySelection]);
-
-    if (!isVisible) return null;
-
     return (
         <>
             {/* Spacer to prevent content from being hidden behind the drawer */}
-            <div className={cn("transition-all duration-300 ease-in-out", isAnimating ? "h-20" : "h-0")} />
+            <div className={cn("transition-all duration-300 ease-in-out", hasAnySelection ? "h-20" : "h-0")} />
 
-            {/* Custom Bottom Drawer */}
+            {/* Bottom Drawer - always rendered, animated via CSS */}
             <div
                 className={cn(
                     "fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border shadow-lg transition-transform duration-300 ease-in-out",
-                    isAnimating ? "translate-y-0" : "translate-y-full"
+                    hasAnySelection ? "translate-y-0" : "translate-y-full pointer-events-none"
                 )}>
                 <div className="container mx-auto max-w-7xl">
                     <div className="flex flex-col items-center gap-3 p-4">

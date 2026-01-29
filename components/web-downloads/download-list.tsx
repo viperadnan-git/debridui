@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useWebDownloads } from "./web-downloads-provider";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { DownloadItem, DownloadItemSkeleton } from "./download-item";
 import { DownloadsBulkActions } from "./downloads-bulk-actions";
 import { ListPagination } from "@/components/common/pagination";
@@ -9,24 +10,39 @@ import { Link2Off } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export function DownloadList() {
+    const { currentAccount } = useAuthGuaranteed();
     const { downloads, isLoading, deleteDownload, getDownloadLink, currentPage, totalPages, setPage } =
         useWebDownloads();
 
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    // Selection state with account tracking to reset on account change
+    const [selection, setSelection] = useState<{ accountId: string; ids: Set<string> }>({
+        accountId: currentAccount.id,
+        ids: new Set(),
+    });
+
+    // Reset selection if account changed (React-recommended pattern for derived state)
+    if (selection.accountId !== currentAccount.id) {
+        setSelection({ accountId: currentAccount.id, ids: new Set() });
+    }
+
+    const selectedIds = useMemo(
+        () => (selection.accountId === currentAccount.id ? selection.ids : new Set<string>()),
+        [selection, currentAccount.id]
+    );
 
     const toggle = useCallback((id: string) => {
-        setSelectedIds((prev) => {
-            const next = new Set(prev);
+        setSelection((prev) => {
+            const next = new Set(prev.ids);
             if (next.has(id)) {
                 next.delete(id);
             } else {
                 next.add(id);
             }
-            return next;
+            return { ...prev, ids: next };
         });
     }, []);
 
-    const clearAll = useCallback(() => setSelectedIds(new Set()), []);
+    const clearAll = useCallback(() => setSelection((prev) => ({ ...prev, ids: new Set() })), []);
 
     // Selection state for current page
     const pageIds = useMemo(() => downloads.map((d) => d.id), [downloads]);
@@ -41,19 +57,15 @@ export function DownloadList() {
 
     const handleSelectAll = useCallback(
         (checked: boolean | "indeterminate") => {
-            if (checked) {
-                setSelectedIds((prev) => {
-                    const next = new Set(prev);
+            setSelection((prev) => {
+                const next = new Set(prev.ids);
+                if (checked) {
                     pageIds.forEach((id) => next.add(id));
-                    return next;
-                });
-            } else {
-                setSelectedIds((prev) => {
-                    const next = new Set(prev);
+                } else {
                     pageIds.forEach((id) => next.delete(id));
-                    return next;
-                });
-            }
+                }
+                return { ...prev, ids: next };
+            });
         },
         [pageIds]
     );
