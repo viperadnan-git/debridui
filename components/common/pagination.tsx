@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
     Pagination,
     PaginationContent,
@@ -10,15 +9,23 @@ import {
 } from "@/components/ui/pagination";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface PaginationProps {
     currentPage: number;
     totalPages: number;
     onPageChange: (page: number) => void;
     disabled?: boolean;
+    className?: string;
 }
 
-export function FilePagination({ currentPage, totalPages, onPageChange, disabled = false }: PaginationProps) {
+export function ListPagination({
+    currentPage,
+    totalPages,
+    onPageChange,
+    disabled = false,
+    className,
+}: PaginationProps) {
     const renderPageNumbers = () => {
         const pages = [];
         const maxVisible = 3;
@@ -55,7 +62,7 @@ export function FilePagination({ currentPage, totalPages, onPageChange, disabled
     };
 
     return (
-        <Pagination className="mt-6">
+        <Pagination className={cn("mt-6", className)}>
             <PaginationContent>
                 <PaginationItem>
                     <Button

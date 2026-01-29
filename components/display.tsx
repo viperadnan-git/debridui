@@ -118,56 +118,51 @@ export const CachedBadge = memo(function CachedBadge() {
     );
 });
 
-const getWebDownloadStatusConfig = cache((status: WebDownloadStatus) => {
-    switch (status) {
-        case "pending":
-            return {
-                icon: ClockIcon,
-                color: "bg-slate-600/10 text-slate-600 border-slate-600/20 dark:bg-slate-400/10 dark:text-slate-400 dark:border-slate-400/20",
-                name: "Pending",
-            };
-        case "processing":
-            return {
-                icon: DownloadIcon,
-                color: "bg-blue-600/10 text-blue-600 border-blue-600/20 dark:bg-blue-400/10 dark:text-blue-400 dark:border-blue-400/20",
-                name: "Processing",
-                animate: true,
-            };
-        case "completed":
-            return {
-                icon: CircleCheckIcon,
-                color: "bg-green-600/10 text-green-600 border-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:border-green-400/20",
-                name: "Ready",
-            };
-        case "cached":
-            return {
-                icon: Zap,
-                color: "bg-emerald-600/10 text-emerald-600 border-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20",
-                name: "Cached",
-            };
-        case "failed":
-            return {
-                icon: OctagonAlertIcon,
-                color: "bg-red-600/10 text-red-600 border-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:border-red-400/20",
-                name: "Failed",
-            };
-    }
-});
+const webDownloadStatusConfig = {
+    pending: {
+        icon: ClockIcon,
+        label: "Pending",
+        className:
+            "bg-slate-600/10 text-slate-600 border-slate-600/20 dark:bg-slate-400/10 dark:text-slate-400 dark:border-slate-400/20",
+    },
+    processing: {
+        icon: DownloadIcon,
+        label: "Processing",
+        className:
+            "bg-blue-600/10 text-blue-600 border-blue-600/20 dark:bg-blue-400/10 dark:text-blue-400 dark:border-blue-400/20 animate-pulse",
+    },
+    completed: {
+        icon: CircleCheckIcon,
+        label: "Ready",
+        className:
+            "bg-green-600/10 text-green-600 border-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:border-green-400/20",
+    },
+    cached: {
+        icon: Zap,
+        label: "Cached",
+        className:
+            "bg-emerald-600/10 text-emerald-600 border-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20",
+    },
+    failed: {
+        icon: OctagonAlertIcon,
+        label: "Failed",
+        className:
+            "bg-red-600/10 text-red-600 border-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:border-red-400/20",
+    },
+};
 
-export function WebDownloadStatusBadge({ status }: { status: WebDownloadStatus }) {
-    const config = getWebDownloadStatusConfig(status);
-    if (!config) return null;
-    const Icon = config.icon;
+export function WebDownloadStatusBadge({ status, className }: { status: WebDownloadStatus; className?: string }) {
+    const { icon: Icon, label, className: statusClassName } = webDownloadStatusConfig[status];
 
     return (
         <Badge
             className={cn(
-                "inline-flex items-center gap-1.5 px-2.5 py-1 md:gap-1.5 rounded-xl text-xs font-medium focus-visible:outline-none",
-                config.color,
-                config.animate && "animate-pulse"
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[11px] font-medium shrink-0",
+                statusClassName,
+                className
             )}>
-            <Icon className="size-3.5" strokeWidth={2.5} />
-            <span className="hidden md:inline leading-none">{config.name}</span>
+            <Icon className="size-3" strokeWidth={2.5} />
+            <span className="hidden sm:inline leading-none">{label}</span>
         </Badge>
     );
 }

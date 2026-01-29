@@ -4,8 +4,8 @@ import {
     DebridFile,
     DebridFileNode,
     DebridLinkInfo,
-    WebDownload,
     WebDownloadAddResult,
+    WebDownloadList,
 } from "@/lib/types";
 
 /**
@@ -133,7 +133,7 @@ export default abstract class BaseClient {
 
     // Web download methods
     abstract addWebDownloads(links: string[]): Promise<WebDownloadAddResult[]>;
-    abstract getWebDownloadList(): Promise<WebDownload[]>;
+    abstract getWebDownloadList(params: { offset: number; limit: number }): Promise<WebDownloadList>;
     abstract deleteWebDownload(id: string): Promise<void>;
 
     // Optional: Save links (AllDebrid only)

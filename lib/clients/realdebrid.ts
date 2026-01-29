@@ -11,8 +11,8 @@ import {
     DebridAuthError,
     DebridError,
     DebridRateLimitError,
-    WebDownload,
     WebDownloadAddResult,
+    WebDownloadList,
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
@@ -505,19 +505,26 @@ export default class RealDebridClient extends BaseClient {
         });
     }
 
-    async getWebDownloadList(): Promise<WebDownload[]> {
-        const downloads = await this.makeRequest<RDDownload[]>("downloads?limit=100");
+    async getWebDownloadList({ offset, limit }: { offset: number; limit: number }): Promise<WebDownloadList> {
+        // Real-Debrid uses page-based pagination
+        const page = Math.floor(offset / limit) + 1;
+        const downloads = await this.makeRequest<RDDownload[]>(`downloads?page=${page}&limit=${limit}`);
 
-        return downloads.map((dl) => ({
-            id: dl.id,
-            name: dl.filename,
-            originalLink: dl.link,
-            downloadLink: dl.download,
-            size: dl.filesize || undefined,
-            status: "completed" as const,
-            createdAt: new Date(dl.generated),
-            host: dl.host,
-        }));
+        return {
+            downloads: downloads.map((dl) => ({
+                id: dl.id,
+                name: dl.filename,
+                originalLink: dl.link,
+                downloadLink: dl.download,
+                size: dl.filesize || undefined,
+                status: "completed" as const,
+                createdAt: new Date(dl.generated),
+                host: dl.host,
+            })),
+            offset,
+            limit,
+            hasMore: downloads.length === limit,
+        };
     }
 
     async deleteWebDownload(id: string): Promise<void> {

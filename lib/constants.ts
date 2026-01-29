@@ -77,6 +77,7 @@ export const TRASH_SIZE_THRESHOLD = 1024 * 1024; // 1MB in bytes
 export const QUERY_CACHE_MAX_AGE = 1000 * 60 * 60 * 24; // 24 hours
 export const QUERY_CACHE_STALE_TIME = 1000 * 60 * 60; // 1 hour
 export const PAGE_SIZE = 50;
+export const WEB_DOWNLOADS_PAGE_SIZE = 50;
 export const USER_AGENT = "DebridUI";
 export const CAROUSEL_AUTO_DELAY = 3000; // 3 seconds
 

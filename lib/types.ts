@@ -173,3 +173,11 @@ export type WebDownloadAddResult = {
     error?: string;
     id?: string;
 };
+
+export type WebDownloadList = {
+    downloads: WebDownload[];
+    offset: number;
+    limit: number;
+    hasMore: boolean;
+    total?: number;
+};

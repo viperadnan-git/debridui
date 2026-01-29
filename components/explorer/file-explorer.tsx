@@ -11,7 +11,7 @@ import { useSelectionStore } from "@/lib/stores/selection";
 import { AddContent } from "./add-content";
 import { useFileExplorer } from "@/hooks/use-file-explorer";
 import { SearchSection } from "./search-section";
-import { FilePagination } from "./pagination";
+import { ListPagination } from "@/components/common/pagination";
 import { useSearchParams } from "next/navigation";
 import { DebridFile } from "@/lib/types";
 import { PAGE_SIZE } from "@/lib/constants";
@@ -138,7 +138,7 @@ export const FileExplorer = memo(function FileExplorer() {
                     {!isSearching && (
                         <>
                             {queryParam && searchTotalPages > 1 && (
-                                <FilePagination
+                                <ListPagination
                                     currentPage={searchPage}
                                     totalPages={searchTotalPages}
                                     onPageChange={handleSearchPageChange}
@@ -146,7 +146,7 @@ export const FileExplorer = memo(function FileExplorer() {
                                 />
                             )}
                             {!queryParam && totalPages > 1 && (
-                                <FilePagination
+                                <ListPagination
                                     currentPage={currentPage}
                                     totalPages={totalPages}
                                     onPageChange={handlePageChange}

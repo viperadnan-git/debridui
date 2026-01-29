@@ -2,9 +2,10 @@
 
 import { memo, useState } from "react";
 import { WebDownload } from "@/lib/types";
-import { formatSize } from "@/lib/utils";
+import { formatSize, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { WebDownloadStatusBadge } from "@/components/display";
 import { Copy, ExternalLink, Trash2, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
@@ -13,9 +14,17 @@ interface DownloadItemProps {
     download: WebDownload;
     onDelete: (id: string) => Promise<unknown>;
     onGetLink: (download: WebDownload) => Promise<string>;
+    isSelected?: boolean;
+    onToggleSelect?: (id: string) => void;
 }
 
-export const DownloadItem = memo(function DownloadItem({ download, onDelete, onGetLink }: DownloadItemProps) {
+export const DownloadItem = memo(function DownloadItem({
+    download,
+    onDelete,
+    onGetLink,
+    isSelected = false,
+    onToggleSelect,
+}: DownloadItemProps) {
     const [loading, setLoading] = useState<"copy" | "download" | "open" | null>(null);
     const [deleting, setDeleting] = useState(false);
 
@@ -74,86 +83,114 @@ export const DownloadItem = memo(function DownloadItem({ download, onDelete, onG
     const isActionDisabled = loading !== null;
 
     return (
-        <div className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-colors md:flex-row md:items-center md:gap-3">
-            {/* Row 1: Name + Badge */}
-            <div className="flex items-center gap-3 min-w-0 md:flex-1">
-                <div className="flex-1 min-w-0">
-                    <div className="text-sm truncate font-medium">{download.name}</div>
+        <div
+            className={cn(
+                "group flex items-start gap-2.5 px-3 py-2 border-b border-border/50 last:border-b-0 transition-colors",
+                isSelected ? "bg-primary/5" : "hover:bg-muted/20"
+            )}>
+            {/* Checkbox */}
+            {onToggleSelect && (
+                <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => onToggleSelect(download.id)}
+                    aria-label={`Select ${download.name}`}
+                    className="mt-0.5"
+                />
+            )}
+
+            {/* Content */}
+            <div className="flex-1 min-w-0 space-y-1">
+                {/* Name + Badge */}
+                <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
+                    <span className="text-sm font-medium leading-tight break-words min-w-0 flex-1">
+                        {download.name}
+                    </span>
+                    <WebDownloadStatusBadge status={download.status} />
                 </div>
-                <WebDownloadStatusBadge status={download.status} />
-            </div>
-            {/* Row 2: Meta + Actions */}
-            <div className="flex items-center justify-between gap-3 md:justify-end">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {download.host ? <span>{download.host}</span> : null}
-                    {download.host && download.size ? <span className="text-border">·</span> : null}
-                    {download.size ? <span>{formatSize(download.size)}</span> : null}
-                    {download.status === "processing" && download.progress !== undefined && download.progress < 100 && (
-                        <>
-                            <span className="text-border">·</span>
-                            <span>{Math.round(download.progress)}%</span>
-                        </>
-                    )}
-                    {download.error ? (
-                        <>
-                            <span className="text-border">·</span>
-                            <span className="text-red-500">{download.error}</span>
-                        </>
-                    ) : null}
-                </div>
-                <div className="flex gap-1">
-                    {isReady ? (
-                        <>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8"
-                                onClick={handleCopy}
-                                disabled={isActionDisabled}
-                                title="Copy link">
-                                {loading === "copy" ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    <Copy className="size-4" />
-                                )}
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8"
-                                onClick={handleDownload}
-                                disabled={isActionDisabled}
-                                title="Download">
-                                {loading === "download" ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    <Download className="size-4" />
-                                )}
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8"
-                                onClick={handleOpen}
-                                disabled={isActionDisabled}
-                                title="Open">
-                                {loading === "open" ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    <ExternalLink className="size-4" />
-                                )}
-                            </Button>
-                        </>
-                    ) : null}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-muted-foreground hover:text-destructive"
-                        onClick={handleDelete}
-                        disabled={deleting}
-                        title="Remove">
-                        {deleting ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-                    </Button>
+
+                {/* Meta + Actions */}
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-muted-foreground">
+                        {download.host && <span>{download.host}</span>}
+                        {download.host && download.size ? <span className="text-border">·</span> : null}
+                        {download.size ? <span className="tabular-nums">{formatSize(download.size)}</span> : null}
+                        {download.status === "processing" &&
+                            download.progress !== undefined &&
+                            download.progress < 100 && (
+                                <>
+                                    <span className="text-border">·</span>
+                                    <span className="tabular-nums text-foreground/70">
+                                        {Math.round(download.progress)}%
+                                    </span>
+                                </>
+                            )}
+                        {download.error && (
+                            <>
+                                <span className="text-border">·</span>
+                                <span className="text-destructive">{download.error}</span>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-0.5 shrink-0">
+                        {isReady && (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
+                                    onClick={handleCopy}
+                                    disabled={isActionDisabled}
+                                    title="Copy">
+                                    {loading === "copy" ? (
+                                        <Loader2 className="size-3.5 md:size-4 animate-spin" />
+                                    ) : (
+                                        <Copy className="size-3.5 md:size-4" />
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
+                                    onClick={handleDownload}
+                                    disabled={isActionDisabled}
+                                    title="Download">
+                                    {loading === "download" ? (
+                                        <Loader2 className="size-3.5 md:size-4 animate-spin" />
+                                    ) : (
+                                        <Download className="size-3.5 md:size-4" />
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
+                                    onClick={handleOpen}
+                                    disabled={isActionDisabled}
+                                    title="Open">
+                                    {loading === "open" ? (
+                                        <Loader2 className="size-3.5 md:size-4 animate-spin" />
+                                    ) : (
+                                        <ExternalLink className="size-3.5 md:size-4" />
+                                    )}
+                                </Button>
+                            </>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 md:size-8 text-muted-foreground hover:text-destructive"
+                            onClick={handleDelete}
+                            disabled={deleting}
+                            title="Remove">
+                            {deleting ? (
+                                <Loader2 className="size-3.5 md:size-4 animate-spin" />
+                            ) : (
+                                <Trash2 className="size-3.5 md:size-4" />
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -162,17 +199,21 @@ export const DownloadItem = memo(function DownloadItem({ download, onDelete, onG
 
 export function DownloadItemSkeleton() {
     return (
-        <div className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-b-0 md:flex-row md:items-center md:gap-3">
-            <div className="flex items-center gap-3 min-w-0 md:flex-1">
-                <Skeleton className="h-4 flex-1" />
-                <Skeleton className="h-5 w-16 rounded-xl" />
-            </div>
-            <div className="flex items-center justify-between gap-3 md:justify-end">
-                <Skeleton className="h-3 w-24" />
-                <div className="flex gap-1">
-                    <Skeleton className="size-8 rounded-md" />
-                    <Skeleton className="size-8 rounded-md" />
-                    <Skeleton className="size-8 rounded-md" />
+        <div className="flex items-start gap-2.5 px-3 py-2 border-b border-border/50 last:border-b-0">
+            <Skeleton className="size-4 rounded-sm mt-0.5" />
+            <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex items-start gap-2">
+                    <Skeleton className="h-4 flex-1 max-w-[70%]" />
+                    <Skeleton className="h-5 w-14 rounded-sm" />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                    <Skeleton className="h-3 w-32" />
+                    <div className="flex gap-0.5 shrink-0">
+                        <Skeleton className="size-7 md:size-8 rounded-sm" />
+                        <Skeleton className="size-7 md:size-8 rounded-sm" />
+                        <Skeleton className="size-7 md:size-8 rounded-sm" />
+                        <Skeleton className="size-7 md:size-8 rounded-sm" />
+                    </div>
                 </div>
             </div>
         </div>

@@ -10,8 +10,8 @@ import {
     User,
     DebridError,
     DebridAuthError,
-    WebDownload,
     WebDownloadAddResult,
+    WebDownloadList,
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
@@ -405,7 +405,8 @@ export default class AllDebridClient extends BaseClient {
         });
     }
 
-    async getWebDownloadList(): Promise<WebDownload[]> {
+    async getWebDownloadList({ offset, limit }: { offset: number; limit: number }): Promise<WebDownloadList> {
+        // AllDebrid API doesn't support pagination - fetch all and paginate client-side
         const data = await this.makeRequest<{
             links: Array<{
                 link: string;
@@ -416,17 +417,25 @@ export default class AllDebridClient extends BaseClient {
             }>;
         }>("user/links");
 
-        if (!data?.links) return [];
+        const allLinks = data?.links ?? [];
+        const total = allLinks.length;
+        const paginatedLinks = allLinks.slice(offset, offset + limit);
 
-        return data.links.map((link) => ({
-            id: link.link,
-            name: link.filename,
-            originalLink: link.link,
-            size: link.size,
-            status: "completed" as const,
-            createdAt: new Date(link.date * 1000),
-            host: link.host,
-        }));
+        return {
+            downloads: paginatedLinks.map((link) => ({
+                id: link.link,
+                name: link.filename,
+                originalLink: link.link,
+                size: link.size,
+                status: "completed" as const,
+                createdAt: new Date(link.date * 1000),
+                host: link.host,
+            })),
+            offset,
+            limit,
+            hasMore: offset + limit < total,
+            total,
+        };
     }
 
     async deleteWebDownload(id: string): Promise<void> {

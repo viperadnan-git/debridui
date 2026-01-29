@@ -14,6 +14,7 @@ import {
     WebDownload,
     WebDownloadAddResult,
     WebDownloadStatus,
+    WebDownloadList,
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
@@ -564,10 +565,16 @@ export default class TorBoxClient extends BaseClient {
         });
     }
 
-    async getWebDownloadList(): Promise<WebDownload[]> {
-        const data = await this.makeRequest<TorBoxWebDownload[]>("webdl/mylist");
+    async getWebDownloadList({ offset, limit }: { offset: number; limit: number }): Promise<WebDownloadList> {
+        const data = await this.makeRequest<TorBoxWebDownload[]>(`webdl/mylist?offset=${offset}&limit=${limit}`);
         const downloads = Array.isArray(data) ? data : [];
-        return downloads.map((dl) => this.mapToWebDownload(dl));
+
+        return {
+            downloads: downloads.map((dl) => this.mapToWebDownload(dl)),
+            offset,
+            limit,
+            hasMore: downloads.length === limit,
+        };
     }
 
     async deleteWebDownload(id: string): Promise<void> {
