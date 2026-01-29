@@ -45,3 +45,5 @@ next-env.d.ts
 
 # api specs
 *.openapi.json
+*.openapi.yaml
+*.openapi.md
