@@ -12,6 +12,7 @@ CREATE TABLE "user_accounts" (
 	"user_id" uuid NOT NULL,
 	"api_key" text NOT NULL,
 	"type" text NOT NULL,
+	"name" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
