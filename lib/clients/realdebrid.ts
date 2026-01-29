@@ -16,6 +16,7 @@ import {
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
+import { queryClient } from "../query-client";
 
 // Real-Debrid API response types
 type TorrentStatus =
@@ -134,6 +135,10 @@ export default class RealDebridClient extends BaseClient {
     }
 
     private static async validateResponse<T>(response: Response): Promise<T> {
+        if (response.status === 204) {
+            return undefined as T;
+        }
+
         if (response.status === 429) {
             throw new DebridRateLimitError("Rate limit exceeded", AccountType.REALDEBRID);
         }
@@ -244,6 +249,7 @@ export default class RealDebridClient extends BaseClient {
             files,
             offset,
             limit,
+            // X-Total-Count header exists but is not exposed via CORS
             hasMore: torrents.length === limit,
         };
     }
@@ -281,18 +287,12 @@ export default class RealDebridClient extends BaseClient {
     }
 
     async getDownloadLink({ fileNode }: { fileNode: DebridFileNode; resolve?: boolean }): Promise<DebridLinkInfo> {
-        const body = new URLSearchParams({ link: fileNode.id });
-
-        const response = await this.makeRequest<RDUnrestrictedLink>("unrestrict/link", {
-            method: "POST",
-            body: body.toString(),
-            headers: RealDebridClient.FORM_HEADERS,
-        });
+        const result = await this.unrestrictLink(fileNode.id);
 
         return {
-            link: response.download,
-            name: response.filename || fileNode.name,
-            size: response.filesize || fileNode.size || 0,
+            link: result.download,
+            name: result.filename || fileNode.name,
+            size: result.filesize || fileNode.size || 0,
         };
     }
 
@@ -321,16 +321,16 @@ export default class RealDebridClient extends BaseClient {
             try {
                 const body = new URLSearchParams({ magnet });
 
-                const response = await this.makeRequest<RDAddTorrentResponse>("torrents/addMagnet", {
+                const result = await this.makeRequest<RDAddTorrentResponse>("torrents/addMagnet", {
                     method: "POST",
                     body: body.toString(),
                     headers: RealDebridClient.FORM_HEADERS,
                 });
 
-                await this.selectAllFiles(response.id);
+                await this.selectAllFiles(result.id);
 
                 results[magnet] = {
-                    id: response.id,
+                    id: result.id,
                     message: `Successfully added torrent`,
                     is_cached: false,
                 };
@@ -353,16 +353,16 @@ export default class RealDebridClient extends BaseClient {
             try {
                 const arrayBuffer = await file.arrayBuffer();
 
-                const response = await this.makeRequest<RDAddTorrentResponse>("torrents/addTorrent", {
+                const result = await this.makeRequest<RDAddTorrentResponse>("torrents/addTorrent", {
                     method: "PUT",
                     body: arrayBuffer,
                     headers: { "Content-Type": "application/x-bittorrent" },
                 });
 
-                await this.selectAllFiles(response.id);
+                await this.selectAllFiles(result.id);
 
                 results[file.name] = {
-                    id: response.id,
+                    id: result.id,
                     message: `Successfully uploaded: ${file.name}`,
                     is_cached: false,
                 };
@@ -384,32 +384,125 @@ export default class RealDebridClient extends BaseClient {
 
         for (const link of links) {
             try {
-                const body = new URLSearchParams({ link });
+                // Try to expand folder links first
+                const expandedLinks = await this.tryExpandFolder(link);
 
-                const response = await this.makeRequest<RDUnrestrictedLink>("unrestrict/link", {
-                    method: "POST",
-                    body: body.toString(),
-                    headers: RealDebridClient.FORM_HEADERS,
-                });
-
-                results.push({
-                    link,
-                    success: true,
-                    downloadLink: response.download,
-                    name: response.filename,
-                    size: response.filesize,
-                    id: response.id,
-                });
+                // Unrestrict each link (single link or expanded folder contents)
+                for (const singleLink of expandedLinks) {
+                    try {
+                        const result = await this.unrestrictLink(singleLink);
+                        results.push({
+                            link: singleLink,
+                            success: true,
+                            downloadLink: result.download,
+                            name: result.filename,
+                            size: result.filesize,
+                            id: result.id,
+                        });
+                    } catch (error) {
+                        results.push({
+                            link: singleLink,
+                            success: false,
+                            error: error instanceof Error ? error.message : "Failed to unrestrict link",
+                        });
+                    }
+                }
             } catch (error) {
                 results.push({
                     link,
                     success: false,
-                    error: error instanceof Error ? error.message : "Failed to unrestrict link",
+                    error: error instanceof Error ? error.message : "Failed to process link",
                 });
             }
         }
 
         return results;
+    }
+
+    private static readonly FOLDER_PATTERNS_KEY = ["realdebrid", "folderPatterns"] as const;
+    private static compiledPatterns: RegExp[] | null = null;
+
+    /**
+     * Fetch and cache folder regex patterns from Real-Debrid API.
+     * Pattern strings persist in IDB; compiled RegExp cached in memory.
+     */
+    private static async getFolderPatterns(): Promise<RegExp[]> {
+        if (RealDebridClient.compiledPatterns) {
+            return RealDebridClient.compiledPatterns;
+        }
+
+        try {
+            const patterns = await queryClient.fetchQuery({
+                queryKey: RealDebridClient.FOLDER_PATTERNS_KEY,
+                queryFn: async () => {
+                    const response = await fetch("https://api.real-debrid.com/rest/1.0/hosts/regexFolder");
+                    const rawPatterns: string[] = await response.json();
+
+                    // Convert PHP-style regex "/pattern/" to pattern string for storage
+                    // (RegExp objects can't be serialized to IDB)
+                    return rawPatterns
+                        .map((p) => p.match(/^\/(.+)\/$/)?.[1] ?? null)
+                        .filter((p): p is string => p !== null);
+                },
+                staleTime: 24 * 60 * 60 * 1000, // 24 hours
+            });
+
+            // Compile and cache RegExp objects in memory
+            RealDebridClient.compiledPatterns = patterns
+                .map((p) => {
+                    try {
+                        return new RegExp(p, "i");
+                    } catch {
+                        return null;
+                    }
+                })
+                .filter((r): r is RegExp => r !== null);
+        } catch {
+            // Fetch failed - return empty (all links treated as single files)
+            RealDebridClient.compiledPatterns = [];
+        }
+
+        return RealDebridClient.compiledPatterns;
+    }
+
+    /**
+     * Try to expand a folder link into individual file links.
+     * Only calls the API if the link matches known folder patterns.
+     * Returns [link] if not a folder or expansion fails.
+     */
+    private async tryExpandFolder(link: string): Promise<string[]> {
+        const patterns = await RealDebridClient.getFolderPatterns();
+        const isFolder = patterns.some((p) => p.test(link));
+
+        if (!isFolder) {
+            return [link];
+        }
+
+        try {
+            const body = new URLSearchParams({ link });
+            const folderLinks = await this.makeRequest<string[]>("unrestrict/folder", {
+                method: "POST",
+                body: body.toString(),
+                headers: RealDebridClient.FORM_HEADERS,
+            });
+
+            if (Array.isArray(folderLinks) && folderLinks.length > 0) {
+                return folderLinks;
+            }
+        } catch {
+            // Folder expansion failed - treat as single link
+        }
+
+        return [link];
+    }
+
+    private async unrestrictLink(link: string): Promise<RDUnrestrictedLink> {
+        const body = new URLSearchParams({ link });
+        return this.makeRequest<RDUnrestrictedLink>("unrestrict/link", {
+            method: "POST",
+            body: body.toString(),
+            headers: RealDebridClient.FORM_HEADERS,
+        });
     }
 
     async getWebDownloadList(): Promise<WebDownload[]> {
