@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, memo, useMemo } from "react";
+import { useEffect, useState, memo, useMemo, useRef } from "react";
 import { type TraktMediaItem } from "@/lib/trakt";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -198,8 +198,13 @@ const MobileHeroCarousel = memo(function MobileHeroCarousel({ item, index }: Mob
     );
 });
 
-export function HeroCarousel() {
+interface HeroCarouselProps {
+    autoFocus?: boolean;
+}
+
+export function HeroCarousel({ autoFocus = false }: HeroCarouselProps) {
     const isMobile = useIsMobile();
+    const carouselRef = useRef<HTMLDivElement>(null);
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
     const [count, setCount] = useState(0);
@@ -228,8 +233,11 @@ export function HeroCarousel() {
 
         if (!isLoading) {
             autoplay.play();
+            if (autoFocus) {
+                carouselRef.current?.focus();
+            }
         }
-    }, [api, autoplay, isLoading]);
+    }, [api, autoplay, isLoading, autoFocus]);
 
     if (isLoading) {
         return (
@@ -255,8 +263,10 @@ export function HeroCarousel() {
     return (
         <div className="-mx-4 -mt-6">
             <Carousel
+                ref={carouselRef}
+                tabIndex={0}
                 setApi={setApi}
-                className="w-full"
+                className="w-full outline-none"
                 opts={{
                     align: "start",
                     loop: true,

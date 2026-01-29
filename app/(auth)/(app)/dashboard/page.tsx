@@ -55,7 +55,7 @@ const DashboardPage = memo(function DashboardPage() {
     return (
         <div className="pb-8">
             {/* Hero Carousel */}
-            <HeroCarousel />
+            <HeroCarousel autoFocus />
 
             {/* Welcome Section */}
             <div className="py-8 lg:px-6">
