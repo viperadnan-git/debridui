@@ -16,6 +16,7 @@ import {
 } from "@/lib/types";
 import BaseClient from "./base";
 import { USER_AGENT } from "../constants";
+import { getProxyUrl } from "@/lib/utils";
 import { queryClient } from "../query-client";
 
 // Real-Debrid API response types
@@ -121,7 +122,7 @@ export default class RealDebridClient extends BaseClient {
 
     private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
         await this.rateLimiter.acquire();
-        const url = `${this.baseUrl}/${path}`;
+        const url = getProxyUrl(`${this.baseUrl}/${path}`);
 
         const response = await fetch(url, {
             ...options,
@@ -172,7 +173,7 @@ export default class RealDebridClient extends BaseClient {
     }
 
     static async getUser(apiKey: string): Promise<User> {
-        const url = "https://api.real-debrid.com/rest/1.0/user";
+        const url = getProxyUrl("https://api.real-debrid.com/rest/1.0/user");
 
         const response = await fetch(url, {
             headers: {
@@ -435,7 +436,7 @@ export default class RealDebridClient extends BaseClient {
             const patterns = await queryClient.fetchQuery({
                 queryKey: RealDebridClient.FOLDER_PATTERNS_KEY,
                 queryFn: async () => {
-                    const response = await fetch("https://api.real-debrid.com/rest/1.0/hosts/regexFolder");
+                    const response = await fetch(getProxyUrl("https://api.real-debrid.com/rest/1.0/hosts/regexFolder"));
                     const rawPatterns: string[] = await response.json();
 
                     // Convert PHP-style regex "/pattern/" to pattern string for storage
