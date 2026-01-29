@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { WebDownloadStatusBadge } from "@/components/display";
 import { UrlPreviewDialog, canPreviewInBrowser } from "@/components/preview/url-preview-dialog";
 import { useSettingsStore } from "@/lib/stores/settings";
-import { Copy, Trash2, Loader2, Download, Play, Eye } from "lucide-react";
+import { Copy, Trash2, Loader2, Download, PlayCircle, View } from "lucide-react";
 import { toast } from "sonner";
 
 interface DownloadItemProps {
@@ -35,6 +35,8 @@ export const DownloadItem = memo(function DownloadItem({
     const fileType = useMemo(() => getFileType(download.name), [download.name]);
     const isPreviewable = useMemo(() => canPreviewInBrowser(download.name), [download.name]);
     const isVideo = fileType === FileType.VIDEO;
+    const mediaPlayer = get("mediaPlayer");
+    const usesExternalPlayer = isVideo && mediaPlayer !== MediaPlayer.BROWSER;
 
     const getLink = async (action: "copy" | "download" | "preview") => {
         setLoading(action);
@@ -72,8 +74,7 @@ export const DownloadItem = memo(function DownloadItem({
         const link = await getLink("preview");
         if (!link) return;
 
-        const mediaPlayer = get("mediaPlayer");
-        if (isVideo && mediaPlayer !== MediaPlayer.BROWSER) {
+        if (usesExternalPlayer) {
             playUrl({ url: link, fileName: download.name, player: mediaPlayer });
         } else {
             setPreviewUrl(link);
@@ -156,13 +157,13 @@ export const DownloadItem = memo(function DownloadItem({
                                         className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
                                         onClick={handlePreview}
                                         disabled={isActionDisabled}
-                                        title={isVideo ? "Play" : "Preview"}>
+                                        title={usesExternalPlayer ? "Play" : "Preview"}>
                                         {loading === "preview" ? (
                                             <Loader2 className="size-3.5 md:size-4 animate-spin" />
-                                        ) : isVideo ? (
-                                            <Play className="size-3.5 md:size-4" />
+                                        ) : usesExternalPlayer ? (
+                                            <PlayCircle className="size-3.5 md:size-4" />
                                         ) : (
-                                            <Eye className="size-3.5 md:size-4" />
+                                            <View className="size-3.5 md:size-4" />
                                         )}
                                     </Button>
                                 )}
