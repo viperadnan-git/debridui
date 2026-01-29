@@ -14,6 +14,7 @@ export const userAccounts = pgTable(
             .references(() => user.id, { onDelete: "cascade" }),
         apiKey: text("api_key").notNull(),
         type: text("type", { enum: Object.values(AccountType) as [string, ...string[]] }).notNull(),
+        name: text("name").notNull(),
         createdAt: timestamp("created_at").notNull().defaultNow(),
     },
     (table) => [

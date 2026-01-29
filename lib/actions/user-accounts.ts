@@ -8,6 +8,7 @@ import { userAccounts } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { AccountType } from "@/lib/schemas";
 import { revalidatePath } from "next/cache";
+import { v7 as uuidv7 } from "uuid";
 
 /**
  * Get all user accounts for the current authenticated user
@@ -32,7 +33,7 @@ export async function getUserAccounts() {
  * Add a new user account
  * Note: Validation is done on the frontend before calling this
  */
-export async function addUserAccount(data: { apiKey: string; type: AccountType }) {
+export async function addUserAccount(data: { apiKey: string; type: AccountType; name: string }) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -61,9 +62,11 @@ export async function addUserAccount(data: { apiKey: string; type: AccountType }
     const [account] = await db
         .insert(userAccounts)
         .values({
+            id: uuidv7(),
             userId: session.user.id,
             apiKey: data.apiKey,
             type: data.type,
+            name: data.name,
         })
         .returning();
 

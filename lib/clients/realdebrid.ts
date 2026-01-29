@@ -201,7 +201,7 @@ export default class RealDebridClient extends BaseClient {
             id: `${AccountType.REALDEBRID}:${data.username}`,
             apiKey,
             type: AccountType.REALDEBRID,
-            username: data.username,
+            name: data.username,
             email: data.email,
             language: data.locale,
             isPremium,

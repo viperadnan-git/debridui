@@ -8,7 +8,7 @@ export enum AccountType {
 
 export const userSchema = z.object({
     id: z.string().trim().min(1).default(crypto.randomUUID()),
-    username: z.string().trim().min(1),
+    name: z.string().trim().min(1),
     email: z.string().trim().min(1),
     language: z.string().trim().min(1),
     isPremium: z.boolean(),

@@ -141,7 +141,7 @@ export default class AllDebridClient extends BaseClient {
             id: `${AccountType.ALLDEBRID}:${user.username}`,
             apiKey,
             type: AccountType.ALLDEBRID,
-            username: user.username,
+            name: user.username,
             email: user.email,
             language: user.language,
             isPremium,

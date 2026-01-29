@@ -58,8 +58,8 @@ export const AccountCard = React.memo(function AccountCard({ account, isCurrentA
                     </div>
                     <div className="flex-1 min-w-0">
                         {userInfo ? (
-                            <h3 className="font-light text-lg truncate" title={userInfo.username}>
-                                {userInfo.username}
+                            <h3 className="font-light text-lg truncate" title={userInfo.name}>
+                                {userInfo.name}
                             </h3>
                         ) : (
                             <Skeleton className="h-6 w-32" />

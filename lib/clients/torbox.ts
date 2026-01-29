@@ -194,7 +194,7 @@ export default class TorBoxClient extends BaseClient {
             id: `${AccountType.TORBOX}:${user.email}`,
             apiKey,
             type: AccountType.TORBOX,
-            username: user.email,
+            name: user.email,
             email: user.email,
             language: "en", // Default language
             isPremium,

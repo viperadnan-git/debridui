@@ -28,13 +28,13 @@ export function useAddUserAccount() {
             const user = await getClient({ type: data.type }).getUser(data.apiKey);
 
             // Save to database using server action
-            const account = await addUserAccount(data);
+            const account = await addUserAccount({ ...data, name: user.name });
 
             return { account, user };
         },
         {
             loading: "Adding account...",
-            success: ({ user }) => `Added account: ${user.username} (${user.type})`,
+            success: ({ user }) => `Added account: ${user.name} (${user.type})`,
             error: "Failed to add account",
         },
         {

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { addons } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { v7 as uuidv7 } from "uuid";
 import { type Addon } from "@/lib/addons/types";
 
 /**
@@ -45,6 +46,7 @@ export async function addAddon(addon: Omit<Addon, "id" | "order">) {
         .where(eq(addons.userId, session.user.id));
 
     await db.insert(addons).values({
+        id: uuidv7(),
         userId: session.user.id,
         name: addon.name,
         url: addon.url,

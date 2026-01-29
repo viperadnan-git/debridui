@@ -19,11 +19,11 @@ import { AccountType } from "@/lib/types";
 import { useAuth } from "@/components/auth/auth-provider";
 
 export const AccountSwitcher = React.memo(function AccountSwitcher() {
-    const { userAccounts, currentUser, currentAccount, switchAccount } = useAuth();
+    const { userAccounts, currentAccount, switchAccount } = useAuth();
     const { isMobile, setOpenMobile } = useSidebar();
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
-    if (!currentUser || !currentAccount) {
+    if (!currentAccount) {
         return null;
     }
 
@@ -42,14 +42,14 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                         <DropdownMenuTrigger asChild>
                             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
                                 <div className="flex size-9 items-center justify-center rounded-sm bg-muted/50 shrink-0">
-                                    <ServiceIcon type={currentUser.type as AccountType} className="size-5" />
+                                    <ServiceIcon type={currentAccount.type as AccountType} className="size-5" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
-                                    <span className="truncate font-light" title={currentUser.username}>
-                                        {currentUser.username}
+                                    <span className="truncate font-light" title={currentAccount.name}>
+                                        {currentAccount.name}
                                     </span>
                                     <span className="truncate text-xs text-muted-foreground">
-                                        {formatAccountType(currentUser.type)}
+                                        {formatAccountType(currentAccount.type)}
                                     </span>
                                 </div>
                                 <ChevronsUpDown className="ml-auto size-4 text-muted-foreground shrink-0" />
@@ -76,11 +76,9 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                                             <ServiceIcon type={account.type as AccountType} className="size-4" />
                                         </div>
                                         <div className="flex flex-col min-w-0 flex-1">
-                                            <span className="text-sm font-light truncate">
-                                                {formatAccountType(account.type)}
-                                            </span>
+                                            <span className="text-sm font-light truncate">{account.name}</span>
                                             <span className="text-xs text-muted-foreground truncate">
-                                                {account.type}
+                                                {formatAccountType(account.type)}
                                             </span>
                                         </div>
                                     </div>
