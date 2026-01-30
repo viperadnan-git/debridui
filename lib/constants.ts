@@ -80,8 +80,11 @@ export const EXTENSION_TO_FILE_TYPE: Record<string, FileType> = {
 };
 
 export const TRASH_SIZE_THRESHOLD = 1024 * 1024; // 1MB in bytes
-export const QUERY_CACHE_MAX_AGE = 1000 * 60 * 60 * 24; // 24 hours
+
 export const QUERY_CACHE_STALE_TIME = 1000 * 60 * 60; // 1 hour
+export const QUERY_CACHE_GC_TIME = 1000 * 60 * 60 * 24 * 7; // 7 days
+export const QUERY_CACHE_IDB_MAX_AGE = 1000 * 60 * 60 * 24 * 7; // 7 days
+
 export const PAGE_SIZE = 50;
 export const WEB_DOWNLOADS_PAGE_SIZE = 50;
 export const USER_AGENT = "DebridUI";
