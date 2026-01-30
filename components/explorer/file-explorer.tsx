@@ -117,7 +117,11 @@ export const FileExplorer = memo(function FileExplorer() {
                     </div>
 
                     <FileList className="max-sm:-mx-4">
-                        <FileListHeader isAllSelected={headerCheckboxState} onSelectAll={handleSelectAll} />
+                        <FileListHeader
+                            isAllSelected={headerCheckboxState}
+                            onSelectAll={handleSelectAll}
+                            selectedCount={selectedFileIds.size}
+                        />
                         <FileListBody>
                             {activeData.length > 0 && !isSearching && (
                                 <>

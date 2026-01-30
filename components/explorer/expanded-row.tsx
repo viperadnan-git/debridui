@@ -6,7 +6,7 @@ import { useMemo, useEffect } from "react";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { processFileNodes } from "@/lib/utils/file";
+import { processFileNodes, collectNodeIds } from "@/lib/utils/file";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { useSelectionStore } from "@/lib/stores/selection";
 
@@ -52,23 +52,7 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
 
     const nodeIds = useMemo(() => {
         if (!processedNodes?.length) return [];
-
-        // Collect IDs more efficiently for large files
-        const ids: string[] = [];
-
-        const collectIds = (nodes: DebridNode[]) => {
-            for (const node of nodes) {
-                if (node.type === "file" && node.id) {
-                    ids.push(node.id);
-                }
-                if (node.children?.length) {
-                    collectIds(node.children);
-                }
-            }
-        };
-
-        collectIds(processedNodes);
-        return ids;
+        return collectNodeIds(processedNodes);
     }, [processedNodes]);
 
     useEffect(() => {

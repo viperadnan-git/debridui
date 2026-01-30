@@ -8,10 +8,11 @@ import { QuickSettings } from "./quick-settings";
 interface FileListHeaderProps {
     isAllSelected: boolean | "indeterminate";
     onSelectAll: (checked: boolean | "indeterminate") => void;
+    selectedCount?: number;
     className?: string;
 }
 
-export function FileListHeader({ isAllSelected, onSelectAll, className }: FileListHeaderProps) {
+export function FileListHeader({ isAllSelected, onSelectAll, selectedCount = 0, className }: FileListHeaderProps) {
     return (
         <div
             className={cn(
@@ -22,8 +23,6 @@ export function FileListHeader({ isAllSelected, onSelectAll, className }: FileLi
                 <Checkbox
                     checked={isAllSelected}
                     onCheckedChange={(checked) => {
-                        // If some or all files are already selected, unselect all
-                        // Only select all when nothing is selected
                         if (isAllSelected === "indeterminate" || isAllSelected === true) {
                             onSelectAll(false);
                         } else {
@@ -34,7 +33,9 @@ export function FileListHeader({ isAllSelected, onSelectAll, className }: FileLi
             </div>
 
             <div className="flex flex-1 items-center min-w-0 justify-between pr-2">
-                <span>Files</span>
+                <span>
+                    {selectedCount > 0 ? <span className="text-foreground">{selectedCount} Selected</span> : "Files"}
+                </span>
                 <QuickSettings />
             </div>
         </div>

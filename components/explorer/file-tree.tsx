@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, Copy, Download, CirclePlay, Loader2 } from "lucide-react";
 import { cn, getFileType } from "@/lib/utils";
 import { formatSize, playUrl, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
+import { collectNodeIds } from "@/lib/utils/file";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
@@ -51,27 +52,6 @@ function flattenNodes(nodes: DebridNode[], expandedPaths: Set<string>, depth = 0
     }
 
     return flat;
-}
-
-// Helper to collect all node IDs in the correct order
-function collectNodeIds(node: DebridNode): string[] {
-    if (node.type === "file") {
-        return [node.id];
-    }
-
-    const ids: string[] = [];
-    const collectRecursively = (currentNode: DebridNode) => {
-        if (currentNode.type === "file") {
-            ids.push(currentNode.id);
-        } else if (currentNode.children) {
-            for (const child of currentNode.children) {
-                collectRecursively(child);
-            }
-        }
-    };
-
-    collectRecursively(node);
-    return ids;
 }
 
 // Count total nodes recursively

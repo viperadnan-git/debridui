@@ -11,7 +11,6 @@ import {
     CircleXIcon,
     Zap,
 } from "lucide-react";
-import { Badge } from "./ui/badge";
 import { memo } from "react";
 import { cn } from "@/lib/utils";
 
@@ -22,63 +21,39 @@ export function AccountIcon({ type }: { type: AccountType | string }) {
     }
 }
 
-const statusConfig: Record<
-    DebridFileStatus,
-    { icon: typeof ClockIcon; color: string; name: string; animate?: boolean }
-> = {
-    waiting: {
-        icon: ClockIcon,
-        color: "bg-slate-600/10 text-slate-600 border-slate-600/20 dark:bg-slate-400/10 dark:text-slate-400 dark:border-slate-400/20",
-        name: "Waiting",
-    },
-    downloading: {
-        icon: DownloadIcon,
-        color: "bg-blue-600/10 text-blue-600 border-blue-600/20 dark:bg-blue-400/10 dark:text-blue-400 dark:border-blue-400/20",
-        name: "Downloading",
-        animate: true,
-    },
-    seeding: {
-        icon: UploadIcon,
-        color: "bg-emerald-600/10 text-emerald-600 border-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20",
-        name: "Seeding",
-    },
-    paused: {
-        icon: PauseIcon,
-        color: "bg-amber-600/10 text-amber-600 border-amber-600/20 dark:bg-amber-400/10 dark:text-amber-400 dark:border-amber-400/20",
-        name: "Paused",
-    },
-    completed: {
-        icon: CircleCheckIcon,
-        color: "bg-green-600/10 text-green-600 border-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:border-green-400/20",
-        name: "Completed",
-    },
-    uploading: {
-        icon: UploadIcon,
-        color: "bg-sky-600/10 text-sky-600 border-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:border-sky-400/20",
-        name: "Uploading",
-        animate: true,
-    },
-    failed: {
-        icon: OctagonAlertIcon,
-        color: "bg-red-600/10 text-red-600 border-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:border-red-400/20",
-        name: "Failed",
-    },
-    processing: {
-        icon: ClockIcon,
-        color: "bg-violet-600/10 text-violet-600 border-violet-600/20 dark:bg-violet-400/10 dark:text-violet-400 dark:border-violet-400/20",
-        name: "Processing",
-        animate: true,
-    },
-    inactive: {
-        icon: CircleXIcon,
-        color: "bg-gray-600/10 text-gray-600 border-gray-600/20 dark:bg-gray-400/10 dark:text-gray-400 dark:border-gray-400/20",
-        name: "Inactive",
-    },
-    unknown: {
-        icon: InfoIcon,
-        color: "bg-slate-600/10 text-slate-600 border-slate-600/20 dark:bg-slate-400/10 dark:text-slate-400 dark:border-slate-400/20",
-        name: "Unknown",
-    },
+// Unified color palette for status indicators
+// Semantic colors with background, border, and text in one definition
+const statusStyles = {
+    slate: "bg-slate-500/10 border-slate-500/20 text-slate-600 dark:text-slate-400",
+    blue: "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400",
+    emerald: "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400",
+    amber: "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400",
+    green: "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400",
+    sky: "bg-sky-500/10 border-sky-500/20 text-sky-600 dark:text-sky-400",
+    red: "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400",
+    violet: "bg-violet-500/10 border-violet-500/20 text-violet-600 dark:text-violet-400",
+    gray: "bg-gray-500/10 border-gray-500/20 text-gray-600 dark:text-gray-400",
+} as const;
+
+type StatusColor = keyof typeof statusStyles;
+
+interface StatusConfig {
+    icon: typeof ClockIcon;
+    color: StatusColor;
+    name: string;
+}
+
+const statusConfig: Record<DebridFileStatus, StatusConfig> = {
+    waiting: { icon: ClockIcon, color: "slate", name: "Waiting" },
+    downloading: { icon: DownloadIcon, color: "blue", name: "Downloading" },
+    seeding: { icon: UploadIcon, color: "emerald", name: "Seeding" },
+    paused: { icon: PauseIcon, color: "amber", name: "Paused" },
+    completed: { icon: CircleCheckIcon, color: "green", name: "Completed" },
+    uploading: { icon: UploadIcon, color: "sky", name: "Uploading" },
+    failed: { icon: OctagonAlertIcon, color: "red", name: "Failed" },
+    processing: { icon: ClockIcon, color: "violet", name: "Processing" },
+    inactive: { icon: CircleXIcon, color: "gray", name: "Inactive" },
+    unknown: { icon: InfoIcon, color: "slate", name: "Unknown" },
 };
 
 export const StatusBadge = memo(function StatusBadge({
@@ -92,59 +67,41 @@ export const StatusBadge = memo(function StatusBadge({
     if (!config) return null;
     if (hide && status === hide) return null;
 
+    const Icon = config.icon;
+
     return (
-        <Badge
+        <span
             className={cn(
-                "inline-flex items-center gap-1.5 px-2.5 py-1 md:gap-1.5 rounded-xl text-xs font-medium focus-visible:outline-none",
-                config.color,
-                config.animate && "animate-pulse"
+                "inline-flex items-center justify-center gap-1.5 h-6 px-2 border rounded-sm text-xs font-medium shrink-0",
+                statusStyles[config.color]
             )}>
-            <config.icon className="size-3.5" strokeWidth={2.5} />
-            <span className="hidden md:inline leading-none">{config.name}</span>
-        </Badge>
+            <Icon className="size-3.5 shrink-0" strokeWidth={2.5} />
+            <span className="hidden sm:inline tracking-wide">{config.name}</span>
+        </span>
     );
 });
 
 export const CachedBadge = memo(function CachedBadge() {
     return (
-        <span className="inline-flex items-center gap-1 text-xs tracking-wide text-green-600 dark:text-green-500">
-            <Zap className="size-3" />
-            <span>Cached</span>
+        <span className="inline-flex items-center justify-center gap-1.5 h-6 px-2 border rounded-sm text-xs font-medium tracking-wide bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400">
+            <Zap className="size-3.5 shrink-0" />
+            Cached
         </span>
     );
 });
 
-const webDownloadStatusConfig = {
-    pending: {
-        icon: ClockIcon,
-        label: "Pending",
-        className:
-            "bg-slate-600/10 text-slate-600 border-slate-600/20 dark:bg-slate-400/10 dark:text-slate-400 dark:border-slate-400/20",
-    },
-    processing: {
-        icon: DownloadIcon,
-        label: "Processing",
-        className:
-            "bg-blue-600/10 text-blue-600 border-blue-600/20 dark:bg-blue-400/10 dark:text-blue-400 dark:border-blue-400/20 animate-pulse",
-    },
-    completed: {
-        icon: CircleCheckIcon,
-        label: "Ready",
-        className:
-            "bg-green-600/10 text-green-600 border-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:border-green-400/20",
-    },
-    cached: {
-        icon: Zap,
-        label: "Cached",
-        className:
-            "bg-emerald-600/10 text-emerald-600 border-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20",
-    },
-    failed: {
-        icon: OctagonAlertIcon,
-        label: "Failed",
-        className:
-            "bg-red-600/10 text-red-600 border-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:border-red-400/20",
-    },
+interface WebStatusConfig {
+    icon: typeof ClockIcon;
+    label: string;
+    color: StatusColor;
+}
+
+const webDownloadStatusConfig: Record<WebDownloadStatus, WebStatusConfig> = {
+    pending: { icon: ClockIcon, label: "Pending", color: "slate" },
+    processing: { icon: DownloadIcon, label: "Processing", color: "blue" },
+    completed: { icon: CircleCheckIcon, label: "Ready", color: "green" },
+    cached: { icon: Zap, label: "Cached", color: "emerald" },
+    failed: { icon: OctagonAlertIcon, label: "Failed", color: "red" },
 };
 
 export const WebDownloadStatusBadge = memo(function WebDownloadStatusBadge({
@@ -154,17 +111,18 @@ export const WebDownloadStatusBadge = memo(function WebDownloadStatusBadge({
     status: WebDownloadStatus;
     className?: string;
 }) {
-    const { icon: Icon, label, className: statusClassName } = webDownloadStatusConfig[status];
+    const config = webDownloadStatusConfig[status];
+    const Icon = config.icon;
 
     return (
-        <Badge
+        <span
             className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[11px] font-medium shrink-0",
-                statusClassName,
+                "inline-flex items-center justify-center gap-1.5 h-6 px-2 border rounded-sm text-xs font-medium shrink-0",
+                statusStyles[config.color],
                 className
             )}>
-            <Icon className="size-3" strokeWidth={2.5} />
-            <span className="hidden sm:inline leading-none">{label}</span>
-        </Badge>
+            <Icon className="size-3.5 shrink-0" strokeWidth={2.5} />
+            <span className="hidden sm:inline tracking-wide">{config.label}</span>
+        </span>
     );
 });

@@ -7,7 +7,7 @@ import { ExpandedRow } from "./expanded-row";
 import { useFileSelectionState, useSelectionStore } from "@/lib/stores/selection";
 import { useState } from "react";
 import { queryClient } from "@/lib/query-client";
-import { processFileNodes } from "@/lib/utils/file";
+import { processFileNodes, collectNodeIds } from "@/lib/utils/file";
 import { getTorrentFilesCacheKey } from "@/lib/utils/cache-keys";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 
@@ -15,16 +15,6 @@ interface FileListRowProps {
     file: DebridFile;
     autoExpand?: boolean;
 }
-
-const collectNodeIds = (nodes: DebridNode[], result: string[] = []): string[] => {
-    for (const node of nodes) {
-        if (node.type === "file" && node.id) {
-            result.push(node.id);
-        }
-        if (node.children) collectNodeIds(node.children, result);
-    }
-    return result;
-};
 
 export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
     const { currentAccount } = useAuthGuaranteed();

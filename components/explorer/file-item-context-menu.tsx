@@ -10,11 +10,7 @@ import {
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { DebridFile } from "@/lib/types";
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
-import { downloadM3UPlaylist, fetchTorrentDownloadLinks } from "@/lib/utils/file";
-import { useToastMutation } from "@/lib/utils/mutation-factory";
-import { removeTorrentWithCleanup, retryTorrentsWithCleanup } from "@/lib/utils/file-mutations";
+import { useFileLinkActions, useFileMutationActions } from "@/hooks/use-file-actions";
 
 interface FileItemContextMenuProps {
     file: DebridFile;
@@ -23,70 +19,8 @@ interface FileItemContextMenuProps {
 }
 
 export function FileItemContextMenu({ file, children, className }: FileItemContextMenuProps) {
-    const { client, currentAccount } = useAuthGuaranteed();
-
-    const copyMutation = useToastMutation(
-        async () => {
-            const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
-            copyLinksToClipboard(links);
-            return links;
-        },
-        {
-            loading: "Loading file links...",
-            success: (links) => `${links.length} link(s) copied to clipboard`,
-            error: "Failed to copy",
-        }
-    );
-
-    const downloadMutation = useToastMutation(
-        async () => {
-            const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
-            downloadLinks(links);
-            return links;
-        },
-        {
-            loading: "Loading file links...",
-            success: (links) => `Downloading ${links.length} file(s)`,
-            error: "Failed to download",
-        }
-    );
-
-    const playlistMutation = useToastMutation(
-        async () => {
-            const links = await fetchTorrentDownloadLinks(file.id, client, currentAccount.id);
-            downloadM3UPlaylist(links, file.name);
-            return links;
-        },
-        {
-            loading: "Loading file links...",
-            success: "Playlist downloaded",
-            error: "Failed to download playlist",
-        }
-    );
-
-    const deleteMutation = useToastMutation(
-        async () => {
-            const message = await removeTorrentWithCleanup(client, currentAccount.id, file.id);
-            return message;
-        },
-        {
-            loading: "Deleting file...",
-            success: (message) => message || "File deleted",
-            error: "Failed to delete",
-        }
-    );
-
-    const retryMutation = useToastMutation(
-        async () => {
-            const result = await retryTorrentsWithCleanup(client, currentAccount.id, [file.id]);
-            return result[file.id] || "Retry initiated";
-        },
-        {
-            loading: "Retrying file...",
-            success: (message) => message,
-            error: "Failed to retry",
-        }
-    );
+    const { copyMutation, downloadMutation, playlistMutation } = useFileLinkActions(file.id, { fileName: file.name });
+    const { deleteMutation, retryMutation } = useFileMutationActions();
 
     const isAnyActionPending =
         copyMutation.isPending ||
@@ -153,7 +87,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                         className="cursor-pointer"
                         onClick={(e) => {
                             e.stopPropagation();
-                            retryMutation.mutate();
+                            retryMutation.mutate([file.id]);
                         }}
                         disabled={isAnyActionPending}>
                         {retryMutation.isPending ? (
@@ -167,7 +101,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                 <ContextMenuItem
                     onClick={(e) => {
                         e.stopPropagation();
-                        deleteMutation.mutate();
+                        deleteMutation.mutate([file.id]);
                     }}
                     disabled={isAnyActionPending}
                     className="cursor-pointer text-destructive focus:text-destructive">

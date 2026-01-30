@@ -2,27 +2,24 @@
 
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, RotateCcw } from "lucide-react";
-import { FileActions } from "./file-actions";
+import { Trash2, RotateCcw, X, Copy, Download, ListMusic, Loader2 } from "lucide-react";
 import { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useShallow } from "zustand/react/shallow";
 import { useSelectionStore } from "@/lib/stores/selection";
-import { useToastMutation } from "@/lib/utils/mutation-factory";
-import { removeTorrentWithCleanup, retryTorrentsWithCleanup } from "@/lib/utils/file-mutations";
+import { useFileMutationActions, useFileLinkActions } from "@/hooks/use-file-actions";
 
 interface FileActionsDrawerProps {
     files: DebridFile[];
 }
 
 export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
-    // Use useShallow for multi-value selection - reduces re-renders by 66%
-    const { selectedFileIds, selectedNodesByFile, totalNodesByFile } = useSelectionStore(
+    const { selectedFileIds, selectedNodesByFile, totalNodesByFile, clearAll } = useSelectionStore(
         useShallow((state) => ({
             selectedFileIds: state.selectedFileIds,
             selectedNodesByFile: state.selectedNodesByFile,
             totalNodesByFile: state.totalNodesByFile,
+            clearAll: state.clearAll,
         }))
     );
 
@@ -36,6 +33,8 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
         return allNodes;
     }, [selectedNodesByFile]);
 
+    const selectedNodeIdsArray = useMemo(() => Array.from(selectedNodeIds), [selectedNodeIds]);
+
     const fullySelectedFileIds = useMemo(() => {
         return Array.from(selectedFileIds).filter((fileId) => {
             const selectedNodes = selectedNodesByFile.get(fileId);
@@ -43,15 +42,12 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
             return totalNodes === 0 || (selectedNodes && selectedNodes.size === totalNodes);
         });
     }, [selectedFileIds, selectedNodesByFile, totalNodesByFile]);
-    const { client, currentAccount } = useAuthGuaranteed();
 
     const hasAnySelection = selectedFileIds.size > 0 || selectedNodeIds.size > 0;
+    const hasNodes = selectedNodeIds.size > 0;
 
-    // Get fully selected files for file actions
     const { fullySelectedFiles, canRetry } = useMemo(() => {
         const fullySelectedFiles = files.filter((file) => fullySelectedFileIds.includes(file.id));
-
-        // Can retry only when ALL selected files have failed status
         const allSelectedAreFailed =
             fullySelectedFiles.length > 0 && fullySelectedFiles.every((file) => file.status === "failed");
 
@@ -61,58 +57,79 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
         };
     }, [files, fullySelectedFileIds]);
 
-    const deleteMutation = useToastMutation(
-        async (fileIds: string[]) => {
-            const promises = fileIds.map((id) => removeTorrentWithCleanup(client, currentAccount.id, id));
-            await Promise.all(promises);
-            return fileIds;
-        },
-        {
-            loading: "Deleting files...",
-            success: (fileIds) => `Deleted ${fileIds.length} file(s)`,
-            error: "Failed to delete",
-        }
-    );
-
-    const retryMutation = useToastMutation(
-        async (fileIds: string[]) => {
-            const results = await retryTorrentsWithCleanup(client, currentAccount.id, fileIds);
-            return { results, count: fileIds.length };
-        },
-        {
-            loading: "Retrying files...",
-            success: ({ count }) => `Retrying ${count} file(s)`,
-            error: "Failed to retry",
-        }
-    );
+    const { deleteMutation, retryMutation } = useFileMutationActions();
+    const { copyMutation, downloadMutation, playlistMutation } = useFileLinkActions(selectedNodeIdsArray);
 
     return (
         <>
-            {/* Spacer to prevent content from being hidden behind the drawer */}
-            <div className={cn("transition-all duration-300 ease-in-out", hasAnySelection ? "h-20" : "h-0")} />
+            {/* Spacer */}
+            <div className={cn("transition-all duration-300 ease-in-out", hasAnySelection ? "h-32 sm:h-20" : "h-0")} />
 
-            {/* Bottom Drawer - always rendered, animated via CSS */}
+            {/* Bottom Drawer */}
             <div
                 className={cn(
                     "fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border shadow-lg transition-transform duration-300 ease-in-out",
                     hasAnySelection ? "translate-y-0" : "translate-y-full pointer-events-none"
                 )}>
-                <div className="container mx-auto max-w-7xl">
-                    <div className="flex flex-col items-center gap-3 p-4">
-                        <div className="flex gap-2 flex-wrap justify-center">
-                            {/* Node Actions: Copy, Download, Play - Show when any nodes selected */}
-                            {selectedNodeIds.size > 0 && <FileActions selectedFiles={selectedNodeIds} />}
+                <div className="container mx-auto max-w-7xl px-4 py-3">
+                    {/* Mobile: 2 rows (3+3) | Tablet+: single flex row */}
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
+                        {/* Row 1: Copy / Download / Playlist */}
+                        {hasNodes && (
+                            <div className="grid grid-cols-3 gap-2 w-full sm:w-auto sm:flex">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={copyMutation.isPending}
+                                    onClick={() => copyMutation.mutate()}
+                                    className="w-full sm:w-auto">
+                                    {copyMutation.isPending ? (
+                                        <Loader2 className="size-4 sm:mr-2 animate-spin" />
+                                    ) : (
+                                        <Copy className="size-4 sm:mr-2" />
+                                    )}
+                                    <span className="hidden sm:inline">Copy</span> ({selectedNodeIds.size})
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={downloadMutation.isPending}
+                                    onClick={() => downloadMutation.mutate()}
+                                    className="w-full sm:w-auto">
+                                    {downloadMutation.isPending ? (
+                                        <Loader2 className="size-4 sm:mr-2 animate-spin" />
+                                    ) : (
+                                        <Download className="size-4 sm:mr-2" />
+                                    )}
+                                    <span className="hidden sm:inline">Download</span> ({selectedNodeIds.size})
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={playlistMutation.isPending}
+                                    onClick={() => playlistMutation.mutate()}
+                                    className="w-full sm:w-auto">
+                                    {playlistMutation.isPending ? (
+                                        <Loader2 className="size-4 sm:mr-2 animate-spin" />
+                                    ) : (
+                                        <ListMusic className="size-4 sm:mr-2" />
+                                    )}
+                                    <span className="hidden sm:inline">Playlist</span> ({selectedNodeIds.size})
+                                </Button>
+                            </div>
+                        )}
 
-                            {/* File Actions: Delete, Retry - Show only when files are fully selected */}
+                        {/* Row 2: Retry / Delete / Clear - flex to handle variable button count */}
+                        <div className="flex gap-2 w-full sm:w-auto sm:flex">
                             {canRetry.length > 0 && (
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => retryMutation.mutate(canRetry.map((f) => f.id))}
                                     disabled={retryMutation.isPending}
-                                    className="text-xs sm:text-sm">
-                                    <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                                    Retry ({canRetry.length})
+                                    className="flex-1 sm:flex-none">
+                                    <RotateCcw className="size-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Retry</span> ({canRetry.length})
                                 </Button>
                             )}
                             {fullySelectedFiles.length > 0 && (
@@ -121,11 +138,19 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                                     size="sm"
                                     onClick={() => deleteMutation.mutate(fullySelectedFiles.map((f) => f.id))}
                                     disabled={deleteMutation.isPending}
-                                    className="text-xs sm:text-sm">
-                                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                                    Delete ({fullySelectedFiles.length})
+                                    className="flex-1 sm:flex-none">
+                                    <Trash2 className="size-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Delete</span> ({fullySelectedFiles.length})
                                 </Button>
                             )}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearAll}
+                                className="flex-1 sm:flex-none text-muted-foreground hover:text-foreground">
+                                <X className="size-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Clear</span>
+                            </Button>
                         </div>
                     </div>
                 </div>

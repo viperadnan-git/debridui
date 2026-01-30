@@ -462,14 +462,8 @@ export default class AllDebridClient extends BaseClient {
         const status = this.mapStatusCode(torrent.statusCode);
         let progress: number | undefined;
 
-        if (status === "downloading" || status === "uploading") {
-            const processed = torrent.uploaded || torrent.downloaded || 0;
-            const total = torrent.size || 0;
-            if (total > 0) {
-                const percentage = (processed / total) * 100;
-                progress = percentage || 0;
-            }
-        }
+        const p = status === "downloading" ? torrent.downloaded : status === "uploading" ? torrent.uploaded : null;
+        if (p != null && torrent.size) progress = (p / torrent.size) * 100;
 
         return {
             id: torrent.id.toString(),

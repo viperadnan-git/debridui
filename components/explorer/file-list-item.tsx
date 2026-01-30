@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useMemo, memo } from "react";
+import { memo } from "react";
 import { DebridFile } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatSize, formatRelativeTime, formatSpeed, cn } from "@/lib/utils";
@@ -18,6 +18,113 @@ interface FileListItemProps {
     className?: string;
 }
 
+// Extracted sub-components for cleaner code and better readability
+const SizeDisplay = memo(function SizeDisplay({
+    status,
+    size,
+    downloaded,
+    uploaded,
+}: Pick<DebridFile, "status" | "size" | "downloaded" | "uploaded">) {
+    const formattedSize = formatSize(size);
+
+    if (status === "downloading" && downloaded !== undefined) {
+        return (
+            <>
+                <span>Size: {formattedSize}</span>
+                <span className="text-border">|</span>
+                <span>DL: {formatSize(downloaded)}</span>
+            </>
+        );
+    }
+
+    if (status === "uploading" && uploaded !== undefined) {
+        return (
+            <>
+                <span>Size: {formattedSize}</span>
+                <span className="text-border">|</span>
+                <span>UL: {formatSize(uploaded)}</span>
+            </>
+        );
+    }
+
+    return <span>Size: {formattedSize}</span>;
+});
+
+const TransferDetails = memo(function TransferDetails({
+    status,
+    peers,
+    downloadSpeed,
+    uploadSpeed,
+    error,
+}: Pick<DebridFile, "status" | "peers" | "downloadSpeed" | "uploadSpeed" | "error">) {
+    const showPeers = status !== "completed" && peers !== undefined;
+    const showDownloadSpeed = status === "downloading" && downloadSpeed;
+    const showUploadSpeed = status === "uploading" && uploadSpeed;
+
+    if (!showPeers && !showDownloadSpeed && !showUploadSpeed && !error) {
+        return null;
+    }
+
+    return (
+        <>
+            {showPeers && (
+                <>
+                    <span className="text-border">|</span>
+                    <span>Peers: {peers}</span>
+                </>
+            )}
+            {showDownloadSpeed && (
+                <>
+                    <span className="text-border">|</span>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="text-blue-600">Speed: {formatSpeed(downloadSpeed)}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>Download speed</TooltipContent>
+                    </Tooltip>
+                </>
+            )}
+            {showUploadSpeed && (
+                <>
+                    <span className="text-border">|</span>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="text-green-600">Speed: {formatSpeed(uploadSpeed)}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>Upload speed</TooltipContent>
+                    </Tooltip>
+                </>
+            )}
+            {error && (
+                <>
+                    <span className="text-border">|</span>
+                    <span className="truncate max-w-[200px]">{error}</span>
+                </>
+            )}
+        </>
+    );
+});
+
+const TimeDisplay = memo(function TimeDisplay({
+    status,
+    completedAt,
+    createdAt,
+}: Pick<DebridFile, "status" | "completedAt" | "createdAt">) {
+    const date = completedAt || createdAt;
+    const label = status === "completed" ? "Completed" : "Added";
+
+    return (
+        <Tooltip delayDuration={2000}>
+            <TooltipTrigger asChild>
+                <span className="cursor-pointer">{formatRelativeTime(date)}</span>
+            </TooltipTrigger>
+            <TooltipContent>
+                {label} {date.toLocaleString()}
+            </TooltipContent>
+        </Tooltip>
+    );
+});
+
 export const FileListItem = memo(function FileListItem({
     file,
     isSelected,
@@ -26,95 +133,7 @@ export const FileListItem = memo(function FileListItem({
     onToggleExpand,
     className,
 }: FileListItemProps) {
-    // Format size with progress for active transfers
-    const getSizeDisplay = useMemo(() => {
-        if (file.status === "downloading" && file.downloaded !== undefined) {
-            return (
-                <Fragment>
-                    <span>Size: {formatSize(file.size)}</span>
-                    <span>|</span>
-                    <span>DL: {formatSize(file.downloaded)}</span>
-                </Fragment>
-            );
-        } else if (file.status === "uploading" && file.uploaded !== undefined) {
-            return (
-                <Fragment>
-                    <span>Size: {formatSize(file.size)}</span>
-                    <span>|</span>
-                    <span>UL: {formatSize(file.uploaded)}</span>
-                </Fragment>
-            );
-        }
-        return (
-            <Fragment>
-                <span>Size: {formatSize(file.size)}</span>
-            </Fragment>
-        );
-    }, [file.status, file.size, file.downloaded, file.uploaded]);
-
-    const getDesktopSecondRow = useMemo(() => {
-        const elements = [];
-
-        if (file.status !== "completed" && file.peers !== undefined) {
-            elements.push(<span key="peers">Peers: {file.peers}</span>);
-        }
-
-        // Speed indicator for active transfers
-        if (file.status === "downloading" && file.downloadSpeed) {
-            elements.push(
-                <Tooltip key="dl-speed">
-                    <TooltipTrigger asChild>
-                        <span className="text-blue-600">Speed: {formatSpeed(file.downloadSpeed)}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Download speed</p>
-                    </TooltipContent>
-                </Tooltip>
-            );
-        } else if (file.status === "uploading" && file.uploadSpeed) {
-            elements.push(
-                <Tooltip key="ul-speed">
-                    <TooltipTrigger asChild>
-                        <span className="text-green-600">Speed: {formatSpeed(file.uploadSpeed)}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Upload speed</p>
-                    </TooltipContent>
-                </Tooltip>
-            );
-        }
-
-        if (file.error) {
-            elements.push(
-                <span key="error" className="truncate max-w-[200px]">
-                    {file.error}
-                </span>
-            );
-        }
-
-        // Join elements with separators
-        return elements.reduce((acc: React.ReactNode[], elem, index) => {
-            acc.push(<span key={`sep-${index}`}>|</span>);
-            acc.push(elem);
-            return acc;
-        }, []);
-    }, [file.peers, file.status, file.downloadSpeed, file.uploadSpeed, file.error]);
-
-    const getTimeDisplay = useMemo(() => {
-        return (
-            <Tooltip key="completed" delayDuration={2000}>
-                <TooltipTrigger asChild>
-                    <span className="cursor-pointer">{formatRelativeTime(file.completedAt || file.createdAt)}</span>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>
-                        {file.status === "completed" ? "Completed" : "Added"}{" "}
-                        {(file.completedAt || file.createdAt).toLocaleString()}
-                    </p>
-                </TooltipContent>
-            </Tooltip>
-        );
-    }, [file.status, file.completedAt, file.createdAt]);
+    const showProgress = (file.progress ?? 0) > 0 && file.status !== "completed";
 
     return (
         <FileItemContextMenu file={file}>
@@ -143,23 +162,36 @@ export const FileListItem = memo(function FileListItem({
                                 )}>
                                 {file.name}
                             </div>
-                            <div className="flex items-center gap-1">
-                                {file.progress !== undefined && file.status !== "completed" && (
+                            <div className="flex items-center gap-2">
+                                {showProgress ?? (
                                     <Badge className="px-1 md:px-1.5 pb-0 border-0 rounded-sm text-xs md:text-sm bg-blue-500/10 text-blue-500">
                                         {(file.progress || 0).toFixed(2)}%
                                     </Badge>
                                 )}
-                                &nbsp;
-                                <StatusBadge status={file.status} hide={"completed"} />
+                                <StatusBadge status={file.status} hide="completed" />
                             </div>
                         </div>
 
-                        {/* Row 2: Everything else */}
                         <div className="flex flex-wrap items-center gap-1 md:gap-2 text-xs text-muted-foreground">
-                            {getSizeDisplay}
-                            {getDesktopSecondRow}
+                            <SizeDisplay
+                                status={file.status}
+                                size={file.size}
+                                downloaded={file.downloaded}
+                                uploaded={file.uploaded}
+                            />
+                            <TransferDetails
+                                status={file.status}
+                                peers={file.peers}
+                                downloadSpeed={file.downloadSpeed}
+                                uploadSpeed={file.uploadSpeed}
+                                error={file.error}
+                            />
                             <span className="flex-1" />
-                            {getTimeDisplay}
+                            <TimeDisplay
+                                status={file.status}
+                                completedAt={file.completedAt}
+                                createdAt={file.createdAt}
+                            />
                         </div>
                     </div>
                 </div>
