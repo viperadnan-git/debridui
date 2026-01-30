@@ -44,7 +44,7 @@ export function useSearchLogic({ query, enabled = true }: UseSearchLogicOptions)
         queryFn: () => (client as TorBoxClient).searchTorrents(query),
         enabled: shouldSearch && isTorBoxUser,
         staleTime: 60 * 60 * 1000,
-        gcTime: 24 * 60 * 60 * 1000,
+        gcTime: 6 * 60 * 60 * 1000,
     });
 
     const hasFileResults = !!fileResults?.length;

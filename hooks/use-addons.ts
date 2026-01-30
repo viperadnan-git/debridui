@@ -164,7 +164,6 @@ export function useAddon({ addonId, url, enabled = true }: UseAddonOptions) {
         },
         enabled,
         staleTime: 1000 * 60 * 60 * 24, // 24 hours
-        gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 }
 

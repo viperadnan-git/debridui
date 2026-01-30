@@ -20,7 +20,6 @@ function createTraktHook<T extends any[], R>(
             queryKey: ["trakt", ...keyParts, ...args],
             queryFn: () => fn(...args),
             staleTime: cacheDuration,
-            gcTime: cacheDuration * 2,
         });
     };
 }
@@ -115,7 +114,6 @@ export function useTraktTrendingMixed(limit = 20) {
         queryKey: ["trakt", "mixed", "trending", limit],
         queryFn: () => traktClient.getTrendingMixed(limit),
         staleTime: CACHE_DURATION.STANDARD,
-        gcTime: CACHE_DURATION.STANDARD * 2,
     });
 }
 
@@ -124,7 +122,6 @@ export function useTraktMedia(slug: string, type: "movie" | "show") {
         queryKey: ["trakt", "media", slug, type],
         queryFn: () => (type === "movie" ? traktClient.getMovie(slug) : traktClient.getShow(slug)),
         staleTime: CACHE_DURATION.LONG,
-        gcTime: CACHE_DURATION.LONG * 2,
     });
 }
 
@@ -135,6 +132,5 @@ export function useTraktPeople(id: string, type: "movies" | "shows" = "movies") 
         queryKey: ["trakt", "people", id, type],
         queryFn: () => traktClient.getPeople(id, type),
         staleTime: CACHE_DURATION.LONG,
-        gcTime: CACHE_DURATION.LONG * 2,
     });
 }
