@@ -1,14 +1,9 @@
 import { QueryClient } from "@tanstack/react-query";
-import { persistQueryClient } from "@tanstack/react-query-persist-client";
-
 import { get, set, del } from "idb-keyval";
-import {
-    PersistedClient,
-    Persister,
-} from "@tanstack/react-query-persist-client";
+import { PersistedClient, Persister } from "@tanstack/react-query-persist-client";
 import { QUERY_CACHE_MAX_AGE, QUERY_CACHE_STALE_TIME } from "./constants";
 
-export function createIDBPersister(idbValidKey: IDBValidKey = "reactQuery") {
+function createIDBPersister(idbValidKey: IDBValidKey = "reactQuery") {
     return {
         persistClient: async (client: PersistedClient) => {
             await set(idbValidKey, client);
@@ -25,19 +20,11 @@ export function createIDBPersister(idbValidKey: IDBValidKey = "reactQuery") {
 export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            // Global defaults - can be overridden per query
             gcTime: QUERY_CACHE_MAX_AGE,
             staleTime: QUERY_CACHE_STALE_TIME,
         },
     },
 });
 
-export const initializeQueryClientPersistence = () => {
-    if (typeof window !== "undefined") {
-        persistQueryClient({
-            queryClient,
-            persister: createIDBPersister("DEBRIDUI_CACHE"),
-            maxAge: QUERY_CACHE_MAX_AGE * 7, // 7 days
-        });
-    }
-};
+const persister = createIDBPersister("DEBRIDUI_CACHE");
+export const persistOptions = { persister, maxAge: QUERY_CACHE_MAX_AGE * 7 };
