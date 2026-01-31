@@ -178,8 +178,37 @@ export const encodeAccountData = (data: { type: string; apiKey: string }): strin
 };
 
 /**
- * Get proxied URL using CORS proxy
+ * Resolve redirects via backend proxy to avoid CORS issues
+ */
+export async function resolveRedirects(url: string): Promise<string> {
+    const response = await fetch(`/api/proxy/external?url=${encodeURIComponent(url)}&resolve=true`);
+    if (!response.ok) throw new Error("Failed to resolve redirects");
+    const data = await response.json();
+    return data.resolvedUrl;
+}
+
+/**
+ * Get proxied URL - uses Next.js rewrites for known APIs, external CORS proxy for arbitrary URLs
  */
 export const getProxyUrl = (url: string): string => {
+    if (url.startsWith("https://api.real-debrid.com/rest/1.0/")) {
+        return url.replace("https://api.real-debrid.com/rest/1.0/", "/api/proxy/realdebrid/");
+    }
+    if (url.startsWith("https://api.torbox.app/v1/api/")) {
+        return url.replace("https://api.torbox.app/v1/api/", "/api/proxy/torbox/");
+    }
+    if (url.startsWith("https://search-api.torbox.app/")) {
+        return url.replace("https://search-api.torbox.app/", "/api/proxy/torbox-search/");
+    }
+    if (url.startsWith("https://www.premiumize.me/api/")) {
+        return url.replace("https://www.premiumize.me/api/", "/api/proxy/premiumize/");
+    }
+    if (url.startsWith("https://www.premiumize.me/token")) {
+        return url.replace("https://www.premiumize.me/token", "/api/proxy/premiumize-oauth");
+    }
+    if (url.startsWith("https://api.alldebrid.com/v4.1/")) {
+        return url.replace("https://api.alldebrid.com/v4.1/", "/api/proxy/alldebrid/");
+    }
+    // Fallback: external CORS proxy for arbitrary URLs (CDN downloads)
     return `${CORS_PROXY_URL}${encodeURIComponent(url)}`;
 };

@@ -7,6 +7,7 @@ import {
     WebDownloadAddResult,
     WebDownloadList,
 } from "@/lib/types";
+import { resolveRedirects } from "@/lib/utils";
 
 /**
  * Sliding-window rate limiter. Serializes calls through a promise chain
@@ -63,7 +64,7 @@ export default abstract class BaseClient {
     }
 
     protected async downloadFile(uri: string): Promise<File> {
-        const response = await fetch(uri);
+        const response = await fetch(`/api/proxy/external?url=${encodeURIComponent(uri)}`);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -100,16 +101,31 @@ export default abstract class BaseClient {
 
     protected async addHttpDownloads(httpUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
         const results: Record<string, DebridFileAddStatus> = {};
-        const downloadedFiles: File[] = [];
+        const torrentFiles: File[] = [];
+        const directLinks: string[] = [];
 
         await Promise.allSettled(
             httpUris.map(async (uri) => {
                 try {
-                    const file = await this.downloadFile(uri);
-                    downloadedFiles.push(file);
+                    const headResponse = await fetch(
+                        `/api/proxy/external?url=${encodeURIComponent(uri)}&method=HEAD`
+                    );
+                    const headData = await headResponse.json();
+                    const contentType = headData.contentType || "";
+                    const isTorrent =
+                        contentType.includes("application/x-bittorrent") ||
+                        (contentType.includes("application/octet-stream") && uri.endsWith(".torrent")) ||
+                        uri.endsWith(".torrent");
+
+                    if (isTorrent) {
+                        const file = await this.downloadFile(uri);
+                        torrentFiles.push(file);
+                    } else {
+                        directLinks.push(uri);
+                    }
                 } catch (error) {
                     results[uri] = {
-                        message: `Failed to download ${uri}: ${error}`,
+                        message: `Failed to process ${uri}: ${error}`,
                         error: error instanceof Error ? error.message : String(error),
                         is_cached: false,
                     };
@@ -117,9 +133,22 @@ export default abstract class BaseClient {
             })
         );
 
-        if (downloadedFiles.length > 0) {
-            const uploadResults = await this.uploadTorrentFiles(downloadedFiles);
+        if (torrentFiles.length > 0) {
+            const uploadResults = await this.uploadTorrentFiles(torrentFiles);
             Object.assign(results, uploadResults);
+        }
+
+        if (directLinks.length > 0) {
+            const resolvedLinks = await Promise.all(directLinks.map(resolveRedirects));
+            const webResults = await this.addWebDownloads(resolvedLinks);
+            for (const result of webResults) {
+                results[result.link] = {
+                    id: result.id,
+                    message: result.success ? result.name || "Added successfully" : result.error || "Failed",
+                    error: result.success ? undefined : result.error,
+                    is_cached: false,
+                };
+            }
         }
 
         return results;
