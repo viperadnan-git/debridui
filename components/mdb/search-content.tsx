@@ -67,7 +67,7 @@ export function SearchContent({
             if (!slug) return;
 
             const type = result.movie ? "movie" : "show";
-            router.push(`/${type}/${slug}`);
+            router.push(`/${type}s/${slug}`);
 
             if (variant === "modal" && onClose) {
                 onClose();

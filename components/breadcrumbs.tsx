@@ -45,8 +45,8 @@ export const Breadcrumbs = memo(function Breadcrumbs() {
         );
     }
 
-    // Check if it's a movie or show page (has 2 segments where first is movie/show)
-    const isMediaPage = segments.length === 2 && (segments[0] === "movie" || segments[0] === "show");
+    // Check if it's a movie or show page (has 2 segments where first is movies/shows)
+    const isMediaPage = segments.length === 2 && (segments[0] === "movies" || segments[0] === "shows");
 
     return (
         <Breadcrumb>
@@ -72,9 +72,9 @@ export const Breadcrumbs = memo(function Breadcrumbs() {
 
                     let label = pathLabels[segment] || formatLabel(segment);
 
-                    // Capitalize movie/show for display
-                    if (segment === "movie") label = "Movie";
-                    if (segment === "show") label = "TV Show";
+                    // Capitalize movies/shows for display
+                    if (segment === "movies") label = "Movie";
+                    if (segment === "shows") label = "TV Show";
 
                     return (
                         <Fragment key={segment + index}>

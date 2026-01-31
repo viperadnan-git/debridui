@@ -32,7 +32,7 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
     const mobileImage = posterImage || fanartImage || placeholderImage;
 
     const slug = media.ids?.slug || media.ids?.imdb;
-    const linkHref = slug ? `/${type}/${slug}` : "#";
+    const linkHref = slug ? `/${type}s/${slug}` : "#";
 
     const genres = media.genres?.slice(0, 3) || [];
 
