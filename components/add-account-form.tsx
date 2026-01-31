@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AccountType, addUserSchema } from "@/lib/schemas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
-import { RealDebridClient, TorBoxClient, AllDebridClient } from "@/lib/clients";
+import { RealDebridClient, TorBoxClient, AllDebridClient, PremiumizeClient, getClient } from "@/lib/clients";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useRouter } from "next/navigation";
 import { useAddUserAccount } from "@/hooks/use-user-accounts";
@@ -21,7 +21,7 @@ import { formatAccountType } from "@/lib/utils";
 export function AddAccountForm() {
     const router = useRouter();
     const addAccount = useAddUserAccount();
-    const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | null>(null);
+    const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | "premiumize" | null>(null);
 
     const form = useForm<z.infer<typeof addUserSchema>>({
         resolver: zodResolver(addUserSchema),
@@ -85,6 +85,42 @@ export function AddAccountForm() {
             const { redirect_url } = await RealDebridClient.getAuthPin();
             window.open(redirect_url, "_blank", "noreferrer");
             toast.info("Please copy your Real-Debrid API token and paste it in the form above");
+        } catch (error) {
+            handleError(error);
+        } finally {
+            setIsLoadingOAuth(null);
+        }
+    }
+
+    async function handlePremiumizeLogin() {
+        setIsLoadingOAuth("premiumize");
+        try {
+            const { pin, check, redirect_url } = await PremiumizeClient.getAuthPin();
+
+            if (check === "direct_api_key") {
+                window.open(redirect_url, "_blank", "noreferrer");
+                toast.info("Please copy your Premiumize API key and paste it in the form above");
+            } else {
+                window.open(redirect_url, "_blank", "noreferrer");
+                toast.info(`Enter code: ${pin} on the Premiumize page to authorize`);
+
+                const { success, apiKey } = await PremiumizeClient.validateAuthPin(pin, check);
+
+                if (success && apiKey) {
+                    const user = await getClient({ type: AccountType.PREMIUMIZE }).getUser(apiKey);
+                    addAccount.mutate(
+                        { type: AccountType.PREMIUMIZE, apiKey },
+                        {
+                            onSuccess: () => {
+                                toast.success(`Logged in as ${user.name} (Premiumize)`);
+                                router.push("/dashboard");
+                            },
+                        }
+                    );
+                } else {
+                    toast.error("Failed to login with Premiumize");
+                }
+            }
         } catch (error) {
             handleError(error);
         } finally {
@@ -176,6 +212,18 @@ export function AddAccountForm() {
                                     <Loader2 className="size-4 animate-spin" />
                                 ) : (
                                     "AllDebrid"
+                                )}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                type="button"
+                                className="w-full"
+                                onClick={handlePremiumizeLogin}
+                                disabled={!!isLoadingOAuth || addAccount.isPending}>
+                                {isLoadingOAuth === "premiumize" ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    "Premiumize"
                                 )}
                             </Button>
                         </div>
