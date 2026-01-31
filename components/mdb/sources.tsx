@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
 import { useAddonSources } from "@/hooks/use-addons";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
@@ -27,11 +26,6 @@ interface SourcesProps {
 
 interface SourcesDialogProps extends SourcesProps {
     children: React.ReactNode;
-}
-
-interface SourcesSkeletonProps {
-    count?: number;
-    className?: string;
 }
 
 export function AddSourceButton({ magnet }: { magnet: string }) {
@@ -245,23 +239,6 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
                     fileType={FileType.VIDEO}
                 />
             )}
-        </div>
-    );
-}
-
-export function SourcesSkeleton({ count = 5, className }: SourcesSkeletonProps) {
-    return (
-        <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
-            {Array.from({ length: count }).map((_, i) => (
-                <div key={i} className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-0">
-                    <Skeleton className="h-4 w-3/4" />
-                    <div className="flex items-center gap-2">
-                        <Skeleton className="h-3 w-20" />
-                        <Skeleton className="h-3 w-16" />
-                        <Skeleton className="h-3 w-24" />
-                    </div>
-                </div>
-            ))}
         </div>
     );
 }
