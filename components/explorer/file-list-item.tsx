@@ -31,7 +31,7 @@ const SizeDisplay = memo(function SizeDisplay({
         return (
             <>
                 <span>Size: {formattedSize}</span>
-                <span className="text-border">|</span>
+                <span className="text-border">·</span>
                 <span>DL: {formatSize(downloaded)}</span>
             </>
         );
@@ -41,7 +41,7 @@ const SizeDisplay = memo(function SizeDisplay({
         return (
             <>
                 <span>Size: {formattedSize}</span>
-                <span className="text-border">|</span>
+                <span className="text-border">·</span>
                 <span>UL: {formatSize(uploaded)}</span>
             </>
         );
@@ -69,16 +69,18 @@ const TransferDetails = memo(function TransferDetails({
         <>
             {showPeers && (
                 <>
-                    <span className="text-border">|</span>
+                    <span className="text-border">·</span>
                     <span>Peers: {peers}</span>
                 </>
             )}
             {showDownloadSpeed && (
                 <>
-                    <span className="text-border">|</span>
+                    <span className="text-border">·</span>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="text-blue-600">Speed: {formatSpeed(downloadSpeed)}</span>
+                            <span className="text-blue-600 dark:text-blue-400">
+                                Speed: {formatSpeed(downloadSpeed)}
+                            </span>
                         </TooltipTrigger>
                         <TooltipContent>Download speed</TooltipContent>
                     </Tooltip>
@@ -86,10 +88,12 @@ const TransferDetails = memo(function TransferDetails({
             )}
             {showUploadSpeed && (
                 <>
-                    <span className="text-border">|</span>
+                    <span className="text-border">·</span>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="text-green-600">Speed: {formatSpeed(uploadSpeed)}</span>
+                            <span className="text-green-600 dark:text-green-400">
+                                Speed: {formatSpeed(uploadSpeed)}
+                            </span>
                         </TooltipTrigger>
                         <TooltipContent>Upload speed</TooltipContent>
                     </Tooltip>
@@ -97,8 +101,8 @@ const TransferDetails = memo(function TransferDetails({
             )}
             {error && (
                 <>
-                    <span className="text-border">|</span>
-                    <span className="truncate max-w-[200px]">{error}</span>
+                    <span className="text-border">·</span>
+                    <span className="truncate max-w-[200px] text-destructive">{error}</span>
                 </>
             )}
         </>
@@ -139,8 +143,8 @@ export const FileListItem = memo(function FileListItem({
         <FileItemContextMenu file={file}>
             <div
                 className={cn(
-                    "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b transition-colors duration-150 bg-card max-md:select-none",
-                    canExpand && "cursor-pointer hover:bg-card/50",
+                    "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b border-border/50 transition-colors duration-300 bg-card max-md:select-none",
+                    canExpand && "cursor-pointer hover:bg-muted/30",
                     className
                 )}
                 onClick={canExpand ? onToggleExpand : undefined}>

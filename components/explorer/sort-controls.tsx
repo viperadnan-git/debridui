@@ -37,7 +37,7 @@ export function SortControls() {
     return (
         <div className="flex items-center gap-2">
             <Select value={sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger className="w-[180px]" id="sort-select">
+                <SelectTrigger className="w-[180px] border-border/50" id="sort-select">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -48,7 +48,7 @@ export function SortControls() {
                     ))}
                 </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={handleOrderChange} className="px-2">
+            <Button variant="outline" size="sm" onClick={handleOrderChange} className="px-2 border-border/50">
                 {sortOrder === "desc" ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
             </Button>
         </div>

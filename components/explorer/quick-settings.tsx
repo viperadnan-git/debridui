@@ -27,15 +27,15 @@ export function QuickSettings() {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Settings className="size-4 cursor-pointer hover:rotate-45 transition-transform duration-300" />
+                <Settings className="size-4 cursor-pointer text-muted-foreground hover:text-foreground hover:rotate-45 transition-all duration-300" />
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Quick Settings</DialogTitle>
+                    <DialogTitle className="font-light">Quick Settings</DialogTitle>
                 </DialogHeader>
                 <DialogDescription asChild>
                     <div className="flex flex-col gap-4 py-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between py-2 border-b border-border/50">
                             <Label htmlFor="smart-order" className="text-sm text-foreground">
                                 Smart Order
                             </Label>
@@ -43,10 +43,9 @@ export function QuickSettings() {
                                 id="smart-order"
                                 checked={smartOrder}
                                 onCheckedChange={(checked) => set("smartOrder", checked)}
-                                className="data-[state=checked]:bg-primary/50"
                             />
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between py-2">
                             <Label htmlFor="hide-trash" className="text-sm text-foreground">
                                 Hide Trash
                             </Label>
@@ -54,7 +53,6 @@ export function QuickSettings() {
                                 id="hide-trash"
                                 checked={hideTrash}
                                 onCheckedChange={(checked) => set("hideTrash", checked)}
-                                className="data-[state=checked]:bg-primary/50"
                             />
                         </div>
                     </div>

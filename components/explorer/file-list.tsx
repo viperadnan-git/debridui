@@ -10,7 +10,9 @@ interface FileListProps {
 }
 
 export function FileList({ children, className }: FileListProps) {
-    return <div className={cn("md:rounded-md md:border md:border-border overflow-hidden", className)}>{children}</div>;
+    return (
+        <div className={cn("md:rounded-sm md:border md:border-border/50 overflow-hidden", className)}>{children}</div>
+    );
 }
 
 interface FileListBodyProps {
@@ -31,7 +33,7 @@ export function FileListEmpty({ message = "No results.", className }: FileListEm
     return (
         <div
             className={cn(
-                "flex items-center justify-center py-8 sm:py-12 md:py-16 text-sm text-muted-foreground",
+                "flex items-center justify-center py-8 sm:py-12 md:py-16 text-sm text-muted-foreground bg-muted/20",
                 className
             )}>
             {message}
@@ -41,9 +43,9 @@ export function FileListEmpty({ message = "No results.", className }: FileListEm
 
 function FileRowSkeleton() {
     return (
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b">
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b border-border/50">
             <div className="shrink-0 px-1">
-                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0 pe-2">
                 <div className="flex flex-col gap-2">

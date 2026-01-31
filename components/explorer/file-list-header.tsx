@@ -16,7 +16,7 @@ export function FileListHeader({ isAllSelected, onSelectAll, selectedCount = 0, 
     return (
         <div
             className={cn(
-                "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1 sm:py-1.5 md:py-2 border-b border-border text-xs sm:text-sm font-medium text-muted-foreground",
+                "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1 sm:py-1.5 md:py-2 border-b border-border/50 bg-muted/20 text-xs sm:text-sm font-medium text-muted-foreground",
                 className
             )}>
             <div className="shrink-0 px-1">

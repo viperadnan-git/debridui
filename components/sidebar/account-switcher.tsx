@@ -60,7 +60,7 @@ export const AccountSwitcher = React.memo(function AccountSwitcher() {
                             align="start"
                             side={isMobile ? "bottom" : "right"}
                             sideOffset={8}>
-                            <DropdownMenuLabel className="text-xs tracking-wider uppercase text-muted-foreground px-2 py-1.5">
+                            <DropdownMenuLabel className="text-xs tracking-widest uppercase text-muted-foreground px-2 py-1.5">
                                 Accounts
                             </DropdownMenuLabel>
                             {userAccounts.map((account) => (

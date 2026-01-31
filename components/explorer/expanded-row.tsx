@@ -72,7 +72,7 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
                     <Loader2 className="size-4 animate-spin text-muted-foreground" />
                 </div>
             ) : error && !file.files ? (
-                <div className="text-center py-4 text-xs text-red-500 px-0.5 md:px-4">Error loading files</div>
+                <div className="text-center py-4 text-xs text-destructive px-0.5 md:px-4">Error loading files</div>
             ) : processedNodes && processedNodes.length > 0 ? (
                 <FileTree nodes={processedNodes} fileId={file.id} />
             ) : (

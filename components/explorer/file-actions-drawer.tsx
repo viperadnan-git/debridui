@@ -68,7 +68,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
             {/* Bottom Drawer */}
             <div
                 className={cn(
-                    "fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border shadow-lg transition-transform duration-300 ease-in-out",
+                    "fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50 shadow-lg transition-transform duration-300 ease-in-out",
                     hasAnySelection ? "translate-y-0" : "translate-y-full pointer-events-none"
                 )}>
                 <div className="container mx-auto max-w-7xl px-4 py-3">
