@@ -128,6 +128,7 @@ export function SourceRow({
     // Build metadata string with editorial separators
     const metaParts: string[] = [];
     if (source.resolution) metaParts.push(source.resolution);
+    if (source.quality) metaParts.push(source.quality);
     if (source.size) metaParts.push(source.size);
     metaParts.push(source.addonName);
 

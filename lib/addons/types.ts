@@ -50,6 +50,7 @@ export interface AddonSource {
     description?: string;
     size?: string;
     resolution?: string;
+    quality?: string;
     peers?: string;
     magnet?: string;
     url?: string;

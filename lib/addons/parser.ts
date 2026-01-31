@@ -7,6 +7,55 @@ const RESOLUTION_REGEX = /\b(\d{3,4}p|4k)\b/i;
 const CACHED_NAME_REGEX = /instant|\+|✅|⚡/i;
 const CACHED_DESC_REGEX = /✅|⚡/;
 
+const QUALITY_REGEXES = {
+    // Priority 1: REMUX (highest quality, check first)
+    "BluRay REMUX": /(?:^|[\s\[(_.\-])(?:bd|br|b|uhd)?[-_.\\s]?remux(?=[\s\)\]_.\-,]|$)/i,
+
+    // Priority 2: BluRay (check after REMUX to avoid conflicts)
+    BluRay: /(?:^|[\s\[(_.\-])(?:bd|blu[-_.\\s]?ray|(?:bd|br)[-_.\\s]?rip)(?!.*remux)(?=[\s\)\]_.\-,]|$)/i,
+
+    // Priority 3: WEB formats (very common)
+    "WEB-DL": /(?:^|[\s\[(_.\-])web[-_.\\s]?(?:dl)?(?![-_.\\s]?(?:rip|DLRip|cam))(?=[\s\)\]_.\-,]|$)/i,
+    WEBRip: /(?:^|[\s\[(_.\-])web[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i,
+
+    // Priority 4: Broadcast formats
+    HDTV: /(?:^|[\s\[(_.\-])(?:(?:hd|pd)tv|tv[-_.\\s]?rip|hdtv[-_.\\s]?rip|dsr(?:ip)?|sat[-_.\\s]?rip)(?=[\s\)\]_.\-,]|$)/i,
+
+    // Priority 5: DVD formats
+    DVDRip: /(?:^|[\s\[(_.\-])(?:dvd(?:[-_.\\s]?(?:rip|mux|r|full|5|9))?(?!scr))(?=[\s\)\]_.\-,]|$)/i,
+
+    // Priority 6: HD formats
+    HDRip: /(?:^|[\s\[(_.\-])hd[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i,
+    "HC HD-Rip": /(?:^|[\s\[(_.\-])hc(?=[\s\)\]_.\-,]|$)/i,
+
+    // Priority 7: Low quality captures
+    CAM: /(?:^|[\s\[(_.\-])(?:cam(?:[-_.\\s]?rip)?|hdcam)(?=[\s\)\]_.\-,]|$)/i,
+    TS: /(?:^|[\s\[(_.\-])(?:telesync|ts(?!$)|hd[-_.\\s]?ts|p(?:re)?dvd(?:rip)?)(?=[\s\)\]_.\-,]|$)/i,
+    TC: /(?:^|[\s\[(_.\-])(?:telecine|tc)(?=[\s\)\]_.\-,]|$)/i,
+
+    // Priority 8: Screeners
+    SCR: /(?:^|[\s\[(_.\-])(?:(?:dvd|bd|web|hd)?[-_.\\s]?)?scr(?:eener)?(?=[\s\)\]_.\-,]|$)/i,
+};
+
+/**
+ * Detect video quality from filename
+ * @param filename - The filename to analyze
+ * @returns The detected quality or null
+ */
+export function detectQuality(stream: AddonStream): string | undefined {
+    for (const field of ["name", "title", "description"]) {
+        const value = stream[field as keyof AddonStream] as string | undefined;
+        if (value) {
+            for (const [quality, regex] of Object.entries(QUALITY_REGEXES as Record<string, RegExp>)) {
+                if (regex.test(value)) {
+                    return quality;
+                }
+            }
+        }
+    }
+    return undefined;
+}
+
 /**
  * Detect if a source is cached based on name/description
  * Looks for "Instant", "+" in name, or "✅", "⚡️" in name/description
@@ -75,15 +124,9 @@ export function constructMagnet(hash: string, title: string): string {
 }
 
 /**
- * Parse stream name/description - show as-is without parsing
+ * Parse a single addon stream into AddonSource format
  */
-export function parseStreamInfo(stream: AddonStream): {
-    title: string;
-    description?: string;
-    resolution?: string;
-    size?: string;
-    peers?: string;
-} {
+export function parseStream(stream: AddonStream, addonId: string, addonName: string): AddonSource {
     const name = stream.name || "Unknown";
     const title = stream.title || "";
     const description = stream.description || "";
@@ -92,21 +135,7 @@ export function parseStreamInfo(stream: AddonStream): {
     const combinedDescription = [title, description].filter(Boolean).join("\n");
     const size = extractSize(stream);
     const resolution = extractResolution(stream);
-
-    return {
-        title: name,
-        description: combinedDescription || undefined,
-        resolution: resolution,
-        size: size,
-        peers: undefined,
-    };
-}
-
-/**
- * Parse a single addon stream into AddonSource format
- */
-export function parseStream(stream: AddonStream, addonId: string, addonName: string): AddonSource {
-    const { title, description, resolution, size, peers } = parseStreamInfo(stream);
+    const quality = detectQuality(stream);
     const hash = extractHash(stream);
     const isCached = detectCached(stream);
 
@@ -114,11 +143,11 @@ export function parseStream(stream: AddonStream, addonId: string, addonName: str
     const magnet = hash ? constructMagnet(hash, title) : undefined;
 
     return {
-        title,
-        description,
+        title: name,
+        description: combinedDescription,
         resolution,
         size,
-        peers,
+        quality,
         magnet,
         url: stream.url,
         isCached,
