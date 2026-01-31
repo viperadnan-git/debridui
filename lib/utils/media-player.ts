@@ -132,7 +132,15 @@ const PLAYER_URLS: Record<Exclude<MediaPlayer, MediaPlayer.BROWSER>, PlayerUrlGe
     [MediaPlayer.MX_PLAYER_PRO]: (url, fileName) => generateMxPlayerUrl(url, "com.mxtech.videoplayer.pro", fileName),
 };
 
-export const playUrl = ({ url, fileName, player }: { url: string; fileName: string; player?: MediaPlayer }): void => {
+export const openInPlayer = ({
+    url,
+    fileName,
+    player,
+}: {
+    url: string;
+    fileName: string;
+    player?: MediaPlayer;
+}): void => {
     const selectedPlayer = player || useSettingsStore.getState().get("mediaPlayer");
 
     if (selectedPlayer === MediaPlayer.BROWSER) {

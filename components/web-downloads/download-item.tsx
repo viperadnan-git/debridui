@@ -2,7 +2,7 @@
 
 import { memo, useState, useMemo } from "react";
 import { WebDownload, FileType, MediaPlayer } from "@/lib/types";
-import { formatSize, cn, getFileType, playUrl } from "@/lib/utils";
+import { formatSize, cn, getFileType, openInPlayer } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -75,7 +75,7 @@ export const DownloadItem = memo(function DownloadItem({
         if (!link) return;
 
         if (usesExternalPlayer) {
-            playUrl({ url: link, fileName: download.name, player: mediaPlayer });
+            openInPlayer({ url: link, fileName: download.name, player: mediaPlayer });
         } else {
             setPreviewUrl(link);
         }

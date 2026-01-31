@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { PlayIcon } from "lucide-react";
-import { playUrl } from "@/lib/utils/media-player";
+import { openInPlayer } from "@/lib/utils/media-player";
 
 interface PlayUrlButtonProps {
     url: string;
@@ -17,7 +17,7 @@ export const PlayUrlButton = memo(
             if (onOpenPreview) {
                 onOpenPreview(url, title);
             } else {
-                playUrl({ url, fileName: title });
+                openInPlayer({ url, fileName: title });
             }
         };
 

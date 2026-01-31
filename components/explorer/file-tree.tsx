@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Copy, Download, CirclePlay, Loader2 } from "lucide-react";
 import { cn, getFileType } from "@/lib/utils";
-import { formatSize, playUrl, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
+import { formatSize, openInPlayer, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
 import { collectNodeIds } from "@/lib/utils/file";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
@@ -116,7 +116,7 @@ const FileActionButton = memo(function FileActionButton({
 
         switch (action) {
             case "play":
-                playUrl({ url: linkInfo.link, fileName: linkInfo.name });
+                openInPlayer({ url: linkInfo.link, fileName: linkInfo.name });
                 break;
             case "download":
                 downloadLinks([linkInfo]);
