@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 
 interface MediaSectionProps {
     title: string;
-    label?: string;
     items?: TraktMediaItem[];
     isLoading?: boolean;
     error?: Error | null;
@@ -34,7 +33,6 @@ const MediaSectionSkeleton = memo(function MediaSectionSkeleton() {
 
 export const MediaSection = memo(function MediaSection({
     title,
-    label,
     items,
     isLoading,
     error,
@@ -48,12 +46,7 @@ export const MediaSection = memo(function MediaSection({
         return (
             <section className={cn("space-y-4", className)}>
                 <div className="flex items-end justify-between gap-4">
-                    <div className="space-y-1">
-                        {label && (
-                            <div className="text-xs tracking-widest uppercase text-muted-foreground">{label}</div>
-                        )}
-                        <h2 className="text-xl sm:text-2xl font-light">{title}</h2>
-                    </div>
+                    <h2 className="text-sm tracking-widest uppercase text-muted-foreground">{title}</h2>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
                     <AlertCircle className="size-4" />
@@ -67,16 +60,13 @@ export const MediaSection = memo(function MediaSection({
         <section className={cn("space-y-4", className)}>
             {/* Section Header */}
             <div className="flex items-end justify-between gap-4">
-                <div className="space-y-1">
-                    {label && <div className="text-xs tracking-widest uppercase text-primary/80">{label}</div>}
-                    <h2 className="text-xl sm:text-2xl font-light">{title}</h2>
-                </div>
+                <h2 className="text-sm tracking-widest uppercase text-muted-foreground">{title}</h2>
                 {viewAllHref && (
                     <Link
                         href={viewAllHref}
-                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors pb-1 group">
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors group">
                         <span>View all</span>
-                        <ArrowRightIcon className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                        <ArrowRightIcon className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </Link>
                 )}
             </div>

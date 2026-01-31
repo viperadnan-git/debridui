@@ -43,22 +43,22 @@ export function ScrollCarousel({ className, children, ...props }: React.Componen
     return (
         <div ref={containerRef} className="relative group/scroll">
             <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="scroll-carousel-btn scroll-carousel-btn-left max-md:hidden! absolute -left-4 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-md border border-border/50 opacity-0 group-hover/scroll:opacity-100 transition-opacity"
+                className="scroll-carousel-btn scroll-carousel-btn-left max-md:hidden! absolute -left-4 top-1/2 -translate-y-1/2 z-10 size-8 rounded-sm bg-card/90 backdrop-blur-sm border-border/50 opacity-0 group-hover/scroll:opacity-100 transition-all duration-300 hover:bg-card hover:border-primary/30 hover:text-primary"
                 onClick={() => scroll("left")}>
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="size-4" />
             </Button>
             <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="scroll-carousel-btn scroll-carousel-btn-right max-md:hidden! absolute -right-4 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-md border border-border/50 opacity-0 group-hover/scroll:opacity-100 transition-opacity"
+                className="scroll-carousel-btn scroll-carousel-btn-right max-md:hidden! absolute -right-4 top-1/2 -translate-y-1/2 z-10 size-8 rounded-sm bg-card/90 backdrop-blur-sm border-border/50 opacity-0 group-hover/scroll:opacity-100 transition-all duration-300 hover:bg-card hover:border-primary/30 hover:text-primary"
                 onClick={() => scroll("right")}>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="size-4" />
             </Button>
             <ScrollArea ref={scrollContainerRef} className={cn(className)} {...props}>
                 {children}
-                <ScrollBar orientation="horizontal" className="max-lg:hidden" />
+                <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
         </div>
     );

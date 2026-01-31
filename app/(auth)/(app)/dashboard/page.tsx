@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { MediaSection } from "@/components/mdb/media-section";
 import { SearchDialog } from "@/components/mdb/search-dialog";
 import { MdbFooter } from "@/components/mdb/mdb-footer";
 import { memo, useState } from "react";
@@ -20,6 +19,7 @@ import { SearchIcon, Sparkles, Film, TrendingUp, Calendar, Ticket } from "lucide
 import { Button } from "@/components/ui/button";
 import { DISCORD_URL } from "@/lib/constants";
 import { HeroCarouselSkeleton } from "@/components/mdb/hero-carousel-skeleton";
+import { MediaSection } from "@/components/mdb/media-section";
 
 const HeroCarousel = dynamic(
     () => import("@/components/mdb/hero-carousel").then((m) => ({ default: m.HeroCarousel })),
@@ -29,18 +29,32 @@ const HeroCarousel = dynamic(
     }
 );
 
+// Welcome hero section with glassmorphic design
 const WelcomeSection = memo(function WelcomeSection({ onSearchClick }: { onSearchClick: () => void }) {
     return (
-        <div className="py-10 lg:px-6">
+        <section className="relative py-12 lg:py-16 lg:px-6">
+            {/* Subtle gradient background */}
+            <div className="absolute inset-0 -z-10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent" />
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/[0.04] rounded-full blur-3xl" />
+                <div className="absolute top-0 right-1/4 w-64 h-64 bg-primary/[0.03] rounded-full blur-3xl" />
+            </div>
+
             <div className="max-w-4xl mx-auto">
                 {/* Welcome header */}
-                <div className="text-center space-y-4 mb-8">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs tracking-wider uppercase">
-                        <Sparkles className="size-3.5" />
-                        <span>Welcome to DebridUI</span>
+                <div className="text-center space-y-5 mb-10">
+                    <div
+                        className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 backdrop-blur-sm"
+                        style={{ animationDelay: "100ms" }}>
+                        <Sparkles className="size-3.5 text-primary" />
+                        <span className="text-xs tracking-widest uppercase text-primary/90">Welcome to DebridUI</span>
                     </div>
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight">Discover & Stream</h1>
-                    <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight leading-tightest">
+                        <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
+                            Discover & Stream
+                        </span>
+                    </h1>
+                    <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
                         A modern interface for discovering and streaming media through your debrid services. Browse
                         trending content, manage your files, and enjoy seamless playback.
                     </p>
@@ -60,44 +74,63 @@ const WelcomeSection = memo(function WelcomeSection({ onSearchClick }: { onSearc
                     </button>
                 </div>
 
-                {/* Quick stats / Links */}
-                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                {/* Action buttons */}
+                <div className="flex flex-wrap items-center justify-center gap-3">
                     {DISCORD_URL && (
                         <Button size="sm" className="gap-2 bg-[#5865F2] hover:bg-[#4752C4] text-white h-9" asChild>
                             <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
-                                <img src="https://simpleicons.org/icons/discord.svg" alt="" className="size-4 invert" />
+                                <img
+                                    src="https://simpleicons.org/icons/discord.svg"
+                                    alt=""
+                                    className="size-4 invert"
+                                    loading="lazy"
+                                />
                                 <span>Join Discord</span>
                             </a>
                         </Button>
                     )}
                     <Button variant="outline" size="sm" className="gap-2 h-9" asChild>
                         <a href="https://github.com/viperadnan-git/debridui" target="_blank" rel="noopener noreferrer">
-                            <img src="https://simpleicons.org/icons/github.svg" alt="" className="size-4 dark:invert" />
-                            <span>GitHub</span>
+                            <img
+                                src="https://simpleicons.org/icons/github.svg"
+                                alt=""
+                                className="size-4 dark:invert"
+                                loading="lazy"
+                            />
+                            <span>Star on GitHub</span>
                         </a>
                     </Button>
                 </div>
             </div>
-        </div>
+        </section>
     );
 });
 
+// Content section with modern divider
 interface ContentSectionProps {
     label: string;
     icon?: React.ReactNode;
     children: React.ReactNode;
+    delay?: number;
 }
 
-const ContentSection = memo(function ContentSection({ label, icon, children }: ContentSectionProps) {
+const ContentSection = memo(function ContentSection({ label, icon, children, delay = 0 }: ContentSectionProps) {
     return (
-        <div className="space-y-8">
+        <div
+            className="space-y-8 animate-in fade-in-0 slide-in-from-bottom-4"
+            style={{
+                animationDelay: `${delay}ms`,
+                animationDuration: "600ms",
+                animationFillMode: "backwards",
+            }}>
+            {/* Section divider with animated accent */}
             <div className="flex items-center gap-4 py-2">
-                <div className="h-px flex-1 bg-border/50" />
-                <div className="flex items-center gap-2 text-xs tracking-widest uppercase text-muted-foreground">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/50 to-border/50" />
+                <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-border/50 bg-card/50 backdrop-blur-sm">
                     {icon && <span className="text-primary">{icon}</span>}
-                    <span>{label}</span>
+                    <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
                 </div>
-                <div className="h-px flex-1 bg-border/50" />
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border/50 to-border/50" />
             </div>
             {children}
         </div>
@@ -118,7 +151,7 @@ const DashboardPage = memo(function DashboardPage() {
     const boxOffice = useTraktBoxOfficeMovies();
 
     return (
-        <div className="pb-8">
+        <div className="pb-12">
             {/* Hero Carousel */}
             <HeroCarousel autoFocus />
 
@@ -127,10 +160,10 @@ const DashboardPage = memo(function DashboardPage() {
 
             <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
 
-            {/* Content Sections */}
-            <div className="lg:px-6 space-y-14">
+            {/* Content Sections with lazy loading */}
+            <div className="lg:px-6 space-y-16">
                 {/* Trending */}
-                <ContentSection label="Trending Now" icon={<TrendingUp className="size-3.5" />}>
+                <ContentSection label="Trending Now" icon={<TrendingUp className="size-3.5" />} delay={0}>
                     <MediaSection
                         title="Movies"
                         items={trendingMovies.data}
@@ -148,7 +181,7 @@ const DashboardPage = memo(function DashboardPage() {
                 </ContentSection>
 
                 {/* Popular */}
-                <ContentSection label="Popular" icon={<Sparkles className="size-3.5" />}>
+                <ContentSection label="Popular" icon={<Sparkles className="size-3.5" />} delay={100}>
                     <MediaSection
                         title="Movies"
                         items={popularMovies.data}
@@ -164,7 +197,7 @@ const DashboardPage = memo(function DashboardPage() {
                 </ContentSection>
 
                 {/* Box Office */}
-                <ContentSection label="Box Office" icon={<Ticket className="size-3.5" />}>
+                <ContentSection label="Box Office" icon={<Ticket className="size-3.5" />} delay={200}>
                     <MediaSection
                         title="Top Grossing"
                         items={boxOffice.data}
@@ -174,7 +207,7 @@ const DashboardPage = memo(function DashboardPage() {
                 </ContentSection>
 
                 {/* Most Watched */}
-                <ContentSection label="Most Watched This Week" icon={<Film className="size-3.5" />}>
+                <ContentSection label="Most Watched This Week" icon={<Film className="size-3.5" />} delay={300}>
                     <MediaSection
                         title="Movies"
                         items={mostWatchedMovies.data}
@@ -190,7 +223,7 @@ const DashboardPage = memo(function DashboardPage() {
                 </ContentSection>
 
                 {/* Coming Soon */}
-                <ContentSection label="Coming Soon" icon={<Calendar className="size-3.5" />}>
+                <ContentSection label="Coming Soon" icon={<Calendar className="size-3.5" />} delay={400}>
                     <MediaSection
                         title="Movies"
                         items={anticipatedMovies.data}
@@ -205,7 +238,8 @@ const DashboardPage = memo(function DashboardPage() {
                     />
                 </ContentSection>
 
-                <MdbFooter className="pt-8 border-t border-border/50" />
+                {/* Footer */}
+                <MdbFooter className="pt-10 border-t border-border/50" />
             </div>
         </div>
     );

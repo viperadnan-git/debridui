@@ -6,7 +6,6 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SearchProvider } from "@/components/mdb/search-provider";
-import { Separator } from "@/components/ui/separator";
 import { FilePreviewDialog } from "@/components/preview/file-preview-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
 import { SplashScreen } from "@/components/splash-screen";
@@ -37,10 +36,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset className="overflow-x-hidden">
-                    <header className="flex h-16 shrink-0 z-50 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+                    <header className="flex h-12 shrink-0 z-50 items-center gap-2 border-b border-border/30 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
                         <div className="flex items-center gap-2 px-4">
                             <SidebarTrigger className="-ml-1" />
-                            <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
                             <Breadcrumbs />
                         </div>
                     </header>
