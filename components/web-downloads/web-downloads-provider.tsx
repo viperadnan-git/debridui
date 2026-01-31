@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { WebDownload, WebDownloadAddResult } from "@/lib/types";
 import { WEB_DOWNLOADS_PAGE_SIZE } from "@/lib/constants";
+import { resolveRedirects } from "@/lib/utils";
 
 interface WebDownloadsContextValue {
     downloads: WebDownload[];
@@ -39,6 +40,7 @@ export function WebDownloadsProvider({ children }: { children: ReactNode }) {
         queryKey: listKey,
         queryFn: () => client.getWebDownloadList({ offset, limit: WEB_DOWNLOADS_PAGE_SIZE }),
         refetchInterval: client.refreshInterval,
+        staleTime: 0,
     });
 
     // Merge API list with ephemeral links (if client supports them)
@@ -47,8 +49,8 @@ export function WebDownloadsProvider({ children }: { children: ReactNode }) {
         if (!client.supportsEphemeralLinks) return apiDownloads;
         // Only show ephemeral links on first page
         if (currentPage !== 1) return apiDownloads;
-        const apiIds = new Set(apiDownloads.map((d) => d.id));
-        return [...ephemeralLinks.filter((d) => !apiIds.has(d.id)), ...apiDownloads];
+        const apiDownloadLinks = new Set(apiDownloads.map((d) => d.downloadLink));
+        return [...ephemeralLinks.filter((d) => !apiDownloadLinks.has(d.downloadLink)), ...apiDownloads];
     }, [client.supportsEphemeralLinks, ephemeralLinks, listQuery.data, currentPage]);
 
     // Calculate total pages (same pattern as useFileExplorer)
@@ -73,7 +75,11 @@ export function WebDownloadsProvider({ children }: { children: ReactNode }) {
 
     // Add/Unlock links
     const addMutation = useMutation({
-        mutationFn: (links: string[]) => client.addWebDownloads(links),
+        mutationFn: async (links: string[]) => {
+            // Resolve redirects before sending to debrid API
+            const resolvedLinks = await Promise.all(links.map(resolveRedirects));
+            return client.addWebDownloads(resolvedLinks);
+        },
         onSuccess: (results) => {
             if (client.supportsEphemeralLinks) {
                 // Store unlocked links in ephemeral state
@@ -139,16 +145,17 @@ export function WebDownloadsProvider({ children }: { children: ReactNode }) {
                 if (download.downloadLink) {
                     return download.downloadLink;
                 }
-                // For clients with ephemeral links, saved links need unlocking
                 if (client.supportsEphemeralLinks) {
-                    const results = await client.addWebDownloads([download.originalLink]);
+                    // For clients with ephemeral links, saved links need unlocking
+                    // Resolve redirects before sending to debrid API
+                    const resolvedLink = await resolveRedirects(download.originalLink);
+                    const results = await client.addWebDownloads([resolvedLink]);
                     const result = results[0];
                     if (!result?.success || !result.downloadLink) {
                         throw new Error(result?.error || "Failed to unlock link");
                     }
                     return result.downloadLink;
                 }
-                // Fallback - shouldn't reach here for ready downloads
                 throw new Error("Download link not available");
             },
             refetch: listQuery.refetch,
