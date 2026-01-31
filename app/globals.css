@@ -210,3 +210,13 @@
 [data-scrollable="true"] .scroll-carousel-btn {
     display: flex !important;
 }
+
+@layer utilities {
+    .scrollbar-none::-webkit-scrollbar {
+        display: none !important;
+    }
+    .scrollbar-none {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}

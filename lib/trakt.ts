@@ -75,6 +75,69 @@ export interface TraktPerson {
     images?: Pick<TraktImages, "headshot" | "fanart">;
 }
 
+export interface TraktPersonFull extends TraktPerson {
+    social_ids?: {
+        twitter?: string;
+        facebook?: string;
+        instagram?: string;
+        wikipedia?: string;
+    };
+    biography?: string;
+    birthday?: string;
+    death?: string;
+    birthplace?: string;
+    homepage?: string;
+    gender?: string;
+    known_for_department?: string;
+}
+
+export interface TraktPersonMovieCredit {
+    characters?: string[];
+    jobs?: string[];
+    movie: TraktMedia;
+}
+
+export interface TraktPersonShowCredit {
+    characters?: string[];
+    jobs?: string[];
+    episode_count?: number;
+    series_regular?: boolean;
+    show: TraktMedia;
+}
+
+export interface TraktPersonMovieCredits {
+    cast?: TraktPersonMovieCredit[];
+    crew?: {
+        production?: TraktPersonMovieCredit[];
+        art?: TraktPersonMovieCredit[];
+        crew?: TraktPersonMovieCredit[];
+        "costume & make-up"?: TraktPersonMovieCredit[];
+        directing?: TraktPersonMovieCredit[];
+        writing?: TraktPersonMovieCredit[];
+        sound?: TraktPersonMovieCredit[];
+        camera?: TraktPersonMovieCredit[];
+        editing?: TraktPersonMovieCredit[];
+        "visual effects"?: TraktPersonMovieCredit[];
+    };
+}
+
+export interface TraktPersonShowCredits {
+    cast?: TraktPersonShowCredit[];
+    crew?: {
+        production?: TraktPersonShowCredit[];
+        art?: TraktPersonShowCredit[];
+        crew?: TraktPersonShowCredit[];
+        "costume & make-up"?: TraktPersonShowCredit[];
+        directing?: TraktPersonShowCredit[];
+        writing?: TraktPersonShowCredit[];
+        sound?: TraktPersonShowCredit[];
+        camera?: TraktPersonShowCredit[];
+        editing?: TraktPersonShowCredit[];
+        "visual effects"?: TraktPersonShowCredit[];
+        "created by"?: TraktPersonShowCredit[];
+    };
+}
+
 export interface TraktCastMember {
     characters: string[];
     person: TraktPerson;
@@ -531,6 +594,27 @@ export class TraktClient {
      */
     public async getPeople(id: string, type: "movies" | "shows", extended = "full,images"): Promise<TraktCastAndCrew> {
         return this.makeRequest<TraktCastAndCrew>(`${type}/${id}/people`, {}, false, extended);
+    }
+
+    /**
+     * Get person details by ID/slug
+     */
+    public async getPerson(id: string, extended = "full,images"): Promise<TraktPersonFull> {
+        return this.makeRequest<TraktPersonFull>(`people/${id}`, {}, false, extended);
+    }
+
+    /**
+     * Get person's movie credits
+     */
+    public async getPersonMovies(id: string, extended = "full,images"): Promise<TraktPersonMovieCredits> {
+        return this.makeRequest<TraktPersonMovieCredits>(`people/${id}/movies`, {}, false, extended);
+    }
+
+    /**
+     * Get person's show credits
+     */
+    public async getPersonShows(id: string, extended = "full,images"): Promise<TraktPersonShowCredits> {
+        return this.makeRequest<TraktPersonShowCredits>(`people/${id}/shows`, {}, false, extended);
     }
 }
 

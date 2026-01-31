@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { AccountType } from "../schemas";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, differenceInYears } from "date-fns";
 import { DebridLinkInfo, FileType } from "../types";
 import { ACCOUNT_TYPE_LABELS, CORS_PROXY_URL, EXTENSION_TO_FILE_TYPE } from "../constants";
 import { del } from "idb-keyval";
@@ -54,13 +54,22 @@ export const formatYear = (dateString?: string): number | null => {
  * Format date string to localized date (Month Day, Year)
  */
 export const formatLocalizedDate = (dateString?: string): string | null => {
-    return dateString
-        ? new Date(dateString).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-          })
-        : null;
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+};
+
+/**
+ * Calculate age from birth date to end date (or now)
+ */
+export const calculateAge = (birthDate?: string, endDate?: string): number | null => {
+    if (!birthDate) return null;
+    const birth = new Date(birthDate);
+    const end = endDate ? new Date(endDate) : new Date();
+    return differenceInYears(end, birth);
 };
 
 export const downloadLinks = (downloads: DebridLinkInfo[]) => {

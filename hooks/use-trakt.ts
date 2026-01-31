@@ -134,3 +134,21 @@ export function useTraktPeople(id: string, type: "movies" | "shows" = "movies") 
         staleTime: CACHE_DURATION.LONG,
     });
 }
+
+export const useTraktPerson = createTraktHook(
+    ["person"],
+    (slug: string) => traktClient.getPerson(slug),
+    CACHE_DURATION.LONG
+);
+
+export const useTraktPersonMovies = createTraktHook(
+    ["person", "movies"],
+    (slug: string) => traktClient.getPersonMovies(slug),
+    CACHE_DURATION.LONG
+);
+
+export const useTraktPersonShows = createTraktHook(
+    ["person", "shows"],
+    (slug: string) => traktClient.getPersonShows(slug),
+    CACHE_DURATION.LONG
+);

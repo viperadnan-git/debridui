@@ -21,8 +21,8 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
 
     return (
         <div className="relative">
-            {/* Backdrop */}
-            {backdropUrl && (
+            {/* Backdrop - Image or Gradient Fallback */}
+            {backdropUrl ? (
                 <>
                     <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen overflow-hidden -mt-6">
                         <img
@@ -36,14 +36,28 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                     <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/40 to-transparent -mt-6" />
                     <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/60 via-transparent to-background/60 -mt-6" />
                 </>
+            ) : (
+                <>
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen overflow-hidden -mt-6">
+                        <img
+                            src={posterUrl}
+                            alt=""
+                            className="w-full h-full object-cover opacity-40 blur-2xl scale-110"
+                            loading="eager"
+                            decoding="async"
+                        />
+                    </div>
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/70 to-background/40 -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/70 via-transparent to-background/70 -mt-6" />
+                </>
             )}
 
             {/* Content */}
-            <div className={backdropUrl ? "relative pt-[22vh] sm:pt-[26vh] md:pt-[30vh] pb-8" : "pb-8"}>
+            <div className="relative pt-[12vh] sm:pt-[20vh] md:pt-[30vh] pb-8">
                 <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr] gap-6 md:gap-8">
                     {/* Poster Column */}
                     <div className="space-y-4">
-                        <div className="max-sm:max-w-[45vw] aspect-2/3 overflow-hidden rounded-sm bg-muted/50">
+                        <div className="max-md:max-w-[45vw] aspect-2/3 overflow-hidden rounded-sm bg-muted/50">
                             <img
                                 src={posterUrl}
                                 alt={media.title}
