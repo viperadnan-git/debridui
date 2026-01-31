@@ -1,5 +1,5 @@
 import { formatSize } from "../utils";
-import { type AddonStream, type AddonSource } from "./types";
+import { type AddonStream, type AddonSource, SourceQuality } from "./types";
 
 const HASH_REGEX = /[a-f0-9]{40}/;
 const FILE_SIZE_REGEX = /\b\d+(?:\.\d+)?\s*(?:[KMGT]i?)?B\b/gi;
@@ -7,46 +7,52 @@ const RESOLUTION_REGEX = /\b(\d{3,4}p|4k)\b/i;
 const CACHED_NAME_REGEX = /instant|\+|✅|⚡/i;
 const CACHED_DESC_REGEX = /✅|⚡/;
 
-const QUALITY_REGEXES = {
+const QUALITY_REGEXES: [SourceQuality, RegExp][] = [
     // Priority 1: REMUX (highest quality, check first)
-    "BluRay REMUX": /(?:^|[\s\[(_.\-])(?:bd|br|b|uhd)?[-_.\\s]?remux(?=[\s\)\]_.\-,]|$)/i,
+    [SourceQuality.BLURAY_REMUX, /(?:^|[\s\[(_.\-])(?:bd|br|b|uhd)?[-_.\\s]?remux(?=[\s\)\]_.\-,]|$)/i],
 
     // Priority 2: BluRay (check after REMUX to avoid conflicts)
-    BluRay: /(?:^|[\s\[(_.\-])(?:bd|blu[-_.\\s]?ray|(?:bd|br)[-_.\\s]?rip)(?!.*remux)(?=[\s\)\]_.\-,]|$)/i,
+    [
+        SourceQuality.BLURAY,
+        /(?:^|[\s\[(_.\-])(?:bd|blu[-_.\\s]?ray|(?:bd|br)[-_.\\s]?rip)(?!.*remux)(?=[\s\)\]_.\-,]|$)/i,
+    ],
 
     // Priority 3: WEB formats (very common)
-    "WEB-DL": /(?:^|[\s\[(_.\-])web[-_.\\s]?(?:dl)?(?![-_.\\s]?(?:rip|DLRip|cam))(?=[\s\)\]_.\-,]|$)/i,
-    WEBRip: /(?:^|[\s\[(_.\-])web[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i,
+    [SourceQuality.WEB_DL, /(?:^|[\s\[(_.\-])web[-_.\\s]?(?:dl)?(?![-_.\\s]?(?:rip|DLRip|cam))(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.WEBRIP, /(?:^|[\s\[(_.\-])web[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i],
 
     // Priority 4: Broadcast formats
-    HDTV: /(?:^|[\s\[(_.\-])(?:(?:hd|pd)tv|tv[-_.\\s]?rip|hdtv[-_.\\s]?rip|dsr(?:ip)?|sat[-_.\\s]?rip)(?=[\s\)\]_.\-,]|$)/i,
+    [
+        SourceQuality.HDTV,
+        /(?:^|[\s\[(_.\-])(?:(?:hd|pd)tv|tv[-_.\\s]?rip|hdtv[-_.\\s]?rip|dsr(?:ip)?|sat[-_.\\s]?rip)(?=[\s\)\]_.\-,]|$)/i,
+    ],
 
     // Priority 5: DVD formats
-    DVDRip: /(?:^|[\s\[(_.\-])(?:dvd(?:[-_.\\s]?(?:rip|mux|r|full|5|9))?(?!scr))(?=[\s\)\]_.\-,]|$)/i,
+    [SourceQuality.DVDRIP, /(?:^|[\s\[(_.\-])(?:dvd(?:[-_.\\s]?(?:rip|mux|r|full|5|9))?(?!scr))(?=[\s\)\]_.\-,]|$)/i],
 
     // Priority 6: HD formats
-    HDRip: /(?:^|[\s\[(_.\-])hd[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i,
-    "HC HD-Rip": /(?:^|[\s\[(_.\-])hc(?=[\s\)\]_.\-,]|$)/i,
+    [SourceQuality.HDRIP, /(?:^|[\s\[(_.\-])hd[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.HC_HDRIP, /(?:^|[\s\[(_.\-])hc(?=[\s\)\]_.\-,]|$)/i],
 
     // Priority 7: Low quality captures
-    CAM: /(?:^|[\s\[(_.\-])(?:cam(?:[-_.\\s]?rip)?|hdcam)(?=[\s\)\]_.\-,]|$)/i,
-    TS: /(?:^|[\s\[(_.\-])(?:telesync|ts(?!$)|hd[-_.\\s]?ts|p(?:re)?dvd(?:rip)?)(?=[\s\)\]_.\-,]|$)/i,
-    TC: /(?:^|[\s\[(_.\-])(?:telecine|tc)(?=[\s\)\]_.\-,]|$)/i,
+    [SourceQuality.CAM, /(?:^|[\s\[(_.\-])(?:cam(?:[-_.\\s]?rip)?|hdcam)(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.TS, /(?:^|[\s\[(_.\-])(?:telesync|ts(?!$)|hd[-_.\\s]?ts|p(?:re)?dvd(?:rip)?)(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.TC, /(?:^|[\s\[(_.\-])(?:telecine|tc)(?=[\s\)\]_.\-,]|$)/i],
 
     // Priority 8: Screeners
-    SCR: /(?:^|[\s\[(_.\-])(?:(?:dvd|bd|web|hd)?[-_.\\s]?)?scr(?:eener)?(?=[\s\)\]_.\-,]|$)/i,
-};
+    [SourceQuality.SCR, /(?:^|[\s\[(_.\-])(?:(?:dvd|bd|web|hd)?[-_.\\s]?)?scr(?:eener)?(?=[\s\)\]_.\-,]|$)/i],
+];
 
 /**
  * Detect video quality from filename
- * @param filename - The filename to analyze
- * @returns The detected quality or null
+ * @param stream - The stream to analyze
+ * @returns The detected quality or undefined
  */
-export function detectQuality(stream: AddonStream): string | undefined {
+export function detectQuality(stream: AddonStream): SourceQuality | undefined {
     for (const field of ["name", "title", "description"]) {
         const value = stream[field as keyof AddonStream] as string | undefined;
         if (value) {
-            for (const [quality, regex] of Object.entries(QUALITY_REGEXES as Record<string, RegExp>)) {
+            for (const [quality, regex] of QUALITY_REGEXES) {
                 if (regex.test(value)) {
                     return quality;
                 }

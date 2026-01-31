@@ -1,5 +1,20 @@
 // Stremio Addon Types
 
+export enum SourceQuality {
+    BLURAY_REMUX = "BluRay REMUX",
+    BLURAY = "BluRay",
+    WEB_DL = "WEB-DL",
+    WEBRIP = "WEBRip",
+    HDTV = "HDTV",
+    DVDRIP = "DVDRip",
+    HDRIP = "HDRip",
+    HC_HDRIP = "HC HD-Rip",
+    CAM = "CAM",
+    TS = "TS",
+    TC = "TC",
+    SCR = "SCR",
+}
+
 export interface AddonManifest {
     id: string;
     name: string;
@@ -50,7 +65,7 @@ export interface AddonSource {
     description?: string;
     size?: string;
     resolution?: string;
-    quality?: string;
+    quality?: SourceQuality;
     peers?: string;
     magnet?: string;
     url?: string;
