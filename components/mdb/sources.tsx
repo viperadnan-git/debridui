@@ -137,9 +137,9 @@ export function SourceRow({
             {/* Title */}
             <div className="text-sm leading-tight break-words">{source.title}</div>
 
-            {/* Description */}
+            {/* Description - blockquote style to differentiate from metadata */}
             {source.description && (
-                <div className="text-xs text-muted-foreground whitespace-pre-wrap break-words">
+                <div className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap break-words pl-2 border-l border-border/50">
                     {source.description}
                 </div>
             )}
