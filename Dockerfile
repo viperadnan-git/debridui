@@ -8,8 +8,8 @@ WORKDIR /app
 
 # Install dependencies
 FROM base AS deps
-COPY package.json bun.lock* ./
-RUN bun install --no-save --frozen-lockfile
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 # Build the application
 FROM base AS builder
@@ -26,7 +26,8 @@ ENV NEXT_PUBLIC_APP_URL="__NEXT_PUBLIC_APP_URL__"
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID="__NEXT_PUBLIC_GOOGLE_CLIENT_ID__"
 ENV NEXT_PUBLIC_DISABLE_EMAIL_SIGNUP="__NEXT_PUBLIC_DISABLE_EMAIL_SIGNUP__"
 
-RUN bun run build
+# Use BuildKit cache mount for Next.js build cache
+RUN --mount=type=cache,target=/app/.next/cache bun run build
 
 # Production image
 FROM base AS runner
