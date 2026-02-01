@@ -31,7 +31,7 @@ export function AddAccountForm() {
 
     // AuthProvider handles redirect to /dashboard after account is added
     function onSubmit(values: z.infer<typeof addUserSchema>) {
-        addAccount.mutate(values);
+        addAccount.mutate(values, { onSuccess: () => form.reset() });
     }
 
     async function handleAllDebridLogin() {
@@ -44,7 +44,7 @@ export function AddAccountForm() {
 
             if (success && apiKey) {
                 // AuthProvider handles redirect to /dashboard after account is added
-                addAccount.mutate({ type: AccountType.ALLDEBRID, apiKey });
+                addAccount.mutate({ type: AccountType.ALLDEBRID, apiKey }, { onSuccess: () => form.reset() });
             } else {
                 toast.error("Failed to login with AllDebrid");
             }
