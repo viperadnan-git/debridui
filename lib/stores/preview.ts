@@ -1,29 +1,51 @@
 import { create } from "zustand";
-import { DebridFileNode } from "../types";
+import { DebridFileNode, FileType } from "../types";
 import { filterPreviewableFiles } from "../preview/registry";
+
+type PreviewMode = "gallery" | "single";
+
+interface SinglePreviewOptions {
+    url: string;
+    title: string;
+    fileType?: FileType;
+}
 
 interface PreviewState {
     // State
     isOpen: boolean;
+    mode: PreviewMode;
     currentFile: DebridFileNode | null;
     currentIndex: number;
     previewableFiles: DebridFileNode[];
     fileId: string | null;
+    // Single mode state (direct URL, no API fetch)
+    directUrl: string | null;
+    directTitle: string | null;
+    fileType: FileType | null;
 
     // Actions
     openPreview: (file: DebridFileNode, allFiles: DebridFileNode[], fileId: string) => void;
+    openSinglePreview: (options: SinglePreviewOptions) => void;
     closePreview: () => void;
     navigateNext: () => void;
     navigatePrevious: () => void;
     setCurrentIndex: (index: number) => void;
 }
 
-export const usePreviewStore = create<PreviewState>()((set, get) => ({
+const initialState = {
     isOpen: false,
+    mode: "gallery" as PreviewMode,
     currentFile: null,
     currentIndex: 0,
     previewableFiles: [],
     fileId: null,
+    directUrl: null,
+    directTitle: null,
+    fileType: null,
+};
+
+export const usePreviewStore = create<PreviewState>()((set, get) => ({
+    ...initialState,
 
     openPreview: (file, allFiles, fileId) => {
         // Filter files by supported types using registry
@@ -32,21 +54,32 @@ export const usePreviewStore = create<PreviewState>()((set, get) => ({
 
         set({
             isOpen: true,
+            mode: "gallery",
             currentFile: file,
             currentIndex: currentIndex >= 0 ? currentIndex : 0,
             previewableFiles,
             fileId,
+            directUrl: null,
+            directTitle: null,
+            fileType: null,
         });
     },
 
-    closePreview: () =>
+    openSinglePreview: ({ url, title, fileType }) => {
         set({
-            isOpen: false,
+            isOpen: true,
+            mode: "single",
+            directUrl: url,
+            directTitle: title,
+            fileType: fileType ?? null,
             currentFile: null,
             currentIndex: 0,
             previewableFiles: [],
             fileId: null,
-        }),
+        });
+    },
+
+    closePreview: () => set(initialState),
 
     navigateNext: () => {
         const { currentIndex, previewableFiles } = get();

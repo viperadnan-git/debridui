@@ -1,5 +1,5 @@
 import { formatSize } from "../utils";
-import { type AddonStream, type AddonSource, SourceQuality, Resolution } from "./types";
+import { type AddonStream, type AddonSource, Resolution, SourceQuality } from "./types";
 
 const HASH_REGEX = /[a-f0-9]{40}/;
 const FILE_SIZE_REGEX = /\b\d+(?:\.\d+)?\s*(?:[KMGT]i?)?B\b/gi;
@@ -7,41 +7,58 @@ const RESOLUTION_REGEX = /\b(\d{3,4}p|4k)\b/i;
 const CACHED_NAME_REGEX = /instant|\+|✅|⚡/i;
 const CACHED_DESC_REGEX = /✅|⚡/;
 
-const QUALITY_REGEXES: [SourceQuality, RegExp][] = [
-    // Priority 1: REMUX (highest quality, check first)
-    [SourceQuality.BLURAY_REMUX, /(?:^|[\s\[(_.\-])(?:bd|br|b|uhd)?[-_.\\s]?remux(?=[\s\)\]_.\-,]|$)/i],
+/** Ordered list of resolutions from highest to lowest */
+export const RESOLUTIONS = [
+    Resolution.UHD_4K,
+    Resolution.QHD_1440P,
+    Resolution.FHD_1080P,
+    Resolution.HD_720P,
+    Resolution.SD_480P,
+    Resolution.SD_360P,
+];
 
-    // Priority 2: BluRay (check after REMUX to avoid conflicts)
+/** Get priority index for a resolution (lower = better) */
+export function getResolutionIndex(resolution: Resolution | undefined): number {
+    if (!resolution) return RESOLUTIONS.length;
+    const index = RESOLUTIONS.indexOf(resolution);
+    return index === -1 ? RESOLUTIONS.length : index;
+}
+
+const QUALITY_REGEXES: [SourceQuality, RegExp][] = [
+    // Priority order: lower index = higher quality (based on Wikipedia release types)
+    // Blu-ray sources (highest quality)
+    [SourceQuality.BLURAY_REMUX, /(?:^|[\s\[(_.\-])(?:bd|br|b|uhd)?[-_.\\s]?remux(?=[\s\)\]_.\-,]|$)/i],
     [
         SourceQuality.BLURAY,
         /(?:^|[\s\[(_.\-])(?:bd|blu[-_.\\s]?ray|(?:bd|br)[-_.\\s]?rip)(?!.*remux)(?=[\s\)\]_.\-,]|$)/i,
     ],
-
-    // Priority 3: WEB formats (very common)
+    // Web sources
     [SourceQuality.WEB_DL, /(?:^|[\s\[(_.\-])web[-_.\\s]?(?:dl)?(?![-_.\\s]?(?:rip|DLRip|cam))(?=[\s\)\]_.\-,]|$)/i],
     [SourceQuality.WEBRIP, /(?:^|[\s\[(_.\-])web[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i],
-
-    // Priority 4: Broadcast formats
+    // TV/DVD sources
     [
         SourceQuality.HDTV,
         /(?:^|[\s\[(_.\-])(?:(?:hd|pd)tv|tv[-_.\\s]?rip|hdtv[-_.\\s]?rip|dsr(?:ip)?|sat[-_.\\s]?rip)(?=[\s\)\]_.\-,]|$)/i,
     ],
-
-    // Priority 5: DVD formats
     [SourceQuality.DVDRIP, /(?:^|[\s\[(_.\-])(?:dvd(?:[-_.\\s]?(?:rip|mux|r|full|5|9))?(?!scr))(?=[\s\)\]_.\-,]|$)/i],
-
-    // Priority 6: HD formats
     [SourceQuality.HDRIP, /(?:^|[\s\[(_.\-])hd[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i],
-    [SourceQuality.HC_HDRIP, /(?:^|[\s\[(_.\-])hc(?=[\s\)\]_.\-,]|$)/i],
-
-    // Priority 7: Low quality captures
-    [SourceQuality.CAM, /(?:^|[\s\[(_.\-])(?:cam(?:[-_.\\s]?rip)?|hdcam)(?=[\s\)\]_.\-,]|$)/i],
-    [SourceQuality.TS, /(?:^|[\s\[(_.\-])(?:telesync|ts(?!$)|hd[-_.\\s]?ts|p(?:re)?dvd(?:rip)?)(?=[\s\)\]_.\-,]|$)/i],
-    [SourceQuality.TC, /(?:^|[\s\[(_.\-])(?:telecine|tc)(?=[\s\)\]_.\-,]|$)/i],
-
-    // Priority 8: Screeners
+    // Pre-release sources
     [SourceQuality.SCR, /(?:^|[\s\[(_.\-])(?:(?:dvd|bd|web|hd)?[-_.\\s]?)?scr(?:eener)?(?=[\s\)\]_.\-,]|$)/i],
+    // Theater recordings (lowest quality)
+    [SourceQuality.TC, /(?:^|[\s\[(_.\-])(?:telecine|tc)(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.TS, /(?:^|[\s\[(_.\-])(?:telesync|ts(?!$)|hd[-_.\\s]?ts|p(?:re)?dvd(?:rip)?)(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.CAM, /(?:^|[\s\[(_.\-])(?:cam(?:[-_.\\s]?rip)?|hdcam)(?=[\s\)\]_.\-,]|$)/i],
 ];
+
+/** Ordered list of source qualities from highest to lowest */
+export const SOURCE_QUALITIES = QUALITY_REGEXES.map(([quality]) => quality);
+
+/** Get priority index for a source quality (lower = better) */
+export function getSourceQualityIndex(quality: SourceQuality | undefined): number {
+    if (!quality) return SOURCE_QUALITIES.length;
+    const index = SOURCE_QUALITIES.indexOf(quality);
+    return index === -1 ? SOURCE_QUALITIES.length : index;
+}
 
 /**
  * Detect video quality from filename
@@ -129,8 +146,7 @@ export function extractResolution(stream: AddonStream): Resolution | undefined {
     const resolutionMatch = stream.name.match(RESOLUTION_REGEX);
     if (!resolutionMatch) return undefined;
 
-    const resolution = resolutionMatch[0].toLowerCase();
-    return RESOLUTION_MAP[resolution];
+    return RESOLUTION_MAP[resolutionMatch[0].toLowerCase()];
 }
 /**
  * Construct magnet link from hash

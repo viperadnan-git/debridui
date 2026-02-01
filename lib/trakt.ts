@@ -482,22 +482,16 @@ export class TraktClient {
     }
 
     /**
-     * Get trending mixed (movies and shows)
+     * Get trending mixed (movies and shows) sorted by watchers
      */
     public async getTrendingMixed(limit = 20, extended = "full,images"): Promise<{ mixed: TraktMediaItem[] }> {
         const [movies, shows] = await Promise.all([
-            this.getTrendingMovies(Math.ceil(limit / 2), extended),
-            this.getTrendingShows(Math.ceil(limit / 2), extended),
+            this.getTrendingMovies(limit, extended),
+            this.getTrendingShows(limit, extended),
         ]);
 
-        // Interleave movies and shows
-        const mixed: TraktMediaItem[] = [];
-        const maxLength = Math.max(movies.length, shows.length);
-
-        for (let i = 0; i < maxLength && mixed.length < limit; i++) {
-            if (i < movies.length) mixed.push(movies[i]);
-            if (i < shows.length && mixed.length < limit) mixed.push(shows[i]);
-        }
+        // Combine and sort by watchers (descending)
+        const mixed = [...movies, ...shows].sort((a, b) => (b.watchers || 0) - (a.watchers || 0)).slice(0, limit);
 
         return { mixed };
     }

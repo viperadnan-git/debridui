@@ -12,8 +12,8 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, Dia
 import { useRouter } from "next/navigation";
 import { CachedBadge } from "@/components/display";
 import { PlayUrlButton } from "./play-url-button";
-import { UrlPreviewDialog } from "@/components/preview/url-preview-dialog";
 import { useSettingsStore } from "@/lib/stores/settings";
+import { usePreviewStore } from "@/lib/stores/preview";
 import { MediaPlayer, FileType } from "@/lib/types";
 
 interface SourcesProps {
@@ -179,22 +179,16 @@ export function SourceRow({
 export function Sources({ imdbId, mediaType = "movie", tvParams, className, mediaTitle }: SourcesProps) {
     const { data: sources, isLoading, failedAddons } = useAddonSources({ imdbId, mediaType, tvParams });
     const mediaPlayer = useSettingsStore((state) => state.get("mediaPlayer"));
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [previewTitle, setPreviewTitle] = useState("");
+    const openSinglePreview = usePreviewStore((s) => s.openSinglePreview);
 
     const isBrowserPlayer = mediaPlayer === MediaPlayer.BROWSER;
 
-    const handleOpenPreview = useCallback((url: string, title: string) => {
-        setPreviewUrl(url);
-        setPreviewTitle(title);
-    }, []);
-
-    const handleClosePreview = useCallback((open: boolean) => {
-        if (!open) {
-            setPreviewUrl(null);
-            setPreviewTitle("");
-        }
-    }, []);
+    const handleOpenPreview = useCallback(
+        (url: string, title: string) => {
+            openSinglePreview({ url, title, fileType: FileType.VIDEO });
+        },
+        [openSinglePreview]
+    );
 
     return (
         <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
@@ -228,17 +222,6 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
                     <AlertTriangle className="size-4.5 text-yellow-600" />
                     <span className="text-xs text-yellow-600">Failed: {failedAddons.join(", ")}</span>
                 </div>
-            )}
-
-            {/* Shared preview dialog */}
-            {isBrowserPlayer && previewUrl && (
-                <UrlPreviewDialog
-                    open={!!previewUrl}
-                    onOpenChange={handleClosePreview}
-                    url={previewUrl}
-                    title={previewTitle}
-                    fileType={FileType.VIDEO}
-                />
             )}
         </div>
     );

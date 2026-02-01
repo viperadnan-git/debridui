@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WebDownloadStatusBadge } from "@/components/display";
-import { UrlPreviewDialog, canPreviewInBrowser } from "@/components/preview/url-preview-dialog";
+import { canPreviewFile } from "@/lib/preview/registry";
 import { useSettingsStore } from "@/lib/stores/settings";
+import { usePreviewStore } from "@/lib/stores/preview";
 import { Copy, Trash2, Loader2, Download, PlayCircle, View } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,11 +30,11 @@ export const DownloadItem = memo(function DownloadItem({
 }: DownloadItemProps) {
     const [loading, setLoading] = useState<"copy" | "download" | "preview" | null>(null);
     const [deleting, setDeleting] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const { get } = useSettingsStore();
+    const openSinglePreview = usePreviewStore((s) => s.openSinglePreview);
 
     const fileType = useMemo(() => getFileType(download.name), [download.name]);
-    const isPreviewable = useMemo(() => canPreviewInBrowser(download.name), [download.name]);
+    const isPreviewable = useMemo(() => canPreviewFile(fileType), [fileType]);
     const isVideo = fileType === FileType.VIDEO;
     const mediaPlayer = get("mediaPlayer");
     const usesExternalPlayer = isVideo && mediaPlayer !== MediaPlayer.BROWSER;
@@ -77,7 +78,7 @@ export const DownloadItem = memo(function DownloadItem({
         if (usesExternalPlayer) {
             openInPlayer({ url: link, fileName: download.name, player: mediaPlayer });
         } else {
-            setPreviewUrl(link);
+            openSinglePreview({ url: link, title: download.name, fileType });
         }
     };
 
@@ -211,14 +212,6 @@ export const DownloadItem = memo(function DownloadItem({
                     </div>
                 </div>
             </div>
-
-            {/* Preview Dialog */}
-            <UrlPreviewDialog
-                open={previewUrl !== null}
-                onOpenChange={(open) => !open && setPreviewUrl(null)}
-                url={previewUrl || ""}
-                title={download.name}
-            />
         </div>
     );
 });

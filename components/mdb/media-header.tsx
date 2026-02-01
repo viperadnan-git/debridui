@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { MediaStats } from "./media-stats";
 import { memo } from "react";
 import { getPosterUrl, getBackdropUrl } from "@/lib/utils/trakt";
-import { ArrowUpRightIcon, Star } from "lucide-react";
+import { ArrowUpRightIcon, Play, Star } from "lucide-react";
+import { WatchButton } from "@/components/common/watch-button";
 
 interface MediaHeaderProps {
     media: TraktMedia;
@@ -69,18 +70,18 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
 
                         {/* Action Buttons */}
                         <div className="hidden md:flex flex-col gap-2">
+                            {type === "movie" && media.ids?.imdb && (
+                                <WatchButton imdbId={media.ids.imdb} mediaType="movie" title={media.title || "Movie"}>
+                                    <Button size="lg" className="w-full gap-2">
+                                        <Play className="size-4 fill-current" />
+                                        Watch Now
+                                    </Button>
+                                </WatchButton>
+                            )}
                             {media.trailer && (
                                 <Button asChild variant="outline" size="lg" className="w-full">
                                     <Link href={media.trailer} target="_blank" rel="noopener">
                                         Watch Trailer
-                                        <ArrowUpRightIcon className="size-4 ml-1.5 opacity-50" />
-                                    </Link>
-                                </Button>
-                            )}
-                            {media.homepage && (
-                                <Button asChild variant="ghost" size="lg" className="w-full text-muted-foreground">
-                                    <Link href={media.homepage} target="_blank" rel="noopener">
-                                        Official Site
                                         <ArrowUpRightIcon className="size-4 ml-1.5 opacity-50" />
                                     </Link>
                                 </Button>
@@ -153,6 +154,15 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                         {/* External Links */}
                         {media.ids && (
                             <div className="flex flex-wrap items-center gap-5 pt-2">
+                                {media.homepage && (
+                                    <Link
+                                        href={media.homepage}
+                                        target="_blank"
+                                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                        <ArrowUpRightIcon className="size-4 opacity-60" />
+                                        Website
+                                    </Link>
+                                )}
                                 {media.ids?.imdb && (
                                     <Link
                                         href={`https://www.imdb.com/title/${media.ids?.imdb}`}
@@ -206,18 +216,18 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
 
                         {/* Mobile Action Buttons */}
                         <div className="flex md:hidden flex-wrap gap-2 pt-2">
+                            {type === "movie" && media.ids?.imdb && (
+                                <WatchButton imdbId={media.ids.imdb} mediaType="movie" title={media.title || "Movie"}>
+                                    <Button className="gap-2">
+                                        <Play className="size-4 fill-current" />
+                                        Watch Now
+                                    </Button>
+                                </WatchButton>
+                            )}
                             {media.trailer && (
                                 <Button asChild variant="outline">
                                     <Link href={media.trailer} target="_blank" rel="noopener">
                                         Trailer
-                                        <ArrowUpRightIcon className="size-4 ml-1 opacity-50" />
-                                    </Link>
-                                </Button>
-                            )}
-                            {media.homepage && (
-                                <Button asChild variant="ghost" className="text-muted-foreground">
-                                    <Link href={media.homepage} target="_blank" rel="noopener">
-                                        Website
                                         <ArrowUpRightIcon className="size-4 ml-1 opacity-50" />
                                     </Link>
                                 </Button>

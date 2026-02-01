@@ -125,7 +125,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
         <div className="space-y-12">
             <MediaHeader media={media} mediaId={mediaId} type="show" />
 
-            <section className="space-y-6">
+            <section id="seasons" className="space-y-6 scroll-mt-16">
                 <SectionDivider label="Seasons & Episodes" />
 
                 <SeasonsSection
