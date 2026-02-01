@@ -11,7 +11,7 @@ export const SplashScreen = memo(function SplashScreen() {
                 width={64}
                 height={64}
                 className="invert dark:invert-0 animate-pulse"
-                priority
+                loading="eager"
             />
             <span className="text-xs tracking-widest uppercase text-muted-foreground">Loading</span>
         </div>

@@ -351,8 +351,9 @@ export default class AllDebridClient extends BaseClient {
 
         return response.files.reduce(
             (results, file) => {
+                const key = file.name || file.hash;
                 const message = file.error?.message || `Successfully uploaded: ${file.name}`;
-                results[file.file] = {
+                results[key] = {
                     id: file.id,
                     message,
                     error: file.error?.message,

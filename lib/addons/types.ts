@@ -1,5 +1,14 @@
 // Stremio Addon Types
 
+export enum Resolution {
+    UHD_4K = "2160p",
+    QHD_1440P = "1440p",
+    FHD_1080P = "1080p",
+    HD_720P = "720p",
+    SD_480P = "480p",
+    SD_360P = "360p",
+}
+
 export enum SourceQuality {
     BLURAY_REMUX = "BluRay REMUX",
     BLURAY = "BluRay",
@@ -64,7 +73,7 @@ export interface AddonSource {
     title: string;
     description?: string;
     size?: string;
-    resolution?: string;
+    resolution?: Resolution;
     quality?: SourceQuality;
     peers?: string;
     magnet?: string;

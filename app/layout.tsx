@@ -103,9 +103,6 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <head>
-                <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml" />
-            </head>
             <body className={cn(font.className, "antialiased")}>
                 <Providers>{children}</Providers>
                 <Analytics />

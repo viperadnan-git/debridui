@@ -1,5 +1,5 @@
 import { formatSize } from "../utils";
-import { type AddonStream, type AddonSource, SourceQuality } from "./types";
+import { type AddonStream, type AddonSource, SourceQuality, Resolution } from "./types";
 
 const HASH_REGEX = /[a-f0-9]{40}/;
 const FILE_SIZE_REGEX = /\b\d+(?:\.\d+)?\s*(?:[KMGT]i?)?B\b/gi;
@@ -113,14 +113,24 @@ export function extractSize(stream: AddonStream): string | undefined {
     return undefined;
 }
 
-export function extractResolution(stream: AddonStream): string | undefined {
+const RESOLUTION_MAP: Record<string, Resolution> = {
+    "2160p": Resolution.UHD_4K,
+    "4k": Resolution.UHD_4K,
+    "1440p": Resolution.QHD_1440P,
+    "1080p": Resolution.FHD_1080P,
+    "720p": Resolution.HD_720P,
+    "480p": Resolution.SD_480P,
+    "360p": Resolution.SD_360P,
+};
+
+export function extractResolution(stream: AddonStream): Resolution | undefined {
     if (!stream.name) return undefined;
 
     const resolutionMatch = stream.name.match(RESOLUTION_REGEX);
     if (!resolutionMatch) return undefined;
 
     const resolution = resolutionMatch[0].toLowerCase();
-    return resolution === "4k" ? "2160p" : resolution;
+    return RESOLUTION_MAP[resolution];
 }
 /**
  * Construct magnet link from hash
