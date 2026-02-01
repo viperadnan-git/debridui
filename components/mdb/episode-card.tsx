@@ -79,7 +79,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
     const tvParams = episode.season ? { season: episode.season, episode: episode.number } : undefined;
 
     const thumbnailClass =
-        "relative w-34 sm:w-48 md:w-56 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden";
+        "relative w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden";
 
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn("group", className)}>
@@ -114,10 +114,10 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                         <button className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 text-left cursor-pointer min-w-0">
                             <div className="flex items-start justify-between gap-2">
                                 <div className="space-y-0.5 sm:space-y-1 min-w-0">
-                                    <h4 className="text-xs md:text-sm font-medium line-clamp-1 group-hover:text-foreground/80 transition-colors">
+                                    <h4 className="text-sm sm:text-base font-medium line-clamp-1 group-hover:text-foreground/80 transition-colors">
                                         {episode.title || `Episode ${episode.number}`}
                                     </h4>
-                                    <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] md:text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-sm text-muted-foreground">
                                         {episode.first_aired && <span>{formatLocalizedDate(episode.first_aired)}</span>}
                                         {episode.first_aired && episode.runtime && (
                                             <span className="text-border">·</span>
@@ -133,7 +133,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                 />
                             </div>
                             {episode.overview && (
-                                <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-1 sm:mt-1.5 md:mt-2">
+                                <p className="text-[10px] sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed mt-1 sm:mt-1.5 md:mt-2">
                                     {episode.overview}
                                 </p>
                             )}
