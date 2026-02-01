@@ -8,6 +8,54 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { WatchButton } from "@/components/common/watch-button";
 import { Sources } from "./sources";
 
+interface ThumbnailContentProps {
+    screenshotUrl: string;
+    title?: string;
+    episodeLabel: string;
+    rating?: number;
+    interactive?: boolean;
+}
+
+const ThumbnailContent = memo(function ThumbnailContent({
+    screenshotUrl,
+    title,
+    episodeLabel,
+    rating,
+    interactive,
+}: ThumbnailContentProps) {
+    return (
+        <>
+            <img
+                src={screenshotUrl}
+                alt={title}
+                className={cn(
+                    "absolute inset-0 w-full h-full object-cover",
+                    interactive && "transition-transform duration-300 group-hover/thumb:scale-hover"
+                )}
+                loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <span className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-sm">
+                E{episodeLabel}
+            </span>
+            {rating && (
+                <span className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 hidden sm:inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                    <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
+                    {rating.toFixed(1)}
+                </span>
+            )}
+            {interactive && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300">
+                    <span className="flex items-center gap-1.5 text-xs tracking-wider uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
+                        <Play className="size-3 fill-current" />
+                        Watch
+                    </span>
+                </div>
+            )}
+        </>
+    );
+});
+
 interface EpisodeCardProps {
     episode: TraktEpisode;
     className?: string;
@@ -30,6 +78,9 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
 
     const tvParams = episode.season ? { season: episode.season, episode: episode.number } : undefined;
 
+    const thumbnailClass =
+        "relative w-34 sm:w-48 md:w-56 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden";
+
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn("group", className)}>
             <div className="rounded-sm border border-border/50 overflow-hidden">
@@ -37,49 +88,24 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                     {/* Episode thumbnail - clickable to watch */}
                     {imdbId ? (
                         <WatchButton imdbId={imdbId} mediaType="show" title={mediaTitle} tvParams={tvParams}>
-                            <button className="relative w-34 sm:w-48 md:w-56 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden cursor-pointer group/thumb">
-                                <img
-                                    src={screenshotUrl}
-                                    alt={episode.title}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-hover"
-                                    loading="lazy"
+                            <button className={cn(thumbnailClass, "cursor-pointer group/thumb")}>
+                                <ThumbnailContent
+                                    screenshotUrl={screenshotUrl}
+                                    title={episode.title}
+                                    episodeLabel={episodeLabel}
+                                    rating={episode.rating}
+                                    interactive
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                                <span className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-sm">
-                                    E{episodeLabel}
-                                </span>
-                                {episode.rating && (
-                                    <span className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 hidden sm:inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
-                                        <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
-                                        {episode.rating.toFixed(1)}
-                                    </span>
-                                )}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300">
-                                    <span className="flex items-center gap-1.5 text-xs tracking-wider uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
-                                        <Play className="size-3 fill-current" />
-                                        Watch
-                                    </span>
-                                </div>
                             </button>
                         </WatchButton>
                     ) : (
-                        <div className="relative w-34 sm:w-48 md:w-56 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden">
-                            <img
-                                src={screenshotUrl}
-                                alt={episode.title}
-                                className="absolute inset-0 w-full h-full object-cover"
-                                loading="lazy"
+                        <div className={thumbnailClass}>
+                            <ThumbnailContent
+                                screenshotUrl={screenshotUrl}
+                                title={episode.title}
+                                episodeLabel={episodeLabel}
+                                rating={episode.rating}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                            <span className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-sm">
-                                E{episodeLabel}
-                            </span>
-                            {episode.rating && (
-                                <span className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 hidden sm:inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
-                                    <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
-                                    {episode.rating.toFixed(1)}
-                                </span>
-                            )}
                         </div>
                     )}
 

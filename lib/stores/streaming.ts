@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { type AddonSource } from "@/lib/addons/types";
+import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
 import { AddonClient } from "@/lib/addons/client";
 import { parseStreams } from "@/lib/addons/parser";
 import { selectBestSource } from "@/lib/streaming/source-selector";
@@ -9,8 +9,6 @@ import { FileType, MediaPlayer } from "@/lib/types";
 import { openInPlayer } from "@/lib/utils/media-player";
 import { useSettingsStore } from "./settings";
 import { usePreviewStore } from "./preview";
-
-import { type TvSearchParams } from "@/lib/addons/types";
 
 export interface StreamingRequest {
     imdbId: string;
@@ -48,6 +46,45 @@ function dismissToast() {
         setTimeout(() => toast.dismiss(id), MIN_TOAST_DURATION - elapsed);
     } else {
         toast.dismiss(id);
+    }
+}
+
+interface ShowSourceToastParams {
+    source: AddonSource;
+    title: string;
+    isCached: boolean;
+    autoPlay: boolean;
+    allowUncached: boolean;
+    onPlay: () => void;
+}
+
+function showSourceToast({ source, title, isCached, autoPlay, allowUncached, onPlay }: ShowSourceToastParams) {
+    if (autoPlay && (isCached || allowUncached)) {
+        dismissToast();
+        onPlay();
+        return;
+    }
+
+    const meta = [source.resolution, source.quality, source.size].filter(Boolean).join(" · ");
+    const cacheStatus = isCached ? "Cached" : "Not cached";
+    const description = `${meta} · ${cacheStatus}`.replace(/^ · /, "");
+
+    if (isCached || allowUncached) {
+        toast.success(title, {
+            id: toastId ?? undefined,
+            position: TOAST_POSITION,
+            description,
+            action: { label: "Play", onClick: onPlay },
+            duration: Infinity,
+        });
+    } else {
+        toast.warning(title, {
+            id: toastId ?? undefined,
+            position: TOAST_POSITION,
+            description,
+            action: { label: "Play Anyway", onClick: onPlay },
+            duration: Infinity,
+        });
     }
 }
 
@@ -133,61 +170,18 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
             }
 
             const { playSource } = get();
+            const source = result.source!;
 
-            set({ activeRequest: null });
+            set({ activeRequest: null, selectedSource: source });
 
-            if (result.isCached && result.source) {
-                if (streamingSettings.autoPlay) {
-                    dismissToast();
-                    playSource(result.source, title);
-                } else {
-                    set({ selectedSource: result.source });
-                    toast.success(title, {
-                        id: toastId ?? undefined,
-                        position: TOAST_POSITION,
-                        description:
-                            `${result.source.resolution || ""} ${result.source.quality || ""} · ${result.source.size || ""} · Cached`.trim(),
-                        action: {
-                            label: "Play",
-                            onClick: () => playSource(result.source!, title),
-                        },
-                        duration: Infinity,
-                    });
-                }
-            } else if (result.source) {
-                if (streamingSettings.allowUncached) {
-                    if (streamingSettings.autoPlay) {
-                        dismissToast();
-                        playSource(result.source, title);
-                    } else {
-                        set({ selectedSource: result.source });
-                        toast.success(title, {
-                            id: toastId ?? undefined,
-                            position: TOAST_POSITION,
-                            description:
-                                `${result.source.resolution || ""} ${result.source.quality || ""} · ${result.source.size || ""} · Not cached`.trim(),
-                            action: {
-                                label: "Play",
-                                onClick: () => playSource(result.source!, title),
-                            },
-                            duration: Infinity,
-                        });
-                    }
-                } else {
-                    set({ selectedSource: result.source });
-                    toast.warning(title, {
-                        id: toastId ?? undefined,
-                        position: TOAST_POSITION,
-                        description:
-                            `${result.source.resolution || ""} ${result.source.quality || ""} · ${result.source.size || ""} · Uncached`.trim(),
-                        action: {
-                            label: "Play Anyway",
-                            onClick: () => playSource(result.source!, title),
-                        },
-                        duration: Infinity,
-                    });
-                }
-            }
+            showSourceToast({
+                source,
+                title,
+                isCached: result.isCached,
+                autoPlay: streamingSettings.autoPlay,
+                allowUncached: streamingSettings.allowUncached,
+                onPlay: () => playSource(source, title),
+            });
         } catch (error) {
             // Only show error if this is still the current request
             if (currentRequestId === requestId) {

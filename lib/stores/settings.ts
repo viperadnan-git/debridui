@@ -185,12 +185,12 @@ const settingsConfig: SettingsConfig = {
     },
     streaming: {
         defaultValue: {
-            profileId: "balanced",
+            profileId: "high-quality",
             customRange: {
-                minResolution: Resolution.HD_720P,
-                maxResolution: Resolution.FHD_1080P,
-                minSourceQuality: SourceQuality.WEB_DL,
-                maxSourceQuality: SourceQuality.WEB_DL,
+                minResolution: Resolution.FHD_1080P,
+                maxResolution: "any",
+                minSourceQuality: SourceQuality.WEBRIP,
+                maxSourceQuality: SourceQuality.BLURAY,
             },
             allowUncached: false,
             autoPlay: true,

@@ -286,8 +286,8 @@ export default function AddonsPage() {
                             <p>
                                 <strong className="text-foreground">Cached sources</strong> (marked with <CachedBadge />
                                 ) are detected by checking if the source name contains &quot;instant&quot; or
-                                &quot;+&quot;, or if the name/description includes checkmark or lightning emojis. Cached
-                                sources are instantly available for download from your debrid service.
+                                &quot;+&quot;, or if the name/description includes ✅ or ⚡️ emojis. Cached sources are
+                                instantly available for download from your debrid service.
                             </p>
                         </div>
                     </div>
