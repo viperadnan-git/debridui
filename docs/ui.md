@@ -1,6 +1,6 @@
 # DebridUI Design System
 
-A comprehensive design system documentation for DebridUI, a modern debrid client with media discovery and streaming capabilities.
+A comprehensive design system documentation for DebridUI, a modern debrid client with integrated media discovery and streaming.
 
 ---
 

@@ -1,6 +1,24 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@font-face {
+    font-family: "Styrene B";
+    src: url("https://cdn.jsdelivr.net/gh/viperadnan-git/fonts@main/public/styrene/StyreneB-Regular-Trial.woff2")
+        format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Styrene B";
+    src: url("https://cdn.jsdelivr.net/gh/viperadnan-git/fonts@main/public/styrene/StyreneB-Bold-Trial.woff2")
+        format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -36,7 +54,8 @@
     --sidebar-accent-foreground: oklch(0.2046 0 0);
     --sidebar-border: oklch(0.9128 0 0);
     --sidebar-ring: oklch(0.8696 0.1559 89.1782);
-    --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-sans:
+        "Styrene B", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --font-serif: Georgia, "Times New Roman", serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --radius: 0rem;
@@ -90,7 +109,8 @@
     --sidebar-accent-foreground: oklch(0.947 0 0);
     --sidebar-border: oklch(0.326 0 0);
     --sidebar-ring: oklch(0.87 0.156 89.2);
-    --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-sans:
+        "Styrene B", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --font-serif: Georgia, "Times New Roman", serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --radius: 0rem;

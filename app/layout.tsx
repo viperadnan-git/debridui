@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
-import localFont from "next/font/local";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@/components/analytics";
 
 const siteConfig = {
     name: "DebridUI",
-    description:
-        "A modern debrid client with multi-account support, integrated media discovery, real-time file tracking, and direct streaming to your favorite media players.",
+    description: "A modern debrid client with integrated media discovery and streaming.",
     url: "https://debridui.viperadnan.com",
     ogImage: "/banner.jpg",
     keywords: [
@@ -79,23 +77,6 @@ export const metadata: Metadata = {
     },
 };
 
-const font = localFont({
-    src: [
-        {
-            path: "../public/fonts/Styrene-B-Regular.woff2",
-            style: "normal",
-            weight: "400",
-        },
-        {
-            path: "../public/fonts/Styrene-B-Bold.woff2",
-            weight: "700",
-            style: "normal",
-        },
-    ],
-    variable: "--font-sans",
-    display: "swap",
-});
-
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -103,7 +84,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={cn(font.className, "antialiased")}>
+            <body className={cn("font-sans antialiased")}>
                 <Providers>{children}</Providers>
                 <Analytics />
             </body>
