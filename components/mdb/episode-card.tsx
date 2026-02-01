@@ -37,35 +37,23 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                     {/* Episode thumbnail - clickable to watch */}
                     {imdbId ? (
                         <WatchButton imdbId={imdbId} mediaType="show" title={mediaTitle} tvParams={tvParams}>
-                            <button className="relative w-36 sm:w-48 md:w-56 shrink-0 aspect-[4/3] sm:aspect-[3/2] md:aspect-video bg-muted/30 overflow-hidden cursor-pointer group/thumb">
+                            <button className="relative w-40 sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30 overflow-hidden cursor-pointer group/thumb">
                                 <img
                                     src={screenshotUrl}
                                     alt={episode.title}
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-hover"
                                     loading="lazy"
                                 />
-
-                                {/* Gradient overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-                                {/* Episode number - editorial style */}
-                                <div className="absolute top-2.5 left-2.5">
-                                    <span className="text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
-                                        E{episodeLabel}
-                                    </span>
-                                </div>
-
-                                {/* Rating - minimal style */}
+                                <span className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-sm">
+                                    E{episodeLabel}
+                                </span>
                                 {episode.rating && (
-                                    <div className="absolute top-2.5 right-2.5">
-                                        <span className="inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
-                                            <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
-                                            {episode.rating.toFixed(1)}
-                                        </span>
-                                    </div>
+                                    <span className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 hidden sm:inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                                        <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
+                                        {episode.rating.toFixed(1)}
+                                    </span>
                                 )}
-
-                                {/* Play hover action */}
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300">
                                     <span className="flex items-center gap-1.5 text-xs tracking-wider uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
                                         <Play className="size-3 fill-current" />
@@ -75,7 +63,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                             </button>
                         </WatchButton>
                     ) : (
-                        <div className="relative w-36 sm:w-48 md:w-56 shrink-0 aspect-[4/3] sm:aspect-[3/2] md:aspect-video bg-muted/30 overflow-hidden">
+                        <div className="relative w-40 sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30 overflow-hidden">
                             <img
                                 src={screenshotUrl}
                                 alt={episode.title}
@@ -83,33 +71,27 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                 loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                            <div className="absolute top-2.5 left-2.5">
-                                <span className="text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
-                                    E{episodeLabel}
-                                </span>
-                            </div>
+                            <span className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-sm">
+                                E{episodeLabel}
+                            </span>
                             {episode.rating && (
-                                <div className="absolute top-2.5 right-2.5">
-                                    <span className="inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
-                                        <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
-                                        {episode.rating.toFixed(1)}
-                                    </span>
-                                </div>
+                                <span className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 hidden sm:inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                                    <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
+                                    {episode.rating.toFixed(1)}
+                                </span>
                             )}
                         </div>
                     )}
 
                     {/* Episode details - clickable to toggle sources */}
                     <CollapsibleTrigger asChild>
-                        <button className="flex-1 px-3 py-2.5 sm:p-4 text-left cursor-pointer min-w-0">
-                            <div className="flex items-start justify-between gap-2 sm:gap-3">
-                                <div className="space-y-1 min-w-0">
-                                    <h4 className="text-sm font-medium line-clamp-1 group-hover:text-foreground/80 transition-colors">
+                        <button className="flex-1 p-2.5 sm:p-3 md:p-4 text-left cursor-pointer min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                                    <h4 className="text-xs md:text-sm font-medium line-clamp-1 group-hover:text-foreground/80 transition-colors">
                                         {episode.title || `Episode ${episode.number}`}
                                     </h4>
-
-                                    {/* Metadata - editorial separator style */}
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] md:text-xs text-muted-foreground">
                                         {episode.first_aired && <span>{formatLocalizedDate(episode.first_aired)}</span>}
                                         {episode.first_aired && episode.runtime && (
                                             <span className="text-border">·</span>
@@ -117,7 +99,6 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                         {episode.runtime && <span>{episode.runtime}m</span>}
                                     </div>
                                 </div>
-
                                 <ChevronDown
                                     className={cn(
                                         "size-4 shrink-0 text-muted-foreground transition-transform duration-300",
@@ -125,9 +106,8 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                     )}
                                 />
                             </div>
-
                             {episode.overview && (
-                                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-2">
+                                <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-1 sm:mt-1.5 md:mt-2">
                                     {episode.overview}
                                 </p>
                             )}
