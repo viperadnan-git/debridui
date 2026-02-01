@@ -37,7 +37,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                     {/* Episode thumbnail - clickable to watch */}
                     {imdbId ? (
                         <WatchButton imdbId={imdbId} mediaType="show" title={mediaTitle} tvParams={tvParams}>
-                            <button className="relative w-40 sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30 overflow-hidden cursor-pointer group/thumb">
+                            <button className="relative w-34 sm:w-48 md:w-56 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden cursor-pointer group/thumb">
                                 <img
                                     src={screenshotUrl}
                                     alt={episode.title}
@@ -63,7 +63,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                             </button>
                         </WatchButton>
                     ) : (
-                        <div className="relative w-40 sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30 overflow-hidden">
+                        <div className="relative w-34 sm:w-48 md:w-56 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden">
                             <img
                                 src={screenshotUrl}
                                 alt={episode.title}
@@ -85,7 +85,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
 
                     {/* Episode details - clickable to toggle sources */}
                     <CollapsibleTrigger asChild>
-                        <button className="flex-1 p-2.5 sm:p-3 md:p-4 text-left cursor-pointer min-w-0">
+                        <button className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 text-left cursor-pointer min-w-0">
                             <div className="flex items-start justify-between gap-2">
                                 <div className="space-y-0.5 sm:space-y-1 min-w-0">
                                     <h4 className="text-xs md:text-sm font-medium line-clamp-1 group-hover:text-foreground/80 transition-colors">
