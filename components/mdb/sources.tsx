@@ -60,13 +60,6 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
         return (
             <div className="flex items-center gap-1.5">
                 <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="group/delete hover:!bg-destructive/10"
-                    onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-4 text-destructive/70 group-hover/delete:text-destructive" />
-                </Button>
-                <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
@@ -76,6 +69,13 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
                     }}>
                     <DownloadIcon className="size-4" />
                     View
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="group/delete hover:!bg-destructive/10"
+                    onClick={() => handleRemove()}>
+                    <Trash2Icon className="size-4 text-destructive/70 group-hover/delete:text-destructive" />
                 </Button>
             </div>
         );

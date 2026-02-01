@@ -5,6 +5,7 @@ import { useToastMutation } from "@/lib/utils/mutation-factory";
 import { DebridClient } from "@/lib/clients";
 import { queryClient } from "@/lib/query-client";
 import { useSelectionStore } from "@/lib/stores/selection";
+import { toast } from "sonner";
 
 /**
  * Remove torrent and cleanup caches
@@ -99,12 +100,26 @@ export function useFileMutationActions() {
 
     const deleteMutation = useToastMutation(
         async (fileIds: string[]) => {
-            await Promise.all(fileIds.map((id) => removeTorrentWithCleanup(client, currentAccount.id, id)));
-            return fileIds;
+            const result = { success: 0, error: 0 };
+            for (const id of fileIds) {
+                try {
+                    await removeTorrentWithCleanup(client, currentAccount.id, id);
+                    result.success++;
+                } catch (error) {
+                    toast.error(
+                        `Failed to delete file ${id}: ${error instanceof Error ? error.message : "Unknown error"}`
+                    );
+                    result.error++;
+                }
+            }
+            return result;
         },
         {
             loading: "Deleting files...",
-            success: (ids) => `Deleted ${ids.length} file(s)`,
+            success: (result) =>
+                result.error > 0
+                    ? `Deleted ${result.success} file(s), failed to delete ${result.error}`
+                    : `Deleted ${result.success} file(s)`,
             error: "Failed to delete",
         }
     );

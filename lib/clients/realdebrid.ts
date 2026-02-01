@@ -333,7 +333,7 @@ export default class RealDebridClient extends BaseClient {
                 results[magnet] = {
                     id: result.id,
                     message: `Successfully added torrent`,
-                    is_cached: false,
+                    is_cached: true,
                 };
             } catch (error) {
                 results[magnet] = {
@@ -538,6 +538,7 @@ export default class RealDebridClient extends BaseClient {
         const body = new URLSearchParams({ files: "all" });
 
         try {
+            // This request may return a 204 No Content
             await this.makeRequest<void>(`torrents/selectFiles/${torrentId}`, {
                 method: "POST",
                 body: body.toString(),
