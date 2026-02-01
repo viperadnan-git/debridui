@@ -1,10 +1,11 @@
 "use client";
 
 import { type TraktEpisode } from "@/lib/trakt";
-import { ChevronDown, Star } from "lucide-react";
+import { ChevronDown, Play, Star } from "lucide-react";
 import { cn, formatLocalizedDate } from "@/lib/utils";
 import { memo, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { WatchButton } from "@/components/common/watch-button";
 import { Sources } from "./sources";
 
 interface EpisodeCardProps {
@@ -22,18 +23,25 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
         ? `https://${episode.images.screenshot[0]}`
         : `https://placehold.co/400x225/1a1a1a/white?text=E${episodeLabel}`;
 
+    const mediaTitle =
+        showTitle && episode.season
+            ? `${showTitle} S${episode.season.toString().padStart(2, "0")} E${episode.number.toString().padStart(2, "0")}${episode.title ? ` - ${episode.title}` : ""}`
+            : episode.title || `Episode ${episode.number}`;
+
+    const tvParams = episode.season ? { season: episode.season, episode: episode.number } : undefined;
+
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn("group", className)}>
             <div className="rounded-sm border border-border/50 overflow-hidden">
-                <CollapsibleTrigger asChild>
-                    <button className="w-full text-left block cursor-pointer">
-                        <div className="flex flex-col sm:flex-row">
-                            {/* Episode thumbnail */}
-                            <div className="relative w-full sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30 overflow-hidden">
+                <div className="flex flex-row items-start">
+                    {/* Episode thumbnail - clickable to watch */}
+                    {imdbId ? (
+                        <WatchButton imdbId={imdbId} mediaType="show" title={mediaTitle} tvParams={tvParams}>
+                            <button className="relative w-36 sm:w-48 md:w-56 shrink-0 aspect-[4/3] sm:aspect-[3/2] md:aspect-video bg-muted/30 overflow-hidden cursor-pointer group/thumb">
                                 <img
                                     src={screenshotUrl}
                                     alt={episode.title}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-hover"
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-hover"
                                     loading="lazy"
                                 />
 
@@ -57,51 +65,75 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                     </div>
                                 )}
 
-                                {/* Hover action */}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <span className="text-xs tracking-wider uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
-                                        {isOpen ? "Hide" : "Sources"}
+                                {/* Play hover action */}
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300">
+                                    <span className="flex items-center gap-1.5 text-xs tracking-wider uppercase text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-sm">
+                                        <Play className="size-3 fill-current" />
+                                        Watch
                                     </span>
                                 </div>
+                            </button>
+                        </WatchButton>
+                    ) : (
+                        <div className="relative w-36 sm:w-48 md:w-56 shrink-0 aspect-[4/3] sm:aspect-[3/2] md:aspect-video bg-muted/30 overflow-hidden">
+                            <img
+                                src={screenshotUrl}
+                                alt={episode.title}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                            <div className="absolute top-2.5 left-2.5">
+                                <span className="text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                                    E{episodeLabel}
+                                </span>
                             </div>
+                            {episode.rating && (
+                                <div className="absolute top-2.5 right-2.5">
+                                    <span className="inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
+                                        <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
+                                        {episode.rating.toFixed(1)}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-                            {/* Episode details */}
-                            <div className="flex-1 p-4 space-y-2 min-w-0">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="space-y-1 min-w-0">
-                                        <h4 className="text-sm font-medium line-clamp-1 group-hover:text-foreground/80 transition-colors">
-                                            {episode.title || `Episode ${episode.number}`}
-                                        </h4>
+                    {/* Episode details - clickable to toggle sources */}
+                    <CollapsibleTrigger asChild>
+                        <button className="flex-1 px-3 py-2.5 sm:p-4 text-left cursor-pointer min-w-0">
+                            <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                <div className="space-y-1 min-w-0">
+                                    <h4 className="text-sm font-medium line-clamp-1 group-hover:text-foreground/80 transition-colors">
+                                        {episode.title || `Episode ${episode.number}`}
+                                    </h4>
 
-                                        {/* Metadata - editorial separator style */}
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            {episode.first_aired && (
-                                                <span>{formatLocalizedDate(episode.first_aired)}</span>
-                                            )}
-                                            {episode.first_aired && episode.runtime && (
-                                                <span className="text-border">·</span>
-                                            )}
-                                            {episode.runtime && <span>{episode.runtime}m</span>}
-                                        </div>
-                                    </div>
-
-                                    <ChevronDown
-                                        className={cn(
-                                            "size-4 shrink-0 text-muted-foreground transition-transform duration-300",
-                                            isOpen && "rotate-180"
+                                    {/* Metadata - editorial separator style */}
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                        {episode.first_aired && <span>{formatLocalizedDate(episode.first_aired)}</span>}
+                                        {episode.first_aired && episode.runtime && (
+                                            <span className="text-border">·</span>
                                         )}
-                                    />
+                                        {episode.runtime && <span>{episode.runtime}m</span>}
+                                    </div>
                                 </div>
 
-                                {episode.overview && (
-                                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                        {episode.overview}
-                                    </p>
-                                )}
+                                <ChevronDown
+                                    className={cn(
+                                        "size-4 shrink-0 text-muted-foreground transition-transform duration-300",
+                                        isOpen && "rotate-180"
+                                    )}
+                                />
                             </div>
-                        </div>
-                    </button>
-                </CollapsibleTrigger>
+
+                            {episode.overview && (
+                                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-2">
+                                    {episode.overview}
+                                </p>
+                            )}
+                        </button>
+                    </CollapsibleTrigger>
+                </div>
 
                 <CollapsibleContent>
                     {isOpen && imdbId && (
@@ -114,14 +146,8 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                             <Sources
                                 imdbId={imdbId}
                                 mediaType="show"
-                                tvParams={
-                                    episode.season ? { season: episode.season, episode: episode.number } : undefined
-                                }
-                                mediaTitle={
-                                    showTitle && episode.season
-                                        ? `${showTitle} S${episode.season.toString().padStart(2, "0")} E${episode.number.toString().padStart(2, "0")}${episode.title ? ` - ${episode.title}` : ""}`
-                                        : episode.title || `Episode ${episode.number}`
-                                }
+                                tvParams={tvParams}
+                                mediaTitle={mediaTitle}
                                 className="border-x-0 border-b-0 rounded-none"
                             />
                         </div>

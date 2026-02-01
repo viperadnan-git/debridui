@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SearchProvider } from "@/components/mdb/search-provider";
-import { FilePreviewDialog } from "@/components/preview/file-preview-dialog";
+import { PreviewDialog } from "@/components/preview/preview-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
 import { SplashScreen } from "@/components/splash-screen";
 
@@ -34,7 +34,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">{children}</div>
                 </SidebarInset>
             </SidebarProvider>
-            <FilePreviewDialog />
+            <PreviewDialog />
         </SearchProvider>
     );
 }

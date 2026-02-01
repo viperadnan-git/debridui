@@ -4,6 +4,7 @@ import { useEffect, useState, memo, useMemo, useRef, useCallback } from "react";
 import { type TraktMediaItem } from "@/lib/trakt";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
+import { WatchButton } from "@/components/common/watch-button";
 import Link from "next/link";
 import { ArrowRightIcon, Star, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -140,12 +141,21 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
 
                             {/* CTA */}
                             <div className="flex items-center gap-3 pt-2">
-                                <Link href={linkHref}>
-                                    <Button size="lg" className="h-11 px-6 gap-2.5">
-                                        <Play className="size-4 fill-current" />
-                                        Watch Now
-                                    </Button>
-                                </Link>
+                                {type === "movie" ? (
+                                    <WatchButton imdbId={media.ids?.imdb || ""} mediaType={type} title={media.title}>
+                                        <Button size="lg" className="h-11 px-6 gap-2.5">
+                                            <Play className="size-4 fill-current" />
+                                            Watch Now
+                                        </Button>
+                                    </WatchButton>
+                                ) : (
+                                    <Link href={`${linkHref}#seasons`}>
+                                        <Button size="lg" className="h-11 px-6 gap-2.5">
+                                            <Play className="size-4 fill-current" />
+                                            Browse Episodes
+                                        </Button>
+                                    </Link>
+                                )}
                                 <Link href={linkHref}>
                                     <Button
                                         variant="outline"
@@ -240,12 +250,21 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
 
                         {/* CTA */}
                         <div className="flex items-center gap-2 pt-1">
-                            <Link href={linkHref} className="flex-1">
-                                <Button className="w-full h-10 gap-2">
-                                    <Play className="size-4 fill-current" />
-                                    Watch Now
-                                </Button>
-                            </Link>
+                            {type === "movie" ? (
+                                <WatchButton imdbId={media.ids?.imdb || ""} mediaType={type} title={media.title}>
+                                    <Button className="flex-1 h-10 gap-2">
+                                        <Play className="size-4 fill-current" />
+                                        Watch Now
+                                    </Button>
+                                </WatchButton>
+                            ) : (
+                                <Link href={`${linkHref}#seasons`} className="flex-1">
+                                    <Button className="w-full h-10 gap-2">
+                                        <Play className="size-4 fill-current" />
+                                        Browse Episodes
+                                    </Button>
+                                </Link>
+                            )}
                             <Link href={linkHref}>
                                 <Button
                                     variant="outline"

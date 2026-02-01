@@ -1,8 +1,100 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { MediaPlayer } from "../types";
+import { Resolution, SourceQuality } from "../addons/types";
 
-type SettingValue = string | number | boolean | MediaPlayer;
+export type StreamingResolution = Resolution | "any";
+
+export interface QualityRange {
+    minResolution: StreamingResolution;
+    maxResolution: StreamingResolution;
+    minSourceQuality: SourceQuality | "any";
+    maxSourceQuality: SourceQuality | "any";
+}
+
+export type QualityProfileId = "max-quality" | "high-quality" | "balanced" | "data-saver" | "low-bandwidth" | "custom";
+
+export interface QualityProfile {
+    id: QualityProfileId;
+    name: string;
+    description: string;
+    range: QualityRange;
+}
+
+export const QUALITY_PROFILES: QualityProfile[] = [
+    {
+        id: "max-quality",
+        name: "Maximum",
+        description: "No limits",
+        range: {
+            minResolution: "any",
+            maxResolution: "any",
+            minSourceQuality: "any",
+            maxSourceQuality: "any",
+        },
+    },
+    {
+        id: "high-quality",
+        name: "High",
+        description: "4K BluRay, skip REMUX",
+        range: {
+            minResolution: Resolution.FHD_1080P,
+            maxResolution: "any",
+            minSourceQuality: SourceQuality.WEBRIP,
+            maxSourceQuality: SourceQuality.BLURAY,
+        },
+    },
+    {
+        id: "balanced",
+        name: "Balanced",
+        description: "Up to 1080p WEB-DL",
+        range: {
+            minResolution: Resolution.SD_480P,
+            maxResolution: Resolution.FHD_1080P,
+            minSourceQuality: SourceQuality.HDRIP,
+            maxSourceQuality: SourceQuality.WEB_DL,
+        },
+    },
+    {
+        id: "data-saver",
+        name: "Data Saver",
+        description: "Up to 720p WEB-DL",
+        range: {
+            minResolution: Resolution.SD_480P,
+            maxResolution: Resolution.HD_720P,
+            minSourceQuality: SourceQuality.HDRIP,
+            maxSourceQuality: SourceQuality.WEB_DL,
+        },
+    },
+    {
+        id: "low-bandwidth",
+        name: "Low Bandwidth",
+        description: "Up to 720p, any source",
+        range: {
+            minResolution: "any",
+            maxResolution: Resolution.HD_720P,
+            minSourceQuality: "any",
+            maxSourceQuality: SourceQuality.WEB_DL,
+        },
+    },
+];
+
+export interface StreamingSettings {
+    profileId: QualityProfileId;
+    customRange: QualityRange;
+    allowUncached: boolean;
+    autoPlay: boolean;
+}
+
+export function getActiveRange(settings: StreamingSettings): QualityRange {
+    if (settings.profileId === "custom") {
+        return settings.customRange;
+    }
+    const profile = QUALITY_PROFILES.find((p) => p.id === settings.profileId);
+    return profile?.range ?? QUALITY_PROFILES[2].range; // fallback to balanced
+}
+
+type SettingValue = string | number | boolean | MediaPlayer | StreamingSettings;
 
 type SettingPreset<T extends SettingValue> = {
     value: T;
@@ -20,6 +112,7 @@ type SettingsConfig = {
     hideTrash: SettingConfig<boolean>;
     mediaPlayer: SettingConfig<MediaPlayer>;
     downloadLinkMaxAge: SettingConfig<number>;
+    streaming: SettingConfig<StreamingSettings>;
 };
 
 const settingsConfig: SettingsConfig = {
@@ -90,6 +183,19 @@ const settingsConfig: SettingsConfig = {
             { value: 43200000, label: "12 hours" },
         ],
     },
+    streaming: {
+        defaultValue: {
+            profileId: "balanced",
+            customRange: {
+                minResolution: Resolution.HD_720P,
+                maxResolution: Resolution.FHD_1080P,
+                minSourceQuality: SourceQuality.WEB_DL,
+                maxSourceQuality: SourceQuality.WEB_DL,
+            },
+            allowUncached: false,
+            autoPlay: true,
+        },
+    },
 };
 
 type SettingsData = {
@@ -113,6 +219,7 @@ const getDefaultSettings = (): SettingsData => {
         hideTrash: settingsConfig.hideTrash.defaultValue,
         mediaPlayer: settingsConfig.mediaPlayer.defaultValue,
         downloadLinkMaxAge: settingsConfig.downloadLinkMaxAge.defaultValue,
+        streaming: settingsConfig.streaming.defaultValue,
     };
 };
 
@@ -159,6 +266,42 @@ export const useSettingsStore = create<SettingsStore>()(
         {
             name: "debridui-settings",
             partialize: (state) => ({ settings: state.settings }),
+            merge: (persisted, current) => {
+                const persistedSettings = (persisted as { settings: Partial<SettingsData> })?.settings;
+                const defaults = getDefaultSettings();
+
+                // Deep merge that fills missing keys with defaults
+                const deepMerge = <T extends Record<string, unknown>>(target: T, source: Partial<T> | undefined): T => {
+                    if (!source) return target;
+                    const result = { ...target };
+                    for (const key of Object.keys(target) as (keyof T)[]) {
+                        const targetVal = target[key];
+                        const sourceVal = source[key];
+                        if (sourceVal === undefined) continue;
+                        if (
+                            targetVal &&
+                            typeof targetVal === "object" &&
+                            !Array.isArray(targetVal) &&
+                            sourceVal &&
+                            typeof sourceVal === "object" &&
+                            !Array.isArray(sourceVal)
+                        ) {
+                            result[key] = deepMerge(
+                                targetVal as Record<string, unknown>,
+                                sourceVal as Record<string, unknown>
+                            ) as T[keyof T];
+                        } else {
+                            result[key] = sourceVal as T[keyof T];
+                        }
+                    }
+                    return result;
+                };
+
+                return {
+                    ...current,
+                    settings: deepMerge(defaults, persistedSettings),
+                };
+            },
         }
     )
 );

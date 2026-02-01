@@ -98,9 +98,9 @@ export const HeroCarouselSkeleton = memo(function HeroCarouselSkeleton() {
             </div>
 
             {/* Progress indicator skeleton */}
-            <div className="absolute bottom-2 md:bottom-6 left-1/2 -translate-x-1/2 z-10">
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
                 <div className="flex items-center gap-1.5 px-3 py-2 bg-background/60 backdrop-blur-sm rounded-full border border-border/30">
-                    {Array.from({ length: 5 }, (_, i) => (
+                    {Array.from({ length: 10 }, (_, i) => (
                         <div key={i} className={`h-1 rounded-full bg-foreground/20 ${i === 0 ? "w-6" : "w-1.5"}`} />
                     ))}
                 </div>

@@ -2,12 +2,22 @@
 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2, Clock, Info, Settings } from "lucide-react";
-import { useSettingsStore } from "@/lib/stores/settings";
+import { Monitor, Moon, Sun, Play, Trash2, Clock, Info, Settings, Zap, Sliders } from "lucide-react";
+import {
+    useSettingsStore,
+    type StreamingSettings,
+    type StreamingResolution,
+    type QualityProfileId,
+    type QualityRange,
+    QUALITY_PROFILES,
+} from "@/lib/stores/settings";
+import { RESOLUTIONS, SOURCE_QUALITIES } from "@/lib/addons/parser";
+import { Resolution, SourceQuality } from "@/lib/addons/types";
 import { MediaPlayer } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { del } from "idb-keyval";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
@@ -17,9 +27,20 @@ import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
 import { detectPlatform, isSupportedPlayer, PLAYER_PLATFORM_SUPPORT } from "@/lib/utils/media-player";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
+import { cn } from "@/lib/utils";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
 const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
+
+const RESOLUTION_OPTIONS: { value: StreamingResolution; label: string }[] = [
+    { value: "any", label: "Any" },
+    ...RESOLUTIONS.map((r) => ({ value: r, label: r === Resolution.UHD_4K ? "4K" : r })).reverse(),
+];
+
+const SOURCE_QUALITY_OPTIONS: { value: SourceQuality | "any"; label: string }[] = [
+    { value: "any", label: "Any" },
+    ...SOURCE_QUALITIES.map((q) => ({ value: q, label: q })),
+];
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
@@ -32,13 +53,35 @@ export default function SettingsPage() {
     const mediaPlayerPresets = getPresets("mediaPlayer") || [];
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
     const downloadLinkMaxAgePresets = getPresets("downloadLinkMaxAge") || [];
-    const [isClearing, setIsClearing] = useState(false);
+    const streaming = get("streaming");
+
+    const updateStreaming = (updates: Partial<StreamingSettings>) => {
+        set("streaming", { ...streaming, ...updates });
+    };
+
+    const updateCustomRange = (updates: Partial<QualityRange>) => {
+        updateStreaming({
+            customRange: { ...streaming.customRange, ...updates },
+        });
+    };
+
+    const selectProfile = (profileId: QualityProfileId) => {
+        if (profileId === "custom" && streaming.profileId !== "custom") {
+            // Copy current profile's range to custom when switching to custom
+            const currentProfile = QUALITY_PROFILES.find((p) => p.id === streaming.profileId);
+            if (currentProfile) {
+                updateStreaming({ profileId, customRange: { ...currentProfile.range } });
+                return;
+            }
+        }
+        updateStreaming({ profileId });
+    };
+
     const platform = detectPlatform();
     const setupInstruction = getPlayerSetupInstruction(mediaPlayer, platform);
     const isPlayerSupported = isSupportedPlayer(mediaPlayer, platform);
 
     const handleClearCache = async (key?: string[]) => {
-        setIsClearing(true);
         const toastId = toast.loading("Clearing cache...");
         try {
             if (key) {
@@ -51,8 +94,6 @@ export default function SettingsPage() {
         } catch (error) {
             toast.error("Failed to clear cache", { id: toastId });
             console.error("Error clearing cache:", error);
-        } finally {
-            setIsClearing(false);
         }
     };
 
@@ -61,6 +102,8 @@ export default function SettingsPage() {
         { value: "dark", label: "Dark", icon: Moon },
         { value: "system", label: "System", icon: Monitor },
     ];
+
+    const isCustom = streaming.profileId === "custom";
 
     return (
         <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
@@ -151,6 +194,197 @@ export default function SettingsPage() {
                 )}
             </section>
 
+            {/* Streaming Section */}
+            <section className="space-y-4">
+                <SectionDivider label="Streaming" />
+
+                {/* Quality Profile */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <Sliders className="size-4 text-muted-foreground" />
+                        <Label className="text-sm">Quality Profile</Label>
+                    </div>
+
+                    {/* Profile Chips */}
+                    <div className="flex flex-wrap gap-2">
+                        {QUALITY_PROFILES.map((profile) => (
+                            <button
+                                key={profile.id}
+                                onClick={() => selectProfile(profile.id)}
+                                className={cn(
+                                    "group relative px-3 py-1.5 text-sm rounded-sm border transition-all duration-300",
+                                    streaming.profileId === profile.id
+                                        ? "border-primary bg-primary/5 text-foreground"
+                                        : "border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
+                                )}>
+                                <span className="font-medium">{profile.name}</span>
+                                <span className="ml-1.5 text-xs opacity-60">{profile.description}</span>
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => selectProfile("custom")}
+                            className={cn(
+                                "group relative px-3 py-1.5 text-sm rounded-sm border transition-all duration-300",
+                                isCustom
+                                    ? "border-primary bg-primary/5 text-foreground"
+                                    : "border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
+                            )}>
+                            <span className="font-medium">Custom</span>
+                        </button>
+                    </div>
+
+                    {/* Custom Range Panel */}
+                    <Collapsible open={isCustom}>
+                        <CollapsibleContent>
+                            <div className="mt-3 p-4 rounded-sm border border-border/50 bg-muted/10 space-y-5">
+                                {/* Resolution Range */}
+                                <div className="space-y-3">
+                                    <span className="text-xs tracking-widest uppercase text-muted-foreground">
+                                        Resolution
+                                    </span>
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                        <div className="space-y-1.5">
+                                            <span className="text-xs text-muted-foreground">Minimum</span>
+                                            <Select
+                                                value={streaming.customRange.minResolution}
+                                                onValueChange={(v) =>
+                                                    updateCustomRange({ minResolution: v as StreamingResolution })
+                                                }>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {RESOLUTION_OPTIONS.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <span className="text-xs text-muted-foreground">Maximum</span>
+                                            <Select
+                                                value={streaming.customRange.maxResolution}
+                                                onValueChange={(v) =>
+                                                    updateCustomRange({ maxResolution: v as StreamingResolution })
+                                                }>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {RESOLUTION_OPTIONS.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Source Quality Range */}
+                                <div className="space-y-3">
+                                    <span className="text-xs tracking-widest uppercase text-muted-foreground">
+                                        Source Quality
+                                    </span>
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                        <div className="space-y-1.5">
+                                            <span className="text-xs text-muted-foreground">Minimum</span>
+                                            <Select
+                                                value={streaming.customRange.minSourceQuality}
+                                                onValueChange={(v) =>
+                                                    updateCustomRange({
+                                                        minSourceQuality: v as SourceQuality | "any",
+                                                    })
+                                                }>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {SOURCE_QUALITY_OPTIONS.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <span className="text-xs text-muted-foreground">Maximum</span>
+                                            <Select
+                                                value={streaming.customRange.maxSourceQuality}
+                                                onValueChange={(v) =>
+                                                    updateCustomRange({
+                                                        maxSourceQuality: v as SourceQuality | "any",
+                                                    })
+                                                }>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {SOURCE_QUALITY_OPTIONS.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p className="text-xs text-muted-foreground">
+                                    Sources outside these ranges will be filtered out during auto-selection.
+                                </p>
+                            </div>
+                        </CollapsibleContent>
+                    </Collapsible>
+                </div>
+
+                {/* Toggle Settings */}
+                <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between rounded-sm border border-border/50 p-3">
+                        <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                                <Zap className="size-4 text-muted-foreground" />
+                                <Label htmlFor="allow-uncached" className="text-sm">
+                                    Allow Uncached Sources
+                                </Label>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Automatically play uncached sources without confirmation
+                            </p>
+                        </div>
+                        <Switch
+                            id="allow-uncached"
+                            checked={streaming.allowUncached}
+                            onCheckedChange={(checked) => updateStreaming({ allowUncached: checked })}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-sm border border-border/50 p-3">
+                        <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                                <Play className="size-4 text-muted-foreground" />
+                                <Label htmlFor="auto-play" className="text-sm">
+                                    Auto-play
+                                </Label>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Automatically start playback when a cached source is found
+                            </p>
+                        </div>
+                        <Switch
+                            id="auto-play"
+                            checked={streaming.autoPlay}
+                            onCheckedChange={(checked) => updateStreaming({ autoPlay: checked })}
+                        />
+                    </div>
+                </div>
+            </section>
+
             {/* Cache Section */}
             <section className="space-y-4">
                 <SectionDivider label="Cache" />
@@ -197,7 +431,6 @@ export default function SettingsPage() {
                             </div>
                             <Button
                                 onClick={() => handleClearCache([currentAccount.id, "getDownloadLink"])}
-                                disabled={isClearing}
                                 variant="outline">
                                 Clear Links
                             </Button>
@@ -208,7 +441,7 @@ export default function SettingsPage() {
                                 <p className="text-sm">All Cached Data</p>
                                 <p className="text-xs text-muted-foreground">Remove all cached data from browser</p>
                             </div>
-                            <Button onClick={() => handleClearCache()} disabled={isClearing} variant="destructive">
+                            <Button onClick={() => handleClearCache()} variant="destructive">
                                 Clear All
                             </Button>
                         </div>

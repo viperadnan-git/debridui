@@ -17,11 +17,10 @@ export enum SourceQuality {
     HDTV = "HDTV",
     DVDRIP = "DVDRip",
     HDRIP = "HDRip",
-    HC_HDRIP = "HC HD-Rip",
-    CAM = "CAM",
-    TS = "TS",
-    TC = "TC",
     SCR = "SCR",
+    TC = "TC",
+    TS = "TS",
+    CAM = "CAM",
 }
 
 export interface AddonManifest {
