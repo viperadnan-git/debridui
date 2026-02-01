@@ -3,6 +3,7 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { SearchButton } from "@/components/common/search-button";
 import { SearchProvider } from "@/components/mdb/search-provider";
 import { FilePreviewDialog } from "@/components/preview/file-preview-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -25,11 +26,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset className="overflow-x-hidden">
-                    <header className="flex h-12 shrink-0 z-50 items-center gap-2 border-b border-border/30 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                        <div className="flex items-center gap-2 px-4">
-                            <SidebarTrigger className="-ml-1" />
+                    <header className="flex h-12 shrink-0 z-50 items-center justify-between gap-4 border-b border-border/30 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+                        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                            <SidebarTrigger className="-ml-1 shrink-0" />
                             <Breadcrumbs />
                         </div>
+                        <SearchButton className="shrink-0" />
                     </header>
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">{children}</div>
                 </SidebarInset>

@@ -16,7 +16,7 @@ interface MediaHeaderProps {
 export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeaderProps) {
     const posterUrl =
         getPosterUrl(media.images) ||
-        `https://placehold.co/300x450/0a0a0a/1a1a1a?text=${encodeURIComponent(media.title)}`;
+        `https://placehold.co/300x450/1a1a1a/3e3e3e?text=${encodeURIComponent(media.title)}`;
     const backdropUrl = getBackdropUrl(media.images);
 
     return (

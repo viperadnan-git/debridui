@@ -29,7 +29,7 @@ export const SeasonCard = memo(function SeasonCard({
     const seasonLabel = season.number === 0 ? "SP" : String(season.number).padStart(2, "0");
     const posterUrl =
         getPosterUrl(season.images) ||
-        `https://placehold.co/200x300/1a1a1a/white?text=${encodeURIComponent(seasonLabel)}`;
+        `https://placehold.co/200x300/1a1a1a/3e3e3e?text=${encodeURIComponent(seasonLabel)}`;
 
     // Prefetch season episodes on hover
     const prefetchSeason = () => {
@@ -87,7 +87,7 @@ export const SeasonCard = memo(function SeasonCard({
                 {/* Bottom info - always visible */}
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                     <div className="space-y-1">
-                        {season.episode_count && (
+                        {!!season.episode_count && (
                             <p className="text-xs text-white/90 font-medium">{season.episode_count} Episodes</p>
                         )}
                         {season.first_aired && (

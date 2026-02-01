@@ -253,7 +253,7 @@ export default function AccountPage() {
                     <form onSubmit={profileForm.handleSubmit(handleUpdateProfile)} className="space-y-6">
                         {/* Profile Image Preview */}
                         <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16 rounded-sm">
+                            <Avatar className="h-16 w-16 rounded-sm border border-border/50">
                                 <AvatarImage src={avatarUrl} alt={session?.user?.name || "User"} />
                                 <AvatarFallback className="rounded-sm text-lg">{userInitials}</AvatarFallback>
                             </Avatar>

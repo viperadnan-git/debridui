@@ -26,7 +26,7 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
 
     const fanartImage = media.images?.fanart?.[0] ? `https://${media.images.fanart[0]}` : null;
     const posterImage = media.images?.poster?.[0] ? `https://${media.images.poster[0]}` : null;
-    const placeholderImage = `https://placehold.co/1920x1080/0a0a0a/1a1a1a?text=${encodeURIComponent(media.title)}`;
+    const placeholderImage = `https://placehold.co/1920x1080/1a1a1a/3e3e3e?text=${encodeURIComponent(media.title)}`;
 
     const desktopImage = fanartImage || placeholderImage;
     const mobileImage = posterImage || fanartImage || placeholderImage;

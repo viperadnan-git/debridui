@@ -57,9 +57,9 @@ const TransferDetails = memo(function TransferDetails({
     uploadSpeed,
     error,
 }: Pick<DebridFile, "status" | "peers" | "downloadSpeed" | "uploadSpeed" | "error">) {
-    const showPeers = status !== "completed" && peers !== undefined;
-    const showDownloadSpeed = status === "downloading" && (downloadSpeed || 0) > 0;
-    const showUploadSpeed = status === "uploading" && (uploadSpeed || 0) > 0;
+    const showPeers = status !== "completed" && !!peers;
+    const showDownloadSpeed = status === "downloading" && !!downloadSpeed;
+    const showUploadSpeed = status === "uploading" && !!uploadSpeed;
 
     if (!showPeers && !showDownloadSpeed && !showUploadSpeed && !error) {
         return null;
@@ -137,8 +137,7 @@ export const FileListItem = memo(function FileListItem({
     onToggleExpand,
     className,
 }: FileListItemProps) {
-    const progress = file.progress ?? 0;
-    const showProgress = progress > 0 && file.status !== "completed";
+    const showProgress = !!file.progress && file.status !== "completed";
 
     return (
         <FileItemContextMenu file={file}>
@@ -170,7 +169,7 @@ export const FileListItem = memo(function FileListItem({
                             <div className="flex items-center gap-2">
                                 {showProgress && (
                                     <Badge className="px-1 md:px-1.5 pb-0 border-0 rounded-sm text-xs md:text-sm bg-blue-500/10 text-blue-500">
-                                        {progress.toFixed(2)}%
+                                        {file.progress?.toFixed(2)}%
                                     </Badge>
                                 )}
                                 <StatusBadge status={file.status} hide="completed" />

@@ -21,7 +21,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
     const linkHref = slug ? `/${type}s/${slug}` : "#";
     const posterUrl =
         getPosterUrl(media.images) ||
-        `https://placehold.co/300x450/0a0a0a/1a1a1a?text=${encodeURIComponent(media.title)}`;
+        `https://placehold.co/300x450/1a1a1a/3e3e3e?text=${encodeURIComponent(media.title)}`;
 
     return (
         <Link href={linkHref} className="block group">

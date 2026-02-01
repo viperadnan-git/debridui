@@ -20,7 +20,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
     const episodeLabel = String(episode.number).padStart(2, "0");
     const screenshotUrl = episode.images?.screenshot?.[0]
         ? `https://${episode.images.screenshot[0]}`
-        : `https://placehold.co/400x225/1a1a1a/white?text=E${episodeLabel}`;
+        : `https://placehold.co/400x225/1a1a1a/3e3e3e?text=${episodeLabel}`;
 
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn("group", className)}>
