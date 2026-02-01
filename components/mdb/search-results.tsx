@@ -37,7 +37,7 @@ function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
 
 function LoadingIndicator() {
     return (
-        <div className="flex items-center justify-center gap-2 py-3 text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 py-1 sm:py-3 text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
             <span className="text-xs tracking-wide">Searching...</span>
         </div>
