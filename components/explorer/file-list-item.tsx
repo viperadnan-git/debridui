@@ -58,8 +58,8 @@ const TransferDetails = memo(function TransferDetails({
     error,
 }: Pick<DebridFile, "status" | "peers" | "downloadSpeed" | "uploadSpeed" | "error">) {
     const showPeers = status !== "completed" && peers !== undefined;
-    const showDownloadSpeed = status === "downloading" && downloadSpeed;
-    const showUploadSpeed = status === "uploading" && uploadSpeed;
+    const showDownloadSpeed = status === "downloading" && (downloadSpeed || 0) > 0;
+    const showUploadSpeed = status === "uploading" && (uploadSpeed || 0) > 0;
 
     if (!showPeers && !showDownloadSpeed && !showUploadSpeed && !error) {
         return null;
