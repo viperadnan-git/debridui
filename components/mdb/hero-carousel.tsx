@@ -362,7 +362,7 @@ export const HeroCarousel = memo(function HeroCarousel({ autoFocus = false }: He
             </div>
 
             {/* Progress Indicator */}
-            <div className="absolute bottom-2 md:bottom-6 left-1/2 -translate-x-1/2 z-10">
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
                 <div className="flex items-center gap-1.5 px-3 py-2 bg-background/60 backdrop-blur-sm rounded-full border border-border/30">
                     {Array.from({ length: count }, (_, index) => (
                         <button

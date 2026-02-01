@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -11,22 +9,13 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { SplashScreen } from "@/components/splash-screen";
 
 // App layout - requires at least one account
-// Uses AuthProvider from parent (auth) layout
+// Redirect logic is centralized in AuthProvider
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
     const { userAccounts, currentAccount, currentUser, client } = useAuth();
 
-    const hasAccounts = userAccounts.length > 0;
-
-    // Redirect to onboarding if no accounts
-    useEffect(() => {
-        if (!hasAccounts) {
-            router.push("/onboarding");
-        }
-    }, [hasAccounts, router]);
-
     // Single check for all required data to prevent flicker
-    const isReady = hasAccounts && currentAccount && currentUser && client;
+    // AuthProvider handles redirect to /onboarding if no accounts
+    const isReady = userAccounts.length > 0 && currentAccount && currentUser && client;
     if (!isReady) {
         return <SplashScreen />;
     }

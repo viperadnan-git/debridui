@@ -9,7 +9,7 @@ import { getClientInstance } from "@/lib/clients";
 import type { DebridClient } from "@/lib/clients";
 import { SplashScreen } from "@/components/splash-screen";
 import { SplashErrorScreen } from "@/components/splash-error-screen";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { clearAppCache } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -55,6 +55,7 @@ interface AuthProviderProps {
 // `client-swr-dedup` - Single AuthProvider for all authenticated routes
 export function AuthProvider({ children }: AuthProviderProps) {
     const router = useRouter();
+    const pathname = usePathname();
     const { data: session, isPending: isSessionPending, error: sessionError } = authClient.useSession();
     // Only fetch accounts when session exists
     const { data: userAccounts = [], isLoading: isAccountsLoading, refetch } = useUserAccounts(!!session);
@@ -100,12 +101,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Mutation for removing accounts (used in error recovery)
     const { mutate: removeAccount } = useRemoveUserAccount();
 
-    // Redirect to login if not authenticated
+    // Centralized redirect logic - single source of truth for all auth redirects
     useEffect(() => {
-        if (!isSessionPending && !session) {
+        if (isSessionPending || isAccountsLoading) return;
+
+        // No session → login
+        if (!session) {
             router.push("/login");
+            return;
         }
-    }, [session, isSessionPending, router]);
+
+        const hasAccounts = userAccounts.length > 0;
+        const isOnboarding = pathname === "/onboarding";
+
+        // Has accounts + on onboarding → dashboard
+        if (hasAccounts && isOnboarding) {
+            router.push("/dashboard");
+            return;
+        }
+
+        // No accounts + not on onboarding → onboarding
+        if (!hasAccounts && !isOnboarding) {
+            router.push("/onboarding");
+        }
+    }, [session, isSessionPending, isAccountsLoading, userAccounts.length, pathname, router]);
 
     // Sync currentAccountId to localStorage when it changes
     useEffect(() => {

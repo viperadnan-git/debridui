@@ -57,7 +57,7 @@ export default function SignupForm() {
             if (data) {
                 setIsRedirecting(true);
                 toast.success("Account created successfully");
-                router.push("/dashboard");
+                router.push("/onboarding");
             }
         } catch {
             toast.error("An unexpected error occurred");

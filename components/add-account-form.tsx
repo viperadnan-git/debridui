@@ -10,7 +10,6 @@ import { AccountType, addUserSchema } from "@/lib/schemas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { RealDebridClient, TorBoxClient, AllDebridClient } from "@/lib/clients";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
-import { useRouter } from "next/navigation";
 import { useAddUserAccount } from "@/hooks/use-user-accounts";
 import { SectionDivider } from "@/components/section-divider";
 import { useState } from "react";
@@ -19,7 +18,6 @@ import { handleError } from "@/lib/utils/error-handling";
 import { formatAccountType } from "@/lib/utils";
 
 export function AddAccountForm() {
-    const router = useRouter();
     const addAccount = useAddUserAccount();
     const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | null>(null);
 
@@ -31,12 +29,9 @@ export function AddAccountForm() {
         },
     });
 
+    // AuthProvider handles redirect to /dashboard after account is added
     function onSubmit(values: z.infer<typeof addUserSchema>) {
-        addAccount.mutate(values, {
-            onSuccess: () => {
-                router.push("/dashboard");
-            },
-        });
+        addAccount.mutate(values);
     }
 
     async function handleAllDebridLogin() {
@@ -48,14 +43,8 @@ export function AddAccountForm() {
             const { success, apiKey } = await AllDebridClient.validateAuthPin(pin, check);
 
             if (success && apiKey) {
-                addAccount.mutate(
-                    { type: AccountType.ALLDEBRID, apiKey },
-                    {
-                        onSuccess: () => {
-                            router.push("/dashboard");
-                        },
-                    }
-                );
+                // AuthProvider handles redirect to /dashboard after account is added
+                addAccount.mutate({ type: AccountType.ALLDEBRID, apiKey });
             } else {
                 toast.error("Failed to login with AllDebrid");
             }
