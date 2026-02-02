@@ -1,20 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, memo } from "react";
 import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
 import { useAddonSources } from "@/hooks/use-addons";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, AlertTriangle } from "lucide-react";
+import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, AlertTriangle, PlayIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useRouter } from "next/navigation";
 import { CachedBadge } from "@/components/display";
-import { PlayUrlButton } from "./play-url-button";
-import { useSettingsStore } from "@/lib/stores/settings";
-import { usePreviewStore } from "@/lib/stores/preview";
-import { MediaPlayer, FileType } from "@/lib/types";
+import { useStreamingStore } from "@/lib/stores/streaming";
 
 interface SourcesProps {
     imdbId: string;
@@ -116,15 +113,7 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
     );
 }
 
-export function SourceRow({
-    source,
-    mediaTitle,
-    onOpenPreview,
-}: {
-    source: AddonSource;
-    mediaTitle: string;
-    onOpenPreview?: (url: string, title: string) => void;
-}) {
+export const SourceRow = memo(function SourceRow({ source, mediaTitle }: { source: AddonSource; mediaTitle: string }) {
     // Build metadata string with editorial separators
     const metaParts: string[] = [];
     if (source.resolution) metaParts.push(source.resolution);
@@ -166,7 +155,12 @@ export function SourceRow({
                 {(source.url || source.magnet) && (
                     <div className="flex items-center gap-2 justify-end sm:shrink-0">
                         {source.url && (
-                            <PlayUrlButton url={source.url} title={mediaTitle} onOpenPreview={onOpenPreview} />
+                            <Button
+                                size="sm"
+                                onClick={() => useStreamingStore.getState().playSource(source, mediaTitle)}>
+                                <PlayIcon className="size-4 fill-current" />
+                                Play
+                            </Button>
                         )}
                         {source.magnet && <AddSourceButton magnet={source.magnet} />}
                     </div>
@@ -174,21 +168,10 @@ export function SourceRow({
             </div>
         </div>
     );
-}
+});
 
 export function Sources({ imdbId, mediaType = "movie", tvParams, className, mediaTitle }: SourcesProps) {
     const { data: sources, isLoading, failedAddons } = useAddonSources({ imdbId, mediaType, tvParams });
-    const mediaPlayer = useSettingsStore((state) => state.get("mediaPlayer"));
-    const openSinglePreview = usePreviewStore((s) => s.openSinglePreview);
-
-    const isBrowserPlayer = mediaPlayer === MediaPlayer.BROWSER;
-
-    const handleOpenPreview = useCallback(
-        (url: string, title: string) => {
-            openSinglePreview({ url, title, fileType: FileType.VIDEO });
-        },
-        [openSinglePreview]
-    );
 
     return (
         <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
@@ -208,12 +191,7 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
             )}
 
             {sources?.map((source, index) => (
-                <SourceRow
-                    key={`${source.addonId}-${source.url || index}`}
-                    source={source}
-                    mediaTitle={mediaTitle}
-                    onOpenPreview={isBrowserPlayer ? handleOpenPreview : undefined}
-                />
+                <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} mediaTitle={mediaTitle} />
             ))}
 
             {/* Failed addons warning */}
