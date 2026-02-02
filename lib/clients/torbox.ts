@@ -415,6 +415,7 @@ export default class TorBoxClient extends BaseClient {
                 return {
                     magnet,
                     status: {
+                        success: true,
                         id: response.data.torrent_id,
                         message: "Torrent added successfully",
                         is_cached: response.detail.toLowerCase().includes("cached"),
@@ -424,8 +425,8 @@ export default class TorBoxClient extends BaseClient {
                 return {
                     magnet,
                     status: {
-                        message: "Failed to add torrent",
-                        error: error instanceof Error ? error.message : "Unknown error",
+                        success: false,
+                        message: error instanceof Error ? error.message : "Failed to add torrent",
                         is_cached: false,
                     } as DebridFileAddStatus,
                 };
@@ -441,8 +442,8 @@ export default class TorBoxClient extends BaseClient {
                     acc[magnet] = result.value.status;
                 } else {
                     acc[magnet] = {
-                        message: "Failed to add torrent",
-                        error: result.reason?.message || "Unknown error",
+                        success: false,
+                        message: result.reason?.message || "Failed to add torrent",
                         is_cached: false,
                     };
                 }
@@ -472,6 +473,7 @@ export default class TorBoxClient extends BaseClient {
                 return {
                     fileName: file.name,
                     status: {
+                        success: true,
                         id: response.torrent_id || response.id,
                         message: "Torrent file uploaded successfully",
                         is_cached: response.cached || false,
@@ -481,8 +483,8 @@ export default class TorBoxClient extends BaseClient {
                 return {
                     fileName: file.name,
                     status: {
-                        message: "Failed to upload torrent file",
-                        error: error instanceof Error ? error.message : "Unknown error",
+                        success: false,
+                        message: error instanceof Error ? error.message : "Failed to upload torrent file",
                         is_cached: false,
                     } as DebridFileAddStatus,
                 };
@@ -498,8 +500,8 @@ export default class TorBoxClient extends BaseClient {
                     acc[file.name] = result.value.status;
                 } else {
                     acc[file.name] = {
-                        message: "Failed to upload torrent file",
-                        error: result.reason?.message || "Unknown error",
+                        success: false,
+                        message: result.reason?.message || "Failed to upload torrent file",
                         is_cached: false,
                     };
                 }

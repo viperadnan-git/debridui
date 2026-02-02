@@ -39,8 +39,8 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
         try {
             const result = await client.addTorrent([magnet]);
             const sourceStatus = result[magnet];
-            if (sourceStatus.error) {
-                throw new Error(sourceStatus.error);
+            if (!sourceStatus.success) {
+                throw new Error(sourceStatus.message);
             }
             setStatus(sourceStatus.is_cached ? "cached" : "added");
             setTorrentId(sourceStatus.id as number | string);

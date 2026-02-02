@@ -334,14 +334,15 @@ export default class RealDebridClient extends BaseClient {
                 await this.selectAllFiles(result.id);
 
                 results[magnet] = {
+                    success: true,
                     id: result.id,
                     message: `Successfully added torrent`,
                     is_cached: true,
                 };
             } catch (error) {
                 results[magnet] = {
-                    message: "Failed to add torrent",
-                    error: error instanceof Error ? error.message : "Unknown error",
+                    success: false,
+                    message: error instanceof Error ? error.message : "Failed to add torrent",
                     is_cached: false,
                 };
             }
@@ -366,14 +367,15 @@ export default class RealDebridClient extends BaseClient {
                 await this.selectAllFiles(result.id);
 
                 results[file.name] = {
+                    success: true,
                     id: result.id,
                     message: `Successfully uploaded: ${file.name}`,
                     is_cached: false,
                 };
             } catch (error) {
                 results[file.name] = {
-                    message: "Failed to upload torrent file",
-                    error: error instanceof Error ? error.message : "Unknown error",
+                    success: false,
+                    message: error instanceof Error ? error.message : "Failed to upload torrent file",
                     is_cached: false,
                 };
             }

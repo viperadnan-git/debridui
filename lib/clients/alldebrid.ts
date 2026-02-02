@@ -332,11 +332,11 @@ export default class AllDebridClient extends BaseClient {
 
         return response.magnets.reduce(
             (results, torrent) => {
-                const message = torrent.error?.message || `Successfully added: ${torrent.name}`;
+                const hasError = !!torrent.error?.message;
                 results[torrent.magnet] = {
+                    success: !hasError,
                     id: torrent.id,
-                    message,
-                    error: torrent.error?.message,
+                    message: torrent.error?.message || `Successfully added: ${torrent.name}`,
                     is_cached: torrent.ready,
                 };
                 return results;
@@ -357,11 +357,11 @@ export default class AllDebridClient extends BaseClient {
         return response.files.reduce(
             (results, file) => {
                 const key = file.name || file.hash;
-                const message = file.error?.message || `Successfully uploaded: ${file.name}`;
+                const hasError = !!file.error?.message;
                 results[key] = {
+                    success: !hasError,
                     id: file.id,
-                    message,
-                    error: file.error?.message,
+                    message: file.error?.message || `Successfully uploaded: ${file.name}`,
                     is_cached: file.ready,
                 };
                 return results;

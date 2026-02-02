@@ -114,16 +114,14 @@ export type DebridLinkInfo = {
     size: number;
 };
 
-export type DebridFileAddStatus = {
-    id?: number | string;
-    message: string;
-    error?: string;
-    is_cached: boolean;
-};
-
 export type OperationResult = {
     success: boolean;
     message: string;
+};
+
+export type DebridFileAddStatus = OperationResult & {
+    id?: number | string;
+    is_cached: boolean;
 };
 
 export class DebridError extends Error {

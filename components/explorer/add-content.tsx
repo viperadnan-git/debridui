@@ -10,8 +10,9 @@ import { toast } from "sonner";
 import { Link, FileUp, Loader2, ClipboardPaste, X } from "lucide-react";
 import { Dropzone } from "../ui/dropzone";
 import { getTextFromClipboard } from "@/lib/utils";
+import { OperationResult } from "@/lib/types";
 
-type OperationResult = Record<string, { error?: string }>;
+type AddResult = Record<string, OperationResult>;
 
 export function AddContent() {
     const [links, setLinks] = useState("");
@@ -19,16 +20,16 @@ export function AddContent() {
     const [isUploadingFiles, setIsUploadingFiles] = useState(false);
     const { client, currentAccount } = useAuthGuaranteed();
 
-    const handleOperationResults = (results: OperationResult, itemType: "link" | "file", toastId: string | number) => {
+    const handleOperationResults = (results: AddResult, itemType: "link" | "file", toastId: string | number) => {
         let successCount = 0;
         let errorCount = 0;
 
         Object.entries(results).forEach(([name, status]) => {
-            if (!status.error) {
+            if (status.success) {
                 successCount++;
             } else {
                 errorCount++;
-                toast.error(`${name}: ${status.error}`);
+                toast.error(`${name}: ${status.message}`);
             }
         });
 

@@ -109,8 +109,8 @@ export default abstract class BaseClient {
                     downloadedFiles.push(file);
                 } catch (error) {
                     results[uri] = {
-                        message: `Failed to download ${uri}: ${error}`,
-                        error: error instanceof Error ? error.message : String(error),
+                        success: false,
+                        message: error instanceof Error ? error.message : `Failed to download ${uri}`,
                         is_cached: false,
                     };
                 }
