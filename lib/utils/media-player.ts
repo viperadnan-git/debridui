@@ -102,6 +102,7 @@ export const PLAYER_PLATFORM_SUPPORT: Record<MediaPlayer, Platform[]> = {
 export const isSupportedPlayer = (player: MediaPlayer, platform?: Platform): boolean => {
     const currentPlatform = platform || detectPlatform();
     const supportedPlatforms = PLAYER_PLATFORM_SUPPORT[player];
+    if (!supportedPlatforms) return false;
     return supportedPlatforms.includes(currentPlatform);
 };
 

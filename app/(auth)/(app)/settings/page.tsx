@@ -80,6 +80,7 @@ export default function SettingsPage() {
     const platform = detectPlatform();
     const setupInstruction = getPlayerSetupInstruction(mediaPlayer, platform);
     const isPlayerSupported = isSupportedPlayer(mediaPlayer, platform);
+    const supportedPlatforms = PLAYER_PLATFORM_SUPPORT[mediaPlayer] ?? [];
 
     const handleClearCache = async (key?: string[]) => {
         const toastId = toast.loading("Clearing cache...");
@@ -176,12 +177,12 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                {!isPlayerSupported && (
+                {supportedPlatforms.length > 0 && !isPlayerSupported && (
                     <div className="flex items-start gap-3 rounded-sm border border-yellow-500/50 bg-yellow-500/10 p-3 text-xs text-yellow-600 dark:text-yellow-500">
                         <Info className="size-3.5 shrink-0 mt-0.5" />
                         <p>
                             {mediaPlayer} is not officially supported on {platform}. Supported platforms:{" "}
-                            {PLAYER_PLATFORM_SUPPORT[mediaPlayer].join(", ")}
+                            {supportedPlatforms.join(", ")}
                         </p>
                     </div>
                 )}

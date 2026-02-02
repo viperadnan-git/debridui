@@ -202,6 +202,13 @@ type SettingsData = {
     [K in keyof SettingsConfig]: SettingsConfig[K]["defaultValue"];
 };
 
+const isValidEnumValue = <T extends Record<string, string | number>>(
+    enumObj: T,
+    value: unknown
+): value is T[keyof T] => {
+    return Object.values(enumObj).includes(value as T[keyof T]);
+};
+
 interface SettingsStore {
     settings: SettingsData;
     get: <K extends keyof SettingsData>(key: K) => SettingsData[K];
@@ -299,7 +306,16 @@ export const useSettingsStore = create<SettingsStore>()(
 
                 return {
                     ...current,
-                    settings: deepMerge(defaults, persistedSettings),
+                    settings: (() => {
+                        const merged = deepMerge(defaults, persistedSettings);
+
+                        // If old/invalid values were persisted, fall back safely.
+                        if (!isValidEnumValue(MediaPlayer, merged.mediaPlayer)) {
+                            merged.mediaPlayer = settingsConfig.mediaPlayer.defaultValue;
+                        }
+
+                        return merged;
+                    })(),
                 };
             },
         }
