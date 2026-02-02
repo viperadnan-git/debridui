@@ -345,10 +345,10 @@ export default function SettingsPage() {
 
                 {/* Toggle Settings */}
                 <div className="space-y-4 pt-2">
-                    <div className="flex items-center justify-between rounded-sm border border-border/50 p-3">
-                        <div className="space-y-0.5">
+                    <div className="flex items-center justify-between gap-3 rounded-sm border border-border/50 p-3">
+                        <div className="space-y-0.5 min-w-0">
                             <div className="flex items-center gap-2">
-                                <Zap className="size-4 text-muted-foreground" />
+                                <Zap className="size-4 text-muted-foreground shrink-0" />
                                 <Label htmlFor="allow-uncached" className="text-sm">
                                     Allow Uncached Sources
                                 </Label>
@@ -359,15 +359,16 @@ export default function SettingsPage() {
                         </div>
                         <Switch
                             id="allow-uncached"
+                            className="shrink-0"
                             checked={streaming.allowUncached}
                             onCheckedChange={(checked) => updateStreaming({ allowUncached: checked })}
                         />
                     </div>
 
-                    <div className="flex items-center justify-between rounded-sm border border-border/50 p-3">
-                        <div className="space-y-0.5">
+                    <div className="flex items-center justify-between gap-3 rounded-sm border border-border/50 p-3">
+                        <div className="space-y-0.5 min-w-0">
                             <div className="flex items-center gap-2">
-                                <Play className="size-4 text-muted-foreground" />
+                                <Play className="size-4 text-muted-foreground shrink-0" />
                                 <Label htmlFor="auto-play" className="text-sm">
                                     Auto-play
                                 </Label>
@@ -378,6 +379,7 @@ export default function SettingsPage() {
                         </div>
                         <Switch
                             id="auto-play"
+                            className="shrink-0"
                             checked={streaming.autoPlay}
                             onCheckedChange={(checked) => updateStreaming({ autoPlay: checked })}
                         />
