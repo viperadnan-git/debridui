@@ -121,6 +121,11 @@ export type DebridFileAddStatus = {
     is_cached: boolean;
 };
 
+export type OperationResult = {
+    success: boolean;
+    message: string;
+};
+
 export class DebridError extends Error {
     type?: AccountType;
 

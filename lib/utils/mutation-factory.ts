@@ -27,9 +27,13 @@ export function useToastMutation<TData = unknown, TVariables = void, TContext = 
                 const result = await mutationFn(variables);
 
                 // Show success toast if message provided
-                if (messages?.success) {
-                    const successMsg =
-                        typeof messages.success === "function" ? messages.success(result) : messages.success;
+                const successMsg = messages?.success
+                    ? typeof messages.success === "function"
+                        ? messages.success(result)
+                        : messages.success
+                    : undefined;
+
+                if (successMsg) {
                     if (toastId) {
                         toast.success(successMsg, { id: toastId });
                     } else {

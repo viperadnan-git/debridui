@@ -6,6 +6,7 @@ import {
     DebridLinkInfo,
     DebridFileList,
     DebridFileAddStatus,
+    OperationResult,
     AccountType,
     User,
     DebridError,
@@ -298,7 +299,7 @@ export default class AllDebridClient extends BaseClient {
         return response.message;
     }
 
-    async restartTorrents(torrentIds: string[]): Promise<Record<string, string>> {
+    async restartTorrents(torrentIds: string[]): Promise<Record<string, OperationResult>> {
         const formData = new FormData();
         torrentIds.forEach((id) => formData.append("ids[]", id));
 
@@ -309,10 +310,14 @@ export default class AllDebridClient extends BaseClient {
 
         return response.magnets.reduce(
             (results, torrent) => {
-                results[torrent.magnet] = torrent.message || torrent.error?.message || "Unknown error occurred";
+                const hasError = !!torrent.error?.message;
+                results[torrent.magnet] = {
+                    success: !hasError,
+                    message: torrent.message || torrent.error?.message || "Unknown error occurred",
+                };
                 return results;
             },
-            {} as Record<string, string>
+            {} as Record<string, OperationResult>
         );
     }
 

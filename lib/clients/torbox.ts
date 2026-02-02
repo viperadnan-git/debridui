@@ -6,6 +6,7 @@ import {
     DebridLinkInfo,
     DebridFileList,
     DebridFileAddStatus,
+    OperationResult,
     AccountType,
     User,
     DebridAuthError,
@@ -351,8 +352,7 @@ export default class TorBoxClient extends BaseClient {
         return "Torrent removed successfully";
     }
 
-    async restartTorrents(torrentIds: string[]): Promise<Record<string, string>> {
-        // Parallelize torrent restarts using Promise.allSettled for 10x faster bulk operations
+    async restartTorrents(torrentIds: string[]): Promise<Record<string, OperationResult>> {
         const promises = torrentIds.map(async (torrentId) => {
             try {
                 const payload = {
@@ -368,10 +368,11 @@ export default class TorBoxClient extends BaseClient {
                     },
                 });
 
-                return { torrentId, message: "Torrent restarted successfully" };
+                return { torrentId, success: true, message: "Torrent restarted successfully" };
             } catch (error) {
                 return {
                     torrentId,
+                    success: false,
                     message: error instanceof Error ? error.message : "Failed to restart torrent",
                 };
             }
@@ -382,13 +383,14 @@ export default class TorBoxClient extends BaseClient {
         return torrentIds.reduce(
             (acc, torrentId, index) => {
                 const result = results[index];
-                acc[torrentId] =
-                    result.status === "fulfilled"
-                        ? result.value.message
-                        : result.reason?.message || "Failed to restart torrent";
+                if (result.status === "fulfilled") {
+                    acc[torrentId] = { success: result.value.success, message: result.value.message };
+                } else {
+                    acc[torrentId] = { success: false, message: result.reason?.message || "Failed to restart torrent" };
+                }
                 return acc;
             },
-            {} as Record<string, string>
+            {} as Record<string, OperationResult>
         );
     }
 

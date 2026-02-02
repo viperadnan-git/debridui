@@ -6,6 +6,7 @@ import {
     DebridLinkInfo,
     DebridFileList,
     DebridFileAddStatus,
+    OperationResult,
     AccountType,
     User,
     DebridAuthError,
@@ -310,9 +311,11 @@ export default class RealDebridClient extends BaseClient {
         return "Torrent removed successfully";
     }
 
-    async restartTorrents(torrentIds: string[]): Promise<Record<string, string>> {
+    async restartTorrents(torrentIds: string[]): Promise<Record<string, OperationResult>> {
         // Real-Debrid API does not support restarting torrents
-        return Object.fromEntries(torrentIds.map((id) => [id, "Restart not supported by Real-Debrid"]));
+        return Object.fromEntries(
+            torrentIds.map((id) => [id, { success: false, message: "Restart not supported by Real-Debrid" }])
+        );
     }
 
     async addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>> {

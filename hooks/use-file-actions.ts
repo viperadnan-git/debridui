@@ -25,15 +25,11 @@ export async function removeTorrentWithCleanup(
 /**
  * Retry failed torrents and cleanup caches
  */
-export async function retryTorrentsWithCleanup(
-    client: DebridClient,
-    accountId: string,
-    fileIds: string[]
-): Promise<Record<string, string>> {
-    const result = await client.restartTorrents(fileIds);
+export async function retryTorrentsWithCleanup(client: DebridClient, accountId: string, fileIds: string[]) {
+    const results = await client.restartTorrents(fileIds);
     queryClient.invalidateQueries({ queryKey: [accountId, "getTorrentList"] });
     queryClient.invalidateQueries({ queryKey: [accountId, "findTorrents"] });
-    return result;
+    return results;
 }
 
 /**
@@ -127,11 +123,16 @@ export function useFileMutationActions() {
     const retryMutation = useToastMutation(
         async (fileIds: string[]) => {
             const results = await retryTorrentsWithCleanup(client, currentAccount.id, fileIds);
-            return { results, count: fileIds.length };
+            let success = 0;
+            for (const r of Object.values(results)) {
+                if (r.success) success++;
+                else toast.error(r.message);
+            }
+            return { success };
         },
         {
             loading: "Retrying files...",
-            success: ({ count }) => `Retrying ${count} file(s)`,
+            success: ({ success }) => (success > 0 ? `Retrying ${success} file(s)` : ""),
             error: "Failed to retry",
         }
     );
