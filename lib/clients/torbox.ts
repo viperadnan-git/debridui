@@ -633,7 +633,7 @@ export default class TorBoxClient extends BaseClient {
         return {
             id: torrent.id.toString(),
             name: torrent.name,
-            size: torrent.size,
+            size: Math.max(torrent.size, 0),
             status,
             progress: torrent.progress * 100,
             downloadSpeed: torrent.download_speed,
