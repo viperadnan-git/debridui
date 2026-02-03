@@ -4,6 +4,7 @@ export enum AccountType {
     REALDEBRID = "real-debrid",
     TORBOX = "torbox",
     ALLDEBRID = "alldebrid",
+    PREMIUMIZE = "premiumize",
 }
 
 export const accountSchema = z.object({
