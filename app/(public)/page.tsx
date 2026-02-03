@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
+import { ArrowRightIcon, ArrowUpRightIcon, ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Gallery } from "@/components/gallery";
@@ -11,27 +11,42 @@ const screenshots = [
     {
         id: "dashboard",
         label: "Dashboard",
-        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-1.jpg",
+        src: {
+            default: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-1.jpg",
+            mobile: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-mobile-1.jpg",
+        },
     },
     {
         id: "explorer",
         label: "Explorer",
-        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-2.jpg",
+        src: {
+            default: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-2.jpg",
+            mobile: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-mobile-2.jpg",
+        },
     },
     {
         id: "media",
         label: "Media",
-        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-3.jpg",
+        src: {
+            default: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-3.jpg",
+            mobile: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-mobile-3.jpg",
+        },
     },
     {
         id: "search",
         label: "Search",
-        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-4.jpg",
+        src: {
+            default: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-4.jpg",
+            mobile: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-mobile-4.jpg",
+        },
     },
     {
         id: "addons",
         label: "Addons",
-        src: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-5.jpg",
+        src: {
+            default: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-5.jpg",
+            mobile: "https://res.cloudinary.com/viperadnan/image/upload/v1769483514/debridui-mockup-mobile-5.jpg",
+        },
     },
 ];
 
@@ -85,7 +100,7 @@ export default function Home() {
     return (
         <div className="min-h-screen">
             {/* Hero */}
-            <section className="min-h-svh flex flex-col justify-center px-6 py-20 md:px-12 lg:px-20">
+            <section className="relative min-h-svh flex flex-col justify-center px-6 py-20 md:px-12 lg:px-20">
                 <div className="max-w-6xl mx-auto w-full">
                     {/* Top bar */}
                     <div className="flex items-center justify-between mb-16 md:mb-24">
@@ -147,17 +162,17 @@ export default function Home() {
                             </Button>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-2 text-sm text-muted-foreground">
-                            <span>Supports</span>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3 sm:gap-y-2 pt-2 text-xs sm:text-sm text-muted-foreground">
+                            <span className="w-full sm:w-auto">Supports</span>
                             {Object.values(AccountType).map((type, i) => (
-                                <span key={type} className="inline-flex items-center gap-1.5">
-                                    {i > 0 && <span className="text-border mr-1.5">·</span>}
+                                <span key={type} className="inline-flex items-center gap-1 sm:gap-1.5">
+                                    {i > 0 && <span className="text-border mr-1 sm:mr-1.5">·</span>}
                                     <Image
                                         src={ACCOUNT_TYPE_ICONS[type]}
                                         alt={ACCOUNT_TYPE_LABELS[type]}
                                         width={16}
                                         height={16}
-                                        className="size-4 rounded-sm"
+                                        className="size-3.5 sm:size-4 rounded-sm"
                                         unoptimized
                                     />
                                     <span className="font-medium text-foreground">{ACCOUNT_TYPE_LABELS[type]}</span>
@@ -166,10 +181,18 @@ export default function Home() {
                         </div>
                     </div>
                 </div>
+
+                {/* Scroll indicator */}
+                <a
+                    href="#screenshots"
+                    className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors cursor-pointer">
+                    <span className="text-[10px] tracking-widest uppercase">Screenshots</span>
+                    <ChevronDownIcon className="size-4 animate-bounce" style={{ animationDuration: "2s" }} />
+                </a>
             </section>
 
             {/* Preview */}
-            <section className="px-6 pb-20 md:px-12 lg:px-20">
+            <section id="screenshots" className="px-6 pb-20 md:px-12 lg:px-20 scroll-mt-8">
                 <div className="max-w-6xl mx-auto">
                     <Gallery items={screenshots} />
                 </div>

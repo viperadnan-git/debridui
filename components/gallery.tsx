@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils";
 interface GalleryItem {
     id: string;
     label: string;
-    src: string;
+    src: {
+        default: string;
+        mobile?: string;
+    };
 }
 
 interface GalleryProps {
@@ -97,14 +100,33 @@ export function Gallery({ items, className }: GalleryProps) {
                 onTouchEnd={handleTouchEnd}>
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none z-10" />
 
-                <div className="relative aspect-[16/9]">
+                {/* Desktop: 16:9 landscape */}
+                <div className="relative aspect-[16/9] hidden sm:block">
                     {items.map((item, index) => (
                         <img
                             key={item.id}
-                            src={item.src}
+                            src={item.src.default}
                             alt={`DebridUI ${item.label}`}
                             width={1920}
                             height={1080}
+                            className={cn(
+                                "w-full h-full object-cover transition-opacity duration-500",
+                                active === index ? "opacity-90" : "opacity-0 absolute inset-0"
+                            )}
+                        />
+                    ))}
+                </div>
+
+                {/* Mobile: 9:16 portrait (falls back to default if no mobile) */}
+                <div
+                    className={cn("relative sm:hidden", items[active]?.src.mobile ? "aspect-[9/16]" : "aspect-[16/9]")}>
+                    {items.map((item, index) => (
+                        <img
+                            key={item.id}
+                            src={item.src.mobile || item.src.default}
+                            alt={`DebridUI ${item.label}`}
+                            width={item.src.mobile ? 1080 : 1920}
+                            height={item.src.mobile ? 1920 : 1080}
                             className={cn(
                                 "w-full h-full object-cover transition-opacity duration-500",
                                 active === index ? "opacity-90" : "opacity-0 absolute inset-0"
