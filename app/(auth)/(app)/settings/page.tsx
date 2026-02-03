@@ -187,7 +187,7 @@ export default function SettingsPage() {
                 )}
 
                 {setupInstruction && (
-                    <div className="flex items-start gap-3 rounded-sm border border-border/50 p-3 text-xs text-muted-foreground">
+                    <div className="flex items-start gap-3 rounded-sm border border-border/50 p-3 text-sm text-muted-foreground">
                         <Info className="size-3.5 shrink-0 mt-0.5" />
                         <p>{setupInstruction}</p>
                     </div>

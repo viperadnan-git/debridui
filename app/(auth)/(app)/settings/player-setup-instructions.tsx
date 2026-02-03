@@ -6,36 +6,40 @@ const PLAYER_SETUP_INSTRUCTIONS: Partial<Record<MediaPlayer, (platform: Platform
         if (platform === Platform.WINDOWS) {
             return (
                 <>
-                    If VLC isn&apos;t opening videos, you need to set up the protocol handler first.{" "}
+                    If VLC isn&apos;t opening videos, use{" "}
                     <a
-                        href="https://github.com/stefansundin/vlc-protocol/tree/main/windows"
+                        href="https://github.com/viperadnan-git/protocol-handler-manager?tab=readme-ov-file#installation"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-medium underline underline-offset-4 hover:text-primary">
-                        Read the instructions
-                    </a>
+                        Protocol Handler Manager
+                    </a>{" "}
+                    to register the vlc:// protocol.
                 </>
             );
         }
         return null;
     },
     [MediaPlayer.MPV]: (platform) => {
-        const isWindows = platform === Platform.WINDOWS;
-        const terminal = isWindows ? "Command Prompt" : "Terminal";
-        const adminNote = isWindows ? " as administrator" : "";
-
+        if (platform === Platform.WINDOWS) {
+            return (
+                <>
+                    If MPV isn&apos;t opening videos, use{" "}
+                    <a
+                        href="https://github.com/viperadnan-git/protocol-handler-manager?tab=readme-ov-file#installation"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium underline underline-offset-4 hover:text-primary">
+                        Protocol Handler Manager
+                    </a>{" "}
+                    to register the mpv:// protocol.
+                </>
+            );
+        }
         return (
             <>
-                If MPV isn&apos;t opening videos, you need to register the protocol handler. Open {terminal}
-                {adminNote} and run: <code className="rounded bg-muted px-1.5 py-0.5">mpv --register</code>
-                <br />
-                <a
-                    href="https://mpv.io/manual/stable/#options-register"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium underline underline-offset-4 hover:text-primary">
-                    View documentation
-                </a>
+                If MPV isn&apos;t opening videos, open Terminal and run:{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5">mpv --register</code>
             </>
         );
     },
