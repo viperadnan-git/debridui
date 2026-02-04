@@ -4,7 +4,7 @@
     "private": true,
     "license": "GPL-3.0-or-later",
     "author": "Adnan Ahmad <viperadnan@gmail.com>",
-    "description": "A modern, fast, and secure debrid client built with Next.js, Tailwind CSS, and TypeScript.",
+    "description": "A modern debrid client with built-in media discovery and streaming.",
     "keywords": [
         "debrid",
         "client",

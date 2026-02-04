@@ -71,8 +71,8 @@ const features = [
     {
         category: "Discovery",
         items: [
-            "Trakt.tv integration",
             "Stremio addons support",
+            "Trakt.tv integration",
             "Cross-source search",
             "Ratings & trailers",
             "Episode browser",
@@ -134,7 +134,7 @@ export default function Home() {
                         />
 
                         <p className="text-muted-foreground text-xl sm:text-2xl md:text-3xl max-w-xl leading-snug font-light">
-                            A modern debrid client with integrated media discovery and streaming.
+                            A modern debrid client with built-in media discovery and streaming.
                         </p>
 
                         <div className="flex flex-wrap items-center gap-3 pt-4">

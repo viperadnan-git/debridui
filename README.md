@@ -9,7 +9,7 @@
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/viperadnan-git/debridui?color=blue" alt="License" /></a>
 </p>
 
-A modern, fast debrid client with integrated media discovery and streaming capabilities.
+A modern debrid client for managing your files, discovering trending movies and shows — with addon support and streaming to your preferred media player.
 
 > [!IMPORTANT]
 > This project does not provide, host, or stream any content. DebridUI is a client interface that connects to third-party debrid service APIs to display authorized users' private files and content. [Read full disclaimer](DISCLAIMER.md).

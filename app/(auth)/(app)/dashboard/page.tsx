@@ -55,8 +55,8 @@ const WelcomeSection = memo(function WelcomeSection({ onSearchClick }: { onSearc
                         </span>
                     </h1>
                     <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-                        A modern interface for discovering and streaming media through your debrid services. Browse
-                        trending content, manage your files, and enjoy seamless playback.
+                        A modern debrid client for managing your files, discovering trending movies and shows — with
+                        addon support and streaming to your preferred media player.
                     </p>
                 </div>
 
