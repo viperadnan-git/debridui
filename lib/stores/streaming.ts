@@ -23,7 +23,7 @@ interface StreamingState {
 
     play: (request: StreamingRequest, addons: { id: string; url: string; name: string }[]) => Promise<void>;
     playSource: (source: AddonSource, title: string) => void;
-    dismiss: () => void;
+    cancel: () => void;
 }
 
 // Module-level state for request cancellation and toast timing
@@ -125,7 +125,11 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
         const currentRequestId = ++requestId;
 
         set({ activeRequest: request, selectedSource: null });
-        toastId = toast.loading("Finding best source...", { description: title, position: TOAST_POSITION });
+        toastId = toast.loading("Finding best source...", {
+            description: title,
+            position: TOAST_POSITION,
+            cancel: { label: "Cancel", onClick: () => get().cancel() },
+        });
         toastCreatedAt = Date.now();
 
         try {
@@ -195,7 +199,8 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
         }
     },
 
-    dismiss: () => {
+    cancel: () => {
+        requestId++; // Increment to ignore pending request results
         set({ selectedSource: null, activeRequest: null });
         dismissToast();
     },

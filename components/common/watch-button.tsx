@@ -35,7 +35,16 @@ export const WatchButton = memo(function WatchButton({
         (e: React.MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
-            if (useStreamingStore.getState().activeRequest) return;
+            const active = useStreamingStore.getState().activeRequest;
+            // Only block if this exact button started the request
+            if (
+                active?.imdbId === imdbId &&
+                active?.type === mediaType &&
+                active?.tvParams?.season === tvParams?.season &&
+                active?.tvParams?.episode === tvParams?.episode
+            ) {
+                return;
+            }
             const enabledAddons = addons
                 .filter((a) => a.enabled)
                 .sort((a, b) => a.order - b.order)
