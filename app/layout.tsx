@@ -9,7 +9,7 @@ const siteConfig = {
     description:
         "A modern debrid client for managing your files, discovering trending movies and shows — with addon support and streaming to your preferred media player.",
     url: "https://debridui.viperadnan.com",
-    ogImage: "/banner.jpg",
+    ogImage: "/banner.png",
     keywords: [
         "debrid",
         "debrid ui",
