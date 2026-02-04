@@ -14,12 +14,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User } from "@/lib/types";
+import { Account } from "@/lib/types";
 import { encodeAccountData } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface ShareAccountDialogProps {
-    user: User;
+    user: Account;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }

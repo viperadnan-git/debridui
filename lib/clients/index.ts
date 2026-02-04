@@ -1,5 +1,5 @@
 import { AccountType } from "../schemas";
-import { User } from "../types";
+import { Account } from "../types";
 import RealDebridClient from "./realdebrid";
 import TorBoxClient from "./torbox";
 import AllDebridClient from "./alldebrid";
@@ -25,7 +25,7 @@ export function getClient({ type }: { type: AccountType | string }) {
     }
 }
 
-export function getClientInstance(user: User) {
-    const ClientClass = getClient({ type: user.type });
-    return new ClientClass(user);
+export function getClientInstance(account: Account) {
+    const ClientClass = getClient({ type: account.type });
+    return new ClientClass(account);
 }

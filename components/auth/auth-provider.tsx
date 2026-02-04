@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useMemo, useCallback, s
 import { authClient } from "@/lib/auth-client";
 import { useUserAccounts, useDebridUserInfo, useRemoveUserAccount } from "@/hooks/use-user-accounts";
 import type { UserAccount } from "@/lib/db";
-import type { User } from "@/lib/types";
+import type { AccountType } from "@/lib/types";
 import { getClientInstance } from "@/lib/clients";
 import type { DebridClient } from "@/lib/clients";
 import { SplashScreen } from "@/components/splash-screen";
@@ -17,7 +17,6 @@ interface AuthContextType {
     session: ReturnType<typeof authClient.useSession>["data"];
     userAccounts: UserAccount[];
     currentAccount: UserAccount | null;
-    currentUser: User | null; // Debrid user info
     client: DebridClient | null;
     isLoading: boolean;
     isLoggingOut: boolean;
@@ -37,15 +36,15 @@ export function useAuth() {
 }
 
 // Helper hook for components inside private routes
-// Private layout guarantees non-null currentAccount, currentUser and client
+// Private layout guarantees non-null currentAccount and client
 export function useAuthGuaranteed() {
-    const { currentAccount, currentUser, client, ...rest } = useAuth();
+    const { currentAccount, client, ...rest } = useAuth();
 
-    if (!currentAccount || !currentUser || !client) {
+    if (!currentAccount || !client) {
         throw new Error("useAuthGuaranteed can only be used in private routes");
     }
 
-    return { currentAccount, currentUser, client, ...rest };
+    return { currentAccount, client, ...rest };
 }
 
 interface AuthProviderProps {
@@ -89,14 +88,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         [userAccounts, currentAccountId]
     );
 
-    // Use React Query to fetch and cache debrid user info
-    const {
-        data: currentUser = null,
-        isLoading: isLoadingUser,
-        isError: isUserError,
-        error: userError,
-        refetch: refetchUser,
-    } = useDebridUserInfo(currentAccount);
+    // Fetch debrid user info for API key validation only (not exposed in context)
+    // Shows error screen if API key is invalid, allowing user to delete/retry
+    const { isError: isUserError, error: userError, refetch: refetchUser } = useDebridUserInfo(currentAccount);
 
     // Mutation for removing accounts (used in error recovery)
     const { mutate: removeAccount } = useRemoveUserAccount();
@@ -133,11 +127,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     }, [currentAccountId]);
 
-    // Memoize client instance
+    // Memoize client instance - only needs account (apiKey + type)
     const client = useMemo(() => {
-        if (!currentUser) return null;
-        return getClientInstance(currentUser);
-    }, [currentUser]);
+        if (!currentAccount) return null;
+        return getClientInstance({ type: currentAccount.type as AccountType, apiKey: currentAccount.apiKey });
+    }, [currentAccount]);
 
     // `rerender-defer-reads` - Stable callback for switching accounts
     const switchAccount = useCallback((accountId: string) => {
@@ -171,9 +165,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             session,
             userAccounts,
             currentAccount,
-            currentUser,
             client,
-            isLoading: isSessionPending || isAccountsLoading || isLoadingUser,
+            isLoading: isSessionPending || isAccountsLoading,
             isLoggingOut,
             switchAccount,
             refetchAccounts: refetch,
@@ -183,11 +176,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
             session,
             userAccounts,
             currentAccount,
-            currentUser,
             client,
             isSessionPending,
             isAccountsLoading,
-            isLoadingUser,
             isLoggingOut,
             switchAccount,
             refetch,
@@ -206,8 +197,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         );
     }
 
-    // Show splash during: session check, no session (redirect), accounts loading, user info loading
-    if (isSessionPending || !session || isAccountsLoading || (accountsLength > 0 && isLoadingUser)) {
+    // Show splash during: session check, no session (redirect), accounts loading
+    if (isSessionPending || !session || isAccountsLoading) {
         return <SplashScreen />;
     }
 

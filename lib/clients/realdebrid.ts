@@ -8,7 +8,8 @@ import {
     DebridFileAddStatus,
     OperationResult,
     AccountType,
-    User,
+    Account,
+    FullAccount,
     DebridAuthError,
     DebridError,
     DebridRateLimitError,
@@ -113,10 +114,10 @@ export default class RealDebridClient extends BaseClient {
 
     private readonly authHeaders: Record<string, string>;
 
-    constructor(user: User) {
-        super({ user, rateLimiter: { maxRequests: 250, intervalMs: 60000 } });
+    constructor(account: Account) {
+        super({ account, rateLimiter: { maxRequests: 250, intervalMs: 60000 } });
         this.authHeaders = {
-            Authorization: `Bearer ${user.apiKey}`,
+            Authorization: `Bearer ${account.apiKey}`,
             "User-Agent": USER_AGENT,
         };
     }
@@ -173,7 +174,7 @@ export default class RealDebridClient extends BaseClient {
         return data as T;
     }
 
-    static async getUser(apiKey: string): Promise<User> {
+    static async getUser(apiKey: string): Promise<FullAccount> {
         const url = getProxyUrl("https://api.real-debrid.com/rest/1.0/user");
 
         const response = await fetch(url, {

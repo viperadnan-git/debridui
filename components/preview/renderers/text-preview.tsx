@@ -17,7 +17,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [content, setContent] = useState<string>("");
-    const { currentUser } = useAuthGuaranteed();
+    const { currentAccount } = useAuthGuaranteed();
 
     useEffect(() => {
         const fetchContent = async () => {
@@ -25,7 +25,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
                 setLoading(true);
                 setError(null);
 
-                const useProxy = currentUser.type === AccountType.ALLDEBRID;
+                const useProxy = currentAccount.type === AccountType.ALLDEBRID;
                 const fetchUrl = useProxy ? getProxyUrl(downloadUrl) : downloadUrl;
 
                 const response = await fetch(fetchUrl);
@@ -46,7 +46,7 @@ export function TextPreview({ downloadUrl, onLoad, onError }: TextPreviewProps) 
         };
 
         fetchContent();
-    }, [downloadUrl, currentUser.type, onLoad, onError]);
+    }, [downloadUrl, currentAccount.type, onLoad, onError]);
 
     if (loading) {
         return (

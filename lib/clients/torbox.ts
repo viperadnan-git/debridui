@@ -8,7 +8,8 @@ import {
     DebridFileAddStatus,
     OperationResult,
     AccountType,
-    User,
+    Account,
+    FullAccount,
     DebridAuthError,
     DebridError,
     DebridRateLimitError,
@@ -134,8 +135,8 @@ export default class TorBoxClient extends BaseClient {
     readonly refreshInterval = 5000;
     readonly supportsEphemeralLinks = false;
 
-    constructor(user: User) {
-        super({ user });
+    constructor(account: Account) {
+        super({ account });
     }
 
     /**
@@ -149,7 +150,7 @@ export default class TorBoxClient extends BaseClient {
     ): string {
         const endpoint = type === "torrent" ? "torrents/requestdl" : "webdl/requestdl";
         const idParam = type === "torrent" ? "torrent_id" : "web_id";
-        return `${this.apiBaseUrl}/${endpoint}?token=${this.user.apiKey}&${idParam}=${id}&file_id=${fileId}&redirect=${redirect}`;
+        return `${this.apiBaseUrl}/${endpoint}?token=${this.account.apiKey}&${idParam}=${id}&file_id=${fileId}&redirect=${redirect}`;
     }
 
     private async makeRequest<T>(
@@ -157,7 +158,7 @@ export default class TorBoxClient extends BaseClient {
         options: RequestInit & { returnRaw?: boolean } = { returnRaw: false }
     ): Promise<T> {
         await this.rateLimiter.acquire();
-        const { apiKey } = this.user;
+        const { apiKey } = this.account;
         const url = `${this.baseUrl}${encodeURIComponent(`/${path}`)}`;
 
         const response = await fetch(url, {
@@ -173,7 +174,7 @@ export default class TorBoxClient extends BaseClient {
         return (options.returnRaw ? data : data.data) as T;
     }
 
-    static async getUser(apiKey: string): Promise<User> {
+    static async getUser(apiKey: string): Promise<FullAccount> {
         const response = await fetch(getProxyUrl("https://api.torbox.app/v1/api/user/me"), {
             headers: {
                 Authorization: `Bearer ${apiKey}`,
@@ -322,7 +323,7 @@ export default class TorBoxClient extends BaseClient {
 
     private async getResolvedDownloadLink(torrentId: string, targetFileId: string): Promise<string> {
         return this.makeRequest<string>(
-            `torrents/requestdl?token=${this.user.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=false`,
+            `torrents/requestdl?token=${this.account.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=false`,
             { method: "GET" }
         );
     }
@@ -523,7 +524,7 @@ export default class TorBoxClient extends BaseClient {
 
         const response = await fetch(`${searchApiUrl}?${params}`, {
             headers: {
-                Authorization: `Bearer ${this.user.apiKey}`,
+                Authorization: `Bearer ${this.account.apiKey}`,
                 "User-Agent": USER_AGENT,
             },
         });

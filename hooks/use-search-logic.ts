@@ -14,7 +14,7 @@ interface UseSearchLogicOptions {
 }
 
 export function useSearchLogic({ query, enabled = true }: UseSearchLogicOptions) {
-    const { client, currentUser, currentAccount } = useAuthGuaranteed();
+    const { client, currentAccount } = useAuthGuaranteed();
     const trimmedQuery = query.trim();
     const minQueryLength = 3;
     const shouldSearch = enabled && trimmedQuery.length >= minQueryLength;
@@ -37,7 +37,7 @@ export function useSearchLogic({ query, enabled = true }: UseSearchLogicOptions)
         gcTime: 60_000,
     });
 
-    const isTorBoxUser = currentUser.type === AccountType.TORBOX;
+    const isTorBoxUser = currentAccount.type === AccountType.TORBOX;
 
     const { data: sourceResults, isLoading: isSourceSearching } = useQuery<TorBoxSearchResult[]>({
         queryKey: ["torbox", "search", currentAccount.id, query],

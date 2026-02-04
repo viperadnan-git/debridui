@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { AccountType, addUserSchema } from "@/lib/schemas";
+import { AccountType, accountSchema } from "@/lib/schemas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { RealDebridClient, TorBoxClient, AllDebridClient } from "@/lib/clients";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
@@ -21,8 +21,8 @@ export function AddAccountForm() {
     const addAccount = useAddUserAccount();
     const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | null>(null);
 
-    const form = useForm<z.infer<typeof addUserSchema>>({
-        resolver: zodResolver(addUserSchema),
+    const form = useForm<z.infer<typeof accountSchema>>({
+        resolver: zodResolver(accountSchema),
         defaultValues: {
             apiKey: "",
             type: undefined,
@@ -30,7 +30,7 @@ export function AddAccountForm() {
     });
 
     // AuthProvider handles redirect to /dashboard after account is added
-    function onSubmit(values: z.infer<typeof addUserSchema>) {
+    function onSubmit(values: z.infer<typeof accountSchema>) {
         addAccount.mutate(values, { onSuccess: () => form.reset() });
     }
 

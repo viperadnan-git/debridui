@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { AccountType, userSchema } from "./schemas";
+import { AccountType, accountSchema, fullAccountSchema } from "./schemas";
 
 export { AccountType };
-export type User = z.infer<typeof userSchema>;
+export type Account = z.infer<typeof accountSchema>;
+export type FullAccount = z.infer<typeof fullAccountSchema>;
 
 export enum FileType {
     VIDEO = "video",

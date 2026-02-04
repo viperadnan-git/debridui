@@ -12,11 +12,11 @@ import { SplashScreen } from "@/components/splash-screen";
 // App layout - requires at least one account
 // Redirect logic is centralized in AuthProvider
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-    const { userAccounts, currentAccount, currentUser, client } = useAuth();
+    const { userAccounts, currentAccount, client } = useAuth();
 
     // Single check for all required data to prevent flicker
     // AuthProvider handles redirect to /onboarding if no accounts
-    const isReady = userAccounts.length > 0 && currentAccount && currentUser && client;
+    const isReady = userAccounts.length > 0 && currentAccount && client;
     if (!isReady) {
         return <SplashScreen />;
     }

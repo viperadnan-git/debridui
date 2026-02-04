@@ -6,7 +6,12 @@ export enum AccountType {
     ALLDEBRID = "alldebrid",
 }
 
-export const userSchema = z.object({
+export const accountSchema = z.object({
+    type: z.enum(Object.values(AccountType)),
+    apiKey: z.string().trim().min(1),
+});
+
+export const fullAccountSchema = z.object({
     id: z.string().trim().min(1).default(crypto.randomUUID()),
     name: z.string().trim().min(1),
     email: z.string().trim().min(1),
@@ -15,9 +20,4 @@ export const userSchema = z.object({
     premiumExpiresAt: z.date(),
     apiKey: z.string().trim().min(1),
     type: z.enum(Object.values(AccountType)),
-});
-
-export const addUserSchema = z.object({
-    type: z.enum(Object.values(AccountType)),
-    apiKey: z.string().trim().min(1),
 });

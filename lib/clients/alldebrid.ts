@@ -8,7 +8,8 @@ import {
     DebridFileAddStatus,
     OperationResult,
     AccountType,
-    User,
+    Account,
+    FullAccount,
     DebridError,
     DebridAuthError,
     WebDownloadAddResult,
@@ -96,14 +97,14 @@ export default class AllDebridClient extends BaseClient {
     readonly refreshInterval = false as const;
     readonly supportsEphemeralLinks = true;
 
-    constructor(user: User) {
-        super({ user });
+    constructor(account: Account) {
+        super({ account });
         this.sessionId = Math.floor(Math.random() * 1000000);
     }
 
     private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
         await this.rateLimiter.acquire();
-        const { apiKey } = this.user;
+        const { apiKey } = this.account;
         const url = `https://api.alldebrid.com/v4.1/${path}?agent=${USER_AGENT}`;
 
         const response = await fetch(url, {
@@ -123,7 +124,7 @@ export default class AllDebridClient extends BaseClient {
         return data.data;
     }
 
-    static async getUser(apiKey: string): Promise<User> {
+    static async getUser(apiKey: string): Promise<FullAccount> {
         const url = `https://api.alldebrid.com/v4.1/user?agent=${USER_AGENT}`;
 
         const response = await fetch(url, {

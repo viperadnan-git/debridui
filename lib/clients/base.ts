@@ -1,5 +1,5 @@
 import {
-    User,
+    Account,
     DebridFileAddStatus,
     DebridFile,
     DebridFileNode,
@@ -45,20 +45,20 @@ export class RateLimiter {
 }
 
 interface BaseClientOptions {
-    user: User;
+    account: Account;
     rateLimiter?: { maxRequests: number; intervalMs: number };
 }
 
 export default abstract class BaseClient {
-    protected readonly user: User;
+    protected readonly account: Account;
     protected readonly rateLimiter: RateLimiter;
 
     // Web download capabilities - override in subclasses
     readonly refreshInterval: number | false = false;
     readonly supportsEphemeralLinks: boolean = false;
 
-    constructor({ user, rateLimiter = { maxRequests: 250, intervalMs: 60000 } }: BaseClientOptions) {
-        this.user = user;
+    constructor({ account, rateLimiter = { maxRequests: 250, intervalMs: 60000 } }: BaseClientOptions) {
+        this.account = account;
         this.rateLimiter = new RateLimiter(rateLimiter.maxRequests, rateLimiter.intervalMs);
     }
 
