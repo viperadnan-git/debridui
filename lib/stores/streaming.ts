@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
+import { type Addon, type AddonSource, type TvSearchParams } from "@/lib/addons/types";
 import { AddonClient } from "@/lib/addons/client";
 import { parseStreams } from "@/lib/addons/parser";
 import { selectBestSource } from "@/lib/streaming/source-selector";
@@ -21,7 +21,7 @@ interface StreamingState {
     activeRequest: StreamingRequest | null;
     selectedSource: AddonSource | null;
 
-    play: (request: StreamingRequest, addons: { id: string; url: string; name: string }[]) => Promise<void>;
+    play: (request: StreamingRequest, addons: Addon[]) => Promise<void>;
     playSource: (source: AddonSource, title: string) => void;
     cancel: () => void;
 }
@@ -113,7 +113,10 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
     play: async (request, addons) => {
         const { imdbId, type, title, tvParams } = request;
 
-        if (addons.length === 0) {
+        // Filter and sort enabled addons
+        const enabledAddons = addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order);
+
+        if (enabledAddons.length === 0) {
             toast.error("No addons enabled", {
                 description: "Configure addons in settings to fetch sources",
             });
@@ -133,7 +136,7 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
         toastCreatedAt = Date.now();
 
         try {
-            const sourcePromises = addons.map(async (addon) => {
+            const sourcePromises = enabledAddons.map(async (addon) => {
                 const queryKey = ["addon", addon.id, "sources", imdbId, type, tvParams] as const;
 
                 const cached = queryClient.getQueryData<AddonSource[]>(queryKey);

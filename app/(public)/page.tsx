@@ -192,7 +192,7 @@ export default function Home() {
             </section>
 
             {/* Preview */}
-            <section id="screenshots" className="px-6 pb-20 md:px-12 lg:px-20 scroll-mt-8">
+            <section id="screenshots" className="px-6 py-12 md:py-16 md:px-12 lg:px-20 scroll-mt-8">
                 <div className="max-w-6xl mx-auto">
                     <Gallery items={screenshots} />
                 </div>

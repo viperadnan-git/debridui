@@ -23,35 +23,23 @@ export const WatchButton = memo(function WatchButton({
 }: WatchButtonProps) {
     const play = useStreamingStore((s) => s.play);
     const activeRequest = useStreamingStore((s) => s.activeRequest);
-    const { data: addons = [] } = useUserAddons();
+    const { data: addons = [], isPending: isAddonsLoading } = useUserAddons();
 
     const isLoading =
-        activeRequest?.imdbId === imdbId &&
-        activeRequest?.type === mediaType &&
-        activeRequest?.tvParams?.season === tvParams?.season &&
-        activeRequest?.tvParams?.episode === tvParams?.episode;
+        isAddonsLoading ||
+        (activeRequest?.imdbId === imdbId &&
+            activeRequest?.type === mediaType &&
+            activeRequest?.tvParams?.season === tvParams?.season &&
+            activeRequest?.tvParams?.episode === tvParams?.episode);
 
     const handleClick = useCallback(
         (e: React.MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
-            const active = useStreamingStore.getState().activeRequest;
-            // Only block if this exact button started the request
-            if (
-                active?.imdbId === imdbId &&
-                active?.type === mediaType &&
-                active?.tvParams?.season === tvParams?.season &&
-                active?.tvParams?.episode === tvParams?.episode
-            ) {
-                return;
-            }
-            const enabledAddons = addons
-                .filter((a) => a.enabled)
-                .sort((a, b) => a.order - b.order)
-                .map((a) => ({ id: a.id, url: a.url, name: a.name }));
-            play({ imdbId, type: mediaType, title, tvParams }, enabledAddons);
+            if (isLoading) return;
+            play({ imdbId, type: mediaType, title, tvParams }, addons);
         },
-        [play, imdbId, mediaType, title, tvParams, addons]
+        [play, imdbId, mediaType, title, tvParams, addons, isLoading]
     );
 
     return (

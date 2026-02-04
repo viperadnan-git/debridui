@@ -196,7 +196,7 @@ async function fetchAddonSources(
  * - rerender-dependencies: Uses primitive dependencies (addon IDs)
  */
 export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSourcesOptions) {
-    const { data: addons = [] } = useUserAddons();
+    const { data: addons = [], isPending: isAddonsLoading } = useUserAddons();
 
     // Stable reference for enabled addons list
     const enabledAddons = useMemo(() => addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order), [addons]);
@@ -244,8 +244,8 @@ export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSources
             .map(({ addon }) => addon.name);
     }, [queries, enabledAddons]);
 
-    // Loading state: true if ANY query is still loading
-    const isLoading = queries.some((q) => q.isLoading);
+    // Loading state: true if addons or ANY source query is still loading
+    const isLoading = isAddonsLoading || queries.some((q) => q.isLoading);
 
     return {
         data: combinedData,
