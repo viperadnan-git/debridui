@@ -106,7 +106,8 @@ export const isSupportedPlayer = (player: MediaPlayer, platform?: Platform): boo
 };
 
 const generateVlcUrl = (url: string, fileName: string): string => {
-    if (isMobileOrTablet()) {
+    const platform = detectPlatform();
+    if (platform === Platform.ANDROID) {
         const encodedTitle = encodeURIComponent(fileName);
         const cleanUrl = url.replace("https://", "");
         return `intent://${cleanUrl}#Intent;scheme=https;type=video/*;package=org.videolan.vlc;S.title=${encodedTitle};end`;
