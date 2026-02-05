@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { SearchDialog } from "@/components/mdb/search-dialog";
 import { MdbFooter } from "@/components/mdb/mdb-footer";
-import { memo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     useTraktTrendingMovies,
     useTraktTrendingShows,
@@ -15,11 +15,12 @@ import {
     useTraktAnticipatedShows,
     useTraktBoxOfficeMovies,
 } from "@/hooks/use-trakt";
-import { SearchIcon, Sparkles, Film, TrendingUp, Calendar, Ticket } from "lucide-react";
+import { SearchIcon, Sparkles, Film, Tv, TrendingUp, Calendar, Ticket, Puzzle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DISCORD_URL } from "@/lib/constants";
 import { HeroCarouselSkeleton } from "@/components/mdb/hero-carousel-skeleton";
 import { MediaSection } from "@/components/mdb/media-section";
+import { useAddonCatalogDefs, useAddonCatalog, catalogSlug, type AddonCatalogDef } from "@/hooks/use-addons";
 
 const HeroCarousel = dynamic(
     () => import("@/components/mdb/hero-carousel").then((m) => ({ default: m.HeroCarousel })),
@@ -137,6 +138,93 @@ const ContentSection = memo(function ContentSection({ label, icon, children, del
     );
 });
 
+// Individual catalog row — receives visibility from parent observer
+const AddonCatalogRow = memo(function AddonCatalogRow({
+    catalog,
+    isVisible,
+}: {
+    catalog: AddonCatalogDef;
+    isVisible: boolean;
+}) {
+    const { data, error } = useAddonCatalog(catalog, isVisible);
+    // rerender-memo: stable sliced ref so MediaSection memo is effective
+    const items = useMemo(() => data?.items.slice(0, 10), [data]);
+
+    return (
+        <MediaSection
+            title={catalog.name}
+            titleIcon={catalog.type === "movie" ? Film : Tv}
+            items={items}
+            isLoading={isVisible && !data && !error}
+            error={error}
+            rows={1}
+            viewAllHref={`/discover/addon/${catalogSlug(catalog)}`}
+        />
+    );
+});
+
+// Single shared IntersectionObserver for all catalog rows
+const AddonCatalogs = memo(function AddonCatalogs() {
+    const { catalogs, isLoading } = useAddonCatalogDefs();
+    const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
+    const observerRef = useRef<IntersectionObserver>(undefined);
+    const pendingRef = useRef<Element[]>([]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const newKeys: string[] = [];
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        const key = (entry.target as HTMLElement).dataset.catalogKey;
+                        if (key) newKeys.push(key);
+                        observer.unobserve(entry.target);
+                    }
+                }
+                if (newKeys.length > 0) {
+                    setVisibleKeys((prev) => {
+                        const next = new Set(prev);
+                        for (const k of newKeys) next.add(k);
+                        return next;
+                    });
+                }
+            },
+            { rootMargin: "100% 0px" }
+        );
+        observerRef.current = observer;
+        // Observe elements that mounted before the observer was ready
+        for (const el of pendingRef.current) observer.observe(el);
+        pendingRef.current = [];
+        return () => observer.disconnect();
+    }, []);
+
+    const observeRef = useCallback((el: HTMLDivElement | null) => {
+        if (!el) return;
+        if (observerRef.current) {
+            observerRef.current.observe(el);
+        } else {
+            pendingRef.current.push(el);
+        }
+    }, []);
+
+    if (isLoading || catalogs.length === 0) return null;
+
+    return (
+        <ContentSection label="From Your Addons" icon={<Puzzle className="size-3.5" />}>
+            <div className="space-y-3">
+                {catalogs.map((catalog) => {
+                    const key = `${catalog.addonId}-${catalog.type}-${catalog.id}`;
+                    return (
+                        <div key={key} ref={observeRef} data-catalog-key={key}>
+                            <AddonCatalogRow catalog={catalog} isVisible={visibleKeys.has(key)} />
+                        </div>
+                    );
+                })}
+            </div>
+        </ContentSection>
+    );
+});
+
 const DashboardPage = memo(function DashboardPage() {
     const [searchOpen, setSearchOpen] = useState(false);
 
@@ -162,6 +250,9 @@ const DashboardPage = memo(function DashboardPage() {
 
             {/* Content Sections with lazy loading */}
             <div className="lg:px-6 space-y-16">
+                {/* Addon Catalogs */}
+                <AddonCatalogs />
+
                 {/* Trending */}
                 <ContentSection label="Trending Now" icon={<TrendingUp className="size-3.5" />} delay={0}>
                     <MediaSection

@@ -2,8 +2,15 @@ import { useQuery, useQueryClient, useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getUserAddons, addAddon, removeAddon, toggleAddon, updateAddonOrders } from "@/lib/actions/addons";
 import { AddonClient } from "@/lib/addons/client";
-import { parseStreams } from "@/lib/addons/parser";
-import { type Addon, type AddonSource, type TvSearchParams } from "@/lib/addons/types";
+import { parseStreams, catalogMetasToMediaItems } from "@/lib/addons/parser";
+import {
+    type Addon,
+    type AddonManifest,
+    type AddonSource,
+    type TvSearchParams,
+    hasCatalogs,
+    hasStreams,
+} from "@/lib/addons/types";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 const USER_ADDONS_KEY = ["user-addons"];
@@ -146,6 +153,18 @@ export function useUpdateAddonOrders() {
     );
 }
 
+/**
+ * Shared manifest query config. Used by useAddon, useAddonCatalogDefs,
+ * useStreamAddons, and imperatively via queryClient.ensureQueryData in streaming store.
+ */
+export function manifestQueryOptions(addon: { id: string; url: string }) {
+    return {
+        queryKey: ["addon", addon.id, "manifest"] as const,
+        queryFn: () => new AddonClient({ url: addon.url }).fetchManifest(),
+        staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    };
+}
+
 interface UseAddonOptions {
     addonId: string;
     url: string;
@@ -157,14 +176,57 @@ interface UseAddonOptions {
  */
 export function useAddon({ addonId, url, enabled = true }: UseAddonOptions) {
     return useQuery({
-        queryKey: ["addon", addonId, "manifest"],
-        queryFn: async () => {
-            const client = new AddonClient({ url });
-            return await client.fetchManifest();
-        },
+        ...manifestQueryOptions({ id: addonId, url }),
         enabled,
-        staleTime: 1000 * 60 * 60 * 24, // 24 hours
     });
+}
+
+/**
+ * Returns enabled addons that support streams, filtered via manifest capability check.
+ * Manifests are fetched in parallel and share cache with all other manifest consumers.
+ */
+export function useStreamAddons() {
+    const { data: addons = [], isPending: isAddonsLoading } = useUserAddons();
+
+    const enabledAddons = useMemo(() => addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order), [addons]);
+
+    const manifests = useQueries({
+        queries: enabledAddons.map((addon) => manifestQueryOptions(addon)),
+    });
+
+    // rerender-dependencies: stable primitive key
+    const manifestDataKey = manifests.map((q) => q.dataUpdatedAt).join(",");
+
+    const streamAddons = useMemo(() => {
+        return enabledAddons.filter((_, i) => {
+            const manifest = manifests[i].data;
+            return manifest && hasStreams(manifest);
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [manifestDataKey, enabledAddons]);
+
+    return {
+        addons: streamAddons,
+        isLoading: isAddonsLoading || manifests.some((q) => q.isPending),
+    };
+}
+
+/**
+ * Imperative manifest filter for non-hook contexts (e.g. streaming store).
+ * Uses queryClient.ensureQueryData for cache-first fetching in parallel.
+ */
+export async function getStreamCapableAddons(
+    addons: Addon[],
+    qc: {
+        ensureQueryData: <T>(opts: {
+            queryKey: readonly unknown[];
+            queryFn: () => Promise<T>;
+            staleTime: number;
+        }) => Promise<T>;
+    }
+): Promise<Addon[]> {
+    const manifests = await Promise.all(addons.map((a) => qc.ensureQueryData(manifestQueryOptions(a))));
+    return addons.filter((_, i) => hasStreams(manifests[i] as AddonManifest));
 }
 
 interface UseAddonSourcesOptions {
@@ -188,18 +250,14 @@ async function fetchAddonSources(
 }
 
 /**
- * Hook to fetch sources from all enabled addons
+ * Hook to fetch sources from stream-capable addons only.
+ * Filters via manifest capability check before issuing stream requests.
  *
- * Following Vercel React best practices:
  * - async-parallel: Each addon has its own query, results show as they arrive
  * - client-swr-dedup: Individual addon queries are cached separately
- * - rerender-dependencies: Uses primitive dependencies (addon IDs)
  */
 export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSourcesOptions) {
-    const { data: addons = [], isPending: isAddonsLoading } = useUserAddons();
-
-    // Stable reference for enabled addons list
-    const enabledAddons = useMemo(() => addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order), [addons]);
+    const { addons: enabledAddons, isLoading: isAddonsLoading } = useStreamAddons();
 
     // Individual query per addon for progressive loading
     const queries = useQueries({
@@ -252,4 +310,121 @@ export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSources
         isLoading,
         failedAddons,
     };
+}
+
+export interface AddonCatalogDef {
+    type: string;
+    id: string;
+    name: string;
+    addonId: string;
+    addonName: string;
+    addonUrl: string;
+}
+
+/**
+ * Returns browsable catalog definitions from enabled addon manifests (lightweight)
+ *
+ * - async-parallel: All manifests fetched independently via useQueries
+ * - client-swr-dedup: Manifest queries share cache with addon cards (same key)
+ */
+export function useAddonCatalogDefs() {
+    const { data: addons = [], isPending: isAddonsLoading } = useUserAddons();
+
+    const enabledAddons = useMemo(() => addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order), [addons]);
+
+    // Fetch manifests in parallel (shares cache with useAddon hook)
+    const manifests = useQueries({
+        queries: enabledAddons.map((addon) => manifestQueryOptions(addon)),
+    });
+
+    // rerender-dependencies: derive stable primitive key from query results
+    const manifestDataKey = manifests.map((q) => q.dataUpdatedAt).join(",");
+
+    // Extract browsable catalogs from addons with catalog capability
+    const catalogs = useMemo<AddonCatalogDef[]>(() => {
+        return manifests.flatMap((q, i) => {
+            if (!q.data || !hasCatalogs(q.data)) return [];
+            return (q.data.catalogs ?? [])
+                .filter((c) => !c.extra?.some((e) => e.name === "search" && e.isRequired))
+                .map((c) => ({
+                    ...c,
+                    name: c.name || c.id,
+                    addonId: enabledAddons[i].id,
+                    addonName: enabledAddons[i].name,
+                    addonUrl: enabledAddons[i].url,
+                }));
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [manifestDataKey, enabledAddons]);
+
+    return {
+        catalogs,
+        isLoading: isAddonsLoading || manifests.some((q) => q.isPending),
+    };
+}
+
+/**
+ * Fetches a single catalog's content. Use `enabled` to defer until visible.
+ */
+export function useAddonCatalog(catalog: AddonCatalogDef, enabled = true) {
+    return useQuery({
+        queryKey: ["addon", catalog.addonId, "catalog", catalog.type, catalog.id],
+        queryFn: async () => {
+            const client = new AddonClient({ url: catalog.addonUrl });
+            const response = await client.fetchCatalog(catalog.type, catalog.id);
+            return {
+                items: catalogMetasToMediaItems(response.metas),
+            };
+        },
+        enabled,
+        staleTime: 30 * 60 * 1000,
+        retry: 1,
+        refetchOnWindowFocus: false,
+    });
+}
+
+/**
+ * Resolve a single catalog definition by fetching only the relevant addon's manifest.
+ * Shares cache with useAddon/useAddonCatalogDefs via the same query key.
+ */
+export function useAddonCatalogDef(addonId: string, type: string, catalogId: string) {
+    const { data: addons = [], isPending: isAddonsLoading } = useUserAddons();
+
+    const addon = useMemo(() => addons.find((a) => a.id === addonId && a.enabled), [addons, addonId]);
+
+    const { data: manifest, isPending: isManifestLoading } = useAddon({
+        addonId,
+        url: addon?.url ?? "",
+        enabled: !!addon,
+    });
+
+    const catalogDef = useMemo<AddonCatalogDef | undefined>(() => {
+        if (!addon || !manifest || !hasCatalogs(manifest)) return undefined;
+        const cat = (manifest.catalogs ?? []).find((c) => c.type === type && c.id === catalogId);
+        if (!cat) return undefined;
+        return {
+            ...cat,
+            name: cat.name || cat.id,
+            addonId: addon.id,
+            addonName: addon.name,
+            addonUrl: addon.url,
+        };
+    }, [manifest, type, catalogId, addon]);
+
+    return {
+        catalogDef,
+        isLoading: isAddonsLoading || (!!addon && isManifestLoading),
+    };
+}
+
+export function catalogSlug(catalog: AddonCatalogDef): string {
+    return `${catalog.addonId}~${catalog.type}~${catalog.id}`;
+}
+
+export function parseCatalogSlug(slug: string) {
+    const parts = decodeURIComponent(slug).split("~");
+    if (parts.length !== 3 || parts.some((p) => !p)) {
+        return { addonId: "", type: "", id: "" };
+    }
+    return { addonId: parts[0], type: parts[1], id: parts[2] };
 }

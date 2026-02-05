@@ -25,6 +25,7 @@ const DETAIL_ROUTES: Record<string, string> = {
     movies: "Movie",
     shows: "TV Show",
     people: "People",
+    discover: "Discover",
 };
 
 // Static route labels
@@ -64,8 +65,10 @@ export const Breadcrumbs = memo(function Breadcrumbs() {
 
         const breadcrumbs: Array<{ label: string; href: string | null }> = [{ label: "Home", href: "/dashboard" }];
 
-        // Check if this is a detail page (e.g., /movies/[slug], /people/[slug])
-        const isDetailPage = segments.length === 2 && segments[0] in DETAIL_ROUTES;
+        // Detail pages: /movies/[slug] (len 2), /discover/addon/[slug] (len 3)
+        const isDetailPage =
+            (segments.length === 2 && segments[0] in DETAIL_ROUTES) ||
+            (segments[0] === "discover" && segments[1] === "addon" && segments.length === 3);
 
         for (let i = 0; i < segments.length; i++) {
             const segment = segments[i];

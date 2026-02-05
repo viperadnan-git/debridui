@@ -29,16 +29,17 @@ export interface AddonManifest {
     version: string;
     description: string;
     logo?: string;
-    resources: Array<{
-        name: string;
-        types: string[];
-        idPrefixes?: string[];
-    }>;
+    resources: Array<string | { name: string; types: string[]; idPrefixes?: string[] }>;
     types: string[];
     catalogs?: Array<{
         type: string;
         id: string;
         name?: string;
+        extra?: Array<{
+            name: string;
+            isRequired?: boolean;
+            options?: string[];
+        }>;
     }>;
     behaviorHints?: {
         adult?: boolean;
@@ -46,6 +47,35 @@ export interface AddonManifest {
         configurable?: boolean;
         configurationRequired?: boolean;
     };
+}
+
+export interface CatalogMeta {
+    id: string;
+    type: string;
+    name: string;
+    poster?: string;
+    posterShape?: string;
+    description?: string;
+    genres?: string[];
+    imdbRating?: string;
+    releaseInfo?: string;
+}
+
+export interface CatalogResponse {
+    metas: CatalogMeta[];
+}
+
+// Capability detection helpers
+export function hasResource(manifest: AddonManifest, name: string): boolean {
+    return manifest.resources.some((r) => (typeof r === "string" ? r : r.name) === name);
+}
+
+export function hasCatalogs(manifest: AddonManifest): boolean {
+    return hasResource(manifest, "catalog") && (manifest.catalogs?.length ?? 0) > 0;
+}
+
+export function hasStreams(manifest: AddonManifest): boolean {
+    return hasResource(manifest, "stream");
 }
 
 export interface AddonStream {

@@ -10,6 +10,7 @@ import { ArrowRightIcon, Star, Play, ChevronLeft, ChevronRight } from "lucide-re
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import { useTraktTrendingMixed } from "@/hooks/use-trakt";
+import { getPosterUrl, getBackdropUrl } from "@/lib/utils/trakt";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import { HeroCarouselSkeleton } from "./hero-carousel-skeleton";
 
@@ -25,8 +26,8 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
     const type = item.movie ? "movie" : "show";
     if (!media) return null;
 
-    const fanartImage = media.images?.fanart?.[0] ? `https://${media.images.fanart[0]}` : null;
-    const posterImage = media.images?.poster?.[0] ? `https://${media.images.poster[0]}` : null;
+    const fanartImage = getBackdropUrl(media.images);
+    const posterImage = getPosterUrl(media.images);
     const placeholderImage = `https://placehold.co/1920x1080/1a1a1a/3e3e3e?text=${encodeURIComponent(media.title)}`;
 
     const desktopImage = fanartImage || placeholderImage;
@@ -320,7 +321,7 @@ export const HeroCarousel = memo(function HeroCarousel({ autoFocus = false }: He
         if (!isLoading) {
             autoplay.play();
             if (autoFocus) {
-                carouselRef.current?.focus();
+                carouselRef.current?.focus({ preventScroll: true });
             }
         }
 

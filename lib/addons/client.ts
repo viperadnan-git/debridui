@@ -1,4 +1,10 @@
-import { AddonError, type AddonManifest, type AddonStreamResponse, type TvSearchParams } from "./types";
+import {
+    AddonError,
+    type AddonManifest,
+    type AddonStreamResponse,
+    type CatalogResponse,
+    type TvSearchParams,
+} from "./types";
 
 export interface AddonClientConfig {
     url: string;
@@ -133,6 +139,29 @@ export class AddonClient {
 
         if (!response.streams || !Array.isArray(response.streams)) {
             throw new AddonError("Invalid response structure: missing streams array");
+        }
+
+        return response;
+    }
+
+    /**
+     * Fetch catalog content
+     */
+    async fetchCatalog(type: string, catalogId: string, extra?: Record<string, string>): Promise<CatalogResponse> {
+        let url = `${this.baseUrl}/catalog/${type}/${catalogId}`;
+
+        if (extra && Object.keys(extra).length > 0) {
+            const extraStr = Object.entries(extra)
+                .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+                .join("&");
+            url += `/${extraStr}`;
+        }
+
+        url += ".json";
+        const response = await this.makeRequest<CatalogResponse>(url);
+
+        if (!response.metas || !Array.isArray(response.metas)) {
+            return { metas: [] };
         }
 
         return response;

@@ -1,27 +1,26 @@
 "use client";
 
-import { type TraktMedia } from "@/lib/trakt";
+import { type Media } from "@/lib/trakt";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { getPosterUrl } from "@/lib/utils/trakt";
 import { Star } from "lucide-react";
 
 interface MediaCardProps {
-    media: TraktMedia;
+    media: Media;
     type: "movie" | "show";
     rank?: number;
-    watchers?: number;
     className?: string;
 }
 
 export const MediaCard = memo(function MediaCard({ media, type, rank, className }: MediaCardProps) {
+    const [imgError, setImgError] = useState(false);
     const slug = media.ids?.slug || media.ids?.imdb;
     const linkHref = slug ? `/${type}s/${slug}` : "#";
-    const posterUrl =
-        getPosterUrl(media.images) ||
-        `https://placehold.co/300x450/1a1a1a/3e3e3e?text=${encodeURIComponent(media.title)}`;
+    const placeholderUrl = `https://placehold.co/300x450/1a1a1a/3e3e3e?text=${encodeURIComponent(media.title)}`;
+    const posterUrl = imgError ? placeholderUrl : getPosterUrl(media.images) || placeholderUrl;
 
     return (
         <Link href={linkHref} className="block group">
@@ -39,6 +38,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
                         className="object-cover transition-opacity duration-300"
                         loading="lazy"
                         unoptimized
+                        onError={() => setImgError(true)}
                     />
 
                     {/* Rank badge - editorial style */}

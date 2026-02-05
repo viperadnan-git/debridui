@@ -1,22 +1,44 @@
-// Types and Interfaces
-export interface TraktIds {
+// Base types for media display (shared by Trakt, Stremio addons, etc.)
+export interface MediaIds {
+    slug?: string;
+    imdb?: string;
+}
+
+export interface MediaImages {
+    poster?: string[];
+    fanart?: string[];
+    banner?: string[];
+}
+
+export interface Media {
+    title: string;
+    year?: number;
+    ids?: MediaIds;
+    images?: MediaImages;
+    rating?: number;
+    genres?: string[];
+    overview?: string;
+}
+
+export interface MediaItem {
+    movie?: Media;
+    show?: Media;
+}
+
+// Trakt-specific extensions
+export interface TraktIds extends MediaIds {
     trakt: number;
     slug: string;
     tvdb?: number;
-    imdb?: string;
     tmdb: number;
 }
 
-export interface TraktMedia {
-    title: string;
+export interface TraktMedia extends Media {
     year: number;
     ids?: TraktIds;
     images?: TraktImages;
-    overview?: string;
-    rating?: number;
     votes?: number;
     runtime?: number;
-    genres?: string[];
     language?: string;
     country?: string;
     trailer?: string;
@@ -166,7 +188,7 @@ export interface TraktCastAndCrew {
     crew: TraktCrew;
 }
 
-export interface TraktMediaItem {
+export interface TraktMediaItem extends MediaItem {
     movie?: TraktMedia;
     show?: TraktMedia;
     watchers?: number;

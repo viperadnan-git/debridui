@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { type Addon, type AddonSource, type TvSearchParams } from "@/lib/addons/types";
 import { AddonClient } from "@/lib/addons/client";
 import { parseStreams } from "@/lib/addons/parser";
+import { getStreamCapableAddons } from "@/hooks/use-addons";
 import { selectBestSource } from "@/lib/streaming/source-selector";
 import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
@@ -113,12 +114,13 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
     play: async (request, addons) => {
         const { imdbId, type, title, tvParams } = request;
 
-        // Filter and sort enabled addons
-        const enabledAddons = addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order);
+        // Filter to enabled addons, then to stream-capable via manifest check (cache-first)
+        const enabled = addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order);
+        const enabledAddons = await getStreamCapableAddons(enabled, queryClient);
 
         if (enabledAddons.length === 0) {
             toast.error("No addons enabled", {
-                description: "Configure addons in settings to fetch sources",
+                description: "Configure addons with stream support in settings",
             });
             return;
         }
