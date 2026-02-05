@@ -82,11 +82,6 @@ export const detectPlatform = (): Platform => {
     return cachedPlatform.platform;
 };
 
-export const isMobileOrTablet = (): boolean => {
-    const platform = detectPlatform();
-    return platform === Platform.ANDROID || platform === Platform.IOS;
-};
-
 export const PLAYER_PLATFORM_SUPPORT: Record<MediaPlayer, Platform[]> = {
     [MediaPlayer.BROWSER]: [Platform.ANDROID, Platform.IOS, Platform.MACOS, Platform.WINDOWS, Platform.LINUX],
     [MediaPlayer.IINA]: [Platform.MACOS],
@@ -106,7 +101,7 @@ export const isSupportedPlayer = (player: MediaPlayer, platform?: Platform): boo
 };
 
 const generateVlcUrl = (url: string, fileName: string): string => {
-    if (isMobileOrTablet()) {
+    if (detectPlatform() === Platform.ANDROID) {
         const encodedTitle = encodeURIComponent(fileName);
         const cleanUrl = url.replace("https://", "");
         return `intent://${cleanUrl}#Intent;scheme=https;type=video/*;package=org.videolan.vlc;S.title=${encodedTitle};end`;
