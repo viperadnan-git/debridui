@@ -4,7 +4,7 @@ import { memo } from "react";
 import { Film, Tv, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type TraktSearchResult } from "@/lib/trakt";
-import { getPosterUrl } from "@/lib/utils/trakt";
+import { getPosterUrl } from "@/lib/utils/media";
 import { SearchItemWrapper } from "@/components/search-item-wrapper";
 
 interface SearchMediaItemProps {

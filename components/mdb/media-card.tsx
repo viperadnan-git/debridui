@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { memo, useState } from "react";
-import { getPosterUrl } from "@/lib/utils/trakt";
+import { getPosterUrl } from "@/lib/utils/media";
 import { Star } from "lucide-react";
 
 interface MediaCardProps {

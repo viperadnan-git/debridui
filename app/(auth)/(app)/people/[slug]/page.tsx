@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, ChevronDown, ChevronUp, Calendar, MapPin, Skull, Star, Film, Tv } from "lucide-react";
-import { getPosterUrl } from "@/lib/utils/trakt";
+import { getPosterUrl } from "@/lib/utils/media";
 import { formatLocalizedDate, calculateAge } from "@/lib/utils";
 
 // Person Header Component

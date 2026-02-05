@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MediaStats } from "./media-stats";
 import { memo } from "react";
-import { getPosterUrl, getBackdropUrl } from "@/lib/utils/trakt";
+import { getPosterUrl, getBackdropUrl } from "@/lib/utils/media";
 import { ArrowUpRightIcon, Play, Star } from "lucide-react";
 import { WatchButton } from "@/components/common/watch-button";
 

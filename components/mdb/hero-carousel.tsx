@@ -10,7 +10,7 @@ import { ArrowRightIcon, Star, Play, ChevronLeft, ChevronRight } from "lucide-re
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import { useTraktTrendingMixed } from "@/hooks/use-trakt";
-import { getPosterUrl, getBackdropUrl } from "@/lib/utils/trakt";
+import { getPosterUrl, getBackdropUrl } from "@/lib/utils/media";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import { HeroCarouselSkeleton } from "./hero-carousel-skeleton";
 

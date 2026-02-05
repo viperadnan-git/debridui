@@ -6,7 +6,7 @@ import { cn, formatYear } from "@/lib/utils";
 import { memo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { traktClient } from "@/lib/trakt";
-import { getPosterUrl } from "@/lib/utils/trakt";
+import { getPosterUrl } from "@/lib/utils/media";
 
 interface SeasonCardProps {
     season: TraktSeason;

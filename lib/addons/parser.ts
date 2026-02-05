@@ -1,6 +1,7 @@
 import { formatSize } from "../utils";
 import { type AddonStream, type AddonSource, type CatalogMeta, Resolution, SourceQuality } from "./types";
 import { type Media, type MediaItem } from "@/lib/trakt";
+import { cdnUrl } from "@/lib/utils/media";
 
 const HASH_REGEX = /[a-f0-9]{40}/;
 const FILE_SIZE_REGEX = /\b\d+(?:\.\d+)?\s*(?:[KMGT]i?)?B\b/gi;
@@ -206,7 +207,7 @@ export function catalogMetasToMediaItems(metas: CatalogMeta[]): MediaItem[] {
             title: meta.name,
             year: parseInt(meta.releaseInfo || "") || undefined,
             ids: { imdb: meta.id, slug: meta.id },
-            images: meta.poster ? { poster: [meta.poster] } : undefined,
+            images: meta.poster ? { poster: [cdnUrl(meta.poster, { w: 300, h: 450 })] } : undefined,
             rating: meta.imdbRating ? parseFloat(meta.imdbRating) : undefined,
             genres: meta.genres,
             overview: meta.description,

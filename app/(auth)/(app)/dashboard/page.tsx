@@ -211,7 +211,7 @@ const AddonCatalogs = memo(function AddonCatalogs() {
 
     return (
         <ContentSection label="From Your Addons" icon={<Puzzle className="size-3.5" />}>
-            <div className="space-y-3">
+            <div className="space-y-1 md:space-y-3">
                 {catalogs.map((catalog) => {
                     const key = `${catalog.addonId}-${catalog.type}-${catalog.id}`;
                     return (
