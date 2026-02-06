@@ -15,7 +15,7 @@ import { MdbFooter } from "@/components/mdb/mdb-footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, ChevronDown, ChevronUp, Calendar, MapPin, Skull, Star, Film, Tv } from "lucide-react";
+import { User, ChevronDown, ChevronUp, Calendar, MapPin, Skull, Star } from "lucide-react";
 import { getPosterUrl } from "@/lib/utils/media";
 import { formatLocalizedDate, calculateAge } from "@/lib/utils";
 
@@ -352,11 +352,9 @@ const CreditCard = memo(function CreditCard({
                     />
 
                     {/* Type badge */}
-                    <div className="absolute top-2 left-2 z-10">
-                        <span className="text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm flex items-center gap-1">
-                            {type === "movie" ? <Film className="size-3" /> : <Tv className="size-3" />}
-                        </span>
-                    </div>
+                    <span className="absolute top-0 left-0 z-10 text-[10px] font-medium tracking-widest uppercase text-primary bg-black/50 backdrop-blur-md px-2 py-1 rounded-br-sm rounded-tl-sm">
+                        {type === "movie" ? "Film" : "Series"}
+                    </span>
 
                     {/* Hover overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

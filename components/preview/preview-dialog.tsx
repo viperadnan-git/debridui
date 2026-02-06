@@ -104,8 +104,12 @@ export function PreviewDialog() {
         <Dialog open={isOpen} onOpenChange={closePreview}>
             <DialogContent
                 className="sm:max-w-[95vw] h-[95vh] p-0 gap-0 flex flex-col overflow-hidden outline-none!"
-                showCloseButton={false}>
+                showCloseButton={false}
+                aria-describedby="preview-dialog-description">
                 <DialogTitle className="sr-only">{activeTitle}</DialogTitle>
+                <p id="preview-dialog-description" className="sr-only">
+                    Preview of {activeTitle}
+                </p>
                 {/* Header */}
                 <div className="flex items-center justify-between p-3 sm:p-4 border-b shrink-0 bg-background">
                     <div className="flex-1 min-w-0 mr-4">

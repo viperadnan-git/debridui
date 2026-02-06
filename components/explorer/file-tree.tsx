@@ -243,10 +243,7 @@ const VirtualizedNode = memo(function VirtualizedNode({
                 className="size-3 sm:size-4"
             />
 
-            <Tooltip
-                {...(isMobile
-                    ? { open: tooltipOpen, onOpenChange: setTooltipOpen, delayDuration: 0 }
-                    : { delayDuration: 2000 })}>
+            <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen} delayDuration={isMobile ? 0 : 2000}>
                 <TooltipTrigger asChild>
                     <span
                         className="flex-1 cursor-pointer truncate"

@@ -7,17 +7,24 @@ import { type Addon } from "@/lib/addons/types";
 import { type CreateAddon } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Plus, Loader2, CheckCircle2, Puzzle, Info, RefreshCw } from "lucide-react";
+import { Plus, Loader2, Puzzle, Info, RefreshCw, ClipboardPaste, X } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { AddonCard, AddonCardSkeleton } from "@/components/addon-card";
 import { CachedBadge } from "@/components/display";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SectionDivider } from "@/components/section-divider";
 
-const DEFAULT_ADDON_MANIFEST =
-    "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4/manifest.json";
+const ADDON_PRESETS = [
+    {
+        name: "Torrentio",
+        url: "https://torrentio.strem.fun/providers=yts,eztv,rarbg,1337x,kickasstorrents,torrentgalaxy,magnetdl,horriblesubs,nyaasi,tokyotosho,anidex|qualityfilter=480p,other,scr,cam|limit=4/manifest.json",
+    },
+    {
+        name: "Streaming Catalogs",
+        url: "https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/bmZ4LGRucCxhbXAsYXRwLGhibSxwbXAsamhzLHplZSxjcnUscGNwLHNvbnlsaXY6OjoxNzcwMjQ2NjcwMTU5OjA6MDo%3D/manifest.json",
+    },
+] as const;
 
 export default function AddonsPage() {
     const { data: serverAddons = [], isLoading, refetch } = useUserAddons();
@@ -26,7 +33,6 @@ export default function AddonsPage() {
     const toggleAddonMutation = useToggleAddon();
     const updateOrdersMutation = useUpdateAddonOrders();
 
-    const [isAdding, setIsAdding] = useState(false);
     const [newAddonUrl, setNewAddonUrl] = useState("");
     const [validating, setValidating] = useState(false);
     const [addonToDelete, setAddonToDelete] = useState<Addon | null>(null);
@@ -71,7 +77,6 @@ export default function AddonsPage() {
             await addAddonMutation.mutateAsync(newAddon);
             toast.success(`Added ${manifest.name} addon`);
             setNewAddonUrl("");
-            setIsAdding(false);
         } catch (error) {
             toast.error(`Failed to add addon: ${error instanceof Error ? error.message : "Invalid addon URL"}`);
         } finally {
@@ -138,92 +143,77 @@ export default function AddonsPage() {
             <section className="space-y-4">
                 <SectionDivider label="Add Addon" />
 
-                {!isAdding ? (
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        {/* Custom addon card */}
-                        <button
-                            onClick={() => setIsAdding(true)}
-                            className="group relative flex flex-col items-center justify-center gap-3 rounded-sm border border-dashed border-border/50 p-6 text-center transition-all duration-300 hover:border-primary/50 hover:bg-muted/30">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-muted/50 transition-colors group-hover:bg-primary/10">
-                                <Plus className="size-5 text-muted-foreground transition-colors group-hover:text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-light">Add Custom Addon</p>
-                                <p className="text-xs text-muted-foreground mt-1">Enter a Stremio addon URL</p>
-                            </div>
-                        </button>
+                <div className="space-y-3">
+                    {/* URL Input — always visible */}
+                    <div className="flex gap-2">
+                        <div className="relative flex-1">
+                            <Input
+                                type="url"
+                                placeholder="https://addon.example.com/manifest.json"
+                                value={newAddonUrl}
+                                onChange={(e) => setNewAddonUrl(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && newAddonUrl.trim() && handleAddAddon()}
+                                disabled={validating}
+                                className="font-mono text-sm pr-9"
+                            />
+                            <button
+                                type="button"
+                                onClick={
+                                    newAddonUrl
+                                        ? () => setNewAddonUrl("")
+                                        : async () => {
+                                              try {
+                                                  const text = await navigator.clipboard.readText();
+                                                  if (text.trim()) setNewAddonUrl(text.trim());
+                                              } catch {
+                                                  toast.error("Unable to read clipboard");
+                                              }
+                                          }
+                                }
+                                disabled={validating}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50">
+                                {newAddonUrl ? <X className="size-4" /> : <ClipboardPaste className="size-4" />}
+                            </button>
+                        </div>
+                        <Button onClick={() => handleAddAddon()} disabled={validating || !newAddonUrl.trim()}>
+                            {validating && !newAddonUrl.trim() ? (
+                                <Loader2 className="size-4 animate-spin" />
+                            ) : validating ? (
+                                <>
+                                    <Loader2 className="size-4 animate-spin" />
+                                    <span className="hidden sm:inline">Add</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Plus className="size-4" />
+                                    <span className="hidden sm:inline">Add</span>
+                                </>
+                            )}
+                        </Button>
+                    </div>
 
-                        {/* Torrentio preset card */}
-                        <button
-                            onClick={() => handleAddAddon(DEFAULT_ADDON_MANIFEST)}
-                            disabled={validating}
-                            className="group relative flex flex-col items-center justify-center gap-3 rounded-sm border border-border/50 p-6 text-center transition-all duration-300 hover:border-primary/50 hover:bg-muted/30 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-muted/50 transition-colors group-hover:bg-primary/10">
-                                {validating ? (
-                                    <Loader2 className="size-5 text-muted-foreground animate-spin" />
-                                ) : (
-                                    <Puzzle className="size-5 text-muted-foreground transition-colors group-hover:text-primary" />
-                                )}
-                            </div>
-                            <div>
-                                <p className="text-sm font-light">
-                                    {validating ? "Adding Torrentio..." : "Add Torrentio"}
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-1">Popular multi-source addon</p>
-                            </div>
-                        </button>
-                    </div>
-                ) : (
-                    <div className="rounded-sm border border-border/50 overflow-hidden">
-                        <div className="bg-muted/30 px-4 py-3 border-b border-border/50">
-                            <p className="text-xs tracking-wider uppercase text-muted-foreground">Custom Addon URL</p>
-                        </div>
-                        <div className="p-4 space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="addon-url" className="sr-only">
-                                    Addon URL
-                                </Label>
-                                <Input
-                                    id="addon-url"
-                                    type="url"
-                                    placeholder="https://addon.example.com/manifest.json"
-                                    value={newAddonUrl}
-                                    onChange={(e) => setNewAddonUrl(e.target.value)}
-                                    disabled={validating}
-                                    className="font-mono text-sm"
-                                    autoFocus
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    The URL will be validated by fetching the addon manifest
-                                </p>
-                            </div>
-                            <div className="flex gap-2 pt-2">
-                                <Button onClick={() => handleAddAddon()} disabled={validating || !newAddonUrl.trim()}>
-                                    {validating ? (
-                                        <>
-                                            <Loader2 className="size-4 animate-spin" />
-                                            Validating...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CheckCircle2 className="size-4" />
-                                            Add Addon
-                                        </>
-                                    )}
-                                </Button>
+                    {/* Quick add presets */}
+                    <div className="space-y-2">
+                        <p className="text-xs tracking-widest uppercase text-muted-foreground">Quick add</p>
+                        <div className="flex flex-wrap gap-2">
+                            {ADDON_PRESETS.map((preset) => (
                                 <Button
-                                    variant="ghost"
-                                    onClick={() => {
-                                        setIsAdding(false);
-                                        setNewAddonUrl("");
-                                    }}
+                                    key={preset.name}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleAddAddon(preset.url)}
                                     disabled={validating}>
-                                    Cancel
+                                    {validating && !newAddonUrl.trim() ? (
+                                        <Loader2 className="size-3 animate-spin" />
+                                    ) : (
+                                        <Puzzle className="size-3" />
+                                    )}
+                                    {preset.name}
                                 </Button>
-                            </div>
+                            ))}
                         </div>
                     </div>
-                )}
+                </div>
             </section>
 
             {/* Addons List Section */}

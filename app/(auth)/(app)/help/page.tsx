@@ -5,11 +5,12 @@ import { DISCORD_URL } from "@/lib/constants";
 
 export default function HelpPage() {
     return (
-        <div className="mx-auto w-full max-w-4xl space-y-10 pb-16 lg:px-6">
+        <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
             <PageHeader
                 icon={HelpCircle}
                 title="Help & Support"
                 description="Get help and connect with the community"
+                divider
             />
 
             <div className="space-y-8">

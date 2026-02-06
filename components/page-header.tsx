@@ -5,11 +5,12 @@ interface PageHeaderProps {
     title: string;
     description: string;
     action?: React.ReactNode;
+    divider?: boolean;
 }
 
-export function PageHeader({ icon: Icon, title, description, action }: PageHeaderProps) {
+export function PageHeader({ icon: Icon, title, description, action, divider = false }: PageHeaderProps) {
     return (
-        <div className="space-y-6">
+        <div className={divider ? "space-y-10" : undefined}>
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div className="space-y-2">
                     <div className="flex items-center gap-3">
@@ -20,7 +21,7 @@ export function PageHeader({ icon: Icon, title, description, action }: PageHeade
                 </div>
                 {action && <div className="shrink-0">{action}</div>}
             </div>
-            <div className="h-px bg-border/50" />
+            {divider && <div className="h-px bg-border/50" />}
         </div>
     );
 }

@@ -154,6 +154,7 @@ export const SourceRow = memo(function SourceRow({ source, mediaTitle }: { sourc
                 {/* Action Buttons */}
                 {(source.url || source.magnet) && (
                     <div className="flex items-center gap-2 justify-end sm:shrink-0">
+                        {source.magnet && <AddSourceButton magnet={source.magnet} />}
                         {source.url && (
                             <Button
                                 size="sm"
@@ -162,7 +163,6 @@ export const SourceRow = memo(function SourceRow({ source, mediaTitle }: { sourc
                                 Play
                             </Button>
                         )}
-                        {source.magnet && <AddSourceButton magnet={source.magnet} />}
                     </div>
                 )}
             </div>

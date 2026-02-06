@@ -31,6 +31,7 @@ export default function AccountsPage() {
                 icon={KeyRound}
                 title="Accounts"
                 description="Manage your debrid service accounts"
+                divider
                 action={
                     <div className="flex gap-2 w-full sm:w-auto">
                         <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">

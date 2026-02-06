@@ -302,7 +302,7 @@ export default class RealDebridClient extends BaseClient {
     async getTorrentFiles(torrentId: string): Promise<DebridNode[]> {
         const torrent = await this.makeRequest<RDTorrentInfo>(`torrents/info/${torrentId}`);
 
-        return this.buildFileTree(torrent.files, torrent.links);
+        return this.buildFileTree(torrent.files, torrent.links, torrent.filename);
     }
 
     async removeTorrent(torrentId: string): Promise<string> {
@@ -602,12 +602,40 @@ export default class RealDebridClient extends BaseClient {
      * Links array corresponds to selected files in order.
      * Uses Map for O(1) folder lookups instead of Array.find.
      */
-    private buildFileTree(files: RDTorrentFile[], links: string[]): DebridNode[] {
-        const root: DebridNode[] = [];
-        // Map keyed by full path prefix for O(1) folder lookups
-        const folderMap = new Map<string, DebridNode>();
-
+    private buildFileTree(files: RDTorrentFile[], links: string[], torrentName: string): DebridNode[] {
         const selectedFiles = files.filter((f) => f.selected === 1);
+
+        // RD may bundle many files into fewer links (compressed archives)
+        // When links don't map 1:1, show compressed entries instead of individual files
+        if (links.length > 0 && links.length < selectedFiles.length) {
+            const totalSize = selectedFiles.reduce((sum, f) => sum + f.bytes, 0);
+
+            if (links.length === 1) {
+                return [
+                    {
+                        id: links[0],
+                        name: `${torrentName} (compressed)`,
+                        size: totalSize,
+                        type: "file",
+                        children: [],
+                    },
+                ];
+            }
+
+            // Multiple links but fewer than files — split downloads
+            const sizePerLink = Math.ceil(totalSize / links.length);
+            return links.map((link, i) => ({
+                id: link,
+                name: `${torrentName} Part ${i + 1} (compressed)`,
+                size: sizePerLink,
+                type: "file" as const,
+                children: [],
+            }));
+        }
+
+        // Normal 1:1 mapping — build full file tree
+        const root: DebridNode[] = [];
+        const folderMap = new Map<string, DebridNode>();
 
         for (let i = 0; i < selectedFiles.length; i++) {
             const file = selectedFiles[i];

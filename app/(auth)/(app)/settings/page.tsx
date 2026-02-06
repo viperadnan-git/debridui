@@ -455,11 +455,13 @@ export default function SettingsPage() {
             <section className="space-y-4">
                 <SectionDivider label="About" />
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="size-3.5" />
-                    <span>Last updated {buildTimeRelative}</span>
-                    <span className="text-border">·</span>
-                    <span className="text-xs">{buildTimeFormatted}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                        <Clock className="size-3.5 shrink-0" />
+                        <span>Last updated {buildTimeRelative}</span>
+                    </div>
+                    <span className="text-border hidden sm:inline">·</span>
+                    <span className="text-xs pl-5.5 sm:pl-0">{buildTimeFormatted}</span>
                 </div>
             </section>
         </div>
