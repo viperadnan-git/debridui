@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useUserAddons, useAddAddon, useRemoveAddon, useToggleAddon, useUpdateAddonOrders } from "@/hooks/use-addons";
 import { AddonClient } from "@/lib/addons/client";
 import { type Addon } from "@/lib/addons/types";
+import { type CreateAddon } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,7 +62,7 @@ export default function AddonsPage() {
                 return;
             }
 
-            const newAddon: Omit<Addon, "id" | "order"> = {
+            const newAddon: CreateAddon = {
                 name: manifest.name,
                 url: addonUrl,
                 enabled: true,
@@ -100,8 +101,8 @@ export default function AddonsPage() {
 
         if (currentIndex > 0) {
             const updates = [
-                { id: sortedAddons[currentIndex].id, order: currentIndex - 1 },
-                { id: sortedAddons[currentIndex - 1].id, order: currentIndex },
+                { id: sortedAddons[currentIndex].id, order: sortedAddons[currentIndex - 1].order },
+                { id: sortedAddons[currentIndex - 1].id, order: sortedAddons[currentIndex].order },
             ];
             await updateOrdersMutation.mutateAsync(updates);
         }
@@ -112,8 +113,8 @@ export default function AddonsPage() {
 
         if (currentIndex < sortedAddons.length - 1) {
             const updates = [
-                { id: sortedAddons[currentIndex].id, order: currentIndex + 1 },
-                { id: sortedAddons[currentIndex + 1].id, order: currentIndex },
+                { id: sortedAddons[currentIndex].id, order: sortedAddons[currentIndex + 1].order },
+                { id: sortedAddons[currentIndex + 1].id, order: sortedAddons[currentIndex].order },
             ];
             await updateOrdersMutation.mutateAsync(updates);
         }

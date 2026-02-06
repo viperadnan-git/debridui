@@ -11,6 +11,7 @@ import {
     hasCatalogs,
     hasStreams,
 } from "@/lib/addons/types";
+import { type CreateAddon } from "@/lib/types";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 const USER_ADDONS_KEY = ["user-addons"];
@@ -34,7 +35,7 @@ export function useAddAddon() {
     const queryClient = useQueryClient();
 
     return useToastMutation(
-        (addon: Omit<Addon, "id" | "order">) => addAddon(addon),
+        (addon: CreateAddon) => addAddon(addon),
         { error: "Failed to add addon" },
         {
             onSuccess: (newAddon) => {

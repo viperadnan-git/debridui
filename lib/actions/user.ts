@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -9,9 +10,11 @@ import { headers } from "next/headers";
  */
 export async function setPassword(newPassword: string) {
     try {
+        const validated = z.string().min(8, "Password must be at least 8 characters").parse(newPassword);
+
         const result = await auth.api.setPassword({
             body: {
-                newPassword,
+                newPassword: validated,
             },
             headers: await headers(),
             query: {

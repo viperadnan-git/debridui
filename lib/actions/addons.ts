@@ -6,9 +6,11 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { addons } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
+import { z } from "zod";
+import { addonSchema, addonOrderUpdateSchema } from "@/lib/schemas";
+import { type CreateAddon } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { v7 as uuidv7 } from "uuid";
-import { type Addon } from "@/lib/addons/types";
 
 /**
  * Get all user addons from database
@@ -30,7 +32,7 @@ export async function getUserAddons() {
 /**
  * Add a new addon
  */
-export async function addAddon(addon: Omit<Addon, "id" | "order">) {
+export async function addAddon(data: CreateAddon) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -38,6 +40,8 @@ export async function addAddon(addon: Omit<Addon, "id" | "order">) {
     if (!session) {
         redirect("/login");
     }
+
+    const validated = addonSchema.parse(data);
 
     // Calculate next order atomically
     const [maxOrder] = await db
@@ -51,9 +55,9 @@ export async function addAddon(addon: Omit<Addon, "id" | "order">) {
     await db.insert(addons).values({
         id: newId,
         userId: session.user.id,
-        name: addon.name,
-        url: addon.url,
-        enabled: addon.enabled,
+        name: validated.name,
+        url: validated.url,
+        enabled: validated.enabled,
         order: newOrder,
     });
 
@@ -61,11 +65,11 @@ export async function addAddon(addon: Omit<Addon, "id" | "order">) {
 
     return {
         id: newId,
-        name: addon.name,
-        url: addon.url,
-        enabled: addon.enabled,
+        name: validated.name,
+        url: validated.url,
+        enabled: validated.enabled,
         order: newOrder,
-    } satisfies Addon;
+    };
 }
 
 /**
@@ -80,7 +84,9 @@ export async function removeAddon(addonId: string) {
         redirect("/login");
     }
 
-    await db.delete(addons).where(and(eq(addons.id, addonId), eq(addons.userId, session.user.id)));
+    const validatedId = z.string().min(1, "Addon ID is required").parse(addonId);
+
+    await db.delete(addons).where(and(eq(addons.id, validatedId), eq(addons.userId, session.user.id)));
 
     revalidatePath("/", "layout");
     return { success: true };
@@ -98,10 +104,13 @@ export async function toggleAddon(addonId: string, enabled: boolean) {
         redirect("/login");
     }
 
+    const validatedId = z.string().min(1, "Addon ID is required").parse(addonId);
+    const validatedEnabled = z.boolean({ error: "Enabled must be a boolean" }).parse(enabled);
+
     await db
         .update(addons)
-        .set({ enabled })
-        .where(and(eq(addons.id, addonId), eq(addons.userId, session.user.id)));
+        .set({ enabled: validatedEnabled })
+        .where(and(eq(addons.id, validatedId), eq(addons.userId, session.user.id)));
 
     revalidatePath("/", "layout");
     return { success: true };
@@ -120,12 +129,14 @@ export async function updateAddonOrders(updates: { id: string; order: number }[]
         redirect("/login");
     }
 
+    const validated = addonOrderUpdateSchema.parse(updates);
+
     await db.transaction(async (tx) => {
         // Defer constraint checking until transaction commit
         await tx.execute(sql`SET CONSTRAINTS unique_user_order DEFERRED`);
 
         // Directly update each addon to its new order
-        for (const update of updates) {
+        for (const update of validated) {
             await tx
                 .update(addons)
                 .set({ order: update.order })

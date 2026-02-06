@@ -6,13 +6,15 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { userAccounts } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { AccountType } from "@/lib/schemas";
+import { z } from "zod";
+import { createAccountSchema } from "@/lib/schemas";
+import { type CreateAccount } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { v7 as uuidv7 } from "uuid";
 
 /**
  * Get all user accounts for the current authenticated user
- * `server-serialization` - Returns minimal data (no sensitive info in client bundle)
+ * Note: Returns apiKey because client-side debrid API calls require it
  */
 export async function getUserAccounts() {
     const session = await auth.api.getSession({
@@ -31,9 +33,8 @@ export async function getUserAccounts() {
 
 /**
  * Add a new user account
- * Note: Validation is done on the frontend before calling this
  */
-export async function addUserAccount(data: { apiKey: string; type: AccountType; name: string }) {
+export async function addUserAccount(data: CreateAccount) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -42,6 +43,8 @@ export async function addUserAccount(data: { apiKey: string; type: AccountType; 
         redirect("/login");
     }
 
+    const validated = createAccountSchema.parse(data);
+
     // Check if account already exists
     const existing = await db
         .select()
@@ -49,8 +52,8 @@ export async function addUserAccount(data: { apiKey: string; type: AccountType; 
         .where(
             and(
                 eq(userAccounts.userId, session.user.id),
-                eq(userAccounts.apiKey, data.apiKey),
-                eq(userAccounts.type, data.type)
+                eq(userAccounts.apiKey, validated.apiKey),
+                eq(userAccounts.type, validated.type)
             )
         );
 
@@ -64,9 +67,9 @@ export async function addUserAccount(data: { apiKey: string; type: AccountType; 
         .values({
             id: uuidv7(),
             userId: session.user.id,
-            apiKey: data.apiKey,
-            type: data.type,
-            name: data.name,
+            apiKey: validated.apiKey,
+            type: validated.type,
+            name: validated.name,
         })
         .returning();
 
@@ -86,17 +89,16 @@ export async function removeUserAccount(accountId: string) {
         redirect("/login");
     }
 
-    // Verify ownership before deletion
-    const account = await db
-        .select()
-        .from(userAccounts)
-        .where(and(eq(userAccounts.id, accountId), eq(userAccounts.userId, session.user.id)));
+    const validatedId = z.string().min(1, "Account ID is required").parse(accountId);
 
-    if (account.length === 0) {
+    const result = await db
+        .delete(userAccounts)
+        .where(and(eq(userAccounts.id, validatedId), eq(userAccounts.userId, session.user.id)))
+        .returning({ id: userAccounts.id });
+
+    if (result.length === 0) {
         throw new Error("Account not found or unauthorized");
     }
-
-    await db.delete(userAccounts).where(eq(userAccounts.id, accountId));
 
     revalidatePath("/", "layout");
     return { success: true };
