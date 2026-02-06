@@ -1,4 +1,13 @@
 import { MediaPlayer, Platform } from "../types";
+
+declare global {
+    interface NavigatorUAData {
+        platform: string;
+    }
+    interface Navigator {
+        userAgentData?: NavigatorUAData;
+    }
+}
 import { useSettingsStore } from "../stores/settings";
 import { toast } from "sonner";
 
@@ -71,15 +80,33 @@ export const parseUserAgent = (ua: string | null | undefined): ParsedUserAgent =
     return { browser, os, device, platform, summary };
 };
 
-let cachedPlatform: ParsedUserAgent | null = null;
+let cachedPlatform: Platform | null = null;
+
+/** Resolve platform via User-Agent Client Hints (reliable on Android tablets in desktop mode) */
+const detectViaClientHints = (): Platform | null => {
+    const platform = navigator.userAgentData?.platform;
+    if (!platform) return null;
+    const lower = platform.toLowerCase();
+    if (lower === "android") return Platform.ANDROID;
+    if (lower === "ios") return Platform.IOS;
+    if (lower === "macos" || lower === "macosx") return Platform.MACOS;
+    if (lower === "windows") return Platform.WINDOWS;
+    if (lower === "linux" || lower === "chromeos") return Platform.LINUX;
+    return null;
+};
 
 /** Detect the current browser's platform (cached after first call) */
 export const detectPlatform = (): Platform => {
-    if (cachedPlatform !== null) return cachedPlatform.platform;
+    if (cachedPlatform !== null) return cachedPlatform;
 
-    cachedPlatform = typeof navigator !== "undefined" ? parseUserAgent(navigator.userAgent) : UNKNOWN_UA;
+    if (typeof navigator === "undefined") {
+        cachedPlatform = Platform.UNKNOWN;
+        return cachedPlatform;
+    }
 
-    return cachedPlatform.platform;
+    // Prefer Client Hints — reports real platform even when UA is spoofed (e.g. Android tablets in desktop mode)
+    cachedPlatform = detectViaClientHints() ?? parseUserAgent(navigator.userAgent).platform;
+    return cachedPlatform;
 };
 
 export const PLAYER_PLATFORM_SUPPORT: Record<MediaPlayer, Platform[]> = {
