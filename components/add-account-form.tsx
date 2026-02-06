@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AccountType, accountSchema } from "@/lib/schemas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
-import { RealDebridClient, TorBoxClient, AllDebridClient, PremiumizeClient, getClient } from "@/lib/clients";
+import { RealDebridClient, TorBoxClient, AllDebridClient, PremiumizeClient } from "@/lib/clients";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useAddUserAccount } from "@/hooks/use-user-accounts";
 import { SectionDivider } from "@/components/section-divider";
@@ -19,9 +18,10 @@ import { handleError } from "@/lib/utils/error-handling";
 import { formatAccountType } from "@/lib/utils";
 
 export function AddAccountForm() {
-    const router = useRouter();
     const addAccount = useAddUserAccount();
-    const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | "premiumize" | null>(null);
+    const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | "premiumize" | null>(
+        null
+    );
 
     const form = useForm<z.infer<typeof accountSchema>>({
         resolver: zodResolver(accountSchema),
@@ -86,32 +86,9 @@ export function AddAccountForm() {
     async function handlePremiumizeLogin() {
         setIsLoadingOAuth("premiumize");
         try {
-            const { pin, check, redirect_url } = await PremiumizeClient.getAuthPin();
-
-            if (check === "direct_api_key") {
-                window.open(redirect_url, "_blank", "noreferrer");
-                toast.info("Please copy your Premiumize API key and paste it in the form above");
-            } else {
-                window.open(redirect_url, "_blank", "noreferrer");
-                toast.info(`Enter code: ${pin} on the Premiumize page to authorize`);
-
-                const { success, apiKey } = await PremiumizeClient.validateAuthPin(pin, check);
-
-                if (success && apiKey) {
-                    const user = await getClient({ type: AccountType.PREMIUMIZE }).getUser(apiKey);
-                    addAccount.mutate(
-                        { type: AccountType.PREMIUMIZE, apiKey },
-                        {
-                            onSuccess: () => {
-                                toast.success(`Logged in as ${user.name} (Premiumize)`);
-                                router.push("/dashboard");
-                            },
-                        }
-                    );
-                } else {
-                    toast.error("Failed to login with Premiumize");
-                }
-            }
+            const { redirect_url } = await PremiumizeClient.getAuthPin();
+            window.open(redirect_url, "_blank", "noreferrer");
+            toast.info("Please copy your Premiumize API key and paste it in the form above");
         } catch (error) {
             handleError(error);
         } finally {

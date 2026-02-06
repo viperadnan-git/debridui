@@ -6,6 +6,7 @@ import {
     DebridLinkInfo,
     DebridFileList,
     DebridFileAddStatus,
+    OperationResult,
     AccountType,
     Account,
     FullAccount,
@@ -136,26 +137,6 @@ interface PremiumizeCacheCheckResponse extends PremiumizeApiResponse {
     filesize: string[];
 }
 
-// OAuth Device Code types
-interface DeviceCodeResponse {
-    device_code: string;
-    user_code: string;
-    verification_uri: string;
-    expires_in: number;
-    interval: number;
-}
-
-interface TokenResponse {
-    access_token?: string;
-    token_type?: string;
-    error?: string;
-    error_description?: string;
-}
-
-// OAuth client ID - users can register their own at https://www.premiumize.me/registerclient
-// For now, we'll use direct API key auth as fallback
-const OAUTH_CLIENT_ID = "964471616";
-
 export default class PremiumizeClient extends BaseClient {
     readonly refreshInterval: number | false = false;
     readonly supportsEphemeralLinks: boolean = false;
@@ -164,24 +145,19 @@ export default class PremiumizeClient extends BaseClient {
         super({ account });
     }
 
+    private static buildUrl(path: string, apiKey: string): string {
+        const separator = path.includes("?") ? "&" : "?";
+        return getProxyUrl(`https://www.premiumize.me/api${path}${separator}apikey=${encodeURIComponent(apiKey)}`);
+    }
+
     private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+        await this.rateLimiter.acquire();
         const { apiKey } = this.account;
-        const url = getProxyUrl(`https://www.premiumize.me/api${path}`);
 
-        const authHeader: Record<string, string> = {};
-        if (apiKey.startsWith("Bearer ")) {
-            authHeader["Authorization"] = apiKey;
-        } else {
-            // Sanitize apiKey to prevent cookie/header injection
-            const sanitizedKey = apiKey.replace(/[;\r\n]/g, "");
-            authHeader["Cookie"] = `sdk_login=${sanitizedKey}; cookieNoticeSeen=1`;
-        }
-
-        const response = await fetch(url, {
+        const response = await fetch(PremiumizeClient.buildUrl(path, apiKey), {
             ...options,
             headers: {
                 "User-Agent": USER_AGENT,
-                ...authHeader,
                 ...options.headers,
             },
         });
@@ -219,32 +195,21 @@ export default class PremiumizeClient extends BaseClient {
     }
 
     static async getUser(apiKey: string): Promise<FullAccount> {
-        const url = getProxyUrl("https://www.premiumize.me/api/account/info");
-
-        const authHeader: Record<string, string> = {};
-        if (apiKey.startsWith("Bearer ")) {
-            authHeader["Authorization"] = apiKey;
-        } else {
-            // Sanitize apiKey to prevent cookie/header injection
-            const sanitizedKey = apiKey.replace(/[;\r\n]/g, "");
-            authHeader["Cookie"] = `sdk_login=${sanitizedKey}; cookieNoticeSeen=1`;
-        }
-
-        const response = await fetch(url, {
-            headers: {
-                "User-Agent": USER_AGENT,
-                ...authHeader,
-            },
+        const response = await fetch(PremiumizeClient.buildUrl("/account/info", apiKey), {
+            headers: { "User-Agent": USER_AGENT },
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to get user info: ${response.statusText}`);
+            if (response.status === 401) {
+                throw new DebridAuthError("Invalid or expired API key", AccountType.PREMIUMIZE);
+            }
+            throw new DebridError(`Failed to get user info: ${response.statusText}`, AccountType.PREMIUMIZE);
         }
 
         const data: PremiumizeAccountInfo = await response.json();
 
         if (data.status === "error") {
-            throw new Error(data.message || "Failed to get user information");
+            throw new DebridError(data.message || "Failed to get user information", AccountType.PREMIUMIZE);
         }
 
         const premiumExpiry = data.premium_until ? new Date(data.premium_until * 1000) : new Date();
@@ -254,8 +219,8 @@ export default class PremiumizeClient extends BaseClient {
             id: `${AccountType.PREMIUMIZE}:${data.customer_id}`,
             apiKey,
             type: AccountType.PREMIUMIZE,
-            name: `User ${data.customer_id}`,
-            email: `${data.customer_id}@premiumize.me`, // Premiumize doesn't expose email
+            name: `${data.customer_id}`,
+            email: "••••",
             language: "en",
             isPremium,
             premiumExpiresAt: premiumExpiry,
@@ -267,92 +232,23 @@ export default class PremiumizeClient extends BaseClient {
         check: string;
         redirect_url: string;
     }> {
-        // Use OAuth2 device_code grant type
-        const response = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "User-Agent": USER_AGENT,
-            },
-            body: new URLSearchParams({
-                client_id: OAUTH_CLIENT_ID,
-                response_type: "device_code",
-            }),
-        });
-
-        if (!response.ok) {
-            // If OAuth fails, fall back to direct API key mode
-            return {
-                pin: "PREMIUMIZE_API_KEY",
-                check: "direct_api_key",
-                redirect_url: "https://www.premiumize.me/account",
-            };
-        }
-
-        const data: DeviceCodeResponse = await response.json();
-
         return {
-            pin: data.user_code,
-            check: data.device_code,
-            redirect_url: data.verification_uri || "https://www.premiumize.me/device",
+            pin: "PREMIUMIZE_API_KEY",
+            check: "direct_api_key",
+            redirect_url: "https://www.premiumize.me/account",
         };
     }
 
-    static async validateAuthPin(
-        pin: string,
-        check: string,
-        timeoutMs: number = 600000 // 10 minutes
-    ): Promise<{ success: boolean; apiKey?: string }> {
-        // Handle direct API key mode
+    static async validateAuthPin(pin: string, check: string): Promise<{ success: boolean; apiKey?: string }> {
         if (check === "direct_api_key") {
             try {
                 await this.getUser(pin);
-                return {
-                    success: true,
-                    apiKey: pin,
-                };
+                return { success: true, apiKey: pin };
             } catch {
                 return { success: false };
             }
         }
-
-        // OAuth device code polling
-        const startTime = Date.now();
-        const pollInterval = 5000; // 5 seconds
-
-        while (Date.now() - startTime < timeoutMs) {
-            const response = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "User-Agent": USER_AGENT,
-                },
-                body: new URLSearchParams({
-                    client_id: OAUTH_CLIENT_ID,
-                    grant_type: "device_code",
-                    code: check,
-                }),
-            });
-
-            const data: TokenResponse = await response.json();
-
-            if (data.access_token) {
-                return {
-                    success: true,
-                    apiKey: `Bearer ${data.access_token}`,
-                };
-            }
-
-            // Check for specific error conditions
-            if (data.error === "access_denied") {
-                return { success: false };
-            }
-
-            // If still pending, wait and retry
-            await this.delay(pollInterval);
-        }
-
-        throw new Error("Authentication timeout: Device code was not activated within the time limit");
+        return { success: false };
     }
 
     async getTorrentList({
@@ -439,13 +335,7 @@ export default class PremiumizeClient extends BaseClient {
         }
     }
 
-    async getDownloadLink({
-        fileNode,
-        resolve: _resolve = false,
-    }: {
-        fileNode: DebridFileNode;
-        resolve?: boolean;
-    }): Promise<DebridLinkInfo> {
+    async getDownloadLink({ fileNode }: { fileNode: DebridFileNode; resolve?: boolean }): Promise<DebridLinkInfo> {
         // For Premiumize, the fileNode.id could be an item ID or a direct link
         // First, try to get item details to get the download link
         try {
@@ -588,16 +478,13 @@ export default class PremiumizeClient extends BaseClient {
         }
     }
 
-    async restartTorrents(torrentIds: string[]): Promise<Record<string, string>> {
-        // Premiumize doesn't have a restart function for transfers
-        // We can only delete and re-add, but that requires the original source
-        // For now, return an informative message
+    async restartTorrents(torrentIds: string[]): Promise<Record<string, OperationResult>> {
         return torrentIds.reduce(
             (acc, id) => {
-                acc[id] = "Premiumize does not support restarting transfers";
+                acc[id] = { success: false, message: "Premiumize does not support restarting transfers" };
                 return acc;
             },
-            {} as Record<string, string>
+            {} as Record<string, OperationResult>
         );
     }
 
@@ -605,14 +492,11 @@ export default class PremiumizeClient extends BaseClient {
         // Parallelize magnet link additions
         const promises = magnetUris.map(async (magnet) => {
             try {
-                const formData = new URLSearchParams();
+                const formData = new FormData();
                 formData.append("src", magnet);
 
                 const response = await this.makeRequest<PremiumizeTransferCreateResponse>("/transfer/create", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
                     body: formData,
                 });
 
@@ -630,10 +514,7 @@ export default class PremiumizeClient extends BaseClient {
                     magnet,
                     status: {
                         success: false,
-                        message:
-                            error instanceof Error
-                                ? `Failed to add torrent ${magnet}: ${error}`
-                                : `Failed to add torrent ${magnet}`,
+                        message: error instanceof Error ? error.message : `Failed to add torrent ${magnet}`,
                         is_cached: false,
                     },
                 };
@@ -650,9 +531,7 @@ export default class PremiumizeClient extends BaseClient {
                 } else {
                     acc[magnet] = {
                         success: false,
-                        message:
-                            `Failed to add torrent ${magnet}: ${result.reason?.message}` ||
-                            `Failed to add torrent ${magnet}`,
+                        message: result.reason?.message || `Failed to add torrent ${magnet}`,
                         is_cached: false,
                     };
                 }
@@ -677,6 +556,7 @@ export default class PremiumizeClient extends BaseClient {
                     fileName: file.name,
                     status: {
                         id: response.id,
+                        success: true,
                         message: response.name ? `Added: ${response.name}` : "Torrent added successfully",
                         is_cached: response.type === "cached",
                     } as DebridFileAddStatus,
@@ -686,7 +566,7 @@ export default class PremiumizeClient extends BaseClient {
                     fileName: file.name,
                     status: {
                         success: false,
-                        message: `Failed to add torrent ${file.name}: ${error}` || `Failed to add torrent ${file.name}`,
+                        message: error instanceof Error ? error.message : `Failed to add torrent ${file.name}`,
                         is_cached: false,
                     },
                 };
@@ -703,9 +583,7 @@ export default class PremiumizeClient extends BaseClient {
                 } else {
                     acc[file.name] = {
                         success: false,
-                        message:
-                            `Failed to add torrent ${file.name}: ${result.reason?.message}` ||
-                            `Failed to add torrent ${file.name}`,
+                        message: result.reason?.message || `Failed to add torrent ${file.name}`,
                         is_cached: false,
                     };
                 }
@@ -749,7 +627,7 @@ export default class PremiumizeClient extends BaseClient {
             size: 0, // Transfers don't include size in list
             status,
             progress: (transfer.progress || 0) * 100,
-            createdAt: new Date(), // Transfers don't include creation time
+            createdAt: new Date(),
             error: transfer.message && status === "failed" ? transfer.message : undefined,
             files: undefined,
         };
@@ -861,10 +739,6 @@ export default class PremiumizeClient extends BaseClient {
         });
     }
 
-    private static delay(ms: number): Promise<void> {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
     // Web download methods - uses /transfer/create to add links as transfers
     async addWebDownloads(links: string[]): Promise<WebDownloadAddResult[]> {
         const results: WebDownloadAddResult[] = [];
@@ -873,7 +747,6 @@ export default class PremiumizeClient extends BaseClient {
             try {
                 const formData = new FormData();
                 formData.append("src", link);
-                formData.append("folder_id", "null");
 
                 const response = await this.makeRequest<PremiumizeTransferCreateResponse>("/transfer/create", {
                     method: "POST",
