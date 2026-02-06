@@ -16,7 +16,6 @@ import {
     useTraktBoxOfficeMovies,
 } from "@/hooks/use-trakt";
 import { SearchIcon, Sparkles, Film, Tv, TrendingUp, Calendar, Ticket, Puzzle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { DISCORD_URL } from "@/lib/constants";
 import { HeroCarouselSkeleton } from "@/components/mdb/hero-carousel-skeleton";
 import { MediaSection } from "@/components/mdb/media-section";
@@ -30,77 +29,88 @@ const HeroCarousel = dynamic(
     }
 );
 
-// Welcome hero section with glassmorphic design
+// Welcome hero section with editorial minimalism
 const WelcomeSection = memo(function WelcomeSection({ onSearchClick }: { onSearchClick: () => void }) {
     return (
-        <section className="relative py-12 lg:py-16 lg:px-6">
-            {/* Subtle gradient background */}
-            <div className="absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent" />
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/[0.04] rounded-full blur-3xl" />
-                <div className="absolute top-0 right-1/4 w-64 h-64 bg-primary/[0.03] rounded-full blur-3xl" />
-            </div>
-
-            <div className="max-w-4xl mx-auto">
-                {/* Welcome header */}
-                <div className="text-center space-y-5 mb-10">
-                    <div
-                        className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 backdrop-blur-sm"
-                        style={{ animationDelay: "100ms" }}>
-                        <Sparkles className="size-3.5 text-primary" />
-                        <span className="text-xs tracking-widest uppercase text-primary/90">Welcome to DebridUI</span>
-                    </div>
-                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight leading-tightest">
-                        <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
-                            Discover & Stream
+        <section className="relative py-12 lg:py-20 lg:px-6">
+            <div className="max-w-5xl mx-auto space-y-8">
+                {/* Top row: Editorial label + social links */}
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="h-px w-8 bg-primary" />
+                        <span className="text-xs tracking-widest uppercase text-muted-foreground">
+                            Welcome to DebridUI
                         </span>
-                    </h1>
-                    <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-                        A modern debrid client for managing your files, discovering trending movies and shows — with
-                        addon support and streaming to your preferred media player.
-                    </p>
-                </div>
-
-                {/* Search bar */}
-                <div className="max-w-xl mx-auto mb-8">
-                    <button
-                        onClick={onSearchClick}
-                        className="w-full flex items-center gap-3 h-12 px-4 text-sm text-muted-foreground bg-muted/30 hover:bg-muted/50 border border-border/50 rounded-sm transition-all duration-200 hover:border-border group">
-                        <SearchIcon className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                        <span className="flex-1 text-left">Search movies, shows, files...</span>
-                        <kbd className="hidden sm:inline-flex h-6 items-center gap-1 rounded border border-border/50 bg-muted/50 px-2 font-mono text-xs text-muted-foreground">
-                            <span>⌘</span>
-                            <span>K</span>
-                        </kbd>
-                    </button>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    {DISCORD_URL && (
-                        <Button size="sm" className="gap-2 bg-[#5865F2] hover:bg-[#4752C4] text-white h-9" asChild>
-                            <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
+                    </div>
+                    <div
+                        className="flex items-center gap-1 animate-in fade-in-0"
+                        style={{ animationDuration: "600ms", animationDelay: "400ms", animationFillMode: "backwards" }}>
+                        {DISCORD_URL && (
+                            <a
+                                href={DISCORD_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Discord"
+                                className="group size-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-300">
                                 <img
                                     src="https://simpleicons.org/icons/discord.svg"
                                     alt=""
-                                    className="size-4 invert"
+                                    className="size-4 opacity-50 dark:invert group-hover:opacity-100 transition-opacity duration-300"
                                     loading="lazy"
                                 />
-                                <span>Join Discord</span>
                             </a>
-                        </Button>
-                    )}
-                    <Button variant="outline" size="sm" className="gap-2 h-9" asChild>
-                        <a href="https://github.com/viperadnan-git/debridui" target="_blank" rel="noopener noreferrer">
+                        )}
+                        <a
+                            href="https://github.com/viperadnan-git/debridui"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="GitHub"
+                            className="group size-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-300">
                             <img
                                 src="https://simpleicons.org/icons/github.svg"
                                 alt=""
-                                className="size-4 dark:invert"
+                                className="size-4 opacity-50 dark:invert group-hover:opacity-100 transition-opacity duration-300"
                                 loading="lazy"
                             />
-                            <span>Star on GitHub</span>
                         </a>
-                    </Button>
+                    </div>
+                </div>
+
+                {/* Headline with staggered animation */}
+                <div className="space-y-2">
+                    <h1
+                        className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight animate-in fade-in-0 slide-in-from-bottom-4"
+                        style={{ animationDuration: "600ms" }}>
+                        Discover
+                    </h1>
+                    <h1
+                        className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-muted-foreground animate-in fade-in-0 slide-in-from-bottom-4"
+                        style={{ animationDuration: "600ms", animationDelay: "100ms", animationFillMode: "backwards" }}>
+                        & Stream
+                    </h1>
+                </div>
+
+                {/* Description */}
+                <p
+                    className="text-sm text-muted-foreground max-w-md leading-relaxed animate-in fade-in-0"
+                    style={{ animationDuration: "600ms", animationDelay: "200ms", animationFillMode: "backwards" }}>
+                    A modern debrid client for managing your files, discovering trending movies and shows — with addon
+                    support and streaming to your preferred media player.
+                </p>
+
+                {/* Search bar */}
+                <div
+                    className="max-w-md animate-in fade-in-0 slide-in-from-bottom-2"
+                    style={{ animationDuration: "600ms", animationDelay: "300ms", animationFillMode: "backwards" }}>
+                    <button
+                        onClick={onSearchClick}
+                        className="group w-full flex items-center gap-3 h-11 px-4 text-sm text-muted-foreground bg-transparent hover:bg-muted/30 border border-border/50 hover:border-border rounded-sm transition-all duration-300">
+                        <SearchIcon className="size-4 text-muted-foreground/60 group-hover:text-foreground transition-colors duration-300" />
+                        <span className="flex-1 text-left">Search movies, shows, files...</span>
+                        <kbd className="hidden sm:inline-flex h-6 items-center gap-1 rounded-sm border border-border/50 bg-muted/30 px-2 font-mono text-xs text-muted-foreground">
+                            ⌘K
+                        </kbd>
+                    </button>
                 </div>
             </div>
         </section>

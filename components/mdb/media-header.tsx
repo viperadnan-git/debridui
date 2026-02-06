@@ -58,7 +58,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                 <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr] gap-6 md:gap-8">
                     {/* Poster Column */}
                     <div className="space-y-4">
-                        <div className="max-md:max-w-[45vw] aspect-2/3 overflow-hidden rounded-sm bg-muted/50">
+                        <div className="max-md:max-w-[45vw] aspect-2/3 overflow-hidden rounded-sm bg-muted/30">
                             <img
                                 src={posterUrl}
                                 alt={media.title}

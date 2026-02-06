@@ -29,7 +29,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
                     "relative overflow-hidden transition-transform duration-300 ease-out hover:scale-hover [content-visibility:auto] [contain-intrinsic-size:120px_180px]",
                     className
                 )}>
-                <div className="aspect-2/3 relative overflow-hidden bg-muted/50 rounded-sm">
+                <div className="aspect-2/3 relative overflow-hidden bg-muted/30 rounded-sm">
                     <Image
                         src={posterUrl}
                         alt={media.title}
@@ -55,7 +55,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
 
                     {/* Content on hover */}
                     <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                        <h3 className="font-medium text-sm text-white leading-tight line-clamp-2 mb-1.5">
+                        <h3 className="font-light text-sm text-white leading-tight line-clamp-2 mb-1.5">
                             {media.title}
                         </h3>
 
@@ -65,7 +65,7 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
                                 <>
                                     <span className="text-white/30">·</span>
                                     <span className="flex items-center gap-1">
-                                        <Star className="size-3.5 fill-[#F5C518] text-[#F5C518]" />
+                                        <Star className="size-3 fill-[#F5C518] text-[#F5C518] -mt-0.5" />
                                         {media.rating.toFixed(1)}
                                     </span>
                                 </>

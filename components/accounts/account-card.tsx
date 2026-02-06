@@ -25,7 +25,6 @@ export const AccountCard = React.memo(function AccountCard({ account, isCurrentA
     const { switchAccount } = useAuth();
     const removeAccount = useRemoveUserAccount();
 
-    // Fetch debrid user info for this account
     const { data: userInfo } = useDebridUserInfo(account);
 
     // `rerender-defer-reads` - Use callbacks to avoid subscribing to switchAccount identity
@@ -42,93 +41,136 @@ export const AccountCard = React.memo(function AccountCard({ account, isCurrentA
         <>
             <div
                 className={cn(
-                    "relative flex flex-col h-full rounded-sm border border-border/50 bg-card p-4 transition-all duration-300",
-                    isCurrentAccount && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                    "group relative rounded-sm border bg-card p-3 sm:p-5 transition-colors duration-300",
+                    isCurrentAccount ? "border-primary" : "border-border/50 hover:border-border"
                 )}>
+                {/* Active badge on border */}
                 {isCurrentAccount && (
-                    <span className="absolute -top-2.5 left-4 text-xs tracking-wider uppercase px-2 py-0.5 bg-primary text-primary-foreground rounded-sm">
+                    <span className="absolute -top-2.5 left-3 sm:left-4 px-2 py-0.5 text-[10px] tracking-widest uppercase bg-primary text-primary-foreground rounded-sm">
                         Active
                     </span>
                 )}
-
-                {/* Header */}
-                <div className="flex items-start gap-3 mb-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-muted/50 shrink-0">
-                        <ServiceIcon type={account.type as AccountType} className="h-5 w-5 text-muted-foreground" />
+                {/* Header: Icon + Name + Actions */}
+                <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+                    <div
+                        className={cn(
+                            "flex size-9 sm:size-10 items-center justify-center rounded-sm shrink-0 transition-colors",
+                            isCurrentAccount ? "bg-primary/10" : "bg-muted/50"
+                        )}>
+                        <ServiceIcon
+                            type={account.type as AccountType}
+                            className={cn(
+                                "size-4 sm:size-5",
+                                isCurrentAccount ? "text-primary" : "text-muted-foreground"
+                            )}
+                        />
                     </div>
+
                     <div className="flex-1 min-w-0">
                         {userInfo ? (
-                            <h3 className="font-light text-lg truncate" title={userInfo.name}>
-                                {userInfo.name}
-                            </h3>
-                        ) : (
-                            <Skeleton className="h-6 w-32" />
-                        )}
-                        <p className="text-xs text-muted-foreground truncate" title={formatAccountType(account.type)}>
-                            {formatAccountType(account.type)}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1">
-                    {userInfo ? (
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Email</span>
-                                <span className="truncate ml-2" title={userInfo.email}>
-                                    {userInfo.email}
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Status</span>
-                                <span className={userInfo.isPremium ? "text-green-600" : "text-muted-foreground"}>
-                                    {userInfo.isPremium ? "Premium" : "Free"}
-                                </span>
-                            </div>
-                            {userInfo.premiumExpiresAt && (
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-muted-foreground">Expires</span>
-                                    <span>{format(userInfo.premiumExpiresAt, "PP")}</span>
+                            <>
+                                <h3 className="text-sm sm:text-base font-light">{userInfo.name}</h3>
+                                <div className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                                    {formatAccountType(account.type)}
                                 </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <Skeleton className="h-4 w-12" />
-                                <Skeleton className="h-4 w-32" />
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <Skeleton className="h-4 w-12" />
-                                <Skeleton className="h-4 w-16" />
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <Skeleton className="h-4 w-14" />
-                                <Skeleton className="h-4 w-20" />
-                            </div>
-                        </div>
-                    )}
-                </div>
+                            </>
+                        ) : (
+                            <>
+                                <Skeleton className="h-5 w-32" />
+                                <Skeleton className="h-3 w-20 mt-1" />
+                            </>
+                        )}
+                    </div>
 
-                {/* Actions */}
-                <div className="mt-4 pt-3 border-t border-border/50">
-                    <div className="flex gap-2 justify-end">
+                    {/* Desktop/Tablet actions */}
+                    <div className="hidden sm:flex items-center gap-1 shrink-0">
                         {!isCurrentAccount && (
-                            <Button variant="outline" onClick={handleSwitch}>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleSwitch}
+                                className="text-muted-foreground hover:text-foreground">
                                 <ArrowRightLeft className="size-4" />
                                 Switch
                             </Button>
                         )}
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
+                            className="size-8 text-muted-foreground hover:text-destructive"
                             onClick={() => setRemoveDialogOpen(true)}
-                            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                             aria-label="Remove account">
                             <Trash2 className="size-4" />
                         </Button>
                     </div>
+                </div>
+
+                {/* Stats Grid - 3 blocks: Email, Plan, Expires */}
+                {userInfo ? (
+                    <div className="grid grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6">
+                        <div className="col-span-3 sm:col-span-1 pl-2.5 sm:pl-3 border-l border-border/50">
+                            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-0.5">
+                                Email
+                            </div>
+                            <div className="text-xs sm:text-sm break-all sm:break-normal">{userInfo.email}</div>
+                        </div>
+                        <div className="pl-2.5 sm:pl-3 border-l border-border/50">
+                            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-0.5">
+                                Plan
+                            </div>
+                            <div
+                                className={cn(
+                                    "text-xs sm:text-sm",
+                                    userInfo.isPremium && "text-green-600 dark:text-green-500"
+                                )}>
+                                {userInfo.isPremium ? "Premium" : "Free"}
+                            </div>
+                        </div>
+                        <div className="pl-2.5 sm:pl-3 border-l border-border/50">
+                            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-0.5">
+                                Expires
+                            </div>
+                            <div className="text-xs sm:text-sm">
+                                {userInfo.premiumExpiresAt ? format(userInfo.premiumExpiresAt, "PP") : "—"}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6">
+                        <div className="col-span-3 sm:col-span-1 pl-2.5 sm:pl-3 border-l border-border/50">
+                            <Skeleton className="h-2.5 w-12 mb-1.5" />
+                            <Skeleton className="h-3.5 sm:h-4 w-48 sm:w-32" />
+                        </div>
+                        <div className="pl-2.5 sm:pl-3 border-l border-border/50">
+                            <Skeleton className="h-2.5 w-12 mb-1.5" />
+                            <Skeleton className="h-3.5 sm:h-4 w-16" />
+                        </div>
+                        <div className="pl-2.5 sm:pl-3 border-l border-border/50">
+                            <Skeleton className="h-2.5 w-12 mb-1.5" />
+                            <Skeleton className="h-3.5 sm:h-4 w-24" />
+                        </div>
+                    </div>
+                )}
+
+                {/* Mobile actions - bottom row */}
+                <div className="flex sm:hidden items-center gap-2 mt-3 pt-3 border-t border-border/50">
+                    {!isCurrentAccount && (
+                        <Button variant="outline" size="sm" onClick={handleSwitch} className="flex-1">
+                            <ArrowRightLeft className="size-4" />
+                            Switch
+                        </Button>
+                    )}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                            "text-muted-foreground hover:text-destructive hover:border-destructive",
+                            isCurrentAccount && "flex-1"
+                        )}
+                        onClick={() => setRemoveDialogOpen(true)}>
+                        <Trash2 className="size-4" />
+                        Remove
+                    </Button>
                 </div>
             </div>
 

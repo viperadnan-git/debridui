@@ -10,6 +10,8 @@ import { usePathname } from "next/navigation";
 export function NavMain({
     items,
     onAction,
+    className,
+    variant = "default",
 }: {
     items: {
         title: string;
@@ -23,12 +25,14 @@ export function NavMain({
         }[];
     }[];
     onAction?: (action: string) => void;
+    className?: string;
+    variant?: "default" | "subtle";
 }) {
     const { setOpenMobile } = useSidebar();
     const pathname = usePathname();
 
     return (
-        <SidebarGroup>
+        <SidebarGroup className={className}>
             <SidebarMenu>
                 {items.map((item) => {
                     const isActive = item.url !== "#" && pathname === item.url;
@@ -39,6 +43,7 @@ export function NavMain({
                                 tooltip={item.title}
                                 asChild={!item.action}
                                 isActive={isActive}
+                                className={variant === "subtle" ? "text-muted-foreground" : undefined}
                                 onClick={
                                     item.action
                                         ? () => {

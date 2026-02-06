@@ -114,7 +114,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                         <button className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 text-left cursor-pointer min-w-0">
                             <div className="flex items-start justify-between gap-2">
                                 <div className="space-y-0.5 sm:space-y-1 min-w-0">
-                                    <h4 className="text-sm sm:text-base font-medium line-clamp-1 group-hover:text-foreground/80 transition-colors">
+                                    <h4 className="text-sm sm:text-base font-light line-clamp-1 group-hover:text-foreground/80 transition-colors">
                                         {episode.title || `Episode ${episode.number}`}
                                     </h4>
                                     <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-sm text-muted-foreground">
