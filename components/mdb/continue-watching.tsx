@@ -55,7 +55,10 @@ const ContinueWatchingCard = memo(function ContinueWatchingCard({
     const episodeLabel =
         entry.type === "show" && entry.season && entry.episode ? formatEpisodeLabel(entry.season, entry.episode) : null;
 
-    const linkHref = `/${entry.type}s/${entry.imdbId}`;
+    const linkHref =
+        entry.type === "show" && entry.season
+            ? `/${entry.type}s/${entry.imdbId}?season=${entry.season}#seasons`
+            : `/${entry.type}s/${entry.imdbId}`;
     const placeholderUrl = `https://placehold.co/300x450/0f0f0f/1f1f1f?text=${encodeURIComponent(entry.title)}`;
     const posterUrl = entry.posterUrl || placeholderUrl;
 
