@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Play, SkipForward } from "lucide-react";
@@ -10,6 +10,8 @@ import { ScrollCarousel } from "@/components/common/scroll-carousel";
 import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
 import { useUserAddons } from "@/hooks/use-addons";
 import { usePlaybackHistory } from "@/hooks/use-playback-history";
+import type { PlaybackHistory } from "@/lib/db/schema";
+import type { Addon } from "@/lib/addons/types";
 
 function formatEpisodeLabel(season: number, episode: number): string {
     return `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")}`;
@@ -140,6 +142,66 @@ const ContinueWatchingCard = memo(function ContinueWatchingCard({
     );
 });
 
+interface ContinueWatchingEntryProps {
+    entry: PlaybackHistory;
+    play: (request: StreamingRequest, addons: Addon[]) => void;
+    addons: Addon[];
+    activeRequest: StreamingRequest | null;
+    isAddonsLoading: boolean;
+}
+
+const ContinueWatchingEntry = memo(function ContinueWatchingEntry({
+    entry,
+    play,
+    addons,
+    activeRequest,
+    isAddonsLoading,
+}: ContinueWatchingEntryProps) {
+    const tvParams = useMemo(
+        () => (entry.season && entry.episode ? { season: entry.season, episode: entry.episode } : undefined),
+        [entry.season, entry.episode]
+    );
+
+    const isLoading = isAddonsLoading || isRequestMatch(activeRequest, { ...entry, tvParams });
+
+    const playRequest = useMemo<StreamingRequest>(
+        () => ({
+            imdbId: entry.imdbId,
+            type: entry.type,
+            tvParams,
+            media: {
+                title: entry.title,
+                year: entry.year || undefined,
+                ids: { imdb: entry.imdbId },
+                images: entry.posterUrl ? { poster: [entry.posterUrl] } : undefined,
+            },
+        }),
+        [entry.imdbId, entry.type, entry.title, entry.year, entry.posterUrl, tvParams]
+    );
+
+    const handlePlay = useCallback(() => play(playRequest, addons), [play, playRequest, addons]);
+
+    const handlePlayNext = useCallback(() => {
+        if (!entry.season || !entry.episode) return;
+        play(
+            {
+                ...playRequest,
+                tvParams: { season: entry.season, episode: entry.episode + 1 },
+            },
+            addons
+        );
+    }, [play, playRequest, entry.season, entry.episode, addons]);
+
+    return (
+        <ContinueWatchingCard
+            entry={entry}
+            isLoading={isLoading}
+            onPlay={handlePlay}
+            onPlayNext={entry.season && entry.episode ? handlePlayNext : undefined}
+        />
+    );
+});
+
 export const ContinueWatching = memo(function ContinueWatching() {
     const { data: entries = [], isPending: isHistoryLoading } = usePlaybackHistory();
     const activeRequest = useStreamingStore((s) => s.activeRequest);
@@ -159,67 +221,16 @@ export const ContinueWatching = memo(function ContinueWatching() {
             {/* Edge-to-edge Scroll Carousel */}
             <ScrollCarousel className="-mx-4 lg:mx-0">
                 <div className="grid grid-flow-col auto-cols-[160px] sm:auto-cols-[180px] md:auto-cols-[200px] gap-4 pb-4 max-lg:px-4 w-max">
-                    {entries.map((entry) => {
-                        // eslint-disable-next-line react-hooks/rules-of-hooks
-                        const tvParams = useMemo(
-                            () =>
-                                entry.season && entry.episode
-                                    ? { season: entry.season, episode: entry.episode }
-                                    : undefined,
-                            [entry.season, entry.episode]
-                        );
-
-                        const isLoading = isAddonsLoading || isRequestMatch(activeRequest, { ...entry, tvParams });
-
-                        // eslint-disable-next-line react-hooks/rules-of-hooks
-                        const playRequest = useMemo<StreamingRequest>(
-                            () => ({
-                                imdbId: entry.imdbId,
-                                type: entry.type,
-                                tvParams,
-                                media: {
-                                    title: entry.title,
-                                    year: entry.year || undefined,
-                                    ids: { imdb: entry.imdbId },
-                                    images: entry.posterUrl ? { poster: [entry.posterUrl] } : undefined,
-                                },
-                            }),
-                            [entry.imdbId, entry.type, entry.title, entry.year, entry.posterUrl, tvParams]
-                        );
-
-                        // eslint-disable-next-line react-hooks/rules-of-hooks
-                        const handlePlay = useMemo(() => () => play(playRequest, addons), [playRequest]);
-
-                        // eslint-disable-next-line react-hooks/rules-of-hooks
-                        const handlePlayNext = useMemo(
-                            () =>
-                                entry.season && entry.episode
-                                    ? () => {
-                                          play(
-                                              {
-                                                  ...playRequest,
-                                                  tvParams: {
-                                                      season: entry.season!,
-                                                      episode: entry.episode! + 1,
-                                                  },
-                                              },
-                                              addons
-                                          );
-                                      }
-                                    : undefined,
-                            [playRequest, entry.season, entry.episode]
-                        );
-
-                        return (
-                            <ContinueWatchingCard
-                                key={entry.id}
-                                entry={entry}
-                                isLoading={isLoading}
-                                onPlay={handlePlay}
-                                onPlayNext={handlePlayNext}
-                            />
-                        );
-                    })}
+                    {entries.map((entry) => (
+                        <ContinueWatchingEntry
+                            key={entry.id}
+                            entry={entry}
+                            play={play}
+                            addons={addons}
+                            activeRequest={activeRequest}
+                            isAddonsLoading={isAddonsLoading}
+                        />
+                    ))}
                 </div>
             </ScrollCarousel>
         </section>
