@@ -39,3 +39,32 @@ export const addonOrderUpdateSchema = z.array(
         order: z.number().int().min(0, "Order must be a non-negative integer"),
     })
 );
+
+// Playback history schemas
+export const tvParamsSchema = z
+    .object({
+        season: z.number().int().positive("Season must be positive"),
+        episode: z.number().int().positive("Episode must be positive"),
+    })
+    .optional();
+
+export const mediaSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    year: z.number().int().positive().optional(),
+    images: z
+        .object({
+            poster: z.array(z.string()).optional(),
+        })
+        .optional(),
+});
+
+export const recordPlaybackSchema = z.object({
+    imdbId: z.string().regex(/^tt\d+$/, "Invalid IMDb ID format"),
+    type: z.enum(["movie", "show"], { message: "Type must be 'movie' or 'show'" }),
+    media: mediaSchema,
+    tvParams: tvParamsSchema,
+});
+
+export const removePlaybackSchema = z.object({
+    imdbId: z.string().regex(/^tt\d+$/, "Invalid IMDb ID format"),
+});

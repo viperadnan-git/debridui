@@ -1,6 +1,6 @@
 "use client";
 
-import { type TraktEpisode } from "@/lib/trakt";
+import { type TraktEpisode, type TraktMedia } from "@/lib/trakt";
 import { ChevronDown, Play, Star } from "lucide-react";
 import { cn, formatLocalizedDate } from "@/lib/utils";
 import { memo, useState } from "react";
@@ -60,10 +60,10 @@ interface EpisodeCardProps {
     episode: TraktEpisode;
     className?: string;
     imdbId?: string;
-    showTitle?: string;
+    showMedia?: TraktMedia;
 }
 
-export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbId, showTitle }: EpisodeCardProps) {
+export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbId, showMedia }: EpisodeCardProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     const episodeLabel = String(episode.number).padStart(2, "0");
@@ -71,12 +71,9 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
         ? `https://${episode.images.screenshot[0]}`
         : `https://placehold.co/400x225/1a1a1a/3e3e3e?text=${episodeLabel}`;
 
-    const mediaTitle =
-        showTitle && episode.season
-            ? `${showTitle} S${episode.season.toString().padStart(2, "0")} E${episode.number.toString().padStart(2, "0")}${episode.title ? ` - ${episode.title}` : ""}`
-            : episode.title || `Episode ${episode.number}`;
-
-    const tvParams = episode.season ? { season: episode.season, episode: episode.number } : undefined;
+    const tvParams = episode.season
+        ? { season: episode.season, episode: episode.number, title: episode.title }
+        : undefined;
 
     const thumbnailClass =
         "relative w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden";
@@ -86,8 +83,8 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
             <div className="rounded-sm border border-border/50 overflow-hidden">
                 <div className="flex flex-row items-start">
                     {/* Episode thumbnail - clickable to watch */}
-                    {imdbId ? (
-                        <WatchButton imdbId={imdbId} mediaType="show" title={mediaTitle} tvParams={tvParams}>
+                    {imdbId && showMedia ? (
+                        <WatchButton request={{ imdbId, type: "show", media: showMedia, tvParams }}>
                             <button className={cn(thumbnailClass, "cursor-pointer group/thumb")}>
                                 <ThumbnailContent
                                     screenshotUrl={screenshotUrl}
@@ -142,7 +139,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                 </div>
 
                 <CollapsibleContent>
-                    {isOpen && imdbId && (
+                    {isOpen && imdbId && showMedia && (
                         <div className="border-t border-border/50 bg-muted/20">
                             <div className="px-4 py-3">
                                 <span className="text-xs tracking-widest uppercase text-muted-foreground">
@@ -150,10 +147,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                                 </span>
                             </div>
                             <Sources
-                                imdbId={imdbId}
-                                mediaType="show"
-                                tvParams={tvParams}
-                                mediaTitle={mediaTitle}
+                                request={{ imdbId, type: "show", tvParams, media: showMedia }}
                                 className="border-x-0 border-b-0 rounded-none"
                             />
                         </div>

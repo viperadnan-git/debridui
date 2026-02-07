@@ -143,7 +143,7 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
                             {/* CTA */}
                             <div className="flex items-center gap-3 pt-2">
                                 {type === "movie" ? (
-                                    <WatchButton imdbId={media.ids?.imdb || ""} mediaType={type} title={media.title}>
+                                    <WatchButton request={{ imdbId: media.ids?.imdb || "", type, media }}>
                                         <Button size="lg" className="h-11 px-6 gap-2.5">
                                             <Play className="size-4 fill-current" />
                                             Watch Now
@@ -252,7 +252,7 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
                         {/* CTA */}
                         <div className="flex items-center gap-2 pt-1">
                             {type === "movie" ? (
-                                <WatchButton imdbId={media.ids?.imdb || ""} mediaType={type} title={media.title}>
+                                <WatchButton request={{ imdbId: media.ids?.imdb || "", type, media }}>
                                     <Button className="flex-1 h-10 gap-2">
                                         <Play className="size-4 fill-current" />
                                         Watch Now

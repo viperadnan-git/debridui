@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, memo } from "react";
-import { type AddonSource, type TvSearchParams } from "@/lib/addons/types";
+import { type AddonSource } from "@/lib/addons/types";
 import { useAddonSources } from "@/hooks/use-addons";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, AlertTriangle, PlayIcon } from "lucide-react";
@@ -11,14 +11,11 @@ import { toast } from "sonner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useRouter } from "next/navigation";
 import { CachedBadge } from "@/components/display";
-import { useStreamingStore } from "@/lib/stores/streaming";
+import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
 
 interface SourcesProps {
-    imdbId: string;
-    mediaType?: "movie" | "show";
-    tvParams?: TvSearchParams;
+    request: StreamingRequest;
     className?: string;
-    mediaTitle: string;
 }
 
 interface SourcesDialogProps extends SourcesProps {
@@ -113,7 +110,13 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
     );
 }
 
-export const SourceRow = memo(function SourceRow({ source, mediaTitle }: { source: AddonSource; mediaTitle: string }) {
+export const SourceRow = memo(function SourceRow({
+    source,
+    request,
+}: {
+    source: AddonSource;
+    request: StreamingRequest;
+}) {
     // Build metadata string with editorial separators
     const metaParts: string[] = [];
     if (source.resolution) metaParts.push(source.resolution);
@@ -156,9 +159,7 @@ export const SourceRow = memo(function SourceRow({ source, mediaTitle }: { sourc
                     <div className="flex items-center gap-2 justify-end sm:shrink-0">
                         {source.magnet && <AddSourceButton magnet={source.magnet} />}
                         {source.url && (
-                            <Button
-                                size="sm"
-                                onClick={() => useStreamingStore.getState().playSource(source, mediaTitle)}>
+                            <Button size="sm" onClick={() => useStreamingStore.getState().playSource(source, request)}>
                                 <PlayIcon className="size-4 fill-current" />
                                 Play
                             </Button>
@@ -170,8 +171,16 @@ export const SourceRow = memo(function SourceRow({ source, mediaTitle }: { sourc
     );
 });
 
-export function Sources({ imdbId, mediaType = "movie", tvParams, className, mediaTitle }: SourcesProps) {
-    const { data: sources, isLoading, failedAddons } = useAddonSources({ imdbId, mediaType, tvParams });
+export function Sources({ request, className }: SourcesProps) {
+    const {
+        data: sources,
+        isLoading,
+        failedAddons,
+    } = useAddonSources({
+        imdbId: request.imdbId,
+        mediaType: request.type,
+        tvParams: request.tvParams,
+    });
 
     return (
         <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
@@ -191,7 +200,7 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
             )}
 
             {sources?.map((source, index) => (
-                <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} mediaTitle={mediaTitle} />
+                <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} request={request} />
             ))}
 
             {/* Failed addons warning */}
@@ -205,8 +214,8 @@ export function Sources({ imdbId, mediaType = "movie", tvParams, className, medi
     );
 }
 
-export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, mediaTitle, children }: SourcesDialogProps) {
-    if (!imdbId) return null;
+export function SourcesDialog({ request, children }: SourcesDialogProps) {
+    if (!request.imdbId) return null;
 
     return (
         <Dialog>
@@ -215,11 +224,11 @@ export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, mediaTitl
                 <div className="flex-none px-6 pt-6 pb-4 border-b border-border/50">
                     <DialogTitle>
                         Sources
-                        {tvParams && (
+                        {request.tvParams && (
                             <span className="text-muted-foreground">
                                 {" "}
-                                · S{String(tvParams.season).padStart(2, "0")}E
-                                {String(tvParams.episode).padStart(2, "0")}
+                                · S{String(request.tvParams.season).padStart(2, "0")}E
+                                {String(request.tvParams.episode).padStart(2, "0")}
                             </span>
                         )}
                     </DialogTitle>
@@ -228,13 +237,7 @@ export function SourcesDialog({ imdbId, mediaType = "movie", tvParams, mediaTitl
                     </DialogDescription>
                 </div>
                 <div className="flex-1 overflow-y-auto min-h-0 px-6 py-4">
-                    <Sources
-                        imdbId={imdbId}
-                        mediaType={mediaType}
-                        tvParams={tvParams}
-                        mediaTitle={mediaTitle}
-                        className="border-0"
-                    />
+                    <Sources request={request} className="border-0" />
                 </div>
                 <div className="flex-none px-6 py-4 border-t border-border/50 bg-muted/20">
                     <DialogClose asChild>

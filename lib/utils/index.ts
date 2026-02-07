@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { AccountType } from "../schemas";
 import { formatDistanceToNow, differenceInYears } from "date-fns";
 import { DebridLinkInfo, FileType } from "../types";
-import { ACCOUNT_TYPE_LABELS, CORS_PROXY_URL, EXTENSION_TO_FILE_TYPE } from "../constants";
+import { ACCOUNT_TYPE_LABELS, CORS_PROXY_URL, EXTENSION_TO_FILE_TYPE, STREAMING_STORAGE_KEY } from "../constants";
 import { del } from "idb-keyval";
 import { queryClient } from "../query-client";
 import { toast } from "sonner";
@@ -17,6 +17,9 @@ export * from "./media-player";
 export const clearAppCache = async () => {
     await del("DEBRIDUI_CACHE");
     queryClient.clear();
+    if (typeof window !== "undefined") {
+        localStorage.removeItem(STREAMING_STORAGE_KEY);
+    }
 };
 
 export const cn = (...inputs: ClassValue[]) => {

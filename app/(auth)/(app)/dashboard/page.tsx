@@ -20,6 +20,7 @@ import { DISCORD_URL } from "@/lib/constants";
 import { HeroCarouselSkeleton } from "@/components/mdb/hero-carousel-skeleton";
 import { MediaSection } from "@/components/mdb/media-section";
 import { useAddonCatalogDefs, useAddonCatalog, catalogSlug, type AddonCatalogDef } from "@/hooks/use-addons";
+import { ContinueWatching } from "@/components/mdb/continue-watching";
 
 const HeroCarousel = dynamic(
     () => import("@/components/mdb/hero-carousel").then((m) => ({ default: m.HeroCarousel })),
@@ -252,6 +253,9 @@ const DashboardPage = memo(function DashboardPage() {
         <div className="pb-12">
             {/* Hero Carousel */}
             <HeroCarousel autoFocus />
+
+            {/* Continue Watching */}
+            <ContinueWatching />
 
             {/* Welcome Section */}
             <WelcomeSection onSearchClick={() => setSearchOpen(true)} />

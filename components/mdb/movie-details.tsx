@@ -21,7 +21,7 @@ export const MovieDetails = memo(function MovieDetails({ media, mediaId }: Movie
                 <section className="space-y-6">
                     <SectionDivider label="Available Sources" />
                     <div id="sources">
-                        <Sources imdbId={media.ids?.imdb} mediaType="movie" mediaTitle={media.title || "Movie"} />
+                        <Sources request={{ imdbId: media.ids?.imdb || "", type: "movie", media }} />
                     </div>
                 </section>
             )}

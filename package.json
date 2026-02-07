@@ -26,7 +26,11 @@
         "lint:eslint": "eslint .",
         "lint:types": "tsc --noEmit",
         "prettier": "prettier --write . --ignore-path .gitignore",
-        "update": "bunx next upgrade && bun update"
+        "update": "bunx next upgrade && bun update",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate",
+        "db:push": "drizzle-kit push",
+        "db:studio": "drizzle-kit studio"
     },
     "dependencies": {
         "@bprogress/next": "^3.2.12",

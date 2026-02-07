@@ -10,11 +10,13 @@ import { FileType, MediaPlayer } from "@/lib/types";
 import { openInPlayer } from "@/lib/utils/media-player";
 import { useSettingsStore } from "./settings";
 import { usePreviewStore } from "./preview";
+import { type Media } from "@/lib/trakt";
+import { recordPlayback } from "@/lib/actions/playback-history";
 
 export interface StreamingRequest {
     imdbId: string;
     type: "movie" | "show";
-    title: string;
+    media: Media;
     tvParams?: TvSearchParams;
 }
 
@@ -23,7 +25,7 @@ interface StreamingState {
     selectedSource: AddonSource | null;
 
     play: (request: StreamingRequest, addons: Addon[]) => Promise<void>;
-    playSource: (source: AddonSource, title: string) => void;
+    playSource: (source: AddonSource, request: StreamingRequest) => void;
     cancel: () => void;
 }
 
@@ -35,6 +37,24 @@ let requestId = 0;
 // Minimum time toast must be visible before dismissing (allows mount animation)
 const MIN_TOAST_DURATION = 300;
 const TOAST_POSITION = "bottom-center" as const;
+
+function formatTitle(request: StreamingRequest): string {
+    const baseTitle = request.media.title || "Untitled";
+
+    if (request.type === "show" && request.tvParams) {
+        const seasonStr = String(request.tvParams.season).padStart(2, "0");
+        const episodeStr = String(request.tvParams.episode).padStart(2, "0");
+        let title = `${baseTitle} S${seasonStr}E${episodeStr}`;
+
+        if (request.tvParams.title) {
+            title = `${title} - ${request.tvParams.title}`;
+        }
+
+        return title;
+    }
+
+    return baseTitle;
+}
 
 function dismissToast() {
     if (!toastId) return;
@@ -93,14 +113,16 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
     activeRequest: null,
     selectedSource: null,
 
-    playSource: (source, title) => {
+    playSource: (source, request) => {
         if (!source.url) return;
 
         const mediaPlayer = useSettingsStore.getState().get("mediaPlayer");
 
+        const title = formatTitle(request);
+
         // Build descriptive filename with source metadata
-        const meta = [source.resolution, source.quality, source.size].filter(Boolean).join(" ");
-        const fileName = meta ? `${title} [${meta}]` : title;
+        const metaLabel = [source.resolution, source.quality, source.size].filter(Boolean).join(" ");
+        const fileName = metaLabel ? `${title} [${metaLabel}]` : title;
 
         if (mediaPlayer === MediaPlayer.BROWSER) {
             usePreviewStore
@@ -109,10 +131,26 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
         } else {
             openInPlayer({ url: source.url, fileName, player: mediaPlayer });
         }
+
+        // Record playback history
+        recordPlayback({
+            imdbId: request.imdbId,
+            type: request.type,
+            media: request.media,
+            tvParams: request.tvParams,
+        })
+            .then(() => {
+                // Invalidate query to refetch and update continue watching
+                queryClient.invalidateQueries({ queryKey: ["playback-history"] });
+            })
+            .catch((error) => {
+                console.error("Failed to record playback:", error);
+            });
     },
 
     play: async (request, addons) => {
-        const { imdbId, type, title, tvParams } = request;
+        const { imdbId, type, tvParams, media } = request;
+        const title = formatTitle(request);
 
         // Filter to enabled addons, then to stream-capable via manifest check (cache-first)
         const enabled = addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order);
@@ -189,7 +227,7 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
                 isCached: result.isCached,
                 autoPlay: streamingSettings.autoPlay,
                 allowUncached: streamingSettings.allowUncached,
-                onPlay: () => playSource(source, title),
+                onPlay: () => playSource(source, { imdbId, type, tvParams, media }),
             });
         } catch (error) {
             // Only show error if this is still the current request

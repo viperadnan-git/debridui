@@ -123,6 +123,7 @@ export interface Addon {
 export interface TvSearchParams {
     season: number;
     episode: number;
+    title?: string;
 }
 
 export class AddonError extends Error {

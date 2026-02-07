@@ -105,6 +105,9 @@ export const CAROUSEL_AUTO_DELAY = 3000; // 3 seconds
 export const DISCORD_URL = process.env.NEXT_PUBLIC_DISCORD_URL;
 export const CORS_PROXY_URL = process.env.NEXT_PUBLIC_CORS_PROXY_URL || "https://corsproxy.io/?url=";
 
+// Storage keys
+export const STREAMING_STORAGE_KEY = "debridui-streaming";
+
 // Auth config - raw values for Docker runtime env injection
 // These values are stored as-is (not compared) so that sed can replace placeholders at container startup
 // Comparisons must happen at runtime in components, NOT here (otherwise they'd be evaluated at build time)

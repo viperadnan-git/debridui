@@ -71,7 +71,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                         {/* Action Buttons */}
                         <div className="hidden md:flex flex-col gap-2">
                             {type === "movie" && media.ids?.imdb && (
-                                <WatchButton imdbId={media.ids.imdb} mediaType="movie" title={media.title || "Movie"}>
+                                <WatchButton request={{ imdbId: media.ids.imdb, type: "movie", media }}>
                                     <Button size="lg" className="w-full gap-2">
                                         <Play className="size-4 fill-current" />
                                         Watch Now
@@ -217,7 +217,7 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                         {/* Mobile Action Buttons */}
                         <div className="flex md:hidden flex-wrap gap-2 pt-2">
                             {type === "movie" && media.ids?.imdb && (
-                                <WatchButton imdbId={media.ids.imdb} mediaType="movie" title={media.title || "Movie"}>
+                                <WatchButton request={{ imdbId: media.ids.imdb, type: "movie", media }}>
                                     <Button className="gap-2">
                                         <Play className="size-4 fill-current" />
                                         Watch Now

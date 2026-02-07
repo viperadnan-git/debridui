@@ -66,7 +66,7 @@ const EpisodesSection = memo(function EpisodesSection({
                               key={`${selectedSeason}-${episode.number}`}
                               episode={episode}
                               imdbId={media.ids?.imdb}
-                              showTitle={media.title}
+                              showMedia={media}
                           />
                       ))}
             </div>
