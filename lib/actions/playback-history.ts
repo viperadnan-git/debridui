@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { recordPlaybackSchema, removePlaybackSchema } from "@/lib/schemas";
 import { getPosterUrl } from "@/lib/utils/media";
+import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 
 /**
@@ -36,6 +37,7 @@ export async function recordPlayback(input: z.infer<typeof recordPlaybackSchema>
         await db
             .insert(playbackHistory)
             .values({
+                id: uuidv7(),
                 userId: session.user.id,
                 imdbId,
                 type,
