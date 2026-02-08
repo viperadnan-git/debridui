@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, useMemo, memo } from "react";
 import { type AddonSource } from "@/lib/addons/types";
 import { useAddonSources } from "@/hooks/use-addons";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { useRouter } from "next/navigation";
 import { CachedBadge } from "@/components/display";
 import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
@@ -182,34 +183,72 @@ export function Sources({ request, className }: SourcesProps) {
         tvParams: request.tvParams,
     });
 
+    const [addonFilter, setAddonFilter] = useState("all");
+
+    // rerender-derived-state-no-effect: derive addon list + filtered sources from data
+    const addonNames = useMemo(() => {
+        if (!sources?.length) return [];
+        const seen = new Map<string, string>();
+        for (const s of sources) {
+            if (!seen.has(s.addonId)) seen.set(s.addonId, s.addonName);
+        }
+        return Array.from(seen, ([id, name]) => ({ id, name }));
+    }, [sources]);
+
+    const filtered = useMemo(
+        () => (addonFilter === "all" ? sources : sources?.filter((s) => s.addonId === addonFilter)),
+        [sources, addonFilter]
+    );
+
     return (
-        <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
-            {/* Loading indicator */}
-            {isLoading && (
-                <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/20">
-                    <Loader2 className="size-4.5 animate-spin text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Loading sources...</span>
+        <div className="space-y-2">
+            {/* Addon filter — outside card, no background */}
+            {addonNames.length > 1 && (
+                <div className="flex justify-end pt-2">
+                    <Select value={addonFilter} onValueChange={setAddonFilter}>
+                        <SelectTrigger size="sm" className="w-32 sm:w-40 text-xs sm:text-sm">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All addons</SelectItem>
+                            {addonNames.map((a) => (
+                                <SelectItem key={a.id} value={a.id}>
+                                    {a.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             )}
 
-            {!isLoading && sources?.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                    <p className="text-sm text-muted-foreground">No sources available</p>
-                    <p className="text-xs text-muted-foreground/70 mt-1">Configure addons to fetch sources</p>
-                </div>
-            )}
+            <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
+                {/* Loading indicator */}
+                {isLoading && (
+                    <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/20">
+                        <Loader2 className="size-4.5 animate-spin text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Loading sources...</span>
+                    </div>
+                )}
 
-            {sources?.map((source, index) => (
-                <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} request={request} />
-            ))}
+                {!isLoading && filtered?.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                        <p className="text-sm text-muted-foreground">No sources available</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Configure addons to fetch sources</p>
+                    </div>
+                )}
 
-            {/* Failed addons warning */}
-            {!isLoading && failedAddons.length > 0 && (
-                <div className="flex items-center justify-center gap-2 px-4 py-3 bg-yellow-500/10 border-t border-border/50">
-                    <AlertTriangle className="size-4.5 text-yellow-600" />
-                    <span className="text-xs text-yellow-600">Failed: {failedAddons.join(", ")}</span>
-                </div>
-            )}
+                {filtered?.map((source, index) => (
+                    <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} request={request} />
+                ))}
+
+                {/* Failed addons warning */}
+                {!isLoading && failedAddons.length > 0 && (
+                    <div className="flex items-center justify-center gap-2 px-4 py-3 bg-yellow-500/10 border-t border-border/50">
+                        <AlertTriangle className="size-4.5 text-yellow-600" />
+                        <span className="text-xs text-yellow-600">Failed: {failedAddons.join(", ")}</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
