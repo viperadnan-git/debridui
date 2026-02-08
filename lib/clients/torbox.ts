@@ -159,7 +159,7 @@ export default class TorBoxClient extends BaseClient {
     ): Promise<T> {
         await this.rateLimiter.acquire();
         const { apiKey } = this.account;
-        const url = `${this.baseUrl}${encodeURIComponent(`/${path}`)}`;
+        const url = `${this.baseUrl}${path}`;
 
         const response = await fetch(url, {
             ...options,
@@ -244,7 +244,7 @@ export default class TorBoxClient extends BaseClient {
         bypass_cache?: boolean;
     } = {}): Promise<DebridFileList> {
         const data = await this.makeRequest<TorBoxTorrent[]>(
-            `torrents/mylist?bypass_cache=${bypass_cache}&offset=${offset}&limit=${limit}&files=true`
+            `/torrents/mylist?bypass_cache=${bypass_cache}&offset=${offset}&limit=${limit}&files=true`
         );
 
         const paginatedTorrents = Array.isArray(data) ? data : [];
@@ -286,7 +286,7 @@ export default class TorBoxClient extends BaseClient {
 
     async findTorrentById(torrentId: string): Promise<DebridFile | null> {
         try {
-            const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/mylist?id=${torrentId}`);
+            const torrent = await this.makeRequest<TorBoxTorrent>(`/torrents/mylist?id=${torrentId}`);
             return this.mapToDebridFile(torrent);
         } catch {
             return null;
@@ -323,7 +323,7 @@ export default class TorBoxClient extends BaseClient {
 
     private async getResolvedDownloadLink(torrentId: string, targetFileId: string): Promise<string> {
         return this.makeRequest<string>(
-            `torrents/requestdl?token=${this.account.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=false`,
+            `/torrents/requestdl?token=${this.account.apiKey}&torrent_id=${torrentId}&file_id=${targetFileId}&redirect=false`,
             { method: "GET" }
         );
     }
@@ -332,7 +332,7 @@ export default class TorBoxClient extends BaseClient {
         // For TorBox, files should already be available in DebridFile.files
         // This method exists only for backward compatibility
         // Make direct API request as fallback since this should rarely be called
-        const torrent = await this.makeRequest<TorBoxTorrent>(`torrents/mylist?id=${torrentId}`);
+        const torrent = await this.makeRequest<TorBoxTorrent>(`/torrents/mylist?id=${torrentId}`);
         return this.mapToDebridFile(torrent).files || [];
     }
 
@@ -342,7 +342,7 @@ export default class TorBoxClient extends BaseClient {
             operation: "delete",
         };
 
-        await this.makeRequest<Record<string, unknown>>("torrents/controltorrent", {
+        await this.makeRequest<Record<string, unknown>>("/torrents/controltorrent", {
             method: "POST",
             body: JSON.stringify(payload),
             headers: {
@@ -361,7 +361,7 @@ export default class TorBoxClient extends BaseClient {
                     operation: "resume",
                 };
 
-                await this.makeRequest<Record<string, unknown>>("torrents/controltorrent", {
+                await this.makeRequest<Record<string, unknown>>("/torrents/controltorrent", {
                     method: "POST",
                     body: JSON.stringify(payload),
                     headers: {
@@ -407,7 +407,7 @@ export default class TorBoxClient extends BaseClient {
                 const response = await this.makeRequest<{
                     data: { torrent_id?: number; hash?: string; auth_id?: string };
                     detail: string;
-                }>("torrents/createtorrent", {
+                }>("/torrents/createtorrent", {
                     method: "POST",
                     body: formData,
                     returnRaw: true,
@@ -464,7 +464,7 @@ export default class TorBoxClient extends BaseClient {
                 formData.append("allow_zip", "true");
 
                 const response = await this.makeRequest<{ torrent_id?: number; id?: number; cached?: boolean }>(
-                    "torrents/createtorrent",
+                    "/torrents/createtorrent",
                     {
                         method: "POST",
                         body: formData,
@@ -543,7 +543,7 @@ export default class TorBoxClient extends BaseClient {
                 const response = await this.makeRequest<{
                     data: { webdownload_id?: number; hash?: string };
                     detail: string;
-                }>("webdl/createwebdownload", {
+                }>("/webdl/createwebdownload", {
                     method: "POST",
                     body: formData,
                     returnRaw: true,
@@ -571,7 +571,7 @@ export default class TorBoxClient extends BaseClient {
     }
 
     async getWebDownloadList({ offset, limit }: { offset: number; limit: number }): Promise<WebDownloadList> {
-        const data = await this.makeRequest<TorBoxWebDownload[]>(`webdl/mylist?offset=${offset}&limit=${limit}`);
+        const data = await this.makeRequest<TorBoxWebDownload[]>(`/webdl/mylist?offset=${offset}&limit=${limit}`);
         const downloads = Array.isArray(data) ? data : [];
 
         return {
@@ -583,7 +583,7 @@ export default class TorBoxClient extends BaseClient {
     }
 
     async deleteWebDownload(id: string): Promise<void> {
-        await this.makeRequest("webdl/controlwebdownload", {
+        await this.makeRequest("/webdl/controlwebdownload", {
             method: "POST",
             body: JSON.stringify({ operation: "delete", webdl_id: parseInt(id) }),
             headers: {

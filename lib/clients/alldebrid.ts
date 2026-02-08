@@ -105,7 +105,7 @@ export default class AllDebridClient extends BaseClient {
     private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
         await this.rateLimiter.acquire();
         const { apiKey } = this.account;
-        const url = `https://api.alldebrid.com/v4.1/${path}?agent=${USER_AGENT}`;
+        const url = `https://api.alldebrid.com/v4.1${path}?agent=${USER_AGENT}`;
 
         const response = await fetch(url, {
             ...options,
@@ -261,7 +261,7 @@ export default class AllDebridClient extends BaseClient {
             link: string;
             filename: string;
             filesize: number;
-        }>(`link/unlock`, {
+        }>(`/link/unlock`, {
             method: "POST",
             body: formData,
         });
@@ -278,7 +278,7 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         formData.append("id[]", torrentId);
 
-        const response = await this.makeRequest<{ magnets: TorrentFile[] }>(`magnet/files`, {
+        const response = await this.makeRequest<{ magnets: TorrentFile[] }>(`/magnet/files`, {
             method: "POST",
             body: formData,
         });
@@ -291,7 +291,7 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         formData.append("id", torrentId);
 
-        const response = await this.makeRequest<{ message: string }>(`magnet/delete`, {
+        const response = await this.makeRequest<{ message: string }>(`/magnet/delete`, {
             method: "POST",
             body: formData,
         });
@@ -304,7 +304,7 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         torrentIds.forEach((id) => formData.append("ids[]", id));
 
-        const response: RetryResponse = await this.makeRequest(`magnet/restart`, {
+        const response: RetryResponse = await this.makeRequest(`/magnet/restart`, {
             method: "POST",
             body: formData,
         });
@@ -326,7 +326,7 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         magnetUris.forEach((magnet) => formData.append("magnets[]", magnet));
 
-        const response: AddTorrentResponse = await this.makeRequest(`magnet/upload`, {
+        const response: AddTorrentResponse = await this.makeRequest(`/magnet/upload`, {
             method: "POST",
             body: formData,
         });
@@ -350,7 +350,7 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         files.forEach((file) => formData.append("files[]", file));
 
-        const response: AddFileResponse = await this.makeRequest(`magnet/upload/file`, {
+        const response: AddFileResponse = await this.makeRequest(`/magnet/upload/file`, {
             method: "POST",
             body: formData,
         });
@@ -384,7 +384,7 @@ export default class AllDebridClient extends BaseClient {
                     filesize: number;
                     host: string;
                     id: string;
-                }>("link/unlock", {
+                }>("/link/unlock", {
                     method: "POST",
                     body: formData,
                 });
@@ -422,7 +422,7 @@ export default class AllDebridClient extends BaseClient {
                 date: number;
                 host: string;
             }>;
-        }>("user/links");
+        }>("/user/links");
 
         const allLinks = data?.links ?? [];
         const total = allLinks.length;
@@ -449,7 +449,7 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         formData.append("links[]", id);
 
-        await this.makeRequest("user/links/delete", {
+        await this.makeRequest("/user/links/delete", {
             method: "POST",
             body: formData,
         });
@@ -459,7 +459,7 @@ export default class AllDebridClient extends BaseClient {
         const formData = new FormData();
         links.forEach((link) => formData.append("links[]", link));
 
-        await this.makeRequest("user/links/save", {
+        await this.makeRequest("/user/links/save", {
             method: "POST",
             body: formData,
         });
@@ -495,7 +495,7 @@ export default class AllDebridClient extends BaseClient {
         formData.append("session", this.sessionId.toString());
         formData.append("counter", this.counter.toString());
 
-        const response: LiveModeResponse = await this.makeRequest(`magnet/status`, {
+        const response: LiveModeResponse = await this.makeRequest(`/magnet/status`, {
             method: "POST",
             body: formData,
         });

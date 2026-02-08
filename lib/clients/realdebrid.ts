@@ -124,7 +124,7 @@ export default class RealDebridClient extends BaseClient {
 
     private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
         await this.rateLimiter.acquire();
-        const url = getProxyUrl(`${this.baseUrl}/${path}`);
+        const url = getProxyUrl(`${this.baseUrl}${path}`);
 
         const response = await fetch(url, {
             ...options,
@@ -245,7 +245,7 @@ export default class RealDebridClient extends BaseClient {
     } = {}): Promise<DebridFileList> {
         // Real-Debrid returns 204 when offset param is present — use page-based pagination instead
         const page = Math.floor(offset / limit) + 1;
-        const torrents = await this.makeRequest<RDTorrentListItem[]>(`torrents?page=${page}&limit=${limit}`);
+        const torrents = await this.makeRequest<RDTorrentListItem[]>(`/torrents?page=${page}&limit=${limit}`);
         const files = torrents.map((t) => this.mapToDebridFile(t));
 
         return {
@@ -282,7 +282,7 @@ export default class RealDebridClient extends BaseClient {
 
     async findTorrentById(torrentId: string): Promise<DebridFile | null> {
         try {
-            const torrent = await this.makeRequest<RDTorrentInfo>(`torrents/info/${torrentId}`);
+            const torrent = await this.makeRequest<RDTorrentInfo>(`/torrents/info/${torrentId}`);
             return this.mapToDebridFile(torrent);
         } catch {
             return null;
@@ -300,13 +300,13 @@ export default class RealDebridClient extends BaseClient {
     }
 
     async getTorrentFiles(torrentId: string): Promise<DebridNode[]> {
-        const torrent = await this.makeRequest<RDTorrentInfo>(`torrents/info/${torrentId}`);
+        const torrent = await this.makeRequest<RDTorrentInfo>(`/torrents/info/${torrentId}`);
 
         return this.buildFileTree(torrent.files, torrent.links, torrent.filename);
     }
 
     async removeTorrent(torrentId: string): Promise<string> {
-        await this.makeRequest<void>(`torrents/delete/${torrentId}`, {
+        await this.makeRequest<void>(`/torrents/delete/${torrentId}`, {
             method: "DELETE",
         });
         return "Torrent removed successfully";
@@ -326,7 +326,7 @@ export default class RealDebridClient extends BaseClient {
             try {
                 const body = new URLSearchParams({ magnet });
 
-                const result = await this.makeRequest<RDAddTorrentResponse>("torrents/addMagnet", {
+                const result = await this.makeRequest<RDAddTorrentResponse>("/torrents/addMagnet", {
                     method: "POST",
                     body: body.toString(),
                     headers: RealDebridClient.FORM_HEADERS,
@@ -359,7 +359,7 @@ export default class RealDebridClient extends BaseClient {
             try {
                 const arrayBuffer = await file.arrayBuffer();
 
-                const result = await this.makeRequest<RDAddTorrentResponse>("torrents/addTorrent", {
+                const result = await this.makeRequest<RDAddTorrentResponse>("/torrents/addTorrent", {
                     method: "PUT",
                     body: arrayBuffer,
                     headers: { "Content-Type": "application/x-bittorrent" },
@@ -487,7 +487,7 @@ export default class RealDebridClient extends BaseClient {
 
         try {
             const body = new URLSearchParams({ link });
-            const folderLinks = await this.makeRequest<string[]>("unrestrict/folder", {
+            const folderLinks = await this.makeRequest<string[]>("/unrestrict/folder", {
                 method: "POST",
                 body: body.toString(),
                 headers: RealDebridClient.FORM_HEADERS,
@@ -505,7 +505,7 @@ export default class RealDebridClient extends BaseClient {
 
     private async unrestrictLink(link: string): Promise<RDUnrestrictedLink> {
         const body = new URLSearchParams({ link });
-        return this.makeRequest<RDUnrestrictedLink>("unrestrict/link", {
+        return this.makeRequest<RDUnrestrictedLink>("/unrestrict/link", {
             method: "POST",
             body: body.toString(),
             headers: RealDebridClient.FORM_HEADERS,
@@ -515,7 +515,7 @@ export default class RealDebridClient extends BaseClient {
     async getWebDownloadList({ offset, limit }: { offset: number; limit: number }): Promise<WebDownloadList> {
         // Real-Debrid uses page-based pagination
         const page = Math.floor(offset / limit) + 1;
-        const downloads = await this.makeRequest<RDDownload[]>(`downloads?page=${page}&limit=${limit}`);
+        const downloads = await this.makeRequest<RDDownload[]>(`/downloads?page=${page}&limit=${limit}`);
 
         return {
             downloads: downloads.map((dl) => ({
@@ -535,7 +535,7 @@ export default class RealDebridClient extends BaseClient {
     }
 
     async deleteWebDownload(id: string): Promise<void> {
-        await this.makeRequest<void>(`downloads/delete/${id}`, {
+        await this.makeRequest<void>(`/downloads/delete/${id}`, {
             method: "DELETE",
         });
     }
@@ -545,7 +545,7 @@ export default class RealDebridClient extends BaseClient {
 
         try {
             // This request may return a 204 No Content
-            await this.makeRequest<void>(`torrents/selectFiles/${torrentId}`, {
+            await this.makeRequest<void>(`/torrents/selectFiles/${torrentId}`, {
                 method: "POST",
                 body: body.toString(),
                 headers: RealDebridClient.FORM_HEADERS,

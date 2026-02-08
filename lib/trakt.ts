@@ -392,7 +392,7 @@ export class TraktClient {
         requiresAuth = false,
         extended?: string
     ): Promise<T> {
-        let url = `${this.baseUrl}/${endpoint.replace(/^\//, "")}`;
+        let url = `${this.baseUrl}${endpoint}`;
 
         // Add extended parameter if provided
         if (extended) {
@@ -479,7 +479,7 @@ export class TraktClient {
         }
 
         const typeParam = types.join(",");
-        const endpoint = `search/${typeParam}?query=${encodeURIComponent(query)}`;
+        const endpoint = `/search/${typeParam}?query=${encodeURIComponent(query)}`;
 
         const results = await this.makeRequest<TraktSearchResult[]>(endpoint, {}, false, extended);
 
@@ -493,14 +493,14 @@ export class TraktClient {
      * Get trending movies
      */
     public async getTrendingMovies(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(`movies/trending?limit=${limit}`, {}, false, extended);
+        return this.makeRequest<TraktMediaItem[]>(`/movies/trending?limit=${limit}`, {}, false, extended);
     }
 
     /**
      * Get trending shows
      */
     public async getTrendingShows(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(`shows/trending?limit=${limit}`, {}, false, extended);
+        return this.makeRequest<TraktMediaItem[]>(`/shows/trending?limit=${limit}`, {}, false, extended);
     }
 
     /**
@@ -522,7 +522,7 @@ export class TraktClient {
      * Get popular movies
      */
     public async getPopularMovies(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
-        const movies = await this.makeRequest<TraktMedia[]>(`movies/popular?limit=${limit}`, {}, false, extended);
+        const movies = await this.makeRequest<TraktMedia[]>(`/movies/popular?limit=${limit}`, {}, false, extended);
         return movies.map((movie) => ({ movie }));
     }
 
@@ -530,7 +530,7 @@ export class TraktClient {
      * Get popular shows
      */
     public async getPopularShows(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
-        const shows = await this.makeRequest<TraktMedia[]>(`shows/popular?limit=${limit}`, {}, false, extended);
+        const shows = await this.makeRequest<TraktMedia[]>(`/shows/popular?limit=${limit}`, {}, false, extended);
         return shows.map((show) => ({ show }));
     }
 
@@ -542,7 +542,7 @@ export class TraktClient {
         limit = 20,
         extended = "full,images"
     ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(`movies/watched/${period}?limit=${limit}`, {}, false, extended);
+        return this.makeRequest<TraktMediaItem[]>(`/movies/watched/${period}?limit=${limit}`, {}, false, extended);
     }
 
     /**
@@ -553,84 +553,84 @@ export class TraktClient {
         limit = 20,
         extended = "full,images"
     ): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(`shows/watched/${period}?limit=${limit}`, {}, false, extended);
+        return this.makeRequest<TraktMediaItem[]>(`/shows/watched/${period}?limit=${limit}`, {}, false, extended);
     }
 
     /**
      * Get anticipated movies
      */
     public async getAnticipatedMovies(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(`movies/anticipated?limit=${limit}`, {}, false, extended);
+        return this.makeRequest<TraktMediaItem[]>(`/movies/anticipated?limit=${limit}`, {}, false, extended);
     }
 
     /**
      * Get anticipated shows
      */
     public async getAnticipatedShows(limit = 20, extended = "full,images"): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(`shows/anticipated?limit=${limit}`, {}, false, extended);
+        return this.makeRequest<TraktMediaItem[]>(`/shows/anticipated?limit=${limit}`, {}, false, extended);
     }
 
     /**
      * Get box office movies
      */
     public async getBoxOfficeMovies(extended = "full,images"): Promise<TraktMediaItem[]> {
-        return this.makeRequest<TraktMediaItem[]>(`movies/boxoffice`, {}, false, extended);
+        return this.makeRequest<TraktMediaItem[]>(`/movies/boxoffice`, {}, false, extended);
     }
 
     /**
      * Get movie by ID
      */
     public async getMovie(id: string, extended = "full,images"): Promise<TraktMedia> {
-        return this.makeRequest<TraktMedia>(`movies/${id}`, {}, false, extended);
+        return this.makeRequest<TraktMedia>(`/movies/${id}`, {}, false, extended);
     }
 
     /**
      * Get show by ID
      */
     public async getShow(id: string, extended = "full,images"): Promise<TraktMedia> {
-        return this.makeRequest<TraktMedia>(`shows/${id}`, {}, false, extended);
+        return this.makeRequest<TraktMedia>(`/shows/${id}`, {}, false, extended);
     }
 
     /**
      * Get show seasons
      */
     public async getShowSeasons(id: string, extended = "full,images"): Promise<TraktSeason[]> {
-        return this.makeRequest<TraktSeason[]>(`shows/${id}/seasons`, {}, false, extended);
+        return this.makeRequest<TraktSeason[]>(`/shows/${id}/seasons`, {}, false, extended);
     }
 
     /**
      * Get show episodes
      */
     public async getShowEpisodes(id: string, season: number, extended = "full,images"): Promise<TraktEpisode[]> {
-        return this.makeRequest<TraktEpisode[]>(`shows/${id}/seasons/${season}/episodes`, {}, false, extended);
+        return this.makeRequest<TraktEpisode[]>(`/shows/${id}/seasons/${season}/episodes`, {}, false, extended);
     }
 
     /**
      * Get cast and crew for a movie or show
      */
     public async getPeople(id: string, type: "movies" | "shows", extended = "full,images"): Promise<TraktCastAndCrew> {
-        return this.makeRequest<TraktCastAndCrew>(`${type}/${id}/people`, {}, false, extended);
+        return this.makeRequest<TraktCastAndCrew>(`/${type}/${id}/people`, {}, false, extended);
     }
 
     /**
      * Get person details by ID/slug
      */
     public async getPerson(id: string, extended = "full,images"): Promise<TraktPersonFull> {
-        return this.makeRequest<TraktPersonFull>(`people/${id}`, {}, false, extended);
+        return this.makeRequest<TraktPersonFull>(`/people/${id}`, {}, false, extended);
     }
 
     /**
      * Get person's movie credits
      */
     public async getPersonMovies(id: string, extended = "full,images"): Promise<TraktPersonMovieCredits> {
-        return this.makeRequest<TraktPersonMovieCredits>(`people/${id}/movies`, {}, false, extended);
+        return this.makeRequest<TraktPersonMovieCredits>(`/people/${id}/movies`, {}, false, extended);
     }
 
     /**
      * Get person's show credits
      */
     public async getPersonShows(id: string, extended = "full,images"): Promise<TraktPersonShowCredits> {
-        return this.makeRequest<TraktPersonShowCredits>(`people/${id}/shows`, {}, false, extended);
+        return this.makeRequest<TraktPersonShowCredits>(`/people/${id}/shows`, {}, false, extended);
     }
 }
 
