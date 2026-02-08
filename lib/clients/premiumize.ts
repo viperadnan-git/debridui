@@ -140,6 +140,7 @@ interface PremiumizeCacheCheckResponse extends PremiumizeApiResponse {
 export default class PremiumizeClient extends BaseClient {
     readonly refreshInterval: number | false = false;
     readonly supportsEphemeralLinks: boolean = false;
+    private static readonly OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID || "700999826";
 
     constructor(account: Account) {
         super({ account });
@@ -253,7 +254,7 @@ export default class PremiumizeClient extends BaseClient {
         redirect_url: string;
     }> {
         // Use OAuth Device Code flow (works without client_secret)
-        const OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID!;
+        const OAUTH_CLIENT_ID = PremiumizeClient.OAUTH_CLIENT_ID;
 
         const res = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
             method: "POST",
@@ -285,7 +286,7 @@ export default class PremiumizeClient extends BaseClient {
 
     static async validateAuthPin(pin: string, check: string): Promise<{ success: boolean; apiKey?: string }> {
         // Poll token endpoint for device code
-        const OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID!;
+        const OAUTH_CLIENT_ID = PremiumizeClient.OAUTH_CLIENT_ID;
         const startTime = Date.now();
         const timeoutMs = 10 * 60 * 1000; // 10 minutes
         const pollInterval = 5000;
