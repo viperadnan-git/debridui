@@ -22,6 +22,11 @@ export function AddAccountForm() {
     const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | "premiumize" | null>(
         null
     );
+    const [premiumizeDevice, setPremiumizeDevice] = useState<{
+        userCode: string;
+        deviceCode: string;
+        verificationUri: string;
+    } | null>(null);
 
     const form = useForm<z.infer<typeof accountSchema>>({
         resolver: zodResolver(accountSchema),
@@ -86,14 +91,107 @@ export function AddAccountForm() {
     async function handlePremiumizeLogin() {
         setIsLoadingOAuth("premiumize");
         try {
-            const { redirect_url } = await PremiumizeClient.getAuthPin();
-            window.open(redirect_url, "_blank", "noreferrer");
-            toast.info("Please copy your Premiumize API key and paste it in the form above");
+            const { pin, check, redirect_url } = await PremiumizeClient.getAuthPin();
+
+            setPremiumizeDevice({
+                userCode: pin,
+                deviceCode: check,
+                verificationUri: redirect_url,
+            });
+
+            try {
+                toast(`Code: ${pin}`, {
+                    action: {
+                        label: "Copy",
+                        onClick: () => {
+                            navigator.clipboard
+                                .writeText(pin)
+                                .then(() => toast.success("Premiumize device code copied!"))
+                                .catch(() => toast.error("Copy failed!"));
+                        },
+                    },
+                });
+            } catch (err) {
+                toast.info("Device code available below. Please copy it manually.");
+                console.error("Clipboard failed:", err);
+            }
+
+            // Open verification URL in a new tab so user can paste the code there
+            const opened = openNewPage(redirect_url);
+            if (!opened) {
+                toast.info("Please open the verification URL displayed below in a new tab and paste the code there.");
+            }
+
+            // Poll for token (validateAuthPin will poll server-side)
+            const { success, apiKey } = await PremiumizeClient.validateAuthPin(pin, check);
+            if (success && apiKey) {
+                addAccount.mutate(
+                    { type: AccountType.PREMIUMIZE, apiKey: `Bearer ${apiKey}` },
+                    { onSuccess: () => form.reset() }
+                );
+                setPremiumizeDevice(null);
+            } else {
+                toast.error("Failed to retrieve Premiumize token");
+            }
         } catch (error) {
             handleError(error);
         } finally {
             setIsLoadingOAuth(null);
         }
+    }
+
+    function openNewPage(url: string): boolean {
+        try {
+            const opened = window.open(url, "_blank");
+            if (!opened) {
+                return false;
+            }
+            // Explicitly prevent access to window.opener
+            opened.opener = null;
+
+            return true;
+        } catch (err) {
+            console.error(`Failed opening url ${url} in new page`, err);
+            return false;
+        }
+    }
+
+    function renderPremiumizeDeviceBox() {
+        if (!premiumizeDevice) return null;
+
+        return (
+            <div className="p-4 bg-muted rounded-md border border-border">
+                <div className="mb-2 text-sm">Open this URL in your browser and enter the device code bellow:</div>
+                <div className="mb-2">
+                    <a href={premiumizeDevice.verificationUri} target="_blank" rel="noreferrer" className="underline">
+                        {premiumizeDevice.verificationUri}
+                    </a>
+                </div>
+                <div className="mb-2 text-sm font-medium">Device code:</div>
+                <div className="mb-2">
+                    <input
+                        readOnly
+                        value={premiumizeDevice.userCode}
+                        className="w-full bg-transparent border rounded px-2 py-1"
+                        onFocus={(e) => {
+                            const input = e.currentTarget;
+                            requestAnimationFrame(() => input.select());
+                        }}
+                    />
+                </div>
+
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            setPremiumizeDevice(null);
+                        }}>
+                        Dismiss
+                    </Button>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -194,6 +292,7 @@ export function AddAccountForm() {
                                     "Premiumize"
                                 )}
                             </Button>
+                            {renderPremiumizeDeviceBox()}
                         </div>
                     </div>
                 </form>
