@@ -144,22 +144,37 @@ export default class PremiumizeClient extends BaseClient {
     constructor(account: Account) {
         super({ account });
     }
-
     private static buildUrl(path: string, apiKey: string): string {
-        const separator = path.includes("?") ? "&" : "?";
-        return getProxyUrl(`https://www.premiumize.me/api${path}${separator}apikey=${encodeURIComponent(apiKey)}`);
+        return getProxyUrl(PremiumizeClient.appendApiKeyToUrl(`https://www.premiumize.me/api${path}`, apiKey));
+    }
+    private static appendApiKeyToUrl(url: string, apiKey?: string): string {
+        if (!apiKey) return url;
+        // If apiKey is an OAuth token (prefixed with 'Bearer '), don't append to URL
+        if (apiKey.trim().toLowerCase().startsWith("bearer ")) return url;
+
+        const separator = url.includes("?") ? "&" : "?";
+        return `${url}${separator}apikey=${encodeURIComponent(apiKey)}`;
     }
 
     private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
         await this.rateLimiter.acquire();
         const { apiKey } = this.account;
 
-        const response = await fetch(PremiumizeClient.buildUrl(path, apiKey), {
+        const url = PremiumizeClient.buildUrl(path, apiKey);
+
+        const headers: Record<string, string> = {
+            "User-Agent": USER_AGENT,
+            ...((options.headers as Record<string, string>) || {}),
+        };
+
+        // If we have an OAuth token (prefixed with 'Bearer '), send it in Authorization
+        if (apiKey && apiKey.trim().toLowerCase().startsWith("bearer ")) {
+            headers["Authorization"] = apiKey.trim();
+        }
+
+        const response = await fetch(url, {
             ...options,
-            headers: {
-                "User-Agent": USER_AGENT,
-                ...options.headers,
-            },
+            headers,
         });
 
         if (!response.ok) {
@@ -195,9 +210,14 @@ export default class PremiumizeClient extends BaseClient {
     }
 
     static async getUser(apiKey: string): Promise<FullAccount> {
-        const response = await fetch(PremiumizeClient.buildUrl("/account/info", apiKey), {
-            headers: { "User-Agent": USER_AGENT },
-        });
+        const url = PremiumizeClient.buildUrl("/account/info", apiKey);
+
+        const headers: Record<string, string> = { "User-Agent": USER_AGENT };
+        if (apiKey && apiKey.trim().toLowerCase().startsWith("bearer ")) {
+            headers["Authorization"] = apiKey.trim();
+        }
+
+        const response = await fetch(url, { headers });
 
         if (!response.ok) {
             if (response.status === 401) {
@@ -232,22 +252,68 @@ export default class PremiumizeClient extends BaseClient {
         check: string;
         redirect_url: string;
     }> {
+        // Use OAuth Device Code flow (works without client_secret)
+        const OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID!;
+
+        const res = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "User-Agent": USER_AGENT,
+            },
+            body: new URLSearchParams({ client_id: OAUTH_CLIENT_ID, response_type: "device_code" }),
+        });
+
+        if (!res.ok) {
+            throw new Error("Device code request failed");
+        }
+
+        const data: {
+            device_code: string;
+            user_code: string;
+            verification_uri: string;
+            expires_in: number;
+            interval: number;
+        } = await res.json();
+
         return {
-            pin: "PREMIUMIZE_API_KEY",
-            check: "direct_api_key",
-            redirect_url: "https://www.premiumize.me/account",
+            pin: data.user_code,
+            check: data.device_code,
+            redirect_url: data.verification_uri || "https://www.premiumize.me/device",
         };
     }
 
     static async validateAuthPin(pin: string, check: string): Promise<{ success: boolean; apiKey?: string }> {
-        if (check === "direct_api_key") {
+        // Poll token endpoint for device code
+        const OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID!;
+        const startTime = Date.now();
+        const timeoutMs = 10 * 60 * 1000; // 10 minutes
+        const pollInterval = 5000;
+
+        while (Date.now() - startTime < timeoutMs) {
+            const res = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": USER_AGENT },
+                body: new URLSearchParams({ client_id: OAUTH_CLIENT_ID, grant_type: "device_code", code: check }),
+            });
+
+            let data: { access_token?: string; error?: string; error_description?: string } | null = null;
             try {
-                await this.getUser(pin);
-                return { success: true, apiKey: pin };
-            } catch {
+                data = await res.json();
+            } catch {}
+
+            if (data && data.access_token) {
+                // Return raw access token; makeRequest will send it as X-Premiumize-Key
+                return { success: true, apiKey: data.access_token };
+            }
+
+            if (data && data.error === "access_denied") {
                 return { success: false };
             }
+
+            await PremiumizeClient.delay(pollInterval);
         }
+
         return { success: false };
     }
 
@@ -737,6 +803,10 @@ export default class PremiumizeClient extends BaseClient {
                 children: [],
             };
         });
+    }
+
+    private static delay(ms: number): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
     // Web download methods - uses /transfer/create to add links as transfers
