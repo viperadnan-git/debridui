@@ -6,12 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTMDBEpisodeGroupDetails, useTMDBSeriesEpisodeGroups } from "@/hooks/use-tmdb";
 import { useTraktShowEpisodes, useTraktShowSeasons } from "@/hooks/use-trakt";
-import { type TMDBEpisodeGroupGroup } from "@/lib/tmdb";
-import { type TraktMedia } from "@/lib/trakt";
+import { type TMDBEpisodeGroupEpisode, type TMDBEpisodeGroupGroup } from "@/lib/tmdb";
+import { type TraktEpisode, type TraktImages, type TraktMedia } from "@/lib/trakt";
 import { cn } from "@/lib/utils";
 import { getPosterUrl } from "@/lib/utils/media";
 import { useRouter, useSearchParams } from "next/navigation";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { EpisodeCard } from "./episode-card";
 import { MediaHeader } from "./media-header";
 import { PeopleSection } from "./people-section";
@@ -20,6 +20,23 @@ import { SeasonCard } from "./season-card";
 interface ShowDetailsProps {
     media: TraktMedia;
     mediaId: string;
+}
+
+function tmdbEpisodeToTrakt(episode: TMDBEpisodeGroupEpisode, seasonOrder: number, index: number): TraktEpisode {
+    return {
+        season: seasonOrder,
+        number: index + 1,
+        title: episode.name,
+        ids: { trakt: 0, slug: "", tmdb: episode.id },
+        // Only screenshot is used by EpisodeCard
+        images: episode.still_path
+            ? ({ screenshot: [`image.tmdb.org/t/p/w500${episode.still_path}`] } as TraktImages)
+            : undefined,
+        overview: episode.overview,
+        first_aired: episode.air_date,
+        runtime: episode.runtime || undefined,
+        rating: episode.vote_average,
+    };
 }
 
 const GroupCard = memo(function GroupCard({
@@ -130,56 +147,25 @@ const EpisodesSection = memo(function EpisodesSection({
 });
 
 const EpisodeGroupSection = memo(function EpisodeGroupSection({
-    groupDetails,
+    group,
     media,
-    selectedGroupIndex,
 }: {
-    groupDetails: NonNullable<ReturnType<typeof useTMDBEpisodeGroupDetails>["data"]>;
+    group: TMDBEpisodeGroupGroup;
     media: TraktMedia;
-    selectedGroupIndex: number;
 }): React.ReactElement {
-    const selectedGroup = groupDetails.groups[selectedGroupIndex];
-
-    if (!selectedGroup) return <div>No group selected</div>;
-
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-light text-muted-foreground">{selectedGroup.name}</h3>
+                <h3 className="text-sm font-light text-muted-foreground">{group.name}</h3>
                 <span className="text-xs tracking-wider uppercase text-muted-foreground">
-                    {selectedGroup.episodes.length} Episodes
+                    {group.episodes.length} Episodes
                 </span>
             </div>
             <div className="flex flex-col gap-3">
-                {selectedGroup.episodes.map((episode, index) => (
+                {group.episodes.map((episode, index) => (
                     <EpisodeCard
                         key={episode.id}
-                        episode={{
-                            season: selectedGroup.order,
-                            number: index + 1,
-                            title: episode.name,
-                            ids: {
-                                trakt: episode.id,
-                                slug: "",
-                                tmdb: episode.id,
-                            },
-                            images: episode.still_path
-                                ? {
-                                      screenshot: [`image.tmdb.org/t/p/w500${episode.still_path}`],
-                                      fanart: [],
-                                      poster: [],
-                                      logo: [],
-                                      clearart: [],
-                                      banner: [],
-                                      thumb: [],
-                                      headshot: [],
-                                  }
-                                : undefined,
-                            overview: episode.overview,
-                            first_aired: episode.air_date,
-                            runtime: episode.runtime || undefined,
-                            rating: episode.vote_average,
-                        }}
+                        episode={tmdbEpisodeToTrakt(episode, group.order, index)}
                         imdbId={media.ids?.imdb}
                         showMedia={media}
                     />
@@ -200,8 +186,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
     const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(partParam ? parseInt(partParam, 10) : 0);
     const { data: seasons, isLoading: seasonsLoading } = useTraktShowSeasons(mediaId);
 
-    const tmdbId = media.ids?.tmdb;
-    const { data: episodeGroups } = useTMDBSeriesEpisodeGroups(tmdbId!);
+    const { data: episodeGroups } = useTMDBSeriesEpisodeGroups(media.ids?.tmdb ?? 0);
     const { data: groupDetails } = useTMDBEpisodeGroupDetails(selectedGroup !== "default" ? selectedGroup : "");
 
     const handleSeasonChange = useCallback(
@@ -245,6 +230,8 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
         [searchParams, router]
     );
 
+    // Filter out "specials" group (order 0) and memoize
+    const filteredGroups = useMemo(() => groupDetails?.groups.filter((g) => g.order !== 0), [groupDetails]);
     const episodeCount = seasons?.find((s) => s.number === selectedSeason)?.episode_count;
 
     return (
@@ -252,24 +239,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
             <MediaHeader media={media} mediaId={mediaId} type="show" />
 
             <section id="seasons" className="space-y-6 scroll-mt-16">
-                <div className="flex items-center justify-between gap-4">
-                    <SectionDivider label="Seasons & Episodes" />
-                    {episodeGroups?.results && episodeGroups.results.length > 0 && (
-                        <Select value={selectedGroup} onValueChange={handleGroupChange}>
-                            <SelectTrigger size="sm">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="default">Default (Trakt)</SelectItem>
-                                {episodeGroups.results.map((group) => (
-                                    <SelectItem key={group.id} value={group.id}>
-                                        {group.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                </div>
+                <SectionDivider label="Seasons & Episodes" />
 
                 {selectedGroup === "default" ? (
                     <>
@@ -303,39 +273,73 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                             media={media}
                         />
                     </>
+                ) : !groupDetails ? (
+                    <div className="space-y-4">
+                        <ScrollCarousel className="-mx-4 lg:mx-0">
+                            <div className="flex w-max gap-3 pb-4 px-4 lg:pl-2 lg:pr-0">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <Skeleton key={i} className="w-28 sm:w-32 md:w-36 aspect-2/3 rounded-sm shrink-0" />
+                                ))}
+                            </div>
+                        </ScrollCarousel>
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
+                                <div className="flex flex-row items-start">
+                                    <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video rounded-none" />
+                                    <div className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 space-y-1.5 sm:space-y-2">
+                                        <Skeleton className="h-4 sm:h-5 w-3/4" />
+                                        <Skeleton className="h-3 w-1/3" />
+                                        <Skeleton className="h-3 w-full hidden sm:block" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 ) : (
-                    groupDetails && (
+                    filteredGroups && (
                         <>
-                            {groupDetails.groups.filter((g) => g.order !== 0).length > 1 && (
+                            {filteredGroups.length > 1 && (
                                 <ScrollCarousel className="-mx-4 lg:mx-0">
                                     <div className="flex w-max gap-3 pb-4 px-4 lg:pl-2 lg:pr-0">
-                                        {groupDetails.groups
-                                            .filter((group) => group.order !== 0)
-                                            .map((group, index) => (
-                                                <GroupCard
-                                                    key={group.id}
-                                                    group={group}
-                                                    groupIndex={index}
-                                                    isSelected={selectedGroupIndex === index}
-                                                    onClick={() => handleGroupIndexChange(index)}
-                                                    media={media}
-                                                />
-                                            ))}
+                                        {filteredGroups.map((group, index) => (
+                                            <GroupCard
+                                                key={group.id}
+                                                group={group}
+                                                groupIndex={index}
+                                                isSelected={selectedGroupIndex === index}
+                                                onClick={() => handleGroupIndexChange(index)}
+                                                media={media}
+                                            />
+                                        ))}
                                     </div>
                                 </ScrollCarousel>
                             )}
 
-                            <EpisodeGroupSection
-                                groupDetails={{
-                                    ...groupDetails,
-                                    groups: groupDetails.groups.filter((g) => g.order !== 0),
-                                }}
-                                media={media}
-                                selectedGroupIndex={selectedGroupIndex}
-                            />
+                            {filteredGroups[selectedGroupIndex] && (
+                                <EpisodeGroupSection group={filteredGroups[selectedGroupIndex]} media={media} />
+                            )}
                         </>
                     )
                 )}
+                {/* Episode grouping selector */}
+                <div className="flex items-center justify-end gap-3">
+                    <span className="hidden sm:inline text-xs tracking-widest uppercase text-muted-foreground">
+                        Grouping
+                    </span>
+                    <Select value={selectedGroup} onValueChange={handleGroupChange}>
+                        <SelectTrigger size="sm" className="w-28 sm:w-40 text-xs sm:text-sm">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="default">Default</SelectItem>
+                            {episodeGroups?.results?.map((group) => (
+                                <SelectItem key={group.id} value={group.id}>
+                                    {group.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </section>
 
             <section className="space-y-6">

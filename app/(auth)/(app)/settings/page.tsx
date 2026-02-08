@@ -204,7 +204,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-2">
                         <Key className="size-4 text-muted-foreground" />
                         <Label htmlFor="tmdb-api-key" className="text-sm">
-                            TMDB API Key (optional)
+                            TMDB API Key
                         </Label>
                     </div>
                     <Input
@@ -216,7 +216,7 @@ export default function SettingsPage() {
                         className="max-w-md"
                     />
                     <p className="text-xs text-muted-foreground">
-                        Needed for episode grouping and enhanced TV show metadata—particularly useful for anime.
+                        Needed for episode grouping and enhanced TV show metadata—particularly useful for anime.{" "}
                         <a
                             href="https://www.themoviedb.org/settings/api"
                             target="_blank"

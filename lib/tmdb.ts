@@ -160,11 +160,7 @@ export class TMDBClient {
     }
 }
 
-// Create TMDB client with API key
 export function createTMDBClient(apiKey?: string): TMDBClient | null {
-    const key = apiKey;
-    if (!key) return null;
-    return new TMDBClient({ apiKey: key });
+    if (!apiKey) return null;
+    return new TMDBClient({ apiKey });
 }
-
-export const tmdbClient = createTMDBClient();
