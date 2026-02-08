@@ -1,11 +1,11 @@
 "use client";
 
-import { type TraktEpisode, type TraktMedia } from "@/lib/trakt";
-import { ChevronDown, Play, Star } from "lucide-react";
-import { cn, formatLocalizedDate } from "@/lib/utils";
-import { memo, useState } from "react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { WatchButton } from "@/components/common/watch-button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { type TraktEpisode, type TraktMedia } from "@/lib/trakt";
+import { cn, formatLocalizedDate } from "@/lib/utils";
+import { ChevronDown, Play, Star } from "lucide-react";
+import { memo, useState } from "react";
 import { Sources } from "./sources";
 
 interface ThumbnailContentProps {
@@ -71,6 +71,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
         ? `https://${episode.images.screenshot[0]}`
         : `https://placehold.co/400x225/1a1a1a/3e3e3e?text=${episodeLabel}`;
 
+    // Specials eps have season number 0, so those episodes wont work
     const tvParams = episode.season
         ? { season: episode.season, episode: episode.number, title: episode.title }
         : undefined;

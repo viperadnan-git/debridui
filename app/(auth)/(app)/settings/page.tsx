@@ -1,33 +1,34 @@
 "use client";
 
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
+import { PageHeader } from "@/components/page-header";
+import { SectionDivider } from "@/components/section-divider";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Play, Trash2, Clock, Info, Settings, Zap, Sliders } from "lucide-react";
-import {
-    useSettingsStore,
-    type StreamingSettings,
-    type StreamingResolution,
-    type QualityProfileId,
-    type QualityRange,
-    QUALITY_PROFILES,
-} from "@/lib/stores/settings";
 import { RESOLUTIONS, SOURCE_QUALITIES } from "@/lib/addons/parser";
 import { Resolution, SourceQuality } from "@/lib/addons/types";
-import { MediaPlayer } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { del } from "idb-keyval";
 import { queryClient } from "@/lib/query-client";
-import { toast } from "sonner";
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { formatDistanceToNow, format } from "date-fns";
-import { PageHeader } from "@/components/page-header";
-import { SectionDivider } from "@/components/section-divider";
-import { detectPlatform, isSupportedPlayer, PLAYER_PLATFORM_SUPPORT } from "@/lib/utils/media-player";
-import { getPlayerSetupInstruction } from "./player-setup-instructions";
+import {
+    QUALITY_PROFILES,
+    useSettingsStore,
+    type QualityProfileId,
+    type QualityRange,
+    type StreamingResolution,
+    type StreamingSettings,
+} from "@/lib/stores/settings";
+import { MediaPlayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { detectPlatform, isSupportedPlayer, PLAYER_PLATFORM_SUPPORT } from "@/lib/utils/media-player";
+import { format, formatDistanceToNow } from "date-fns";
+import { del } from "idb-keyval";
+import { Clock, Info, Key, Monitor, Moon, Play, Settings, Sliders, Sun, Trash2, Zap } from "lucide-react";
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
+import { getPlayerSetupInstruction } from "./player-setup-instructions";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
 const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
@@ -54,6 +55,7 @@ export default function SettingsPage() {
     const downloadLinkMaxAge = get("downloadLinkMaxAge");
     const downloadLinkMaxAgePresets = getPresets("downloadLinkMaxAge") || [];
     const streaming = get("streaming");
+    const tmdbApiKey = get("tmdbApiKey");
 
     const updateStreaming = (updates: Partial<StreamingSettings>) => {
         set("streaming", { ...streaming, ...updates });
@@ -192,6 +194,38 @@ export default function SettingsPage() {
                         <p>{setupInstruction}</p>
                     </div>
                 )}
+            </section>
+
+            {/* API Keys Section */}
+            <section className="space-y-4">
+                <SectionDivider label="API Keys" />
+
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <Key className="size-4 text-muted-foreground" />
+                        <Label htmlFor="tmdb-api-key" className="text-sm">
+                            TMDB API Key (optional)
+                        </Label>
+                    </div>
+                    <Input
+                        id="tmdb-api-key"
+                        type="password"
+                        placeholder="Enter your TMDB API key"
+                        value={tmdbApiKey}
+                        onChange={(e) => set("tmdbApiKey", e.target.value)}
+                        className="max-w-md"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        Needed for episode grouping and enhanced TV show metadata—particularly useful for anime.
+                        <a
+                            href="https://www.themoviedb.org/settings/api"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline">
+                            Get your API key
+                        </a>
+                    </p>
+                </div>
             </section>
 
             {/* Streaming Section */}

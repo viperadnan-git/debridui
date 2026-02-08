@@ -113,6 +113,7 @@ type SettingsConfig = {
     mediaPlayer: SettingConfig<MediaPlayer>;
     downloadLinkMaxAge: SettingConfig<number>;
     streaming: SettingConfig<StreamingSettings>;
+    tmdbApiKey: SettingConfig<string>;
 };
 
 const settingsConfig: SettingsConfig = {
@@ -196,6 +197,9 @@ const settingsConfig: SettingsConfig = {
             autoPlay: true,
         },
     },
+    tmdbApiKey: {
+        defaultValue: "",
+    },
 };
 
 type SettingsData = {
@@ -220,6 +224,7 @@ const getDefaultSettings = (): SettingsData => {
         mediaPlayer: settingsConfig.mediaPlayer.defaultValue,
         downloadLinkMaxAge: settingsConfig.downloadLinkMaxAge.defaultValue,
         streaming: settingsConfig.streaming.defaultValue,
+        tmdbApiKey: settingsConfig.tmdbApiKey.defaultValue,
     };
 };
 
