@@ -68,3 +68,8 @@ export const recordPlaybackSchema = z.object({
 export const removePlaybackSchema = z.object({
     imdbId: z.string().regex(/^tt\d+$/, "Invalid IMDb ID format"),
 });
+
+// User settings schema (snake_case for DB storage)
+export const serverSettingsSchema = z.object({
+    tmdb_api_key: z.string().max(256).optional(),
+});

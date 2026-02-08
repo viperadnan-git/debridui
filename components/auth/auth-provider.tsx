@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useMemo, useCallback, startTransition } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useMemo, useCallback, startTransition } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useUserAccounts, useDebridUserInfo, useRemoveUserAccount } from "@/hooks/use-user-accounts";
+import { useUserSettings, hydrateSettingsFromServer } from "@/hooks/use-user-settings";
 import type { UserAccount } from "@/lib/db";
 import type { AccountType } from "@/lib/types";
 import { getClientInstance } from "@/lib/clients";
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { data: session, isPending: isSessionPending, error: sessionError } = authClient.useSession();
     // Only fetch accounts when session exists
     const { data: userAccounts = [], isLoading: isAccountsLoading, refetch } = useUserAccounts(!!session);
+    const { data: serverSettings } = useUserSettings(!!session);
 
     const accountsLength = userAccounts.length;
 
@@ -119,6 +121,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
             router.push("/onboarding");
         }
     }, [session, isSessionPending, isAccountsLoading, userAccounts.length, pathname, router]);
+
+    // Hydrate settings from server (once on load, non-blocking)
+    const hasHydrated = useRef(false);
+    if (serverSettings && !hasHydrated.current) {
+        hasHydrated.current = true;
+        hydrateSettingsFromServer(serverSettings);
+    }
 
     // Sync currentAccountId to localStorage when it changes
     useEffect(() => {

@@ -25,9 +25,11 @@ import { cn } from "@/lib/utils";
 import { detectPlatform, isSupportedPlayer, PLAYER_PLATFORM_SUPPORT } from "@/lib/utils/media-player";
 import { format, formatDistanceToNow } from "date-fns";
 import { del } from "idb-keyval";
-import { Clock, Info, Key, Monitor, Moon, Play, Settings, Sliders, Sun, Trash2, Zap } from "lucide-react";
+import { Clock, Info, Key, Loader2, Monitor, Moon, Play, Settings, Sliders, Sun, Trash2, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useCallback, useRef } from "react";
 import { toast } from "sonner";
+import { useSaveUserSettings } from "@/hooks/use-user-settings";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
@@ -56,6 +58,19 @@ export default function SettingsPage() {
     const downloadLinkMaxAgePresets = getPresets("downloadLinkMaxAge") || [];
     const streaming = get("streaming");
     const tmdbApiKey = get("tmdbApiKey");
+    const { mutate: saveSettings, isPending: isSaving } = useSaveUserSettings();
+    const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+    const handleTmdbApiKeyChange = useCallback(
+        (value: string) => {
+            set("tmdbApiKey", value);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(() => {
+                saveSettings({ tmdb_api_key: value });
+            }, 500);
+        },
+        [set, saveSettings]
+    );
 
     const updateStreaming = (updates: Partial<StreamingSettings>) => {
         set("streaming", { ...streaming, ...updates });
@@ -109,7 +124,19 @@ export default function SettingsPage() {
 
     return (
         <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
-            <PageHeader icon={Settings} title="Settings" description="Manage your application preferences" />
+            <PageHeader
+                icon={Settings}
+                title="Settings"
+                description="Manage your application preferences"
+                action={
+                    isSaving ? (
+                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Loader2 className="size-3 animate-spin" />
+                            Saving
+                        </span>
+                    ) : undefined
+                }
+            />
 
             {/* Appearance Section */}
             <section className="space-y-4">
@@ -212,7 +239,7 @@ export default function SettingsPage() {
                         type="password"
                         placeholder="Enter your TMDB API key"
                         value={tmdbApiKey}
-                        onChange={(e) => set("tmdbApiKey", e.target.value)}
+                        onChange={(e) => handleTmdbApiKeyChange(e.target.value)}
                         className="max-w-md"
                     />
                     <p className="text-xs text-muted-foreground">

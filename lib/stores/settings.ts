@@ -202,7 +202,7 @@ const settingsConfig: SettingsConfig = {
     },
 };
 
-type SettingsData = {
+export type SettingsData = {
     [K in keyof SettingsConfig]: SettingsConfig[K]["defaultValue"];
 };
 

@@ -20,6 +20,34 @@ interface ShowDetailsProps {
     mediaId: string;
 }
 
+function EpisodeList({
+    label,
+    episodes,
+    imdbId,
+    showMedia,
+}: {
+    label: string;
+    episodes: TraktEpisode[];
+    imdbId?: string;
+    showMedia: TraktMedia;
+}) {
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h3 className="text-sm font-light text-muted-foreground">{label}</h3>
+                <span className="text-xs tracking-wider uppercase text-muted-foreground">
+                    {episodes.length} Episodes
+                </span>
+            </div>
+            <div className="flex flex-col gap-3">
+                {episodes.map((episode) => (
+                    <EpisodeCard key={episode.number} episode={episode} imdbId={imdbId} showMedia={showMedia} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 function tmdbEpisodeToTrakt(episode: TMDBEpisodeGroupEpisode, seasonOrder: number, index: number): TraktEpisode {
     return {
         season: seasonOrder,
@@ -42,61 +70,50 @@ const EpisodesSection = memo(function EpisodesSection({
     episodeCount,
     mediaId,
     media,
-    label,
-    preloadedEpisodes,
 }: {
     selectedSeason: number;
     episodeCount?: number;
     mediaId: string;
     media: TraktMedia;
-    label?: string;
-    preloadedEpisodes?: TraktEpisode[];
 }): React.ReactElement | null {
-    const { data: fetchedEpisodes, isLoading } = useTraktShowEpisodes(mediaId, selectedSeason);
-    const episodes = preloadedEpisodes ?? fetchedEpisodes;
-    const loading = !preloadedEpisodes && isLoading;
+    const { data: episodes, isLoading } = useTraktShowEpisodes(mediaId, selectedSeason);
 
-    if (!loading && (!episodes || episodes.length === 0)) return null;
+    if (!isLoading && (!episodes || episodes.length === 0)) return null;
 
-    const seasonLabel = label ?? (selectedSeason === 0 ? "Specials" : `Season ${selectedSeason}`);
+    const seasonLabel = selectedSeason === 0 ? "Specials" : `Season ${selectedSeason}`;
     const skeletonCount = Math.min(episodeCount || 3, 20);
 
+    if (isLoading) {
+        return (
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-light text-muted-foreground">{seasonLabel}</h3>
+                </div>
+                <div className="flex flex-col gap-3">
+                    {Array.from({ length: skeletonCount }).map((_, i) => (
+                        <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
+                            <div className="flex flex-row items-start">
+                                <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video rounded-none" />
+                                <div className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 space-y-1.5 sm:space-y-2">
+                                    <Skeleton className="h-4 sm:h-5 w-3/4" />
+                                    <Skeleton className="h-3 w-1/3" />
+                                    <Skeleton className="h-3 w-full hidden sm:block" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h3 className="text-sm font-light text-muted-foreground" id="sources">
-                    {seasonLabel}
-                </h3>
-                {episodes && (
-                    <span className="text-xs tracking-wider uppercase text-muted-foreground">
-                        {episodes.length} Episodes
-                    </span>
-                )}
-            </div>
-            <div className="flex flex-col gap-3">
-                {loading
-                    ? Array.from({ length: skeletonCount }).map((_, i) => (
-                          <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
-                              <div className="flex flex-row items-start">
-                                  <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video rounded-none" />
-                                  <div className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 space-y-1.5 sm:space-y-2">
-                                      <Skeleton className="h-4 sm:h-5 w-3/4" />
-                                      <Skeleton className="h-3 w-1/3" />
-                                      <Skeleton className="h-3 w-full hidden sm:block" />
-                                  </div>
-                              </div>
-                          </div>
-                      ))
-                    : episodes?.map((episode) => (
-                          <EpisodeCard
-                              key={`${selectedSeason}-${episode.number}`}
-                              episode={{ ...episode, season: selectedSeason }}
-                              imdbId={media.ids?.imdb}
-                              showMedia={media}
-                          />
-                      ))}
-            </div>
-        </div>
+        <EpisodeList
+            label={seasonLabel}
+            episodes={episodes!.map((ep) => ({ ...ep, season: selectedSeason }))}
+            imdbId={media.ids?.imdb}
+            showMedia={media}
+        />
     );
 });
 
@@ -257,12 +274,11 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                             )}
 
                             {groupEpisodes && (
-                                <EpisodesSection
-                                    selectedSeason={filteredGroups[selectedGroupIndex]?.number ?? 0}
-                                    mediaId={mediaId}
-                                    media={media}
-                                    label={filteredGroups[selectedGroupIndex]?.title}
-                                    preloadedEpisodes={groupEpisodes}
+                                <EpisodeList
+                                    label={filteredGroups[selectedGroupIndex]?.title ?? "Episodes"}
+                                    episodes={groupEpisodes}
+                                    imdbId={media.ids?.imdb}
+                                    showMedia={media}
                                 />
                             )}
                         </>
