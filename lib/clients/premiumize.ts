@@ -140,10 +140,18 @@ interface PremiumizeCacheCheckResponse extends PremiumizeApiResponse {
 export default class PremiumizeClient extends BaseClient {
     readonly refreshInterval: number | false = false;
     readonly supportsEphemeralLinks: boolean = false;
-    private static readonly OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID || "700999826";
+    private static readonly OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID || "";
 
     constructor(account: Account) {
         super({ account });
+    }
+
+    /**
+     * Check if Premiumize OAuth is configured
+     * Returns true only if NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID is explicitly set (not the default)
+     */
+    static isOAuthConfigured(): boolean {
+        return PremiumizeClient.OAUTH_CLIENT_ID !== "";
     }
     private static buildUrl(path: string, apiKey: string): string {
         return getProxyUrl(PremiumizeClient.appendApiKeyToUrl(`https://www.premiumize.me/api${path}`, apiKey));
@@ -248,74 +256,78 @@ export default class PremiumizeClient extends BaseClient {
         };
     }
 
-    static async getAuthPin(): Promise<{
-        pin: string;
-        check: string;
-        redirect_url: string;
-    }> {
-        // Use OAuth Device Code flow (works without client_secret)
-        const OAUTH_CLIENT_ID = PremiumizeClient.OAUTH_CLIENT_ID;
+    /**
+     * Exchange authorization code for access token (OAuth Authorization Code Flow)
+     * Called by backend callback handler after user approves at Premiumize
+     */
+    static async exchangeCodeForToken(code: string): Promise<string> {
+        const clientSecret = process.env.PREMIUMIZE_CLIENT_SECRET;
+        if (!clientSecret) {
+            throw new Error("PREMIUMIZE_CLIENT_SECRET environment variable not set");
+        }
 
-        const res = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const redirectUri = `${appUrl}/api/debrid/premiumize/callback`;
+
+        const params = new URLSearchParams({
+            grant_type: "authorization_code",
+            code,
+            client_id: PremiumizeClient.OAUTH_CLIENT_ID,
+            client_secret: clientSecret,
+            redirect_uri: redirectUri,
+        });
+
+        const response = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "User-Agent": USER_AGENT,
             },
-            body: new URLSearchParams({ client_id: OAUTH_CLIENT_ID, response_type: "device_code" }),
+            body: params.toString(),
         });
 
-        if (!res.ok) {
-            throw new Error("Device code request failed");
+        if (!response.ok) {
+            let errorDetails = "";
+            try {
+                const error = await response.json();
+                errorDetails = error.error_description || error.error || response.statusText;
+            } catch {
+                errorDetails = response.statusText;
+            }
+            throw new Error(`Token exchange failed: ${errorDetails}`);
         }
 
         const data: {
-            device_code: string;
-            user_code: string;
-            verification_uri: string;
+            access_token: string;
+            token_type: string;
             expires_in: number;
-            interval: number;
-        } = await res.json();
+            refresh_token?: string;
+        } = await response.json();
 
-        return {
-            pin: data.user_code,
-            check: data.device_code,
-            redirect_url: data.verification_uri || "https://www.premiumize.me/device",
-        };
-    }
-
-    static async validateAuthPin(pin: string, check: string): Promise<{ success: boolean; apiKey?: string }> {
-        // Poll token endpoint for device code
-        const OAUTH_CLIENT_ID = PremiumizeClient.OAUTH_CLIENT_ID;
-        const startTime = Date.now();
-        const timeoutMs = 10 * 60 * 1000; // 10 minutes
-        const pollInterval = 5000;
-
-        while (Date.now() - startTime < timeoutMs) {
-            const res = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": USER_AGENT },
-                body: new URLSearchParams({ client_id: OAUTH_CLIENT_ID, grant_type: "device_code", code: check }),
-            });
-
-            let data: { access_token?: string; error?: string; error_description?: string } | null = null;
-            try {
-                data = await res.json();
-            } catch {}
-
-            if (data && data.access_token) {
-                // Return raw access token; makeRequest will send it as X-Premiumize-Key
-                return { success: true, apiKey: data.access_token };
-            }
-
-            if (data && data.error === "access_denied") {
-                return { success: false };
-            }
-
-            await PremiumizeClient.delay(pollInterval);
+        if (!data.access_token) {
+            throw new Error("No access token in response");
         }
 
-        return { success: false };
+        return data.access_token;
+    }
+
+    /**
+     * Generate authorization URL for OAuth Authorization Code Flow
+     * Frontend redirects user to this URL
+     */
+    static getAuthorizationUrl(state: string): string {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const redirectUri = `${appUrl}/api/debrid/premiumize/callback`;
+
+        const params = new URLSearchParams({
+            client_id: PremiumizeClient.OAUTH_CLIENT_ID,
+            redirect_uri: redirectUri,
+            response_type: "code",
+            state,
+            // Optional: scope: "account transfers items"
+        });
+
+        return `https://www.premiumize.me/authorize?${params.toString()}`;
     }
 
     async getTorrentList({
@@ -804,10 +816,6 @@ export default class PremiumizeClient extends BaseClient {
                 children: [],
             };
         });
-    }
-
-    private static delay(ms: number): Promise<void> {
-        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
     // Web download methods - uses /transfer/create to add links as transfers

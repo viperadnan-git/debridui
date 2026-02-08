@@ -12,7 +12,7 @@ import { RealDebridClient, TorBoxClient, AllDebridClient, PremiumizeClient } fro
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useAddUserAccount } from "@/hooks/use-user-accounts";
 import { SectionDivider } from "@/components/section-divider";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { handleError } from "@/lib/utils/error-handling";
 import { formatAccountType } from "@/lib/utils";
@@ -22,11 +22,7 @@ export function AddAccountForm() {
     const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | "premiumize" | null>(
         null
     );
-    const [premiumizeDevice, setPremiumizeDevice] = useState<{
-        userCode: string;
-        deviceCode: string;
-        verificationUri: string;
-    } | null>(null);
+    const isPremiumizeConfigured = useMemo(() => PremiumizeClient.isOAuthConfigured(), []);
 
     const form = useForm<z.infer<typeof accountSchema>>({
         resolver: zodResolver(accountSchema),
@@ -39,6 +35,20 @@ export function AddAccountForm() {
     // AuthProvider handles redirect to /dashboard after account is added
     function onSubmit(values: z.infer<typeof accountSchema>) {
         addAccount.mutate(values, { onSuccess: () => form.reset() });
+    }
+
+    /**
+     * Generate random state for OAuth CSRF protection
+     */
+    function generateRandomState(length: number): string {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+        let result = "";
+        const randomValues = new Uint8Array(length);
+        crypto.getRandomValues(randomValues);
+        for (let i = 0; i < length; i++) {
+            result += chars[randomValues[i] % chars.length];
+        }
+        return result;
     }
 
     async function handleAllDebridLogin() {
@@ -91,107 +101,23 @@ export function AddAccountForm() {
     async function handlePremiumizeLogin() {
         setIsLoadingOAuth("premiumize");
         try {
-            const { pin, check, redirect_url } = await PremiumizeClient.getAuthPin();
+            // Generate random state for CSRF protection
+            const state = generateRandomState(32);
 
-            setPremiumizeDevice({
-                userCode: pin,
-                deviceCode: check,
-                verificationUri: redirect_url,
-            });
+            // Store state in cookie (will be verified in callback)
+            // Using document.cookie to match backend cookie handling
+            const stateValue = encodeURIComponent(state);
+            document.cookie = `premiumize_oauth_state=${stateValue}; path=/; max-age=600; SameSite=Lax`;
 
-            try {
-                toast(`Code: ${pin}`, {
-                    action: {
-                        label: "Copy",
-                        onClick: () => {
-                            navigator.clipboard
-                                .writeText(pin)
-                                .then(() => toast.success("Premiumize device code copied!"))
-                                .catch(() => toast.error("Copy failed!"));
-                        },
-                    },
-                });
-            } catch (err) {
-                toast.info("Device code available below. Please copy it manually.");
-                console.error("Clipboard failed:", err);
-            }
+            // Get authorization URL
+            const authUrl = PremiumizeClient.getAuthorizationUrl(state);
 
-            // Open verification URL in a new tab so user can paste the code there
-            const opened = openNewPage(redirect_url);
-            if (!opened) {
-                toast.info("Please open the verification URL displayed below in a new tab and paste the code there.");
-            }
-
-            // Poll for token (validateAuthPin will poll server-side)
-            const { success, apiKey } = await PremiumizeClient.validateAuthPin(pin, check);
-            if (success && apiKey) {
-                addAccount.mutate(
-                    { type: AccountType.PREMIUMIZE, apiKey: `Bearer ${apiKey}` },
-                    { onSuccess: () => form.reset() }
-                );
-                setPremiumizeDevice(null);
-            } else {
-                toast.error("Failed to retrieve Premiumize token");
-            }
+            // Redirect user to Premiumize authorization endpoint
+            window.location.href = authUrl;
         } catch (error) {
             handleError(error);
-        } finally {
             setIsLoadingOAuth(null);
         }
-    }
-
-    function openNewPage(url: string): boolean {
-        try {
-            const opened = window.open(url, "_blank");
-            if (!opened) {
-                return false;
-            }
-            // Explicitly prevent access to window.opener
-            opened.opener = null;
-
-            return true;
-        } catch (err) {
-            console.error(`Failed opening url ${url} in new page`, err);
-            return false;
-        }
-    }
-
-    function renderPremiumizeDeviceBox() {
-        if (!premiumizeDevice) return null;
-
-        return (
-            <div className="p-4 bg-muted rounded-md border border-border">
-                <div className="mb-2 text-sm">Open this URL in your browser and enter the device code bellow:</div>
-                <div className="mb-2">
-                    <a href={premiumizeDevice.verificationUri} target="_blank" rel="noreferrer" className="underline">
-                        {premiumizeDevice.verificationUri}
-                    </a>
-                </div>
-                <div className="mb-2 text-sm font-medium">Device code:</div>
-                <div className="mb-2">
-                    <input
-                        readOnly
-                        value={premiumizeDevice.userCode}
-                        className="w-full bg-transparent border rounded px-2 py-1"
-                        onFocus={(e) => {
-                            const input = e.currentTarget;
-                            requestAnimationFrame(() => input.select());
-                        }}
-                    />
-                </div>
-
-                <div className="flex gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                            setPremiumizeDevice(null);
-                        }}>
-                        Dismiss
-                    </Button>
-                </div>
-            </div>
-        );
     }
 
     return (
@@ -280,19 +206,20 @@ export function AddAccountForm() {
                                     "AllDebrid"
                                 )}
                             </Button>
-                            <Button
-                                variant="outline"
-                                type="button"
-                                className="w-full"
-                                onClick={handlePremiumizeLogin}
-                                disabled={!!isLoadingOAuth || addAccount.isPending}>
-                                {isLoadingOAuth === "premiumize" ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    "Premiumize"
-                                )}
-                            </Button>
-                            {renderPremiumizeDeviceBox()}
+                            {isPremiumizeConfigured && (
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    className="w-full"
+                                    onClick={handlePremiumizeLogin}
+                                    disabled={!!isLoadingOAuth || addAccount.isPending}>
+                                    {isLoadingOAuth === "premiumize" ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                        "Premiumize"
+                                    )}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </form>

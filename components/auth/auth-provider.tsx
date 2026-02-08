@@ -65,6 +65,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+    // Handle OAuth callback - force refetch of accounts
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("_account_added") === "true") {
+            // Force an immediate refetch of accounts
+            refetch();
+            // Clean up the URL parameter
+            const newUrl = window.location.pathname;
+            window.history.replaceState(null, "", newUrl);
+        }
+    }, [refetch]);
+
     // `rerender-memo` - Memoize account ID selection (involves array operations)
     const currentAccountId = useMemo(() => {
         if (accountsLength === 0) return null;
