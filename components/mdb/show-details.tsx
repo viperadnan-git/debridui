@@ -6,10 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTMDBEpisodeGroupDetails, useTMDBSeriesEpisodeGroups } from "@/hooks/use-tmdb";
 import { useTraktShowEpisodes, useTraktShowSeasons } from "@/hooks/use-trakt";
-import { type TMDBEpisodeGroupEpisode, type TMDBEpisodeGroupGroup } from "@/lib/tmdb";
-import { type TraktEpisode, type TraktImages, type TraktMedia } from "@/lib/trakt";
-import { cn } from "@/lib/utils";
-import { getPosterUrl } from "@/lib/utils/media";
+import { type TMDBEpisodeGroupEpisode } from "@/lib/tmdb";
+import { type TraktEpisode, type TraktImages, type TraktMedia, type TraktSeason } from "@/lib/trakt";
 import { useRouter, useSearchParams } from "next/navigation";
 import { memo, useCallback, useMemo, useState } from "react";
 import { EpisodeCard } from "./episode-card";
@@ -39,72 +37,28 @@ function tmdbEpisodeToTrakt(episode: TMDBEpisodeGroupEpisode, seasonOrder: numbe
     };
 }
 
-const GroupCard = memo(function GroupCard({
-    group,
-    groupIndex,
-    isSelected,
-    onClick,
-    media,
-}: {
-    group: TMDBEpisodeGroupGroup;
-    groupIndex: number;
-    isSelected?: boolean;
-    onClick?: () => void;
-    media: TraktMedia;
-}) {
-    const groupLabel = `Part ${groupIndex + 1}`;
-    const posterUrl =
-        getPosterUrl(media.images) ||
-        `https://placehold.co/200x300/1a1a1a/3e3e3e?text=${encodeURIComponent(groupLabel)}`;
-
-    return (
-        <div className={cn("group cursor-pointer w-28 sm:w-32 md:w-36 pt-1")} onClick={onClick}>
-            <div
-                className={cn(
-                    "aspect-2/3 relative overflow-hidden bg-muted/30 rounded-sm transition-all duration-300",
-                    isSelected
-                        ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
-                        : "hover:ring-1 hover:ring-border"
-                )}>
-                {/* Poster background */}
-                <img
-                    src={posterUrl}
-                    alt={group.name}
-                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-hover"
-                    loading="lazy"
-                />
-
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                {/* Bottom info */}
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <div className="space-y-1">
-                        <p className="text-xs text-white/90 font-medium line-clamp-2">{group.name}</p>
-                        <p className="text-xs text-white/60">{group.episodes.length} Episodes</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-});
-
 const EpisodesSection = memo(function EpisodesSection({
     selectedSeason,
     episodeCount,
     mediaId,
     media,
+    label,
+    preloadedEpisodes,
 }: {
     selectedSeason: number;
     episodeCount?: number;
     mediaId: string;
     media: TraktMedia;
+    label?: string;
+    preloadedEpisodes?: TraktEpisode[];
 }): React.ReactElement | null {
-    const { data: episodes, isLoading } = useTraktShowEpisodes(mediaId, selectedSeason);
+    const { data: fetchedEpisodes, isLoading } = useTraktShowEpisodes(mediaId, selectedSeason);
+    const episodes = preloadedEpisodes ?? fetchedEpisodes;
+    const loading = !preloadedEpisodes && isLoading;
 
-    if (!isLoading && (!episodes || episodes.length === 0)) return null;
+    if (!loading && (!episodes || episodes.length === 0)) return null;
 
-    const seasonLabel = selectedSeason === 0 ? "Specials" : `Season ${selectedSeason}`;
+    const seasonLabel = label ?? (selectedSeason === 0 ? "Specials" : `Season ${selectedSeason}`);
     const skeletonCount = Math.min(episodeCount || 3, 20);
 
     return (
@@ -120,7 +74,7 @@ const EpisodesSection = memo(function EpisodesSection({
                 )}
             </div>
             <div className="flex flex-col gap-3">
-                {isLoading
+                {loading
                     ? Array.from({ length: skeletonCount }).map((_, i) => (
                           <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
                               <div className="flex flex-row items-start">
@@ -141,35 +95,6 @@ const EpisodesSection = memo(function EpisodesSection({
                               showMedia={media}
                           />
                       ))}
-            </div>
-        </div>
-    );
-});
-
-const EpisodeGroupSection = memo(function EpisodeGroupSection({
-    group,
-    media,
-}: {
-    group: TMDBEpisodeGroupGroup;
-    media: TraktMedia;
-}): React.ReactElement {
-    return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h3 className="text-sm font-light text-muted-foreground">{group.name}</h3>
-                <span className="text-xs tracking-wider uppercase text-muted-foreground">
-                    {group.episodes.length} Episodes
-                </span>
-            </div>
-            <div className="flex flex-col gap-3">
-                {group.episodes.map((episode, index) => (
-                    <EpisodeCard
-                        key={episode.id}
-                        episode={tmdbEpisodeToTrakt(episode, group.order, index)}
-                        imdbId={media.ids?.imdb}
-                        showMedia={media}
-                    />
-                ))}
             </div>
         </div>
     );
@@ -230,8 +155,26 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
         [searchParams, router]
     );
 
-    // Filter out "specials" group (order 0) and memoize
-    const filteredGroups = useMemo(() => groupDetails?.groups.filter((g) => g.order !== 0), [groupDetails]);
+    // Filter out "specials" group (order 0), map to TraktSeason for SeasonCard reuse
+    const filteredGroups = useMemo(() => {
+        const groups = groupDetails?.groups.filter((g) => g.order !== 0);
+        return groups?.map(
+            (g): TraktSeason => ({
+                number: g.order,
+                ids: { trakt: 0, slug: "", tmdb: 0 },
+                images: media.images,
+                title: g.name,
+                episode_count: g.episodes.length,
+            })
+        );
+    }, [groupDetails, media.images]);
+
+    // Pre-map TMDB episodes to TraktEpisode format for the selected group
+    const groupEpisodes = useMemo(() => {
+        const group = groupDetails?.groups.filter((g) => g.order !== 0)[selectedGroupIndex];
+        return group?.episodes.map((ep, i) => tmdbEpisodeToTrakt(ep, group.order, i));
+    }, [groupDetails, selectedGroupIndex]);
+
     const episodeCount = seasons?.find((s) => s.number === selectedSeason)?.episode_count;
 
     return (
@@ -301,22 +244,26 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                             {filteredGroups.length > 1 && (
                                 <ScrollCarousel className="-mx-4 lg:mx-0">
                                     <div className="flex w-max gap-3 pb-4 px-4 lg:pl-2 lg:pr-0">
-                                        {filteredGroups.map((group, index) => (
-                                            <GroupCard
-                                                key={group.id}
-                                                group={group}
-                                                groupIndex={index}
+                                        {filteredGroups.map((season, index) => (
+                                            <SeasonCard
+                                                key={season.number}
+                                                season={season}
                                                 isSelected={selectedGroupIndex === index}
                                                 onClick={() => handleGroupIndexChange(index)}
-                                                media={media}
                                             />
                                         ))}
                                     </div>
                                 </ScrollCarousel>
                             )}
 
-                            {filteredGroups[selectedGroupIndex] && (
-                                <EpisodeGroupSection group={filteredGroups[selectedGroupIndex]} media={media} />
+                            {groupEpisodes && (
+                                <EpisodesSection
+                                    selectedSeason={filteredGroups[selectedGroupIndex]?.number ?? 0}
+                                    mediaId={mediaId}
+                                    media={media}
+                                    label={filteredGroups[selectedGroupIndex]?.title}
+                                    preloadedEpisodes={groupEpisodes}
+                                />
                             )}
                         </>
                     )
