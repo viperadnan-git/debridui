@@ -3,6 +3,7 @@
 import { memo, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
 import { Play, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -10,8 +11,10 @@ import { ScrollCarousel } from "@/components/common/scroll-carousel";
 import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
 import { useUserAddons } from "@/hooks/use-addons";
 import { usePlaybackHistory } from "@/hooks/use-playback-history";
+import { traktClient } from "@/lib/trakt";
 import type { PlaybackHistory } from "@/lib/db/schema";
 import type { Addon } from "@/lib/addons/types";
+import type { TvSearchParams } from "@/lib/addons/types";
 
 function formatEpisodeLabel(season: number, episode: number): string {
     return `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")}`;
@@ -28,6 +31,37 @@ function isRequestMatch(
         activeRequest.tvParams?.season === entry.tvParams?.season &&
         activeRequest.tvParams?.episode === entry.tvParams?.episode
     );
+}
+
+function useNextEpisode(
+    imdbId: string,
+    type: "movie" | "show",
+    season: number | null,
+    episode: number | null
+): TvSearchParams | null {
+    const { data: seasons } = useQuery({
+        queryKey: ["trakt", "show", "seasons", imdbId],
+        queryFn: () => traktClient.getShowSeasons(imdbId),
+        staleTime: 24 * 60 * 60 * 1000,
+        enabled: type === "show" && !!season && !!episode,
+    });
+
+    return useMemo(() => {
+        if (!seasons || !season || !episode) return null;
+
+        const regularSeasons = seasons.filter((s) => s.number > 0).sort((a, b) => a.number - b.number);
+        const current = regularSeasons.find((s) => s.number === season);
+        if (!current) return null;
+
+        if (episode < (current.aired_episodes ?? 0)) {
+            return { season, episode: episode + 1 };
+        }
+
+        const next = regularSeasons.find((s) => s.number > season && (s.aired_episodes ?? 0) > 0);
+        if (next) return { season: next.number, episode: 1 };
+
+        return null;
+    }, [seasons, season, episode]);
 }
 
 interface ContinueWatchingCardProps {
@@ -165,6 +199,7 @@ const ContinueWatchingEntry = memo(function ContinueWatchingEntry({
         [entry.season, entry.episode]
     );
 
+    const nextEpisode = useNextEpisode(entry.imdbId, entry.type, entry.season, entry.episode);
     const isLoading = isAddonsLoading || isRequestMatch(activeRequest, { ...entry, tvParams });
 
     const playRequest = useMemo<StreamingRequest>(
@@ -185,22 +220,16 @@ const ContinueWatchingEntry = memo(function ContinueWatchingEntry({
     const handlePlay = useCallback(() => play(playRequest, addons), [play, playRequest, addons]);
 
     const handlePlayNext = useCallback(() => {
-        if (!entry.season || !entry.episode) return;
-        play(
-            {
-                ...playRequest,
-                tvParams: { season: entry.season, episode: entry.episode + 1 },
-            },
-            addons
-        );
-    }, [play, playRequest, entry.season, entry.episode, addons]);
+        if (!nextEpisode) return;
+        play({ ...playRequest, tvParams: nextEpisode }, addons);
+    }, [play, playRequest, nextEpisode, addons]);
 
     return (
         <ContinueWatchingCard
             entry={entry}
             isLoading={isLoading}
             onPlay={handlePlay}
-            onPlayNext={entry.season && entry.episode ? handlePlayNext : undefined}
+            onPlayNext={nextEpisode ? handlePlayNext : undefined}
         />
     );
 });
