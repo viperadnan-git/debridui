@@ -12,7 +12,7 @@ import { RealDebridClient, TorBoxClient, AllDebridClient, PremiumizeClient } fro
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "./ui/select";
 import { useAddUserAccount } from "@/hooks/use-user-accounts";
 import { SectionDivider } from "@/components/section-divider";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { handleError } from "@/lib/utils/error-handling";
 import { formatAccountType } from "@/lib/utils";
@@ -22,6 +22,7 @@ export function AddAccountForm() {
     const [isLoadingOAuth, setIsLoadingOAuth] = useState<"alldebrid" | "torbox" | "realdebrid" | "premiumize" | null>(
         null
     );
+    const isPremiumizeConfigured = useMemo(() => PremiumizeClient.isOAuthConfigured(), []);
 
     const form = useForm<z.infer<typeof accountSchema>>({
         resolver: zodResolver(accountSchema),
@@ -34,6 +35,20 @@ export function AddAccountForm() {
     // AuthProvider handles redirect to /dashboard after account is added
     function onSubmit(values: z.infer<typeof accountSchema>) {
         addAccount.mutate(values, { onSuccess: () => form.reset() });
+    }
+
+    /**
+     * Generate random state for OAuth CSRF protection
+     */
+    function generateRandomState(length: number): string {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+        let result = "";
+        const randomValues = new Uint8Array(length);
+        crypto.getRandomValues(randomValues);
+        for (let i = 0; i < length; i++) {
+            result += chars[randomValues[i] % chars.length];
+        }
+        return result;
     }
 
     async function handleAllDebridLogin() {
@@ -86,12 +101,21 @@ export function AddAccountForm() {
     async function handlePremiumizeLogin() {
         setIsLoadingOAuth("premiumize");
         try {
-            const { redirect_url } = await PremiumizeClient.getAuthPin();
-            window.open(redirect_url, "_blank", "noreferrer");
-            toast.info("Please copy your Premiumize API key and paste it in the form above");
+            // Generate random state for CSRF protection
+            const state = generateRandomState(32);
+
+            // Store state in cookie (will be verified in callback)
+            // Using document.cookie to match backend cookie handling
+            const stateValue = encodeURIComponent(state);
+            document.cookie = `premiumize_oauth_state=${stateValue}; path=/; max-age=600; SameSite=Lax`;
+
+            // Get authorization URL
+            const authUrl = PremiumizeClient.getAuthorizationUrl(state);
+
+            // Redirect user to Premiumize authorization endpoint
+            window.location.href = authUrl;
         } catch (error) {
             handleError(error);
-        } finally {
             setIsLoadingOAuth(null);
         }
     }
@@ -182,18 +206,20 @@ export function AddAccountForm() {
                                     "AllDebrid"
                                 )}
                             </Button>
-                            <Button
-                                variant="outline"
-                                type="button"
-                                className="w-full"
-                                onClick={handlePremiumizeLogin}
-                                disabled={!!isLoadingOAuth || addAccount.isPending}>
-                                {isLoadingOAuth === "premiumize" ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    "Premiumize"
-                                )}
-                            </Button>
+                            {isPremiumizeConfigured && (
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    className="w-full"
+                                    onClick={handlePremiumizeLogin}
+                                    disabled={!!isLoadingOAuth || addAccount.isPending}>
+                                    {isLoadingOAuth === "premiumize" ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                        "Premiumize"
+                                    )}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </form>
