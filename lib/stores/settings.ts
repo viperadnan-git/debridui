@@ -302,9 +302,17 @@ export const useSettingsStore = create<SettingsStore>()(
                     return result;
                 };
 
+                const merged = deepMerge(defaults, persistedSettings);
+
+                // Reset invalid enum values to defaults
+                const validPlayers = Object.values(MediaPlayer) as string[];
+                if (!validPlayers.includes(merged.mediaPlayer)) {
+                    merged.mediaPlayer = defaults.mediaPlayer;
+                }
+
                 return {
                     ...current,
-                    settings: deepMerge(defaults, persistedSettings),
+                    settings: merged,
                 };
             },
         }

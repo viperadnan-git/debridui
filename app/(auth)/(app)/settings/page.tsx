@@ -210,7 +210,7 @@ export default function SettingsPage() {
                         <Info className="size-3.5 shrink-0 mt-0.5" />
                         <p>
                             {mediaPlayer} is not officially supported on {platform}. Supported platforms:{" "}
-                            {PLAYER_PLATFORM_SUPPORT[mediaPlayer].join(", ")}
+                            {PLAYER_PLATFORM_SUPPORT[mediaPlayer]?.join(", ")}
                         </p>
                     </div>
                 )}
