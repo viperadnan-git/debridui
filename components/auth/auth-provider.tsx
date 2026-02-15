@@ -101,24 +101,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     useEffect(() => {
         if (isSessionPending || isAccountsLoading) return;
 
-        // No session → login
+        // No session → login with callbackUrl
         if (!session) {
-            router.push("/login");
+            const callbackUrl = pathname !== "/login" && pathname !== "/signup" ? pathname : null;
+            const loginUrl = callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login";
+            router.push(loginUrl);
             return;
         }
 
         const hasAccounts = userAccounts.length > 0;
         const isOnboarding = pathname === "/onboarding";
 
-        // Has accounts + on onboarding → dashboard
+        // Has accounts + on onboarding → redirect to callbackUrl or dashboard
         if (hasAccounts && isOnboarding) {
-            router.push("/dashboard");
+            const params = new URLSearchParams(window.location.search);
+            const callbackUrl = params.get("callbackUrl");
+            router.push(callbackUrl || "/dashboard");
             return;
         }
 
-        // No accounts + not on onboarding → onboarding
+        // No accounts + not on onboarding → onboarding (preserve callbackUrl)
         if (!hasAccounts && !isOnboarding) {
-            router.push("/onboarding");
+            const params = new URLSearchParams(window.location.search);
+            const callbackUrl = params.get("callbackUrl");
+            const onboardingUrl = callbackUrl
+                ? `/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                : "/onboarding";
+            router.push(onboardingUrl);
         }
     }, [session, isSessionPending, isAccountsLoading, userAccounts.length, pathname, router]);
 

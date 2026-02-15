@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { GOOGLE_CLIENT_ID } from "@/lib/constants";
@@ -23,6 +23,8 @@ const loginSchema = z.object({
 
 export default function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
     const [isRedirecting, setIsRedirecting] = useState(false);
 
     const form = useForm<z.infer<typeof loginSchema>>({
@@ -48,7 +50,7 @@ export default function LoginForm() {
             if (data) {
                 setIsRedirecting(true);
                 toast.success("Logged in successfully");
-                router.push("/dashboard");
+                router.push(callbackUrl);
             }
         } catch {
             toast.error("An unexpected error occurred");
@@ -79,7 +81,7 @@ export default function LoginForm() {
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                        <GoogleSignInButton callbackURL="/dashboard" disabled={isDisabled} />
+                        <GoogleSignInButton callbackURL={callbackUrl} disabled={isDisabled} />
 
                         {/* Runtime comparison for Docker env injection support */}
                         {!!GOOGLE_CLIENT_ID && (
@@ -131,7 +133,13 @@ export default function LoginForm() {
 
                         <div className="text-center text-sm">
                             Don&apos;t have an account?{" "}
-                            <Link href="/signup" className="underline underline-offset-4 hover:text-primary">
+                            <Link
+                                href={
+                                    callbackUrl !== "/dashboard"
+                                        ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                                        : "/signup"
+                                }
+                                className="underline underline-offset-4 hover:text-primary">
                                 Sign up
                             </Link>
                         </div>

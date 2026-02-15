@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { GOOGLE_CLIENT_ID, DISABLE_EMAIL_SIGNUP } from "@/lib/constants";
@@ -25,6 +25,8 @@ const signupSchema = z.object({
 
 export default function SignupForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get("callbackUrl");
     const [isRedirecting, setIsRedirecting] = useState(false);
 
     // Runtime comparisons for Docker env injection support
@@ -57,7 +59,10 @@ export default function SignupForm() {
             if (data) {
                 setIsRedirecting(true);
                 toast.success("Account created successfully");
-                router.push("/onboarding");
+                const onboardingUrl = callbackUrl
+                    ? `/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                    : "/onboarding";
+                router.push(onboardingUrl);
             }
         } catch {
             toast.error("An unexpected error occurred");
@@ -89,7 +94,14 @@ export default function SignupForm() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                            <GoogleSignInButton callbackURL="/dashboard" disabled={isDisabled} />
+                            <GoogleSignInButton
+                                callbackURL={
+                                    callbackUrl
+                                        ? `/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                                        : "/dashboard"
+                                }
+                                disabled={isDisabled}
+                            />
 
                             {!isEmailSignupDisabled && isGoogleOAuthEnabled && (
                                 <div className="relative">
@@ -163,7 +175,11 @@ export default function SignupForm() {
                             )}
                             <div className="text-center text-sm">
                                 Already have an account?{" "}
-                                <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+                                <Link
+                                    href={
+                                        callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"
+                                    }
+                                    className="underline underline-offset-4 hover:text-primary">
                                     Sign in
                                 </Link>
                             </div>
