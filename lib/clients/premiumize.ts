@@ -140,26 +140,50 @@ interface PremiumizeCacheCheckResponse extends PremiumizeApiResponse {
 export default class PremiumizeClient extends BaseClient {
     readonly refreshInterval: number | false = false;
     readonly supportsEphemeralLinks: boolean = false;
+    private static readonly OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID || "";
 
     constructor(account: Account) {
         super({ account });
     }
 
+    /**
+     * Check if Premiumize OAuth is configured
+     * Returns true only if NEXT_PUBLIC_PREMIUMIZE_CLIENT_ID is explicitly set (not the default)
+     */
+    static isOAuthConfigured(): boolean {
+        return PremiumizeClient.OAUTH_CLIENT_ID !== "";
+    }
     private static buildUrl(path: string, apiKey: string): string {
-        const separator = path.includes("?") ? "&" : "?";
-        return getProxyUrl(`https://www.premiumize.me/api${path}${separator}apikey=${encodeURIComponent(apiKey)}`);
+        return getProxyUrl(PremiumizeClient.appendApiKeyToUrl(`https://www.premiumize.me/api${path}`, apiKey));
+    }
+    private static appendApiKeyToUrl(url: string, apiKey?: string): string {
+        if (!apiKey) return url;
+        // If apiKey is an OAuth token (prefixed with 'Bearer '), don't append to URL
+        if (apiKey.trim().toLowerCase().startsWith("bearer ")) return url;
+
+        const separator = url.includes("?") ? "&" : "?";
+        return `${url}${separator}apikey=${encodeURIComponent(apiKey)}`;
     }
 
     private async makeRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
         await this.rateLimiter.acquire();
         const { apiKey } = this.account;
 
-        const response = await fetch(PremiumizeClient.buildUrl(path, apiKey), {
+        const url = PremiumizeClient.buildUrl(path, apiKey);
+
+        const headers: Record<string, string> = {
+            "User-Agent": USER_AGENT,
+            ...((options.headers as Record<string, string>) || {}),
+        };
+
+        // If we have an OAuth token (prefixed with 'Bearer '), send it in Authorization
+        if (apiKey && apiKey.trim().toLowerCase().startsWith("bearer ")) {
+            headers["Authorization"] = apiKey.trim();
+        }
+
+        const response = await fetch(url, {
             ...options,
-            headers: {
-                "User-Agent": USER_AGENT,
-                ...options.headers,
-            },
+            headers,
         });
 
         if (!response.ok) {
@@ -195,9 +219,14 @@ export default class PremiumizeClient extends BaseClient {
     }
 
     static async getUser(apiKey: string): Promise<FullAccount> {
-        const response = await fetch(PremiumizeClient.buildUrl("/account/info", apiKey), {
-            headers: { "User-Agent": USER_AGENT },
-        });
+        const url = PremiumizeClient.buildUrl("/account/info", apiKey);
+
+        const headers: Record<string, string> = { "User-Agent": USER_AGENT };
+        if (apiKey && apiKey.trim().toLowerCase().startsWith("bearer ")) {
+            headers["Authorization"] = apiKey.trim();
+        }
+
+        const response = await fetch(url, { headers });
 
         if (!response.ok) {
             if (response.status === 401) {
@@ -227,28 +256,78 @@ export default class PremiumizeClient extends BaseClient {
         };
     }
 
-    static async getAuthPin(): Promise<{
-        pin: string;
-        check: string;
-        redirect_url: string;
-    }> {
-        return {
-            pin: "PREMIUMIZE_API_KEY",
-            check: "direct_api_key",
-            redirect_url: "https://www.premiumize.me/account",
-        };
+    /**
+     * Exchange authorization code for access token (OAuth Authorization Code Flow)
+     * Called by backend callback handler after user approves at Premiumize
+     */
+    static async exchangeCodeForToken(code: string): Promise<string> {
+        const clientSecret = process.env.PREMIUMIZE_CLIENT_SECRET;
+        if (!clientSecret) {
+            throw new Error("PREMIUMIZE_CLIENT_SECRET environment variable not set");
+        }
+
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const redirectUri = `${appUrl}/api/debrid/premiumize/callback`;
+
+        const params = new URLSearchParams({
+            grant_type: "authorization_code",
+            code,
+            client_id: PremiumizeClient.OAUTH_CLIENT_ID,
+            client_secret: clientSecret,
+            redirect_uri: redirectUri,
+        });
+
+        const response = await fetch(getProxyUrl("https://www.premiumize.me/token"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "User-Agent": USER_AGENT,
+            },
+            body: params.toString(),
+        });
+
+        if (!response.ok) {
+            let errorDetails = "";
+            try {
+                const error = await response.json();
+                errorDetails = error.error_description || error.error || response.statusText;
+            } catch {
+                errorDetails = response.statusText;
+            }
+            throw new Error(`Token exchange failed: ${errorDetails}`);
+        }
+
+        const data: {
+            access_token: string;
+            token_type: string;
+            expires_in: number;
+            refresh_token?: string;
+        } = await response.json();
+
+        if (!data.access_token) {
+            throw new Error("No access token in response");
+        }
+
+        return data.access_token;
     }
 
-    static async validateAuthPin(pin: string, check: string): Promise<{ success: boolean; apiKey?: string }> {
-        if (check === "direct_api_key") {
-            try {
-                await this.getUser(pin);
-                return { success: true, apiKey: pin };
-            } catch {
-                return { success: false };
-            }
-        }
-        return { success: false };
+    /**
+     * Generate authorization URL for OAuth Authorization Code Flow
+     * Frontend redirects user to this URL
+     */
+    static getAuthorizationUrl(state: string): string {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const redirectUri = `${appUrl}/api/debrid/premiumize/callback`;
+
+        const params = new URLSearchParams({
+            client_id: PremiumizeClient.OAUTH_CLIENT_ID,
+            redirect_uri: redirectUri,
+            response_type: "code",
+            state,
+            // Optional: scope: "account transfers items"
+        });
+
+        return `https://www.premiumize.me/authorize?${params.toString()}`;
     }
 
     async getTorrentList({
