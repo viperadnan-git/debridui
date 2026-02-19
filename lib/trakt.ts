@@ -403,6 +403,7 @@ export class TraktClient {
         try {
             const response = await fetch(url, {
                 ...options,
+                cache: "no-store",
                 headers: {
                     ...this.createHeaders(requiresAuth),
                     ...options.headers,

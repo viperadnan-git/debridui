@@ -4,13 +4,17 @@ import { memo, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { Play, SkipForward } from "lucide-react";
+import { Play, SkipForward, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollCarousel } from "@/components/common/scroll-carousel";
 import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
 import { useUserAddons } from "@/hooks/use-addons";
-import { usePlaybackHistory } from "@/hooks/use-playback-history";
+import {
+    usePlaybackHistory,
+    useRemoveFromPlaybackHistory,
+    useClearPlaybackHistory,
+} from "@/hooks/use-playback-history";
 import { traktClient } from "@/lib/trakt";
 import type { PlaybackHistory } from "@/lib/db/schema";
 import type { Addon } from "@/lib/addons/types";
@@ -78,6 +82,7 @@ interface ContinueWatchingCardProps {
     isLoading: boolean;
     onPlay: () => void;
     onPlayNext?: () => void;
+    onRemove: () => void;
 }
 
 const ContinueWatchingCard = memo(function ContinueWatchingCard({
@@ -85,6 +90,7 @@ const ContinueWatchingCard = memo(function ContinueWatchingCard({
     isLoading,
     onPlay,
     onPlayNext,
+    onRemove,
 }: ContinueWatchingCardProps) {
     const episodeLabel =
         entry.type === "show" && entry.season && entry.episode ? formatEpisodeLabel(entry.season, entry.episode) : null;
@@ -98,6 +104,15 @@ const ContinueWatchingCard = memo(function ContinueWatchingCard({
 
     return (
         <article className="group relative aspect-[2/3] overflow-hidden rounded-sm bg-black/20 border border-border/40 transition-transform duration-300 ease-out hover:scale-hover">
+            {/* Remove button — fades in on hover */}
+            <button
+                type="button"
+                onClick={onRemove}
+                className="absolute -top-px -right-px z-20 size-7 flex items-center justify-center rounded-bl-sm bg-black/50 text-white/70 opacity-40 cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 hover:bg-destructive hover:text-white transition-all duration-200 backdrop-blur-sm"
+                aria-label={`Remove ${entry.title} from continue watching`}>
+                <X className="size-3 -translate-x-px translate-y-px" strokeWidth={2.5} />
+            </button>
+
             {/* Clickable Image Area */}
             <Link href={linkHref} className="absolute inset-0 z-0">
                 {/* Poster Image */}
@@ -185,6 +200,7 @@ interface ContinueWatchingEntryProps {
     addons: Addon[];
     activeRequest: StreamingRequest | null;
     isAddonsLoading: boolean;
+    onRemove: (imdbId: string) => void;
 }
 
 const ContinueWatchingEntry = memo(function ContinueWatchingEntry({
@@ -193,6 +209,7 @@ const ContinueWatchingEntry = memo(function ContinueWatchingEntry({
     addons,
     activeRequest,
     isAddonsLoading,
+    onRemove,
 }: ContinueWatchingEntryProps) {
     const tvParams = useMemo(
         () => (entry.season && entry.episode ? { season: entry.season, episode: entry.episode } : undefined),
@@ -224,12 +241,15 @@ const ContinueWatchingEntry = memo(function ContinueWatchingEntry({
         play({ ...playRequest, tvParams: nextEpisode }, addons);
     }, [play, playRequest, nextEpisode, addons]);
 
+    const handleRemove = useCallback(() => onRemove(entry.imdbId), [onRemove, entry.imdbId]);
+
     return (
         <ContinueWatchingCard
             entry={entry}
             isLoading={isLoading}
             onPlay={handlePlay}
             onPlayNext={nextEpisode ? handlePlayNext : undefined}
+            onRemove={handleRemove}
         />
     );
 });
@@ -239,15 +259,24 @@ export const ContinueWatching = memo(function ContinueWatching() {
     const activeRequest = useStreamingStore((s) => s.activeRequest);
     const play = useStreamingStore((s) => s.play);
     const { data: addons = [], isPending: isAddonsLoading } = useUserAddons();
+    const { mutate: removeEntry } = useRemoveFromPlaybackHistory();
+    const { mutate: clearAll } = useClearPlaybackHistory();
+    const handleRemove = useCallback((imdbId: string) => removeEntry({ imdbId }), [removeEntry]);
 
     if (isHistoryLoading || entries.length === 0) return null;
 
     return (
-        <section className="mt-16 space-y-4 lg:space-y-6 lg:px-6">
+        <section className="group/section mt-16 space-y-4 lg:space-y-6 lg:px-6">
             {/* Section Header - Editorial Style */}
             <div className="flex items-center gap-4">
                 <div className="h-px w-8 bg-primary" />
                 <h2 className="text-xs tracking-widest uppercase text-muted-foreground">Continue Watching</h2>
+                <button
+                    type="button"
+                    onClick={() => clearAll()}
+                    className="ml-auto cursor-pointer text-[10px] tracking-widest uppercase text-muted-foreground/40 hover:text-destructive lg:text-muted-foreground/0 lg:group-hover/section:text-muted-foreground/40 lg:hover:text-destructive transition-colors duration-300">
+                    Clear all
+                </button>
             </div>
 
             {/* Edge-to-edge Scroll Carousel */}
@@ -261,6 +290,7 @@ export const ContinueWatching = memo(function ContinueWatching() {
                             addons={addons}
                             activeRequest={activeRequest}
                             isAddonsLoading={isAddonsLoading}
+                            onRemove={handleRemove}
                         />
                     ))}
                 </div>

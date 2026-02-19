@@ -40,15 +40,11 @@ export function useRemoveFromPlaybackHistory() {
 
             return { previousHistory };
         },
-        onError: (error, _variables, context) => {
+        onError: (_error, _variables, context) => {
             if (context?.previousHistory) {
                 queryClient.setQueryData(PLAYBACK_HISTORY_KEY, context.previousHistory);
             }
             toast.error("Failed to remove entry");
-            console.error(error);
-        },
-        onSuccess: () => {
-            toast.success("Removed from Continue Watching");
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: PLAYBACK_HISTORY_KEY });
