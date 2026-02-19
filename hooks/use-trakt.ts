@@ -104,10 +104,6 @@ export const useTraktSeasonEpisodes = createTraktHook(
     CACHE_DURATION.LONG
 );
 
-// Aliases for backward compatibility
-export const useTraktMostPlayedMovies = useTraktMostWatchedMovies;
-export const useTraktMostPlayedShows = useTraktMostWatchedShows;
-
 // Combined hooks
 export function useTraktTrendingMixed(limit = 20) {
     return useQuery({

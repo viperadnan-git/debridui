@@ -8,7 +8,6 @@ import { del } from "idb-keyval";
 import { queryClient } from "../query-client";
 import { toast } from "sonner";
 
-export * from "./color";
 export * from "./media-player";
 
 /**
@@ -171,14 +170,6 @@ export async function chunkedPromise<T>({
 
     return results;
 }
-
-/**
- * Encode account data for sharing via URL (base64, NOT encryption)
- * WARNING: This is NOT secure - data is fully readable after decoding
- */
-export const encodeAccountData = (data: { type: string; apiKey: string }): string => {
-    return btoa(JSON.stringify(data));
-};
 
 /**
  * Get proxied URL using CORS proxy

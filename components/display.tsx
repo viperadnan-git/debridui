@@ -1,9 +1,8 @@
-import { AccountType, DebridFileStatus, WebDownloadStatus } from "@/lib/types";
+import { DebridFileStatus, WebDownloadStatus } from "@/lib/types";
 import {
     DownloadIcon,
     PauseIcon,
     InfoIcon,
-    StoreIcon,
     UploadIcon,
     CircleCheckIcon,
     ClockIcon,
@@ -13,13 +12,6 @@ import {
 } from "lucide-react";
 import { memo } from "react";
 import { cn } from "@/lib/utils";
-
-export function AccountIcon({ type }: { type: AccountType | string }) {
-    switch (type) {
-        case AccountType.ALLDEBRID:
-            return <StoreIcon />;
-    }
-}
 
 // Unified color palette for status indicators
 // Semantic colors with background, border, and text in one definition

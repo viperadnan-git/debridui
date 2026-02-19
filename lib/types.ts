@@ -69,16 +69,6 @@ export type DebridFolderNode = BaseDebridNode & {
 // Discriminated union for type safety
 export type DebridNode = DebridFileNode | DebridFolderNode;
 
-// Type guard to check if a node is a file
-export function isFileNode(node: DebridNode): node is DebridFileNode {
-    return node.type === "file";
-}
-
-// Type guard to check if a node is a folder
-export function isFolderNode(node: DebridNode): node is DebridFolderNode {
-    return node.type === "folder";
-}
-
 export type DebridFile = {
     id: string;
     name: string;

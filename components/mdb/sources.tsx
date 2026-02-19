@@ -8,7 +8,6 @@ import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, AlertTr
 import { cn } from "@/lib/utils";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { useRouter } from "next/navigation";
 import { CachedBadge } from "@/components/display";
@@ -17,10 +16,6 @@ import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming
 interface SourcesProps {
     request: StreamingRequest;
     className?: string;
-}
-
-interface SourcesDialogProps extends SourcesProps {
-    children: React.ReactNode;
 }
 
 export function AddSourceButton({ magnet }: { magnet: string }) {
@@ -250,42 +245,5 @@ export function Sources({ request, className }: SourcesProps) {
                 )}
             </div>
         </div>
-    );
-}
-
-export function SourcesDialog({ request, children }: SourcesDialogProps) {
-    if (!request.imdbId) return null;
-
-    return (
-        <Dialog>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col gap-0">
-                <div className="flex-none px-6 pt-6 pb-4 border-b border-border/50">
-                    <DialogTitle>
-                        Sources
-                        {request.tvParams && (
-                            <span className="text-muted-foreground">
-                                {" "}
-                                · S{String(request.tvParams.season).padStart(2, "0")}E
-                                {String(request.tvParams.episode).padStart(2, "0")}
-                            </span>
-                        )}
-                    </DialogTitle>
-                    <DialogDescription className="mt-2 text-xs text-muted-foreground">
-                        Select a source to add to your download queue
-                    </DialogDescription>
-                </div>
-                <div className="flex-1 overflow-y-auto min-h-0 px-6 py-4">
-                    <Sources request={request} className="border-0" />
-                </div>
-                <div className="flex-none px-6 py-4 border-t border-border/50 bg-muted/20">
-                    <DialogClose asChild>
-                        <Button variant="outline" className="w-full sm:w-auto sm:ml-auto sm:flex">
-                            Close
-                        </Button>
-                    </DialogClose>
-                </div>
-            </DialogContent>
-        </Dialog>
     );
 }
