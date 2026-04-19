@@ -581,14 +581,22 @@ export default class AllDebridClient extends BaseClient {
 
     private mapStatusCode(statusCode: number): DebridFileStatus {
         const statusMap: Record<number, DebridFileStatus> = {
-            0: "waiting",
-            1: "downloading",
-            2: "paused",
-            3: "uploading",
-            4: "completed",
-            7: "failed",
-            10: "failed",
-            15: "failed",
+            0: "waiting", // In Queue
+            1: "downloading", // Downloading
+            2: "processing", // Compressing / Moving
+            3: "uploading", // Uploading
+            4: "completed", // Ready
+            5: "failed", // Upload fail
+            6: "failed", // Internal error on unpacking
+            7: "failed", // Not downloaded in 20 min
+            8: "failed", // File too big
+            9: "failed", // Internal error
+            10: "failed", // Download took more than 72h
+            11: "inactive", // Expired - files removed
+            12: "failed", // Processing failed
+            13: "failed", // Processing failed
+            14: "failed", // Error while contacting tracker
+            15: "failed", // File not available - no peer
         };
 
         return statusMap[statusCode] || "unknown";
