@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, type ReactElement } from "react";
-import { Slot } from "@radix-ui/react-slot";
+import { Slot } from "radix-ui";
 import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
 import { useUserAddons } from "@/hooks/use-addons";
 
@@ -33,8 +33,8 @@ export const WatchButton = memo(function WatchButton({ request, children }: Watc
     );
 
     return (
-        <Slot onClick={handleClick} data-loading={isLoading || undefined} data-disabled={isLoading || undefined}>
+        <Slot.Root onClick={handleClick} data-loading={isLoading || undefined} data-disabled={isLoading || undefined}>
             {children}
-        </Slot>
+        </Slot.Root>
     );
 });
