@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "@bprogress/next/app";
+import { Search } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CommandInput, CommandList } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import { useSearchLogic } from "@/hooks/use-search-logic";
-import { SearchResults } from "./search-results";
-import { type DebridFile } from "@/lib/types";
-import { type TraktSearchResult } from "@/lib/trakt";
+import type { TraktSearchResult } from "@/lib/trakt";
+import type { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { SearchResults } from "./search-results";
 
 interface SearchContentProps {
     defaultQuery?: string;

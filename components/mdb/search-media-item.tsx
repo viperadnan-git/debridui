@@ -1,11 +1,11 @@
 "use client";
 
+import { Film, Star, Tv } from "lucide-react";
 import { memo } from "react";
-import { Film, Tv, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { type TraktSearchResult } from "@/lib/trakt";
-import { getPosterUrl } from "@/lib/utils/media";
 import { SearchItemWrapper } from "@/components/search-item-wrapper";
+import type { TraktSearchResult } from "@/lib/trakt";
+import { cn } from "@/lib/utils";
+import { getPosterUrl } from "@/lib/utils/media";
 
 interface SearchMediaItemProps {
     result: TraktSearchResult;

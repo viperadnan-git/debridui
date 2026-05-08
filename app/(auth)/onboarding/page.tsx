@@ -1,11 +1,11 @@
 "use client";
 
-import { AddAccountForm } from "@/components/add-account-form";
+import { LogOut } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { AddAccountForm } from "@/components/add-account-form";
 import { useAuth } from "@/components/auth/auth-provider";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 export default function OnboardingPage() {

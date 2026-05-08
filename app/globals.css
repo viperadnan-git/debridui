@@ -224,16 +224,16 @@
 
 /* ScrollCarousel: Hide buttons when content is not scrollable */
 .scroll-carousel-btn {
-    display: none !important;
+    display: none;
 }
 
 [data-scrollable="true"] .scroll-carousel-btn {
-    display: flex !important;
+    display: flex;
 }
 
 @layer utilities {
     .scrollbar-none::-webkit-scrollbar {
-        display: none !important;
+        display: none;
     }
     .scrollbar-none {
         -ms-overflow-style: none;

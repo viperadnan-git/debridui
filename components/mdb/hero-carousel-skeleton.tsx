@@ -1,7 +1,7 @@
 "use client";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import { memo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const HeroCarouselSkeleton = memo(function HeroCarouselSkeleton() {
     return (
@@ -101,6 +101,7 @@ export const HeroCarouselSkeleton = memo(function HeroCarouselSkeleton() {
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
                 <div className="flex items-center gap-1.5 px-3 py-2 bg-background/60 backdrop-blur-sm rounded-full border border-border/30">
                     {Array.from({ length: 10 }, (_, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                         <div key={i} className={`h-1 rounded-full bg-foreground/20 ${i === 0 ? "w-6" : "w-1.5"}`} />
                     ))}
                 </div>

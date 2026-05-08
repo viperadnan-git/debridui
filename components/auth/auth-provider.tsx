@@ -1,18 +1,18 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, useMemo, useCallback, startTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { SplashErrorScreen } from "@/components/splash-error-screen";
+import { SplashScreen } from "@/components/splash-screen";
+import { useDebridUserInfo, useRemoveUserAccount, useUserAccounts } from "@/hooks/use-user-accounts";
+import { hydrateSettingsFromServer, useUserSettings } from "@/hooks/use-user-settings";
 import { authClient } from "@/lib/auth-client";
-import { useUserAccounts, useDebridUserInfo, useRemoveUserAccount } from "@/hooks/use-user-accounts";
-import { useUserSettings, hydrateSettingsFromServer } from "@/hooks/use-user-settings";
+import type { DebridClient } from "@/lib/clients";
+import { getClientInstance } from "@/lib/clients";
 import type { UserAccount } from "@/lib/db";
 import type { AccountType } from "@/lib/types";
-import { getClientInstance } from "@/lib/clients";
-import type { DebridClient } from "@/lib/clients";
-import { SplashScreen } from "@/components/splash-screen";
-import { SplashErrorScreen } from "@/components/splash-error-screen";
-import { useRouter, usePathname } from "next/navigation";
 import { clearAppCache } from "@/lib/utils";
-import { toast } from "sonner";
 
 interface AuthContextType {
     session: ReturnType<typeof authClient.useSession>["data"];

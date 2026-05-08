@@ -1,11 +1,11 @@
 "use client";
 
-import { type TraktMedia } from "@/lib/trakt";
+import { memo } from "react";
+import { SectionDivider } from "@/components/section-divider";
+import type { TraktMedia } from "@/lib/trakt";
+import { MediaHeader } from "./media-header";
 import { PeopleSection } from "./people-section";
 import { Sources } from "./sources";
-import { MediaHeader } from "./media-header";
-import { SectionDivider } from "@/components/section-divider";
-import { memo } from "react";
 
 interface MovieDetailsProps {
     media: TraktMedia;

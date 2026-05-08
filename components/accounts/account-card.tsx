@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import * as React from "react";
-import { ArrowRightLeft, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { ArrowRightLeft, Trash2 } from "lucide-react";
+import * as React from "react";
+import { useCallback, useState } from "react";
+import { useAuth } from "@/components/auth/auth-provider";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AccountType } from "@/lib/types";
-import { formatAccountType, cn } from "@/lib/utils";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { ServiceIcon } from "./service-icon";
-import { useAuth } from "@/components/auth/auth-provider";
-import { useRemoveUserAccount, useDebridUserInfo } from "@/hooks/use-user-accounts";
+import { useDebridUserInfo, useRemoveUserAccount } from "@/hooks/use-user-accounts";
 import type { UserAccount } from "@/lib/db";
+import type { AccountType } from "@/lib/types";
+import { cn, formatAccountType } from "@/lib/utils";
+import { ServiceIcon } from "./service-icon";
 
 interface AccountCardProps {
     account: UserAccount;

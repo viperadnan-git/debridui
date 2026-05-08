@@ -1,8 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 
 /**
  * Set password for users who don't have one (OAuth users)

@@ -1,23 +1,23 @@
-import {
-    DebridFile,
-    DebridFileStatus,
-    DebridNode,
-    DebridFileNode,
-    DebridLinkInfo,
-    DebridFileList,
-    DebridFileAddStatus,
-    OperationResult,
-    AccountType,
-    Account,
-    FullAccount,
-    DebridError,
-    DebridAuthError,
-    WebDownloadAddResult,
-    WebDownloadList,
-} from "@/lib/types";
-import BaseClient from "./base";
-import { USER_AGENT } from "../constants";
 import Fuse from "fuse.js";
+import {
+    type Account,
+    AccountType,
+    DebridAuthError,
+    DebridError,
+    type DebridFile,
+    type DebridFileAddStatus,
+    type DebridFileList,
+    type DebridFileNode,
+    type DebridFileStatus,
+    type DebridLinkInfo,
+    type DebridNode,
+    type FullAccount,
+    type OperationResult,
+    type WebDownloadAddResult,
+    type WebDownloadList,
+} from "@/lib/types";
+import { USER_AGENT } from "../constants";
+import BaseClient from "./base";
 
 // Response type definitions
 interface FileNode {
@@ -132,7 +132,7 @@ export default class AllDebridClient extends BaseClient {
         });
 
         const data = await response.json();
-        this.validateResponse(data);
+        AllDebridClient.validateResponse(data);
 
         const { user } = data.data;
         const premiumExpiry = (user.premiumUntil || 0) * 1000;
@@ -160,7 +160,7 @@ export default class AllDebridClient extends BaseClient {
         const response = await fetch(url);
         const data = await response.json();
 
-        this.validateResponse(data);
+        AllDebridClient.validateResponse(data);
 
         return {
             pin: data.data.pin,
@@ -188,7 +188,7 @@ export default class AllDebridClient extends BaseClient {
             });
 
             const data = await response.json();
-            this.validateResponse(data);
+            AllDebridClient.validateResponse(data);
 
             if (data.data.activated) {
                 return {
@@ -197,7 +197,7 @@ export default class AllDebridClient extends BaseClient {
                 };
             }
 
-            await this.delay(1000);
+            await AllDebridClient.delay(1000);
         }
 
         throw new Error("Authentication timeout: PIN was not activated within the time limit");
@@ -249,7 +249,7 @@ export default class AllDebridClient extends BaseClient {
 
     async findTorrentById(torrentId: string): Promise<DebridFile | null> {
         await this.syncTorrentStatus();
-        const torrent = this.torrentsCache.get(parseInt(torrentId));
+        const torrent = this.torrentsCache.get(parseInt(torrentId, 10));
         return torrent ? this.mapToDebridFile(torrent) : null;
     }
 
@@ -296,13 +296,13 @@ export default class AllDebridClient extends BaseClient {
             body: formData,
         });
 
-        this.removeTorrentFromCache(parseInt(torrentId));
+        this.removeTorrentFromCache(parseInt(torrentId, 10));
         return response.message;
     }
 
     async restartTorrents(torrentIds: string[]): Promise<Record<string, OperationResult>> {
         const formData = new FormData();
-        torrentIds.forEach((id) => formData.append("ids[]", id));
+        for (const id of torrentIds) formData.append("ids[]", id);
 
         const response: RetryResponse = await this.makeRequest(`/magnet/restart`, {
             method: "POST",
@@ -324,7 +324,7 @@ export default class AllDebridClient extends BaseClient {
 
     async addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
         const formData = new FormData();
-        magnetUris.forEach((magnet) => formData.append("magnets[]", magnet));
+        for (const magnet of magnetUris) formData.append("magnets[]", magnet);
 
         const response: AddTorrentResponse = await this.makeRequest(`/magnet/upload`, {
             method: "POST",
@@ -348,7 +348,7 @@ export default class AllDebridClient extends BaseClient {
 
     async uploadTorrentFiles(files: File[]): Promise<Record<string, DebridFileAddStatus>> {
         const formData = new FormData();
-        files.forEach((file) => formData.append("files[]", file));
+        for (const file of files) formData.append("files[]", file);
 
         const response: AddFileResponse = await this.makeRequest(`/magnet/upload/file`, {
             method: "POST",
@@ -457,7 +457,7 @@ export default class AllDebridClient extends BaseClient {
 
     async saveWebDownloadLinks(links: string[]): Promise<void> {
         const formData = new FormData();
-        links.forEach((link) => formData.append("links[]", link));
+        for (const link of links) formData.append("links[]", link);
 
         await this.makeRequest("/user/links/save", {
             method: "POST",

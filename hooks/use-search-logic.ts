@@ -2,11 +2,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { getFindTorrentsCacheKey } from "@/lib/utils/cache-keys";
-import { type DebridFile, AccountType } from "@/lib/types";
-import { traktClient } from "@/lib/trakt";
 import type TorBoxClient from "@/lib/clients/torbox";
 import type { TorBoxSearchResult } from "@/lib/clients/torbox";
+import { traktClient } from "@/lib/trakt";
+import { AccountType, type DebridFile } from "@/lib/types";
+import { getFindTorrentsCacheKey } from "@/lib/utils/cache-keys";
 
 interface UseSearchLogicOptions {
     query: string;

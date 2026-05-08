@@ -1,25 +1,25 @@
+import type { WebDownloadAddResult } from "@/lib/types";
 import {
-    DebridFile,
-    DebridFileStatus,
-    DebridNode,
-    DebridFileNode,
-    DebridLinkInfo,
-    DebridFileList,
-    DebridFileAddStatus,
-    OperationResult,
+    type Account,
     AccountType,
-    Account,
-    FullAccount,
     DebridAuthError,
     DebridError,
+    type DebridFile,
+    type DebridFileAddStatus,
+    type DebridFileList,
+    type DebridFileNode,
+    type DebridFileStatus,
+    type DebridLinkInfo,
+    type DebridNode,
     DebridRateLimitError,
-    WebDownloadList,
-    WebDownloadStatus,
+    type FullAccount,
+    type OperationResult,
+    type WebDownloadList,
+    type WebDownloadStatus,
 } from "@/lib/types";
-import BaseClient from "./base";
-import { USER_AGENT } from "../constants";
 import { getProxyUrl } from "@/lib/utils";
-import type { WebDownloadAddResult } from "@/lib/types";
+import { USER_AGENT } from "../constants";
+import BaseClient from "./base";
 
 // Premiumize API Response types
 interface PremiumizeApiResponse {
@@ -171,7 +171,7 @@ export default class PremiumizeClient extends BaseClient {
                 throw new DebridRateLimitError(
                     "Rate limit exceeded",
                     AccountType.PREMIUMIZE,
-                    retryAfter ? parseInt(retryAfter) : undefined
+                    retryAfter ? parseInt(retryAfter, 10) : undefined
                 );
             }
             throw new DebridError(`API request failed: ${response.statusText}`, AccountType.PREMIUMIZE);
@@ -242,7 +242,7 @@ export default class PremiumizeClient extends BaseClient {
     static async validateAuthPin(pin: string, check: string): Promise<{ success: boolean; apiKey?: string }> {
         if (check === "direct_api_key") {
             try {
-                await this.getUser(pin);
+                await PremiumizeClient.getUser(pin);
                 return { success: true, apiKey: pin };
             } catch {
                 return { success: false };
@@ -598,7 +598,7 @@ export default class PremiumizeClient extends BaseClient {
      */
     async checkCache(items: string[]): Promise<{ cached: boolean; filename: string; filesize: string }[]> {
         const params = new URLSearchParams();
-        items.forEach((item) => params.append("items[]", item));
+        for (const item of items) params.append("items[]", item);
 
         const response = await this.makeRequest<PremiumizeCacheCheckResponse>(`/cache/check?${params.toString()}`);
 
@@ -776,7 +776,7 @@ export default class PremiumizeClient extends BaseClient {
 
         // Filter transfers that are HTTP downloads (not magnets)
         const httpTransfers = (response.transfers || []).filter(
-            (t) => t.src && t.src.startsWith("http") && !t.src.startsWith("magnet:")
+            (t) => t.src?.startsWith("http") && !t.src.startsWith("magnet:")
         );
 
         const total = httpTransfers.length;

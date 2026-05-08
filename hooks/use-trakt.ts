@@ -1,4 +1,4 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { traktClient } from "@/lib/trakt";
 
 // Cache duration constants
@@ -9,7 +9,7 @@ const CACHE_DURATION = {
 } as const;
 
 // Generic Trakt query hook factory
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: rest tuple type erases call-site inference; replace when a typed alternative emerges
 function createTraktHook<T extends any[], R>(
     keyParts: string[],
     fn: (...args: T) => Promise<R>,

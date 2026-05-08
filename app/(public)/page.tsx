@@ -1,9 +1,9 @@
+import { ArrowRightIcon, ArrowUpRightIcon, ChevronDownIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, ChevronDownIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Gallery } from "@/components/gallery";
-import { DISCORD_URL, ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS, EXTENSION_TO_FILE_TYPE } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import { ACCOUNT_TYPE_ICONS, ACCOUNT_TYPE_LABELS, DISCORD_URL, EXTENSION_TO_FILE_TYPE } from "@/lib/constants";
 import { AccountType, MediaPlayer } from "@/lib/types";
 
 const screenshots = [

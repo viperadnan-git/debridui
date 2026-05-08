@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { useWebDownloads } from "./web-downloads-provider";
+import { Link2Off } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
+import { ListPagination } from "@/components/common/pagination";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DownloadItem, DownloadItemSkeleton } from "./download-item";
 import { DownloadsBulkActions } from "./downloads-bulk-actions";
-import { ListPagination } from "@/components/common/pagination";
-import { Link2Off } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useWebDownloads } from "./web-downloads-provider";
 
 export function DownloadList() {
     const { currentAccount } = useAuthGuaranteed();
@@ -60,9 +60,9 @@ export function DownloadList() {
             setSelection((prev) => {
                 const next = new Set(prev.ids);
                 if (checked) {
-                    pageIds.forEach((id) => next.add(id));
+                    for (const id of pageIds) next.add(id);
                 } else {
-                    pageIds.forEach((id) => next.delete(id));
+                    for (const id of pageIds) next.delete(id);
                 }
                 return { ...prev, ids: next };
             });

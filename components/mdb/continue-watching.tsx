@@ -1,24 +1,23 @@
 "use client";
 
-import { memo, useMemo, useCallback } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { Play, SkipForward, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { memo, useCallback, useMemo } from "react";
+import { ScrollCarousel } from "@/components/common/scroll-carousel";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ScrollCarousel } from "@/components/common/scroll-carousel";
-import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
 import { useUserAddons } from "@/hooks/use-addons";
 import {
+    useClearPlaybackHistory,
     usePlaybackHistory,
     useRemoveFromPlaybackHistory,
-    useClearPlaybackHistory,
 } from "@/hooks/use-playback-history";
-import { traktClient } from "@/lib/trakt";
+import type { Addon, TvSearchParams } from "@/lib/addons/types";
 import type { PlaybackHistory } from "@/lib/db/schema";
-import type { Addon } from "@/lib/addons/types";
-import type { TvSearchParams } from "@/lib/addons/types";
+import { type StreamingRequest, useStreamingStore } from "@/lib/stores/streaming";
+import { traktClient } from "@/lib/trakt";
 
 function formatEpisodeLabel(season: number, episode: number): string {
     return `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")}`;

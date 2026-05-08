@@ -1,13 +1,10 @@
 "use client";
 
-import * as React from "react";
-import useEmblaCarousel, {
-    type UseEmblaCarouselType,
-} from "embla-carousel-react";
+import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-
-import { cn } from "@/lib/utils/index";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/index";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -110,14 +107,13 @@ function Carousel({
                 carouselRef,
                 api: api,
                 opts,
-                orientation:
-                    orientation ||
-                    (opts?.axis === "y" ? "vertical" : "horizontal"),
+                orientation: orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
                 scrollPrev,
                 scrollNext,
                 canScrollPrev,
                 canScrollNext,
             }}>
+            {/* biome-ignore lint/a11y/useSemanticElements: shadcn primitive — role="region" with custom roledescription is the carousel-pattern shape */}
             <div
                 onKeyDownCapture={handleKeyDown}
                 className={cn("relative", className)}
@@ -135,16 +131,9 @@ function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
     const { carouselRef, orientation } = useCarousel();
 
     return (
-        <div
-            ref={carouselRef}
-            className="overflow-hidden"
-            data-slot="carousel-content">
+        <div ref={carouselRef} className="overflow-hidden" data-slot="carousel-content">
             <div
-                className={cn(
-                    "flex",
-                    orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
-                    className
-                )}
+                className={cn("flex", orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col", className)}
                 {...props}
             />
         </div>
@@ -155,6 +144,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
     const { orientation } = useCarousel();
 
     return (
+        // biome-ignore lint/a11y/useSemanticElements: shadcn primitive — role="group" with custom roledescription is the carousel-slide shape
         <div
             role="group"
             aria-roledescription="slide"
@@ -227,11 +217,4 @@ function CarouselNext({
     );
 }
 
-export {
-    type CarouselApi,
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselPrevious,
-    CarouselNext,
-};
+export { Carousel, type CarouselApi, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious };

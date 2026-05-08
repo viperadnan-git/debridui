@@ -1,6 +1,6 @@
-import * as React from "react";
-import { Slot as SlotPrimitive } from "radix-ui";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
+import { Slot as SlotPrimitive } from "radix-ui";
+import type * as React from "react";
 
 import { cn } from "@/lib/utils/index";
 
@@ -45,6 +45,8 @@ function BreadcrumbLink({
 
 function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
     return (
+        // biome-ignore lint/a11y/useFocusableInteractive: shadcn primitive — span is announced as a non-focusable disabled link
+        // biome-ignore lint/a11y/useSemanticElements: shadcn primitive shape; switching to <a> changes the rendered element contract
         <span
             data-slot="breadcrumb-page"
             role="link"
@@ -85,10 +87,10 @@ function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<"span"
 
 export {
     Breadcrumb,
-    BreadcrumbList,
+    BreadcrumbEllipsis,
     BreadcrumbItem,
     BreadcrumbLink,
+    BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-    BreadcrumbEllipsis,
 };

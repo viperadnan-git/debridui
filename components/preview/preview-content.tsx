@@ -1,9 +1,9 @@
 "use client";
 
-import { DebridFileNode, FileType } from "@/lib/types";
-import { getFileType } from "@/lib/utils";
-import { getPreviewRenderer } from "@/lib/preview/registry";
 import { AlertCircle } from "lucide-react";
+import { getPreviewRenderer } from "@/lib/preview/registry";
+import type { DebridFileNode, FileType } from "@/lib/types";
+import { getFileType } from "@/lib/utils";
 
 interface PreviewContentProps {
     file: DebridFileNode;

@@ -1,14 +1,14 @@
 "use client";
 
-import { DebridFile, DebridNode } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useEffect } from "react";
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { processFileNodes, collectNodeIds } from "@/lib/utils/file";
-import { useSettingsStore } from "@/lib/stores/settings";
+import { useEffect, useMemo } from "react";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useSelectionStore } from "@/lib/stores/selection";
+import { useSettingsStore } from "@/lib/stores/settings";
+import type { DebridFile, DebridNode } from "@/lib/types";
+import { collectNodeIds, processFileNodes } from "@/lib/utils/file";
 
 // Dynamic import for FileTree to reduce initial bundle size (~403 lines)
 const FileTree = dynamic(() => import("./file-tree").then((m) => ({ default: m.FileTree })), {

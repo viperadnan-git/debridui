@@ -377,7 +377,7 @@ export class TraktClient {
             if (!this.accessToken) {
                 throw new TraktError("Access token is required for this operation");
             }
-            headers["Authorization"] = `Bearer ${this.accessToken}`;
+            headers.Authorization = `Bearer ${this.accessToken}`;
         }
 
         return headers;
@@ -431,39 +431,6 @@ export class TraktClient {
                 endpoint
             );
         }
-    }
-
-    /**
-     * Make paginated requests to fetch all items
-     */
-    private async makePaginatedRequest<T>(
-        endpoint: string,
-        params: Record<string, string | number> = {},
-        requiresAuth = false,
-        limit = 100
-    ): Promise<T[]> {
-        let page = 1;
-        let allItems: T[] = [];
-
-        while (true) {
-            const searchParams = new URLSearchParams({
-                ...Object.fromEntries(Object.entries(params).map(([key, value]) => [key, String(value)])),
-                page: String(page),
-                limit: String(limit),
-            });
-
-            const paginatedEndpoint = `${endpoint}?${searchParams}`;
-            const items = await this.makeRequest<T[]>(paginatedEndpoint, {}, requiresAuth);
-
-            if (items.length === 0) break;
-
-            allItems = [...allItems, ...items];
-            if (items.length < limit) break;
-
-            page++;
-        }
-
-        return allItems;
     }
 
     // Search Methods

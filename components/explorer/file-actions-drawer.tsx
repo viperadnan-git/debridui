@@ -1,14 +1,14 @@
 "use client";
 
+import { Copy, Download, ListMusic, Loader2, type LucideIcon, RotateCcw, Trash2, X } from "lucide-react";
 import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Trash2, RotateCcw, X, Copy, Download, ListMusic, Loader2, type LucideIcon } from "lucide-react";
-import { DebridFile } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { useShallow } from "zustand/react/shallow";
+import { useFileLinkActions, useFileMutationActions } from "@/hooks/use-file-actions";
 import { useSelectionStore } from "@/lib/stores/selection";
-import { useFileMutationActions, useFileLinkActions } from "@/hooks/use-file-actions";
+import type { DebridFile } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface FileActionsDrawerProps {
     files: DebridFile[];
@@ -65,8 +65,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
     const summaryParts: { count: number; unit: string }[] = [];
     if (hasNodes) summaryParts.push({ count: selectedNodeIds.size, unit: "link" });
     if (fullySelectedFiles.length > 0) summaryParts.push({ count: fullySelectedFiles.length, unit: "file" });
-    const summaryAria =
-        summaryParts.map((p) => `${p.count} ${p.unit}${p.count === 1 ? "" : "s"}`).join(" and ") + " selected";
+    const summaryAria = `${summaryParts.map((p) => `${p.count} ${p.unit}${p.count === 1 ? "" : "s"}`).join(" and ")} selected`;
 
     return (
         <>
@@ -77,6 +76,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
             />
 
             <TooltipProvider delayDuration={250}>
+                {/* biome-ignore lint/a11y/useSemanticElements: needs to remain a div for transform/positioning composition */}
                 <div
                     role="region"
                     aria-label="Selection actions"
@@ -101,6 +101,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                             "supports-[backdrop-filter]:bg-background/80"
                         )}>
                         {/* Selection summary — single source of truth for counts */}
+                        {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-label is intentional to announce the count region to screen readers */}
                         <div
                             aria-label={summaryAria}
                             title={summaryAria}

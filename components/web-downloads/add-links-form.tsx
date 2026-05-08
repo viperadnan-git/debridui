@@ -1,13 +1,13 @@
 "use client";
 
+import { ClipboardPaste, Link2, Loader2, Save, X } from "lucide-react";
 import { useState } from "react";
-import { useWebDownloads } from "./web-downloads-provider";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Link2, Save, ClipboardPaste, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { getTextFromClipboard } from "@/lib/utils";
+import { useWebDownloads } from "./web-downloads-provider";
 
 function parseLinks(text: string): string[] {
     return text
@@ -74,7 +74,7 @@ export function AddLinksForm() {
     const handlePaste = async () => {
         const text = await getTextFromClipboard();
         if (!text) return;
-        setLinksText((prev) => (prev ? prev.trimEnd() + "\n" + text : text));
+        setLinksText((prev) => (prev ? `${prev.trimEnd()}\n${text}` : text));
     };
 
     const isBusy = isAdding || isSaving;

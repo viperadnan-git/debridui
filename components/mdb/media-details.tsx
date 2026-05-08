@@ -1,10 +1,10 @@
 "use client";
 
-import { type TraktMedia } from "@/lib/trakt";
+import { memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { TraktMedia } from "@/lib/trakt";
 import { MovieDetails } from "./movie-details";
 import { ShowDetails } from "./show-details";
-import { memo } from "react";
 
 interface MediaDetailsProps {
     media?: TraktMedia;

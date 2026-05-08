@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { useUserAddons, useAddAddon, useRemoveAddon, useToggleAddon, useUpdateAddonOrders } from "@/hooks/use-addons";
-import { AddonClient } from "@/lib/addons/client";
-import { type Addon } from "@/lib/addons/types";
-import { type CreateAddon } from "@/lib/types";
+import { ClipboardPaste, Info, Loader2, Plus, Puzzle, RefreshCw, X } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { AddonCard, AddonCardSkeleton } from "@/components/addon-card";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { CachedBadge } from "@/components/display";
+import { PageHeader } from "@/components/page-header";
+import { SectionDivider } from "@/components/section-divider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { Plus, Loader2, Puzzle, Info, RefreshCw, ClipboardPaste, X } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
-import { AddonCard, AddonCardSkeleton } from "@/components/addon-card";
-import { CachedBadge } from "@/components/display";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { SectionDivider } from "@/components/section-divider";
+import { useAddAddon, useRemoveAddon, useToggleAddon, useUpdateAddonOrders, useUserAddons } from "@/hooks/use-addons";
+import { AddonClient } from "@/lib/addons/client";
+import type { Addon } from "@/lib/addons/types";
+import type { CreateAddon } from "@/lib/types";
 
 const ADDON_PRESETS = [
     {

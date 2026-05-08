@@ -1,7 +1,7 @@
 "use client";
 
-import { memo } from "react";
 import { Info, X } from "lucide-react";
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { MediaPlayer } from "@/lib/types";
 

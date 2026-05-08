@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { Dialog as SheetPrimitive } from "radix-ui";
 import { XIcon } from "lucide-react";
+import { Dialog as SheetPrimitive } from "radix-ui";
+import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -99,4 +99,4 @@ function SheetDescription({ className, ...props }: React.ComponentProps<typeof S
     );
 }
 
-export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription };
+export { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger };

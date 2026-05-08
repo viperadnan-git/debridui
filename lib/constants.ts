@@ -1,4 +1,4 @@
-import { FileType, AccountType } from "./types";
+import { AccountType, FileType } from "./types";
 
 export const ACCOUNT_TYPE_LABELS = {
     [AccountType.REALDEBRID]: "Real-Debrid",

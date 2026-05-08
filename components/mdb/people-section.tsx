@@ -1,11 +1,11 @@
 "use client";
 
-import { type TraktCastMember, type TraktCrewMember } from "@/lib/trakt";
-import { Skeleton } from "@/components/ui/skeleton";
 import { User } from "lucide-react";
-import { useTraktPeople } from "@/hooks/use-trakt";
-import { memo } from "react";
 import Link from "next/link";
+import { memo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTraktPeople } from "@/hooks/use-trakt";
+import type { TraktCastMember, TraktCrewMember } from "@/lib/trakt";
 
 interface PeopleSectionProps {
     mediaId: string;
@@ -25,6 +25,7 @@ export const PeopleSection = memo(function PeopleSection({ mediaId, type }: Peop
                 <h2 className="text-xs tracking-widest uppercase text-muted-foreground">Cast</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
                     {Array.from({ length: 6 }).map((_, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                         <div key={i} className="text-center space-y-3">
                             <Skeleton className="size-28 xl:size-32 rounded-full mx-auto" />
                             <div className="space-y-1">
@@ -48,8 +49,8 @@ export const PeopleSection = memo(function PeopleSection({ mediaId, type }: Peop
                 <div className="space-y-4">
                     <h3 className="text-xs tracking-widest uppercase text-muted-foreground">Cast</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-                        {people.cast.slice(0, 18).map((member, index) => (
-                            <PersonCard key={index} person={member} type="cast" />
+                        {people.cast.slice(0, 18).map((member) => (
+                            <PersonCard key={member.person.ids.trakt} person={member} type="cast" />
                         ))}
                     </div>
                 </div>

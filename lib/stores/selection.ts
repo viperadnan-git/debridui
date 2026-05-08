@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { DebridNode } from "../types";
+import type { DebridNode } from "../types";
 
 export interface NodeMetadata {
     id: string;

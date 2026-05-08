@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Download, RotateCw, Trash2, List, Loader2 } from "lucide-react";
+import { Copy, Download, List, Loader2, RotateCw, Trash2 } from "lucide-react";
 import {
     ContextMenu,
     ContextMenuContent,
@@ -8,8 +8,8 @@ import {
     ContextMenuSeparator,
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { DebridFile } from "@/lib/types";
 import { useFileLinkActions, useFileMutationActions } from "@/hooks/use-file-actions";
+import type { DebridFile } from "@/lib/types";
 
 interface FileItemContextMenuProps {
     file: DebridFile;

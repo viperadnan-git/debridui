@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { Check, ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
-import { Check, Plus, ChevronRight } from "lucide-react";
-
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
 import { ServiceIcon } from "@/components/accounts/service-icon";
 import { useAuth } from "@/components/auth/auth-provider";
-import { formatAccountType } from "@/lib/utils";
-import { AccountType } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import type { AccountType } from "@/lib/types";
+import { cn, formatAccountType } from "@/lib/utils";
 
 export function AccountQuickSwitch() {
     const { session, userAccounts, currentAccount, switchAccount } = useAuth();

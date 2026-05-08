@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useMemo, memo } from "react";
-import { type AddonSource } from "@/lib/addons/types";
-import { useAddonSources } from "@/hooks/use-addons";
-import { Button } from "@/components/ui/button";
-import { Plus, Loader2, HardDriveDownloadIcon, Trash2Icon, DownloadIcon, AlertTriangle, PlayIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { AlertTriangle, DownloadIcon, HardDriveDownloadIcon, Loader2, PlayIcon, Plus, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { memo, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { CachedBadge } from "@/components/display";
-import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
+import { Button } from "@/components/ui/button";
+import { useAddonSources } from "@/hooks/use-addons";
+import type { AddonSource } from "@/lib/addons/types";
+import { type StreamingRequest, useStreamingStore } from "@/lib/stores/streaming";
+import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 interface SourcesProps {
     request: StreamingRequest;

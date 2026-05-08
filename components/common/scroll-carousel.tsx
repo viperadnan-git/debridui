@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils/index";
+import { useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils/index";
 
 const SCROLL_AMOUNT = 300;
 

@@ -1,6 +1,6 @@
-import { type AddonSource } from "@/lib/addons/types";
 import { getResolutionIndex, getSourceQualityIndex } from "@/lib/addons/parser";
-import { type QualityRange, type StreamingSettings, getActiveRange } from "@/lib/stores/settings";
+import type { AddonSource } from "@/lib/addons/types";
+import { getActiveRange, type QualityRange, type StreamingSettings } from "@/lib/stores/settings";
 
 function matchesResolutionRange(source: AddonSource, range: QualityRange): boolean {
     if (!source.resolution) return true; // Unknown resolution passes

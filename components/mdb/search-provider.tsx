@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { SearchDialog } from "./search-dialog";
 
 interface SearchContextType {
@@ -26,7 +26,7 @@ interface SearchProviderProps {
 export function SearchProvider({ children }: SearchProviderProps) {
     const [open, setOpen] = useState(false);
 
-    const toggle = () => setOpen((prev) => !prev);
+    const toggle = useCallback(() => setOpen((prev) => !prev), []);
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -38,7 +38,7 @@ export function SearchProvider({ children }: SearchProviderProps) {
 
         document.addEventListener("keydown", down);
         return () => document.removeEventListener("keydown", down);
-    }, []);
+    }, [toggle]);
 
     return (
         <SearchContext.Provider value={{ open, setOpen, toggle }}>

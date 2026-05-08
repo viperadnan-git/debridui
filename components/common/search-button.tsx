@@ -1,9 +1,9 @@
 "use client";
 
-import { memo } from "react";
 import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { memo } from "react";
 import { useSearch } from "@/components/mdb/search-provider";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface SearchButtonProps {

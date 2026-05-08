@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { memo, useEffect, useState } from "react";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
+import type { DebridFile } from "@/lib/types";
 import { SearchBar } from "./search-bar";
-import { useSearchParams, useRouter } from "next/navigation";
-import { DebridFile } from "@/lib/types";
 
 interface SearchSectionProps {
     onSearchResults: (results: DebridFile[] | null, isSearching: boolean) => void;

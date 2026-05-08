@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { DebridFileNode, FileType } from "../types";
 import { filterPreviewableFiles } from "../preview/registry";
+import type { DebridFileNode, FileType } from "../types";
 
 type PreviewMode = "gallery" | "single";
 

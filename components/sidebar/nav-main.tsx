@@ -1,11 +1,10 @@
 "use client";
 
-import { type LucideIcon } from "lucide-react";
-
-import { SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { useSidebar } from "../ui/sidebar";
 import { usePathname } from "next/navigation";
+import { SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { useSidebar } from "../ui/sidebar";
 
 export function NavMain({
     items,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, memo, ReactNode } from "react";
+import { memo, type ReactNode, useCallback } from "react";
 import { CommandItem } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +46,7 @@ function SearchItemWrapperComponent<T>({
     }
 
     return (
+        // biome-ignore lint/a11y/noStaticElementInteractions: search row activates on click; keyboard navigation handled by Command parent
         <div
             onClick={onSelect ? handleSelect : undefined}
             className={cn(

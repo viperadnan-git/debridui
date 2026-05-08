@@ -1,12 +1,12 @@
 "use client";
 
-import { type Media } from "@/lib/trakt";
-import Link from "next/link";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { memo, useState } from "react";
-import { getPosterUrl } from "@/lib/utils/media";
 import { Star } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { memo, useState } from "react";
+import type { Media } from "@/lib/trakt";
+import { cn } from "@/lib/utils";
+import { getPosterUrl } from "@/lib/utils/media";
 
 interface MediaCardProps {
     media: Media;

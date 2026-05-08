@@ -1,4 +1,6 @@
 import { Settings } from "lucide-react";
+import { useSettingsStore } from "@/lib/stores/settings";
+import { Button } from "../ui/button";
 import {
     Dialog,
     DialogClose,
@@ -9,10 +11,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "../ui/dialog";
-import { useSettingsStore } from "@/lib/stores/settings";
-import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
-import { Button } from "../ui/button";
+import { Switch } from "../ui/switch";
 
 export function QuickSettings() {
     const { get, set, resetKey } = useSettingsStore();

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { DebridFileNode, MediaPlayer } from "@/lib/types";
 import { AlertCircle } from "lucide-react";
+import { useState } from "react";
 import { useSettingsStore } from "@/lib/stores/settings";
+import type { DebridFileNode, MediaPlayer } from "@/lib/types";
 import { isNonMP4Video } from "@/lib/utils";
 import { VideoCodecWarning } from "../video-codec-warning";
 
@@ -47,6 +47,7 @@ export function VideoPreview({ file, downloadUrl, onLoad, onError }: VideoPrevie
                 </div>
             ) : (
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
+                    {/* biome-ignore lint/a11y/useMediaCaption: user-provided debrid media; captions are not available */}
                     <video
                         src={downloadUrl}
                         controls

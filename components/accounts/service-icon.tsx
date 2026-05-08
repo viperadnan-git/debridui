@@ -1,7 +1,7 @@
-import { AccountType } from "@/lib/types";
-import { ACCOUNT_TYPE_ICONS } from "@/lib/constants";
 import { User } from "lucide-react";
 import Image from "next/image";
+import { ACCOUNT_TYPE_ICONS } from "@/lib/constants";
+import type { AccountType } from "@/lib/types";
 
 interface ServiceIconProps {
     type: AccountType;

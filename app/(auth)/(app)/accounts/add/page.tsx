@@ -1,8 +1,8 @@
 "use client";
 
+import { UserPlus } from "lucide-react";
 import { AddAccountForm } from "@/components/add-account-form";
 import { PageHeader } from "@/components/page-header";
-import { UserPlus } from "lucide-react";
 
 export default function AddAccountPage() {
     return (

@@ -1,26 +1,26 @@
 import {
-    DebridFile,
-    DebridFileStatus,
-    DebridNode,
-    DebridFileNode,
-    DebridLinkInfo,
-    DebridFileList,
-    DebridFileAddStatus,
-    OperationResult,
+    type Account,
     AccountType,
-    Account,
-    FullAccount,
     DebridAuthError,
     DebridError,
+    type DebridFile,
+    type DebridFileAddStatus,
+    type DebridFileList,
+    type DebridFileNode,
+    type DebridFileStatus,
+    type DebridLinkInfo,
+    type DebridNode,
     DebridRateLimitError,
-    WebDownload,
-    WebDownloadAddResult,
-    WebDownloadStatus,
-    WebDownloadList,
+    type FullAccount,
+    type OperationResult,
+    type WebDownload,
+    type WebDownloadAddResult,
+    type WebDownloadList,
+    type WebDownloadStatus,
 } from "@/lib/types";
-import BaseClient from "./base";
-import { USER_AGENT } from "../constants";
 import { getProxyUrl } from "@/lib/utils";
+import { USER_AGENT } from "../constants";
+import BaseClient from "./base";
 
 // TorBox Search API types
 export interface TorBoxSearchResult {
@@ -221,7 +221,7 @@ export default class TorBoxClient extends BaseClient {
         // Since TorBox uses direct API key authentication, we treat the "pin" as the API key
         if (check === "direct_api_key") {
             try {
-                await this.getUser(pin);
+                await TorBoxClient.getUser(pin);
                 return {
                     success: true,
                     apiKey: pin,
@@ -254,7 +254,7 @@ export default class TorBoxClient extends BaseClient {
             files,
             offset,
             limit,
-            hasMore: limit == paginatedTorrents.length,
+            hasMore: limit === paginatedTorrents.length,
         };
     }
 
@@ -584,7 +584,7 @@ export default class TorBoxClient extends BaseClient {
     async deleteWebDownload(id: string): Promise<void> {
         await this.makeRequest("/webdl/controlwebdownload", {
             method: "POST",
-            body: JSON.stringify({ operation: "delete", webdl_id: parseInt(id) }),
+            body: JSON.stringify({ operation: "delete", webdl_id: parseInt(id, 10) }),
             headers: {
                 "Content-Type": "application/json",
             },
@@ -700,7 +700,7 @@ export default class TorBoxClient extends BaseClient {
                     throw new DebridRateLimitError(
                         "Rate limit exceeded",
                         AccountType.TORBOX,
-                        retryAfter ? parseInt(retryAfter) : undefined
+                        retryAfter ? parseInt(retryAfter, 10) : undefined
                     );
                 }
                 throw new DebridError(`API request failed: ${response.statusText}`, AccountType.TORBOX);
@@ -726,7 +726,7 @@ export default class TorBoxClient extends BaseClient {
                 throw new DebridRateLimitError(
                     errorMessage,
                     AccountType.TORBOX,
-                    retryAfter ? parseInt(retryAfter) : undefined
+                    retryAfter ? parseInt(retryAfter, 10) : undefined
                 );
             }
 

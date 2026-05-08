@@ -1,15 +1,15 @@
 "use client";
 
+import { Loader2, Search } from "lucide-react";
+import { SectionDivider } from "@/components/section-divider";
 import { CommandGroup } from "@/components/ui/command";
-import { Search, Loader2 } from "lucide-react";
-import { type DebridFile } from "@/lib/types";
-import { type TorBoxSearchResult } from "@/lib/clients/torbox";
-import { type TraktSearchResult } from "@/lib/trakt";
+import type { TorBoxSearchResult } from "@/lib/clients/torbox";
+import type { TraktSearchResult } from "@/lib/trakt";
+import type { DebridFile } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { SearchFileItem } from "./search-file-item";
 import { SearchMediaItem } from "./search-media-item";
 import { SearchSourceItem } from "./search-source-item";
-import { SectionDivider } from "@/components/section-divider";
-import { cn } from "@/lib/utils";
 
 interface SearchResultsProps {
     query: string;

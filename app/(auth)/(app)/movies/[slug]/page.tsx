@@ -1,10 +1,10 @@
 "use client";
 
-import { useTraktMedia } from "@/hooks/use-trakt";
 import { useParams } from "next/navigation";
 import { memo } from "react";
 import { MdbFooter } from "@/components/mdb/mdb-footer";
 import { MediaDetails } from "@/components/mdb/media-details";
+import { useTraktMedia } from "@/hooks/use-trakt";
 
 const MoviePage = memo(function MoviePage() {
     const params = useParams();

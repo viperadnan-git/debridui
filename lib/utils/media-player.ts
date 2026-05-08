@@ -8,8 +8,9 @@ declare global {
         userAgentData?: NavigatorUAData;
     }
 }
-import { useSettingsStore } from "../stores/settings";
+
 import { toast } from "sonner";
+import { useSettingsStore } from "../stores/settings";
 
 export interface ParsedUserAgent {
     browser: string;

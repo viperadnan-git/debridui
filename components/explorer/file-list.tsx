@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import { cn } from "@/lib/utils";
+import type React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface FileListProps {
     children: React.ReactNode;
@@ -68,6 +68,7 @@ export function FileListLoading() {
     return (
         <>
             {Array.from({ length: 8 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                 <FileRowSkeleton key={i} />
             ))}
         </>

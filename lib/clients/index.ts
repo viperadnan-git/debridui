@@ -1,14 +1,14 @@
 import { AccountType } from "../schemas";
-import { Account } from "../types";
-import RealDebridClient from "./realdebrid";
-import TorBoxClient from "./torbox";
+import type { Account } from "../types";
 import AllDebridClient from "./alldebrid";
 import PremiumizeClient from "./premiumize";
+import RealDebridClient from "./realdebrid";
+import TorBoxClient from "./torbox";
 
-export { default as RealDebridClient } from "./realdebrid";
-export { default as TorBoxClient } from "./torbox";
 export { default as AllDebridClient } from "./alldebrid";
 export { default as PremiumizeClient } from "./premiumize";
+export { default as RealDebridClient } from "./realdebrid";
+export { default as TorBoxClient } from "./torbox";
 export type DebridClient =
     | InstanceType<typeof RealDebridClient>
     | InstanceType<typeof TorBoxClient>

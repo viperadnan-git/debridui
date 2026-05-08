@@ -1,11 +1,11 @@
 "use client";
 
-import { WatchButton } from "@/components/common/watch-button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { type TraktEpisode, type TraktMedia } from "@/lib/trakt";
-import { cn, formatLocalizedDate } from "@/lib/utils";
 import { ChevronDown, Play, Star } from "lucide-react";
 import { memo, useState } from "react";
+import { WatchButton } from "@/components/common/watch-button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import type { TraktEpisode, TraktMedia } from "@/lib/trakt";
+import { cn, formatLocalizedDate } from "@/lib/utils";
 import { Sources } from "./sources";
 
 interface ThumbnailContentProps {
@@ -86,7 +86,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
                     {/* Episode thumbnail - clickable to watch */}
                     {imdbId && showMedia ? (
                         <WatchButton request={{ imdbId, type: "show", media: showMedia, tvParams }}>
-                            <button className={cn(thumbnailClass, "cursor-pointer group/thumb")}>
+                            <button type="button" className={cn(thumbnailClass, "cursor-pointer group/thumb")}>
                                 <ThumbnailContent
                                     screenshotUrl={screenshotUrl}
                                     title={episode.title}
@@ -109,7 +109,9 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
 
                     {/* Episode details - clickable to toggle sources */}
                     <CollapsibleTrigger asChild>
-                        <button className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 text-left cursor-pointer min-w-0">
+                        <button
+                            type="button"
+                            className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 text-left cursor-pointer min-w-0">
                             <div className="flex items-start justify-between gap-2">
                                 <div className="space-y-0.5 sm:space-y-1 min-w-0">
                                     <h4 className="text-sm sm:text-base font-light line-clamp-1 group-hover:text-foreground/80 transition-colors">

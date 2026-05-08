@@ -1,15 +1,15 @@
 "use client";
 
+import { ClipboardPaste, FileUp, Link as LinkIcon, Loader2, Paperclip, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { useDropzone, type FileRejection } from "react-dropzone";
+import { type FileRejection, useDropzone } from "react-dropzone";
+import { toast } from "sonner";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { queryClient } from "@/lib/query-client";
-import { toast } from "sonner";
-import { Link as LinkIcon, FileUp, Loader2, ClipboardPaste, X, Paperclip, Plus } from "lucide-react";
+import type { OperationResult } from "@/lib/types";
 import { cn, getTextFromClipboard } from "@/lib/utils";
-import { OperationResult } from "@/lib/types";
 
 type AddResult = Record<string, OperationResult>;
 
@@ -98,7 +98,7 @@ export function AddContent() {
     const handlePaste = async () => {
         const text = await getTextFromClipboard();
         if (!text) return;
-        setLinks((prev) => (prev ? prev.trimEnd() + "\n" + text : text));
+        setLinks((prev) => (prev ? `${prev.trimEnd()}\n${text}` : text));
     };
 
     const onDrop = (accepted: File[], rejections: FileRejection[]) => {

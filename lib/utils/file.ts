@@ -1,11 +1,11 @@
-import { DebridNode, DebridFileNode, DebridLinkInfo, DebridFile, FileType } from "@/lib/types";
-import { getFileType, chunkedPromise } from ".";
-import { TRASH_SIZE_THRESHOLD } from "../constants";
 import { format } from "date-fns";
+import { type DebridFile, type DebridFileNode, type DebridLinkInfo, type DebridNode, FileType } from "@/lib/types";
+import type { DebridClient } from "../clients";
+import { TRASH_SIZE_THRESHOLD } from "../constants";
 import { queryClient } from "../query-client";
-import { DebridClient } from "../clients";
 import { useSettingsStore } from "../stores/settings";
-import { getTorrentFilesCacheKey, getDownloadLinkCacheKey } from "./cache-keys";
+import { chunkedPromise, getFileType } from ".";
+import { getDownloadLinkCacheKey, getTorrentFilesCacheKey } from "./cache-keys";
 
 export type SortOption = {
     value: string;

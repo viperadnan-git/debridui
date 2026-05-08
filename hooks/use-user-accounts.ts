@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { UserAccount } from "@/lib/db";
+import { addUserAccount, getUserAccounts, removeUserAccount } from "@/lib/actions/user-accounts";
 import { getClient } from "@/lib/clients";
-import { getUserAccounts, addUserAccount, removeUserAccount } from "@/lib/actions/user-accounts";
-import { AccountType } from "@/lib/schemas";
+import type { UserAccount } from "@/lib/db";
+import type { AccountType } from "@/lib/schemas";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 const USER_ACCOUNTS_KEY = ["user-accounts"];

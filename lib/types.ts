@@ -1,11 +1,11 @@
-import { z } from "zod";
+import type { z } from "zod";
 import {
     AccountType,
-    accountSchema,
-    createAccountSchema,
-    fullAccountSchema,
-    addonSchema,
-    serverSettingsSchema,
+    type accountSchema,
+    type addonSchema,
+    type createAccountSchema,
+    type fullAccountSchema,
+    type serverSettingsSchema,
 } from "./schemas";
 
 export { AccountType };

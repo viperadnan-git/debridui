@@ -1,14 +1,14 @@
 "use client";
 
-import { type Addon } from "@/lib/addons/types";
-import { useAddon } from "@/hooks/use-addons";
+import { ArrowDown, ArrowUp, Puzzle, Share2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Puzzle, Trash2, Share2, ArrowUp, ArrowDown } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useAddon } from "@/hooks/use-addons";
+import type { Addon } from "@/lib/addons/types";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 interface AddonCardProps {
     addon: Addon;

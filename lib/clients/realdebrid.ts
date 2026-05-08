@@ -1,25 +1,25 @@
 import {
-    DebridFile,
-    DebridFileStatus,
-    DebridNode,
-    DebridFileNode,
-    DebridLinkInfo,
-    DebridFileList,
-    DebridFileAddStatus,
-    OperationResult,
+    type Account,
     AccountType,
-    Account,
-    FullAccount,
     DebridAuthError,
     DebridError,
+    type DebridFile,
+    type DebridFileAddStatus,
+    type DebridFileList,
+    type DebridFileNode,
+    type DebridFileStatus,
+    type DebridLinkInfo,
+    type DebridNode,
     DebridRateLimitError,
-    WebDownloadAddResult,
-    WebDownloadList,
+    type FullAccount,
+    type OperationResult,
+    type WebDownloadAddResult,
+    type WebDownloadList,
 } from "@/lib/types";
-import BaseClient from "./base";
-import { USER_AGENT } from "../constants";
 import { getProxyUrl } from "@/lib/utils";
+import { USER_AGENT } from "../constants";
 import { queryClient } from "../query-client";
+import BaseClient from "./base";
 
 // Real-Debrid API response types
 type TorrentStatus =
@@ -227,7 +227,7 @@ export default class RealDebridClient extends BaseClient {
     static async validateAuthPin(pin: string, check: string): Promise<{ success: boolean; apiKey?: string }> {
         if (check === "direct_api_key") {
             try {
-                await this.getUser(pin);
+                await RealDebridClient.getUser(pin);
                 return { success: true, apiKey: pin };
             } catch {
                 return { success: false };

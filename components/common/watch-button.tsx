@@ -1,9 +1,9 @@
 "use client";
 
-import { memo, useCallback, type ReactElement } from "react";
 import { Slot } from "radix-ui";
-import { useStreamingStore, type StreamingRequest } from "@/lib/stores/streaming";
+import { memo, type ReactElement, useCallback } from "react";
 import { useUserAddons } from "@/hooks/use-addons";
+import { type StreamingRequest, useStreamingStore } from "@/lib/stores/streaming";
 
 interface WatchButtonProps {
     request: StreamingRequest;

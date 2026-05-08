@@ -1,16 +1,16 @@
-import { DebridFileStatus, WebDownloadStatus } from "@/lib/types";
 import {
-    DownloadIcon,
-    PauseIcon,
-    InfoIcon,
-    UploadIcon,
     CircleCheckIcon,
-    ClockIcon,
-    OctagonAlertIcon,
     CircleXIcon,
+    ClockIcon,
+    DownloadIcon,
+    InfoIcon,
+    OctagonAlertIcon,
+    PauseIcon,
+    UploadIcon,
     Zap,
 } from "lucide-react";
 import { memo } from "react";
+import type { DebridFileStatus, WebDownloadStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 // Unified color palette for status indicators

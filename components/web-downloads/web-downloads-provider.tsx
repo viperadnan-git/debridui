@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState, useMemo, useCallback, ReactNode } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { WebDownload, WebDownloadAddResult } from "@/lib/types";
 import { WEB_DOWNLOADS_PAGE_SIZE } from "@/lib/constants";
+import type { WebDownload, WebDownloadAddResult } from "@/lib/types";
 
 interface WebDownloadsContextValue {
     downloads: WebDownload[];
@@ -102,7 +102,9 @@ export function WebDownloadsProvider({ children }: { children: ReactNode }) {
 
     // Save links (optional, client-dependent)
     const saveMutation = useMutation({
-        mutationFn: (links: string[]) => client.saveWebDownloadLinks!(links),
+        mutationFn: async (links: string[]) => {
+            await client.saveWebDownloadLinks?.(links);
+        },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: [currentAccount.id, "webDownloads", "list"] }),
     });
 

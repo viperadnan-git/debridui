@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { DebridFileNode, AccountType } from "@/lib/types";
-import { Loader2, AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
+import { AccountType, type DebridFileNode } from "@/lib/types";
 import { getProxyUrl } from "@/lib/utils";
 
 interface TextPreviewProps {

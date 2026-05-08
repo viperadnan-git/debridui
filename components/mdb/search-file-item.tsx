@@ -1,11 +1,11 @@
 "use client";
 
-import { memo } from "react";
 import { HardDrive } from "lucide-react";
-import { formatSize } from "@/lib/utils";
-import { type DebridFile } from "@/lib/types";
-import { FileItemContextMenu } from "../explorer/file-item-context-menu";
+import { memo } from "react";
 import { SearchItemWrapper } from "@/components/search-item-wrapper";
+import type { DebridFile } from "@/lib/types";
+import { formatSize } from "@/lib/utils";
+import { FileItemContextMenu } from "../explorer/file-item-context-menu";
 
 interface SearchFileItemProps {
     file: DebridFile;

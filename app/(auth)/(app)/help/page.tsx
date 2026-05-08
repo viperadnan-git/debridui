@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
+import { ArrowUpRight, BookOpen, Bug, ExternalLink, HelpCircle, Lightbulb, MessageCircle } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-import { HelpCircle, ExternalLink, MessageCircle, Bug, Lightbulb, BookOpen, ArrowUpRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DISCORD_URL } from "@/lib/constants";
 
 export default function HelpPage() {

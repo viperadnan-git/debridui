@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { DebridFileNode } from "@/lib/types";
-import { Loader2, AlertCircle, ZoomIn, ZoomOut, Minimize2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AlertCircle, Loader2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import type { DebridFileNode } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface ImagePreviewProps {
     file: DebridFileNode;
@@ -90,6 +90,7 @@ export function ImagePreview({ file, downloadUrl, onLoad, onError }: ImagePrevie
     };
 
     return (
+        // biome-ignore lint/a11y/noStaticElementInteractions: pointer pan/zoom container; keyboard zoom is handled by parent dialog
         <div
             ref={containerRef}
             className="relative w-full h-full flex items-center justify-center bg-black overflow-hidden"

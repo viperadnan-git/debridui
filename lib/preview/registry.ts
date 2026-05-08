@@ -1,4 +1,4 @@
-import { FileType, DebridFileNode } from "../types";
+import type { DebridFileNode, FileType } from "../types";
 import { getFileType } from "../utils";
 
 export type PreviewRendererComponent = React.ComponentType<{

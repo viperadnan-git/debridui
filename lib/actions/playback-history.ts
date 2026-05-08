@@ -1,16 +1,16 @@
 "use server";
 
-import { cache } from "react";
-import { db } from "@/lib/db";
-import { playbackHistory } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+import { and, desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
+import { v7 as uuidv7 } from "uuid";
+import type { z } from "zod";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { playbackHistory } from "@/lib/db/schema";
 import { recordPlaybackSchema, removePlaybackSchema } from "@/lib/schemas";
 import { getPosterUrl } from "@/lib/utils/media";
-import { v7 as uuidv7 } from "uuid";
-import { z } from "zod";
 
 /**
  * Record a playback in user's history

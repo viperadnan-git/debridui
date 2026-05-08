@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState, memo, useMemo, useRef, useCallback } from "react";
-import { type TraktMediaItem } from "@/lib/trakt";
-import { Button } from "@/components/ui/button";
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
-import { WatchButton } from "@/components/common/watch-button";
-import Link from "next/link";
-import { ArrowRightIcon, Star, Play, ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
-import { useTraktTrendingMixed } from "@/hooks/use-trakt";
-import { getPosterUrl, getBackdropUrl } from "@/lib/utils/media";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
+import { ArrowRightIcon, ChevronLeft, ChevronRight, Play, Star } from "lucide-react";
+import Link from "next/link";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { WatchButton } from "@/components/common/watch-button";
+import { Button } from "@/components/ui/button";
+import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { useTraktTrendingMixed } from "@/hooks/use-trakt";
+import type { TraktMediaItem } from "@/lib/trakt";
+import { cn } from "@/lib/utils";
+import { getBackdropUrl, getPosterUrl } from "@/lib/utils/media";
 import { HeroCarouselSkeleton } from "./hero-carousel-skeleton";
 
 interface HeroSlideProps {
@@ -354,7 +354,7 @@ export const HeroCarousel = memo(function HeroCarousel({ autoFocus = false }: He
                 plugins={[autoplay, WheelGesturesPlugin()]}>
                 <CarouselContent className="-ml-0">
                     {mixed.map((item: TraktMediaItem, index: number) => (
-                        <CarouselItem key={`hero-${index}`} className="pl-0">
+                        <CarouselItem key={(item.movie ?? item.show)?.ids?.trakt ?? `hero-${index}`} className="pl-0">
                             <HeroSlide item={item} index={index} total={mixed.length} isActive={index === current} />
                         </CarouselItem>
                     ))}
@@ -386,6 +386,8 @@ export const HeroCarousel = memo(function HeroCarousel({ autoFocus = false }: He
                 <div className="flex items-center gap-1.5 px-3 py-2 bg-background/60 backdrop-blur-sm rounded-full border border-border/30">
                     {Array.from({ length: count }, (_, index) => (
                         <button
+                            type="button"
+                            // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                             key={index}
                             onClick={() => scrollTo(index)}
                             aria-label={`Go to slide ${index + 1}`}

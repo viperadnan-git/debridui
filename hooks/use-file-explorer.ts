@@ -1,8 +1,8 @@
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { useCallback, useMemo } from "react";
-import { PAGE_SIZE } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useMemo } from "react";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
+import { PAGE_SIZE } from "@/lib/constants";
 import { sortTorrentFiles } from "@/lib/utils/file";
 
 export function useFileExplorer() {

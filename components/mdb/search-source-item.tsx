@@ -1,11 +1,11 @@
 "use client";
 
-import { memo } from "react";
 import { HardDrive, Users, Zap } from "lucide-react";
-import { formatSize } from "@/lib/utils";
-import { type TorBoxSearchResult } from "@/lib/clients/torbox";
-import { AddSourceButton } from "./sources";
+import { memo } from "react";
 import { SearchItemWrapper } from "@/components/search-item-wrapper";
+import type { TorBoxSearchResult } from "@/lib/clients/torbox";
+import { formatSize } from "@/lib/utils";
+import { AddSourceButton } from "./sources";
 
 interface SearchSourceItemProps {
     result: TorBoxSearchResult;

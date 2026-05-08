@@ -1,8 +1,8 @@
-import { registerPreviewRenderer } from "./registry";
-import { FileType } from "../types";
 import { ImagePreview } from "@/components/preview/renderers/image-preview";
-import { VideoPreview } from "@/components/preview/renderers/video-preview";
 import { TextPreview } from "@/components/preview/renderers/text-preview";
+import { VideoPreview } from "@/components/preview/renderers/video-preview";
+import { FileType } from "../types";
+import { registerPreviewRenderer } from "./registry";
 
 // Register image preview renderer
 registerPreviewRenderer({

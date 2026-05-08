@@ -1,13 +1,16 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Fragment, memo, useMemo } from "react";
 import {
     Breadcrumb,
+    BreadcrumbEllipsis,
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-    BreadcrumbEllipsis,
 } from "@/components/ui/breadcrumb";
 import {
     DropdownMenu,
@@ -15,9 +18,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Fragment, memo, useMemo } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Routes with dynamic [slug] that should show singular label and hide the slug
@@ -86,7 +86,7 @@ export const Breadcrumbs = memo(function Breadcrumbs() {
             }
 
             // Regular segment
-            const href = "/" + segments.slice(0, i + 1).join("/");
+            const href = `/${segments.slice(0, i + 1).join("/")}`;
             const label = ROUTE_LABELS[segment] || formatSegment(segment);
             const isLast = i === segments.length - 1;
 
@@ -121,8 +121,8 @@ export const Breadcrumbs = memo(function Breadcrumbs() {
                                     <BreadcrumbEllipsis className="size-4" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start">
-                                    {hiddenItems.map((item, index) => (
-                                        <DropdownMenuItem key={index} asChild>
+                                    {hiddenItems.map((item) => (
+                                        <DropdownMenuItem key={item.href ?? item.label} asChild>
                                             <Link href={item.href ?? "#"}>{item.label}</Link>
                                         </DropdownMenuItem>
                                     ))}
@@ -133,7 +133,7 @@ export const Breadcrumbs = memo(function Breadcrumbs() {
                     </>
                 )}
                 {tailItems.map((item, index, arr) => (
-                    <Fragment key={index}>
+                    <Fragment key={item.href ?? item.label}>
                         <BreadcrumbItem>
                             {item.href ? (
                                 <BreadcrumbLink asChild className="max-w-40 truncate md:max-w-none">

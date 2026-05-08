@@ -1,15 +1,14 @@
 "use client";
 
-import React from "react";
-import { DebridFile, DebridNode } from "@/lib/types";
-import { FileListItem } from "./file-list-item";
-import { ExpandedRow } from "./expanded-row";
-import { useFileSelectionState, useSelectionStore } from "@/lib/stores/selection";
-import { useState } from "react";
-import { queryClient } from "@/lib/query-client";
-import { processFileNodes, collectNodeIds } from "@/lib/utils/file";
-import { getTorrentFilesCacheKey } from "@/lib/utils/cache-keys";
+import React, { useState } from "react";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
+import { queryClient } from "@/lib/query-client";
+import { useFileSelectionState, useSelectionStore } from "@/lib/stores/selection";
+import type { DebridFile, DebridNode } from "@/lib/types";
+import { getTorrentFilesCacheKey } from "@/lib/utils/cache-keys";
+import { collectNodeIds, processFileNodes } from "@/lib/utils/file";
+import { ExpandedRow } from "./expanded-row";
+import { FileListItem } from "./file-list-item";
 
 interface FileListRowProps {
     file: DebridFile;

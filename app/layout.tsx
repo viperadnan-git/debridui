@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import Providers from "./providers";
-import { cn } from "@/lib/utils";
 import { Analytics } from "@/components/analytics";
+import { cn } from "@/lib/utils";
+import Providers from "./providers";
 
 const siteConfig = {
     name: "DebridUI",

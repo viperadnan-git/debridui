@@ -1,12 +1,12 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { AccountType } from "../schemas";
-import { formatDistanceToNow, differenceInYears } from "date-fns";
-import { DebridLinkInfo, FileType } from "../types";
-import { ACCOUNT_TYPE_LABELS, CORS_PROXY_URL, EXTENSION_TO_FILE_TYPE, STREAMING_STORAGE_KEY } from "../constants";
+import { type ClassValue, clsx } from "clsx";
+import { differenceInYears, formatDistanceToNow } from "date-fns";
 import { del } from "idb-keyval";
-import { queryClient } from "../query-client";
 import { toast } from "sonner";
+import { twMerge } from "tailwind-merge";
+import { ACCOUNT_TYPE_LABELS, CORS_PROXY_URL, EXTENSION_TO_FILE_TYPE, STREAMING_STORAGE_KEY } from "../constants";
+import { queryClient } from "../query-client";
+import type { AccountType } from "../schemas";
+import { type DebridLinkInfo, FileType } from "../types";
 
 export * from "./media-player";
 
@@ -29,7 +29,7 @@ export const formatSize = (bytes: number | undefined) => {
     if (!bytes) return "0 B";
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + " " + sizes[i];
+    return `${parseFloat((bytes / 1024 ** i).toFixed(2))} ${sizes[i]}`;
 };
 
 export const formatAccountType = (type: AccountType | string) => {

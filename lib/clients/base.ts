@@ -1,7 +1,7 @@
-import {
+import type {
     Account,
-    DebridFileAddStatus,
     DebridFile,
+    DebridFileAddStatus,
     DebridFileNode,
     DebridLinkInfo,
     WebDownloadAddResult,

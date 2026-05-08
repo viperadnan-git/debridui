@@ -1,17 +1,17 @@
 "use client";
 
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import Image from "next/image";
+import Link from "next/link";
+import { useAuth } from "@/components/auth/auth-provider";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SearchButton } from "@/components/common/search-button";
 import { SearchProvider } from "@/components/mdb/search-provider";
-import { PreviewDialog } from "@/components/preview/preview-dialog";
-import { useAuth } from "@/components/auth/auth-provider";
-import { SplashScreen } from "@/components/splash-screen";
-import { BottomTabBar } from "@/components/mobile/bottom-tab-bar";
 import { AccountQuickSwitch } from "@/components/mobile/account-quick-switch";
-import Image from "next/image";
-import Link from "next/link";
+import { BottomTabBar } from "@/components/mobile/bottom-tab-bar";
+import { PreviewDialog } from "@/components/preview/preview-dialog";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { SplashScreen } from "@/components/splash-screen";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 // App layout - requires at least one account
 // Redirect logic is centralized in AuthProvider

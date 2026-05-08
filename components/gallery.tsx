@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface GalleryItem {
@@ -48,6 +48,7 @@ export function Gallery({ items, className }: GalleryProps) {
             <div className="hidden sm:flex items-center justify-center gap-2">
                 {items.map((item, index) => (
                     <button
+                        type="button"
                         key={item.id}
                         onClick={() => setActive(index)}
                         className={cn(
@@ -65,6 +66,7 @@ export function Gallery({ items, className }: GalleryProps) {
             {/* Mobile: Previous / Current / Next labels */}
             <div className="sm:hidden flex items-center justify-center gap-4 overflow-hidden">
                 <button
+                    type="button"
                     onClick={() => active > 0 && setActive(active - 1)}
                     disabled={active === 0}
                     className={cn(
@@ -81,6 +83,7 @@ export function Gallery({ items, className }: GalleryProps) {
                     {items[active].label}
                 </span>
                 <button
+                    type="button"
                     onClick={() => active < items.length - 1 && setActive(active + 1)}
                     disabled={active === items.length - 1}
                     className={cn(
@@ -141,6 +144,8 @@ export function Gallery({ items, className }: GalleryProps) {
                 <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-1.5 z-20">
                     {items.map((_, index) => (
                         <button
+                            type="button"
+                            // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                             key={index}
                             onClick={() => setActive(index)}
                             className={cn(

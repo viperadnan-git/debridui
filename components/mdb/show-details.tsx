@@ -1,15 +1,15 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
+import { memo, useCallback, useMemo, useState } from "react";
 import { ScrollCarousel } from "@/components/common/scroll-carousel";
 import { SectionDivider } from "@/components/section-divider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTMDBEpisodeGroupDetails, useTMDBSeriesEpisodeGroups } from "@/hooks/use-tmdb";
 import { useTraktShowEpisodes, useTraktShowSeasons } from "@/hooks/use-trakt";
-import { type TMDBEpisodeGroupEpisode } from "@/lib/tmdb";
-import { type TraktEpisode, type TraktImages, type TraktMedia, type TraktSeason } from "@/lib/trakt";
-import { useRouter, useSearchParams } from "next/navigation";
-import { memo, useCallback, useMemo, useState } from "react";
+import type { TMDBEpisodeGroupEpisode } from "@/lib/tmdb";
+import type { TraktEpisode, TraktImages, TraktMedia, TraktSeason } from "@/lib/trakt";
 import { EpisodeCard } from "./episode-card";
 import { MediaHeader } from "./media-header";
 import { PeopleSection } from "./people-section";
@@ -91,6 +91,7 @@ const EpisodesSection = memo(function EpisodesSection({
                 </div>
                 <div className="flex flex-col gap-3">
                     {Array.from({ length: skeletonCount }).map((_, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                         <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
                             <div className="flex flex-row items-start">
                                 <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video rounded-none" />
@@ -110,7 +111,7 @@ const EpisodesSection = memo(function EpisodesSection({
     return (
         <EpisodeList
             label={seasonLabel}
-            episodes={episodes!.map((ep) => ({ ...ep, season: selectedSeason }))}
+            episodes={episodes?.map((ep) => ({ ...ep, season: selectedSeason })) ?? []}
             imdbId={media.ids?.imdb}
             showMedia={media}
         />
@@ -209,6 +210,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                                     {seasonsLoading
                                         ? Array.from({ length: 6 }).map((_, i) => (
                                               <Skeleton
+                                                  // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                                                   key={i}
                                                   className="w-28 sm:w-32 md:w-36 aspect-2/3 rounded-sm shrink-0"
                                               />
@@ -238,11 +240,13 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                         <ScrollCarousel className="-mx-4 lg:mx-0">
                             <div className="flex w-max gap-3 pb-4 px-4 lg:pl-2 lg:pr-0">
                                 {Array.from({ length: 4 }).map((_, i) => (
+                                    // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                                     <Skeleton key={i} className="w-28 sm:w-32 md:w-36 aspect-2/3 rounded-sm shrink-0" />
                                 ))}
                             </div>
                         </ScrollCarousel>
                         {Array.from({ length: 3 }).map((_, i) => (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                             <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
                                 <div className="flex flex-row items-start">
                                     <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video rounded-none" />

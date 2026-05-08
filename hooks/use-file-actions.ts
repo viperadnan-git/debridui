@@ -1,11 +1,11 @@
+import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { downloadLinks, copyLinksToClipboard } from "@/lib/utils";
-import { downloadM3UPlaylist, fetchSelectedDownloadLinks, fetchTorrentDownloadLinks } from "@/lib/utils/file";
-import { useToastMutation } from "@/lib/utils/mutation-factory";
-import { DebridClient } from "@/lib/clients";
+import type { DebridClient } from "@/lib/clients";
 import { queryClient } from "@/lib/query-client";
 import { useSelectionStore } from "@/lib/stores/selection";
-import { toast } from "sonner";
+import { copyLinksToClipboard, downloadLinks } from "@/lib/utils";
+import { downloadM3UPlaylist, fetchSelectedDownloadLinks, fetchTorrentDownloadLinks } from "@/lib/utils/file";
+import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 /**
  * Remove torrent and cleanup caches

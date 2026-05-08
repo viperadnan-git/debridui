@@ -1,24 +1,22 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, memo } from "react";
-import { DebridNode, DebridFileNode, DebridLinkInfo } from "@/lib/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { ChevronRight, Copy, Download, CirclePlay, Loader2 } from "lucide-react";
-import { cn, getFileType } from "@/lib/utils";
-import { formatSize, openInPlayer, downloadLinks, copyLinksToClipboard } from "@/lib/utils";
-import { collectNodeIds } from "@/lib/utils/file";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
+import { ChevronRight, CirclePlay, Copy, Download, Loader2 } from "lucide-react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { FixedSizeList as List, type ListChildComponentProps } from "react-window";
 import { toast } from "sonner";
-import { FileType, MediaPlayer } from "@/lib/types";
-import { useSettingsStore } from "@/lib/stores/settings";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useSelectionStore, useFileSelectedNodes } from "@/lib/stores/selection";
-import { FixedSizeList as List, ListChildComponentProps } from "react-window";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { PreviewButton } from "@/components/preview/preview-button";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useFileSelectedNodes, useSelectionStore } from "@/lib/stores/selection";
+import { useSettingsStore } from "@/lib/stores/settings";
+import { type DebridFileNode, type DebridLinkInfo, type DebridNode, FileType, MediaPlayer } from "@/lib/types";
+import { cn, copyLinksToClipboard, downloadLinks, formatSize, getFileType, openInPlayer } from "@/lib/utils";
 import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
+import { collectNodeIds } from "@/lib/utils/file";
 
 interface FileTreeProps {
     nodes: DebridNode[];
@@ -200,9 +198,9 @@ const VirtualizedNode = memo(function VirtualizedNode({
         (checked: boolean) => {
             const newSelection = new Set<string>(selectedFiles);
             if (checked) {
-                allFileIds.forEach((id) => newSelection.add(id));
+                for (const id of allFileIds) newSelection.add(id);
             } else {
-                allFileIds.forEach((id) => newSelection.delete(id));
+                for (const id of allFileIds) newSelection.delete(id);
             }
             updateNodeSelection(fileId, newSelection, allNodes);
         },
@@ -215,6 +213,7 @@ const VirtualizedNode = memo(function VirtualizedNode({
     const isVideoWithBrowserPlayer = fileType === FileType.VIDEO && mediaPlayer === MediaPlayer.BROWSER;
 
     return (
+        // biome-ignore lint/a11y/noStaticElementInteractions: tree row toggles expansion; nested Checkbox handles keyboard activation
         <div
             className={cn(
                 "flex items-center gap-1 sm:gap-2 py-1 rounded-sm transition-colors duration-300 hover:bg-muted/50",
@@ -241,6 +240,7 @@ const VirtualizedNode = memo(function VirtualizedNode({
 
             <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen} delayDuration={isMobile ? 0 : 2000}>
                 <TooltipTrigger asChild>
+                    {/* biome-ignore lint/a11y/noStaticElementInteractions: span toggles tooltip on mobile or selection on desktop; activation is handled by parent Checkbox keyboard path */}
                     <span
                         className="flex-1 cursor-pointer truncate"
                         onClick={(e) => {

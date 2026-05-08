@@ -1,13 +1,12 @@
 "use client";
 
-import * as React from "react";
-
+import { FolderOpen, HelpCircle, HomeIcon, Link2, Puzzle, SearchIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import type * as React from "react";
+import { useSearch } from "@/components/mdb/search-provider";
 import { NavMain } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
-import { FolderOpen, SearchIcon, HomeIcon, SettingsIcon, UsersIcon, Puzzle, Link2, HelpCircle } from "lucide-react";
-import { useSearch } from "@/components/mdb/search-provider";
 
 const data = {
     navMain: [

@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPlaybackHistory, removeFromPlaybackHistory, clearPlaybackHistory } from "@/lib/actions/playback-history";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { type z } from "zod";
-import { type removePlaybackSchema } from "@/lib/schemas";
-import { type PlaybackHistory } from "@/lib/db/schema";
+import type { z } from "zod";
+import { clearPlaybackHistory, getPlaybackHistory, removeFromPlaybackHistory } from "@/lib/actions/playback-history";
+import type { PlaybackHistory } from "@/lib/db/schema";
+import type { removePlaybackSchema } from "@/lib/schemas";
 
 const PLAYBACK_HISTORY_KEY = ["playback-history"];
 

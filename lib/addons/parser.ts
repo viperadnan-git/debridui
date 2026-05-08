@@ -1,7 +1,7 @@
-import { formatSize } from "../utils";
-import { type AddonStream, type AddonSource, type CatalogMeta, Resolution, SourceQuality } from "./types";
-import { type Media, type MediaItem } from "@/lib/trakt";
+import type { Media, MediaItem } from "@/lib/trakt";
 import { cdnUrl } from "@/lib/utils/media";
+import { formatSize } from "../utils";
+import { type AddonSource, type AddonStream, type CatalogMeta, Resolution, SourceQuality } from "./types";
 
 const HASH_REGEX = /[a-f0-9]{40}/;
 const FILE_SIZE_REGEX = /\b\d+(?:\.\d+)?\s*(?:[KMGT]i?)?B\b/gi;
@@ -29,27 +29,24 @@ export function getResolutionIndex(resolution: Resolution | undefined): number {
 const QUALITY_REGEXES: [SourceQuality, RegExp][] = [
     // Priority order: lower index = higher quality (based on Wikipedia release types)
     // Blu-ray sources (highest quality)
-    [SourceQuality.BLURAY_REMUX, /(?:^|[\s\[(_.\-])(?:bd|br|b|uhd)?[-_.\\s]?remux(?=[\s\)\]_.\-,]|$)/i],
-    [
-        SourceQuality.BLURAY,
-        /(?:^|[\s\[(_.\-])(?:bd|blu[-_.\\s]?ray|(?:bd|br)[-_.\\s]?rip)(?!.*remux)(?=[\s\)\]_.\-,]|$)/i,
-    ],
+    [SourceQuality.BLURAY_REMUX, /(?:^|[\s[(_.-])(?:bd|br|b|uhd)?[-_.\\s]?remux(?=[\s)\]_.\-,]|$)/i],
+    [SourceQuality.BLURAY, /(?:^|[\s[(_.-])(?:bd|blu[-_.\\s]?ray|(?:bd|br)[-_.\\s]?rip)(?!.*remux)(?=[\s)\]_.\-,]|$)/i],
     // Web sources
-    [SourceQuality.WEB_DL, /(?:^|[\s\[(_.\-])web[-_.\\s]?(?:dl)?(?![-_.\\s]?(?:rip|DLRip|cam))(?=[\s\)\]_.\-,]|$)/i],
-    [SourceQuality.WEBRIP, /(?:^|[\s\[(_.\-])web[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.WEB_DL, /(?:^|[\s[(_.-])web[-_.\\s]?(?:dl)?(?![-_.\\s]?(?:rip|DLRip|cam))(?=[\s)\]_.\-,]|$)/i],
+    [SourceQuality.WEBRIP, /(?:^|[\s[(_.-])web[-_.\\s]?rip(?=[\s)\]_.\-,]|$)/i],
     // TV/DVD sources
     [
         SourceQuality.HDTV,
-        /(?:^|[\s\[(_.\-])(?:(?:hd|pd)tv|tv[-_.\\s]?rip|hdtv[-_.\\s]?rip|dsr(?:ip)?|sat[-_.\\s]?rip)(?=[\s\)\]_.\-,]|$)/i,
+        /(?:^|[\s[(_.-])(?:(?:hd|pd)tv|tv[-_.\\s]?rip|hdtv[-_.\\s]?rip|dsr(?:ip)?|sat[-_.\\s]?rip)(?=[\s)\]_.\-,]|$)/i,
     ],
-    [SourceQuality.DVDRIP, /(?:^|[\s\[(_.\-])(?:dvd(?:[-_.\\s]?(?:rip|mux|r|full|5|9))?(?!scr))(?=[\s\)\]_.\-,]|$)/i],
-    [SourceQuality.HDRIP, /(?:^|[\s\[(_.\-])hd[-_.\\s]?rip(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.DVDRIP, /(?:^|[\s[(_.-])(?:dvd(?:[-_.\\s]?(?:rip|mux|r|full|5|9))?(?!scr))(?=[\s)\]_.\-,]|$)/i],
+    [SourceQuality.HDRIP, /(?:^|[\s[(_.-])hd[-_.\\s]?rip(?=[\s)\]_.\-,]|$)/i],
     // Pre-release sources
-    [SourceQuality.SCR, /(?:^|[\s\[(_.\-])(?:(?:dvd|bd|web|hd)?[-_.\\s]?)?scr(?:eener)?(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.SCR, /(?:^|[\s[(_.-])(?:(?:dvd|bd|web|hd)?[-_.\\s]?)?scr(?:eener)?(?=[\s)\]_.\-,]|$)/i],
     // Theater recordings (lowest quality)
-    [SourceQuality.TC, /(?:^|[\s\[(_.\-])(?:telecine|tc)(?=[\s\)\]_.\-,]|$)/i],
-    [SourceQuality.TS, /(?:^|[\s\[(_.\-])(?:telesync|ts(?!$)|hd[-_.\\s]?ts|p(?:re)?dvd(?:rip)?)(?=[\s\)\]_.\-,]|$)/i],
-    [SourceQuality.CAM, /(?:^|[\s\[(_.\-])(?:cam(?:[-_.\\s]?rip)?|hdcam)(?=[\s\)\]_.\-,]|$)/i],
+    [SourceQuality.TC, /(?:^|[\s[(_.-])(?:telecine|tc)(?=[\s)\]_.\-,]|$)/i],
+    [SourceQuality.TS, /(?:^|[\s[(_.-])(?:telesync|ts(?!$)|hd[-_.\\s]?ts|p(?:re)?dvd(?:rip)?)(?=[\s)\]_.\-,]|$)/i],
+    [SourceQuality.CAM, /(?:^|[\s[(_.-])(?:cam(?:[-_.\\s]?rip)?|hdcam)(?=[\s)\]_.\-,]|$)/i],
 ];
 
 /** Ordered list of source qualities from highest to lowest */
@@ -205,7 +202,7 @@ export function catalogMetasToMediaItems(metas: CatalogMeta[]): MediaItem[] {
         const type = meta.type === "series" ? "show" : "movie";
         const media: Media = {
             title: meta.name,
-            year: parseInt(meta.releaseInfo || "") || undefined,
+            year: parseInt(meta.releaseInfo || "", 10) || undefined,
             ids: { imdb: meta.id, slug: meta.id },
             images: meta.poster ? { poster: [cdnUrl(meta.poster, { w: 300, h: 450 })] } : undefined,
             rating: meta.imdbRating ? parseFloat(meta.imdbRating) : undefined,

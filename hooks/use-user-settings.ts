@@ -1,7 +1,7 @@
-import { getUserSettings, saveUserSettings } from "@/lib/actions/settings";
-import type { ServerSettings } from "@/lib/types";
-import { useSettingsStore } from "@/lib/stores/settings";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUserSettings, saveUserSettings } from "@/lib/actions/settings";
+import { useSettingsStore } from "@/lib/stores/settings";
+import type { ServerSettings } from "@/lib/types";
 
 const USER_SETTINGS_KEY = ["user-settings"];
 

@@ -1,26 +1,26 @@
 "use client";
 
+import { Calendar, Film, Puzzle, SearchIcon, Sparkles, Ticket, TrendingUp, Tv } from "lucide-react";
 import dynamic from "next/dynamic";
-import { SearchDialog } from "@/components/mdb/search-dialog";
-import { MdbFooter } from "@/components/mdb/mdb-footer";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ContinueWatching } from "@/components/mdb/continue-watching";
+import { HeroCarouselSkeleton } from "@/components/mdb/hero-carousel-skeleton";
+import { MdbFooter } from "@/components/mdb/mdb-footer";
+import { MediaSection } from "@/components/mdb/media-section";
+import { SearchDialog } from "@/components/mdb/search-dialog";
+import { type AddonCatalogDef, catalogSlug, useAddonCatalog, useAddonCatalogDefs } from "@/hooks/use-addons";
 import {
-    useTraktTrendingMovies,
-    useTraktTrendingShows,
-    useTraktPopularMovies,
-    useTraktPopularShows,
-    useTraktMostWatchedMovies,
-    useTraktMostWatchedShows,
     useTraktAnticipatedMovies,
     useTraktAnticipatedShows,
     useTraktBoxOfficeMovies,
+    useTraktMostWatchedMovies,
+    useTraktMostWatchedShows,
+    useTraktPopularMovies,
+    useTraktPopularShows,
+    useTraktTrendingMovies,
+    useTraktTrendingShows,
 } from "@/hooks/use-trakt";
-import { SearchIcon, Sparkles, Film, Tv, TrendingUp, Calendar, Ticket, Puzzle } from "lucide-react";
 import { DISCORD_URL } from "@/lib/constants";
-import { HeroCarouselSkeleton } from "@/components/mdb/hero-carousel-skeleton";
-import { MediaSection } from "@/components/mdb/media-section";
-import { useAddonCatalogDefs, useAddonCatalog, catalogSlug, type AddonCatalogDef } from "@/hooks/use-addons";
-import { ContinueWatching } from "@/components/mdb/continue-watching";
 
 const HeroCarousel = dynamic(
     () => import("@/components/mdb/hero-carousel").then((m) => ({ default: m.HeroCarousel })),
@@ -104,6 +104,7 @@ const WelcomeSection = memo(function WelcomeSection({ onSearchClick }: { onSearc
                     className="max-w-md animate-in fade-in-0 slide-in-from-bottom-2"
                     style={{ animationDuration: "600ms", animationDelay: "300ms", animationFillMode: "backwards" }}>
                     <button
+                        type="button"
                         onClick={onSearchClick}
                         className="group w-full flex items-center gap-3 h-11 px-4 text-sm text-muted-foreground bg-transparent hover:bg-muted/30 border border-border/50 hover:border-border rounded-sm transition-all duration-300">
                         <SearchIcon className="size-4 text-muted-foreground/60 group-hover:text-foreground transition-colors duration-300" />

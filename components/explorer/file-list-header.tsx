@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { QuickSettings } from "./quick-settings";

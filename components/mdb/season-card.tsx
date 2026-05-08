@@ -1,11 +1,10 @@
 "use client";
 
-import { type TraktSeason } from "@/lib/trakt";
-import { Star } from "lucide-react";
-import { cn, formatYear } from "@/lib/utils";
-import { memo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { traktClient } from "@/lib/trakt";
+import { Star } from "lucide-react";
+import { memo } from "react";
+import { type TraktSeason, traktClient } from "@/lib/trakt";
+import { cn, formatYear } from "@/lib/utils";
 import { getPosterUrl } from "@/lib/utils/media";
 
 interface SeasonCardProps {
@@ -42,6 +41,7 @@ export const SeasonCard = memo(function SeasonCard({
     };
 
     return (
+        // biome-ignore lint/a11y/noStaticElementInteractions: card-level click navigates to the season; keyboard users use the link inside
         <div
             className={cn("group cursor-pointer w-28 sm:w-32 md:w-36 pt-1", className)}
             onClick={onClick}

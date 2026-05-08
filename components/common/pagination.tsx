@@ -1,14 +1,14 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
     Pagination,
     PaginationContent,
+    PaginationEllipsis,
     PaginationItem,
     PaginationLink,
-    PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface PaginationProps {
@@ -89,6 +89,7 @@ export function ListPagination({
                 </PaginationItem>
 
                 {renderPageNumbers().map((page, index) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                     <PaginationItem key={index}>
                         {page === "ellipsis" ? (
                             <PaginationEllipsis />

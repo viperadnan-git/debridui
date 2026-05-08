@@ -1,13 +1,13 @@
 "use client";
 
 import { memo } from "react";
-import { DebridFile } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatSize, formatRelativeTime, formatSpeed, cn } from "@/lib/utils";
-import { StatusBadge } from "../display";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { FileItemContextMenu } from "./file-item-context-menu";
+import type { DebridFile } from "@/lib/types";
+import { cn, formatRelativeTime, formatSize, formatSpeed } from "@/lib/utils";
+import { StatusBadge } from "../display";
 import { Badge } from "../ui/badge";
+import { FileItemContextMenu } from "./file-item-context-menu";
 
 interface FileListItemProps {
     file: DebridFile;
@@ -141,6 +141,7 @@ export const FileListItem = memo(function FileListItem({
 
     return (
         <FileItemContextMenu file={file}>
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: row-level click is a UX convenience; child Checkbox/Buttons remain the keyboard targets */}
             <div
                 className={cn(
                     "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b border-border/50 transition-colors duration-300 bg-card max-md:select-none",

@@ -1,18 +1,17 @@
 "use client";
 
-import * as React from "react";
-import { Slot as SlotPrimitive } from "radix-ui";
-import { cva, VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 import { MenuIcon, PanelLeftIcon } from "lucide-react";
-
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+import { Slot as SlotPrimitive } from "radix-ui";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
 const SIDEBAR_WIDTH = "15rem";
@@ -100,7 +99,7 @@ function SidebarProvider({
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
         return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
-    }, [isMobile, setOpen, setOpenMobile]);
+    }, [isMobile, setOpen]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
@@ -129,7 +128,7 @@ function SidebarProvider({
             setOpenMobile,
             toggleSidebar,
         }),
-        [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+        [state, open, setOpen, isMobile, openMobile, toggleSidebar]
     );
 
     return (

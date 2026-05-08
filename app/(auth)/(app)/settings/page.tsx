@@ -1,5 +1,11 @@
 "use client";
 
+import { format, formatDistanceToNow } from "date-fns";
+import { del } from "idb-keyval";
+import { Clock, Info, Key, Loader2, Monitor, Moon, Play, Settings, Sliders, Sun, Trash2, Zap } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useCallback, useRef } from "react";
+import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
@@ -9,27 +15,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useSaveUserSettings } from "@/hooks/use-user-settings";
 import { RESOLUTIONS, SOURCE_QUALITIES } from "@/lib/addons/parser";
-import { Resolution, SourceQuality } from "@/lib/addons/types";
+import { Resolution, type SourceQuality } from "@/lib/addons/types";
 import { queryClient } from "@/lib/query-client";
 import {
     QUALITY_PROFILES,
-    useSettingsStore,
     type QualityProfileId,
     type QualityRange,
     type StreamingResolution,
     type StreamingSettings,
+    useSettingsStore,
 } from "@/lib/stores/settings";
-import { MediaPlayer } from "@/lib/types";
+import type { MediaPlayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { detectPlatform, isSupportedPlayer, PLAYER_PLATFORM_SUPPORT } from "@/lib/utils/media-player";
-import { format, formatDistanceToNow } from "date-fns";
-import { del } from "idb-keyval";
-import { Clock, Info, Key, Loader2, Monitor, Moon, Play, Settings, Sliders, Sun, Trash2, Zap } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useCallback, useRef } from "react";
-import { toast } from "sonner";
-import { useSaveUserSettings } from "@/hooks/use-user-settings";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
@@ -270,6 +270,7 @@ export default function SettingsPage() {
                     <div className="flex flex-wrap gap-2">
                         {QUALITY_PROFILES.map((profile) => (
                             <button
+                                type="button"
                                 key={profile.id}
                                 onClick={() => selectProfile(profile.id)}
                                 className={cn(
@@ -283,6 +284,7 @@ export default function SettingsPage() {
                             </button>
                         ))}
                         <button
+                            type="button"
                             onClick={() => selectProfile("custom")}
                             className={cn(
                                 "group relative px-3 py-1.5 text-sm rounded-sm border transition-all duration-300",

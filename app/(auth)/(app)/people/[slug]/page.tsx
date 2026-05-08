@@ -1,23 +1,18 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { memo, useState, useMemo } from "react";
-import Link from "next/link";
+import { Calendar, ChevronDown, ChevronUp, MapPin, Skull, Star, User } from "lucide-react";
 import Image from "next/image";
-import { useTraktPerson, useTraktPersonMovies, useTraktPersonShows } from "@/hooks/use-trakt";
-import {
-    type TraktPersonFull,
-    type TraktPersonMovieCredit,
-    type TraktPersonShowCredit,
-    type TraktMedia,
-} from "@/lib/trakt";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { memo, useMemo, useState } from "react";
 import { MdbFooter } from "@/components/mdb/mdb-footer";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, ChevronDown, ChevronUp, Calendar, MapPin, Skull, Star } from "lucide-react";
+import { useTraktPerson, useTraktPersonMovies, useTraktPersonShows } from "@/hooks/use-trakt";
+import type { TraktMedia, TraktPersonFull, TraktPersonMovieCredit, TraktPersonShowCredit } from "@/lib/trakt";
+import { calculateAge, formatLocalizedDate } from "@/lib/utils";
 import { getPosterUrl } from "@/lib/utils/media";
-import { formatLocalizedDate, calculateAge } from "@/lib/utils";
 
 // Person Header Component
 const PersonHeader = memo(function PersonHeader({
@@ -409,6 +404,7 @@ const CreditsGrid = memo(function CreditsGrid({
         return (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4">
                 {Array.from({ length: 14 }).map((_, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                     <Skeleton key={i} className="aspect-2/3 rounded-sm" />
                 ))}
             </div>
@@ -592,11 +588,13 @@ const FilmographyTabs = memo(function FilmographyTabs({ slug }: { slug: string }
                 </div>
                 <div className="flex gap-2">
                     {Array.from({ length: 3 }).map((_, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                         <Skeleton key={i} className="h-9 w-24 rounded-md" />
                     ))}
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4">
                     {Array.from({ length: 14 }).map((_, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                         <Skeleton key={i} className="aspect-2/3 rounded-sm" />
                     ))}
                 </div>

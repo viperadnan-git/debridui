@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { MediaPlayer } from "../types";
 import { Resolution, SourceQuality } from "../addons/types";
+import { MediaPlayer } from "../types";
 
 export type StreamingResolution = Resolution | "any";
 

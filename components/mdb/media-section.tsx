@@ -1,12 +1,12 @@
 "use client";
 
-import { MediaCard } from "@/components/mdb/media-card";
-import { type MediaItem } from "@/lib/trakt";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRightIcon, AlertCircle, type LucideIcon } from "lucide-react";
+import { AlertCircle, ArrowRightIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { memo } from "react";
 import { ScrollCarousel } from "@/components/common/scroll-carousel";
+import { MediaCard } from "@/components/mdb/media-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { MediaItem } from "@/lib/trakt";
 import { cn } from "@/lib/utils";
 
 const GRID_ROWS: Record<number, string> = {
@@ -36,6 +36,7 @@ const MediaSectionSkeleton = memo(function MediaSectionSkeleton({ rows = 2 }: { 
                 GRID_ROWS[rows] ?? "grid-rows-2"
             )}>
             {Array.from({ length: 10 * rows }, (_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                 <div key={i} className="animate-pulse" style={{ animationDelay: `${i * 50}ms` }}>
                     <Skeleton className="aspect-2/3 rounded-sm" />
                 </div>

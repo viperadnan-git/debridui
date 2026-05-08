@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { Avatar as AvatarPrimitive } from "radix-ui";
+import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -39,4 +39,4 @@ function AvatarFallback({ className, ...props }: React.ComponentProps<typeof Ava
     );
 }
 
-export { Avatar, AvatarImage, AvatarFallback };
+export { Avatar, AvatarFallback, AvatarImage };

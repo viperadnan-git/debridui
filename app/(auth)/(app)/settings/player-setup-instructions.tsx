@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { MediaPlayer, Platform } from "@/lib/types";
 
 const PLAYER_SETUP_INSTRUCTIONS: Partial<Record<MediaPlayer, (platform: Platform) => React.ReactNode>> = {

@@ -1,13 +1,12 @@
 "use client";
 
+import { ChevronRight, HelpCircle, Link2, LogOut, type LucideIcon, Moon, Puzzle, Sun, UsersIcon } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { useTheme } from "next-themes";
-import { Link2, Puzzle, UsersIcon, HelpCircle, Sun, Moon, LogOut, ChevronRight, type LucideIcon } from "lucide-react";
-
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
-import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 
 type Item = { label: string; href: string; icon: LucideIcon; description?: string };

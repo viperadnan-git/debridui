@@ -1,6 +1,8 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -12,10 +14,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SORT_OPTIONS } from "@/lib/utils/file";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useCallback } from "react";
 
 export function SortControls() {
     const router = useRouter();

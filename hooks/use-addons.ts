@@ -1,17 +1,17 @@
-import { useQuery, useQueryClient, useQueries } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getUserAddons, addAddon, removeAddon, toggleAddon, updateAddonOrders } from "@/lib/actions/addons";
+import { addAddon, getUserAddons, removeAddon, toggleAddon, updateAddonOrders } from "@/lib/actions/addons";
 import { AddonClient } from "@/lib/addons/client";
-import { parseStreams, catalogMetasToMediaItems } from "@/lib/addons/parser";
+import { catalogMetasToMediaItems, parseStreams } from "@/lib/addons/parser";
 import {
     type Addon,
     type AddonManifest,
     type AddonSource,
-    type TvSearchParams,
     hasCatalogs,
     hasStreams,
+    type TvSearchParams,
 } from "@/lib/addons/types";
-import { type CreateAddon } from "@/lib/types";
+import type { CreateAddon } from "@/lib/types";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 const USER_ADDONS_KEY = ["user-addons"];
@@ -196,7 +196,7 @@ export function useStreamAddons() {
     });
 
     // rerender-dependencies: stable primitive key
-    const manifestDataKey = manifests.map((q) => q.dataUpdatedAt).join(",");
+    const _manifestDataKey = manifests.map((q) => q.dataUpdatedAt).join(",");
 
     const streamAddons = useMemo(() => {
         return enabledAddons.filter((_, i) => {
@@ -204,7 +204,7 @@ export function useStreamAddons() {
             return manifest && hasStreams(manifest);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [manifestDataKey, enabledAddons]);
+    }, [enabledAddons, manifests]);
 
     return {
         addons: streamAddons,
@@ -339,7 +339,7 @@ export function useAddonCatalogDefs() {
     });
 
     // rerender-dependencies: derive stable primitive key from query results
-    const manifestDataKey = manifests.map((q) => q.dataUpdatedAt).join(",");
+    const _manifestDataKey = manifests.map((q) => q.dataUpdatedAt).join(",");
 
     // Extract browsable catalogs from addons with catalog capability
     const catalogs = useMemo<AddonCatalogDef[]>(() => {
@@ -356,7 +356,7 @@ export function useAddonCatalogDefs() {
                 }));
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [manifestDataKey, enabledAddons]);
+    }, [enabledAddons, manifests.flatMap]);
 
     return {
         catalogs,

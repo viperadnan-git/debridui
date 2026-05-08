@@ -1,9 +1,9 @@
 "use client";
 
+import { FolderOpen, HomeIcon, type LucideIcon, MoreHorizontal, SearchIcon, SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { HomeIcon, FolderOpen, SearchIcon, SettingsIcon, MoreHorizontal, type LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { MoreSheet } from "./more-sheet";
@@ -33,7 +33,7 @@ export function BottomTabBar() {
 
     const isActive = (tab: Tab) => {
         if (tab.kind !== "link" || !tab.matchPrefix) return false;
-        return pathname === tab.matchPrefix || pathname.startsWith(tab.matchPrefix + "/");
+        return pathname === tab.matchPrefix || pathname.startsWith(`${tab.matchPrefix}/`);
     };
 
     return (

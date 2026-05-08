@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useCallback, useRef, useMemo } from "react";
-import { usePreviewStore } from "@/lib/stores/preview";
-import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { useQuery } from "@tanstack/react-query";
-import { useSettingsStore } from "@/lib/stores/settings";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Download, Loader2, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, ChevronRight, Download, X, Loader2 } from "lucide-react";
-import { PreviewContent } from "./preview-content";
-import { formatSize, downloadLinks, getFileType } from "@/lib/utils";
+import { usePreviewStore } from "@/lib/stores/preview";
+import { useSettingsStore } from "@/lib/stores/settings";
+import type { DebridFileNode } from "@/lib/types";
+import { downloadLinks, formatSize, getFileType } from "@/lib/utils";
 import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
-import { DebridFileNode } from "@/lib/types";
+import { PreviewContent } from "./preview-content";
 
 export function PreviewDialog() {
     const { client, currentAccount } = useAuthGuaranteed();

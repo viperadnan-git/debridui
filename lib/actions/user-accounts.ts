@@ -1,16 +1,16 @@
 "use server";
 
+import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { v7 as uuidv7 } from "uuid";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { userAccounts } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
-import { z } from "zod";
 import { createAccountSchema } from "@/lib/schemas";
-import { type CreateAccount } from "@/lib/types";
-import { revalidatePath } from "next/cache";
-import { v7 as uuidv7 } from "uuid";
+import type { CreateAccount } from "@/lib/types";
 
 /**
  * Get all user accounts for the current authenticated user

@@ -1,10 +1,10 @@
 "use client";
 
+import { View } from "lucide-react";
 import { memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { View } from "lucide-react";
-import { DebridFileNode } from "@/lib/types";
 import { usePreviewStore } from "@/lib/stores/preview";
+import type { DebridFileNode } from "@/lib/types";
 
 interface PreviewButtonProps {
     node: DebridFileNode;

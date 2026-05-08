@@ -1,7 +1,9 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, boolean, integer, timestamp, jsonb, uniqueIndex, index, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { AccountType } from "../schemas";
+
 export * from "./auth-schema";
+
 import { user } from "./auth-schema";
 
 // User accounts table - stores debrid service accounts

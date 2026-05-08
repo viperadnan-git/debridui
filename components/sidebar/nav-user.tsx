@@ -1,8 +1,10 @@
 "use client";
 
+import { ChevronsUpDown, HelpCircle, LogOut, Settings, User as UserIcon } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
-import { ChevronsUpDown, LogOut, User as UserIcon, Settings, HelpCircle } from "lucide-react";
-
+import { useAuth } from "@/components/auth/auth-provider";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     DropdownMenu,
@@ -14,9 +16,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { useAuth } from "@/components/auth/auth-provider";
-import Link from "next/link";
 
 export function NavUser() {
     const { isMobile, setOpenMobile } = useSidebar();

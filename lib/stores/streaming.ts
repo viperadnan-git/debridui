@@ -1,17 +1,17 @@
+import { toast } from "sonner";
 import { create } from "zustand";
-import { type Addon, type AddonSource, type TvSearchParams } from "@/lib/addons/types";
+import { getStreamCapableAddons } from "@/hooks/use-addons";
+import { recordPlayback } from "@/lib/actions/playback-history";
 import { AddonClient } from "@/lib/addons/client";
 import { parseStreams } from "@/lib/addons/parser";
-import { getStreamCapableAddons } from "@/hooks/use-addons";
-import { selectBestSource } from "@/lib/streaming/source-selector";
+import type { Addon, AddonSource, TvSearchParams } from "@/lib/addons/types";
 import { queryClient } from "@/lib/query-client";
-import { toast } from "sonner";
+import { selectBestSource } from "@/lib/streaming/source-selector";
+import type { Media } from "@/lib/trakt";
 import { FileType, MediaPlayer } from "@/lib/types";
 import { openInPlayer } from "@/lib/utils/media-player";
-import { useSettingsStore } from "./settings";
 import { usePreviewStore } from "./preview";
-import { type Media } from "@/lib/trakt";
-import { recordPlayback } from "@/lib/actions/playback-history";
+import { useSettingsStore } from "./settings";
 
 export interface StreamingRequest {
     imdbId: string;

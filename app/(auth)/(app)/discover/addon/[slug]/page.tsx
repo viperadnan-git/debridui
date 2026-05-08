@@ -1,11 +1,11 @@
 "use client";
 
+import { AlertCircle, ArrowLeft, Film, Tv } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { memo, useCallback } from "react";
-import { ArrowLeft, Film, Tv, AlertCircle } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { MediaCard } from "@/components/mdb/media-card";
-import { useAddonCatalogDef, useAddonCatalog, parseCatalogSlug, type AddonCatalogDef } from "@/hooks/use-addons";
+import { Skeleton } from "@/components/ui/skeleton";
+import { type AddonCatalogDef, parseCatalogSlug, useAddonCatalog, useAddonCatalogDef } from "@/hooks/use-addons";
 
 // rerender-memo-with-default-value: hoisted constant avoids new object per render
 const EMPTY_CATALOG: AddonCatalogDef = { addonId: "", type: "", id: "", name: "", addonName: "", addonUrl: "" };
@@ -27,6 +27,7 @@ const DiscoverAddonPage = memo(function DiscoverAddonPage() {
             {/* Header */}
             <div className="space-y-3 mb-8">
                 <button
+                    type="button"
                     onClick={goBack}
                     className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
                     <ArrowLeft className="size-3" />
@@ -65,6 +66,7 @@ const DiscoverAddonPage = memo(function DiscoverAddonPage() {
             {isLoading && (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
                     {Array.from({ length: 21 }, (_, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                         <div key={i} className="animate-pulse" style={{ animationDelay: `${i * 30}ms` }}>
                             <Skeleton className="aspect-2/3 rounded-sm" />
                         </div>

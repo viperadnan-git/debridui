@@ -1,11 +1,11 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { userSettings } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { userSettings } from "@/lib/db/schema";
 import { serverSettingsSchema } from "@/lib/schemas";
 import type { ServerSettings } from "@/lib/types";
 

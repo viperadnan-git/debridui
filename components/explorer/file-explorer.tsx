@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, memo } from "react";
 import { FolderOpen } from "lucide-react";
-import { SortControls } from "./sort-controls";
+import { useSearchParams } from "next/navigation";
+import { memo, useCallback, useMemo, useState } from "react";
+import { ListPagination } from "@/components/common/pagination";
+import { useFileExplorer } from "@/hooks/use-file-explorer";
+import { PAGE_SIZE } from "@/lib/constants";
+import { useSelectionStore } from "@/lib/stores/selection";
+import type { DebridFile } from "@/lib/types";
+import { AddContent } from "./add-content";
+import { FileActionsDrawer } from "./file-actions-drawer";
 import { FileList, FileListBody, FileListEmpty, FileListLoading } from "./file-list";
 import { FileListHeader } from "./file-list-header";
 import { FileListRow } from "./file-list-row";
-import { FileActionsDrawer } from "./file-actions-drawer";
-import { useSelectionStore } from "@/lib/stores/selection";
-import { AddContent } from "./add-content";
-import { useFileExplorer } from "@/hooks/use-file-explorer";
 import { SearchSection } from "./search-section";
-import { ListPagination } from "@/components/common/pagination";
-import { useSearchParams } from "next/navigation";
-import { DebridFile } from "@/lib/types";
-import { PAGE_SIZE } from "@/lib/constants";
+import { SortControls } from "./sort-controls";
 
 export const FileExplorer = memo(function FileExplorer() {
     const { files, isLoading, currentPage, totalPages, setPage } = useFileExplorer();
@@ -94,69 +94,59 @@ export const FileExplorer = memo(function FileExplorer() {
     );
 
     return (
-        <>
-            <div className="md:mx-auto md:w-full md:max-w-4xl pb-24">
-                <div className="flex flex-col gap-4">
-                    <h1 className="text-2xl sm:text-3xl font-light flex items-center gap-3">
-                        <FolderOpen className="size-6 text-primary" strokeWidth={1.5} />
-                        File Explorer
-                    </h1>
-                    <AddContent />
+        <div className="md:mx-auto md:w-full md:max-w-4xl pb-24">
+            <div className="flex flex-col gap-4">
+                <h1 className="text-2xl sm:text-3xl font-light flex items-center gap-3">
+                    <FolderOpen className="size-6 text-primary" strokeWidth={1.5} />
+                    File Explorer
+                </h1>
+                <AddContent />
 
-                    {/* Search and Sort Controls */}
-                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
-                        <SearchSection onSearchResults={handleSearchResults} />
-                        <SortControls />
-                    </div>
-
-                    <FileList className="max-sm:-mx-4">
-                        <FileListHeader
-                            isAllSelected={headerCheckboxState}
-                            onSelectAll={handleSelectAll}
-                            selectedCount={selectedFileIds.size}
-                            currentPage={queryParam ? searchPage : currentPage}
-                        />
-                        <FileListBody>
-                            {activeData.length > 0 && !isSearching && (
-                                <>
-                                    {activeData.map((file) => (
-                                        <FileListRow key={file.id} file={file} autoExpand={isIdSearch} />
-                                    ))}
-                                </>
-                            )}
-                            {isLoading || isSearching ? (
-                                <FileListLoading />
-                            ) : (
-                                activeData.length === 0 && <FileListEmpty />
-                            )}
-                        </FileListBody>
-                    </FileList>
-
-                    {/* Pagination */}
-                    {!isSearching && (
-                        <>
-                            {queryParam && searchTotalPages > 1 && (
-                                <ListPagination
-                                    currentPage={searchPage}
-                                    totalPages={searchTotalPages}
-                                    onPageChange={handleSearchPageChange}
-                                    disabled={isLoading}
-                                />
-                            )}
-                            {!queryParam && totalPages > 1 && (
-                                <ListPagination
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    onPageChange={handlePageChange}
-                                    disabled={isLoading}
-                                />
-                            )}
-                        </>
-                    )}
-
-                    <FileActionsDrawer files={activeData} />
+                {/* Search and Sort Controls */}
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+                    <SearchSection onSearchResults={handleSearchResults} />
+                    <SortControls />
                 </div>
+
+                <FileList className="max-sm:-mx-4">
+                    <FileListHeader
+                        isAllSelected={headerCheckboxState}
+                        onSelectAll={handleSelectAll}
+                        selectedCount={selectedFileIds.size}
+                        currentPage={queryParam ? searchPage : currentPage}
+                    />
+                    <FileListBody>
+                        {activeData.length > 0 &&
+                            !isSearching &&
+                            activeData.map((file) => <FileListRow key={file.id} file={file} autoExpand={isIdSearch} />)}
+                        {isLoading || isSearching ? <FileListLoading /> : activeData.length === 0 && <FileListEmpty />}
+                    </FileListBody>
+                </FileList>
+
+                {/* Pagination */}
+                {!isSearching && (
+                    <>
+                        {queryParam && searchTotalPages > 1 && (
+                            <ListPagination
+                                currentPage={searchPage}
+                                totalPages={searchTotalPages}
+                                onPageChange={handleSearchPageChange}
+                                disabled={isLoading}
+                            />
+                        )}
+                        {!queryParam && totalPages > 1 && (
+                            <ListPagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                                disabled={isLoading}
+                            />
+                        )}
+                    </>
+                )}
+
+                <FileActionsDrawer files={activeData} />
             </div>
-        </>
+        </div>
     );
 });

@@ -1,19 +1,18 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { authClient } from "@/lib/auth-client";
-import { setPassword } from "@/lib/actions/user";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
+import { AlertTriangle, Clock, MapPin, Monitor, Smartphone, Tablet, UserCog } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
-import { clearAppCache } from "@/lib/utils";
-import { parseUserAgent } from "@/lib/utils/media-player";
-import { toast } from "sonner";
-import { UserCog, AlertTriangle, Monitor, Smartphone, Tablet, Clock, MapPin } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -23,12 +22,13 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { useState, useMemo } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { formatDistanceToNow } from "date-fns";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { setPassword } from "@/lib/actions/user";
+import { authClient } from "@/lib/auth-client";
+import { clearAppCache } from "@/lib/utils";
+import { parseUserAgent } from "@/lib/utils/media-player";
 
 const AUTH_ACCOUNTS_KEY = ["auth-accounts"];
 const USER_SESSIONS_KEY = ["user-sessions"];
@@ -418,20 +418,18 @@ function SessionsSection({ currentToken }: { currentToken?: string }) {
             <SectionDivider label="Active Sessions" />
             <div className="space-y-3">
                 {isLoading ? (
-                    <>
-                        {[1, 2].map((i) => (
-                            <div key={i} className="rounded-sm border border-border/50 p-4">
-                                <div className="flex items-start gap-4">
-                                    <Skeleton className="size-10 rounded-sm shrink-0" />
-                                    <div className="space-y-2 flex-1">
-                                        <Skeleton className="h-4 w-40" />
-                                        <Skeleton className="h-3 w-56" />
-                                    </div>
-                                    <Skeleton className="h-8 w-16 shrink-0" />
+                    [1, 2].map((i) => (
+                        <div key={i} className="rounded-sm border border-border/50 p-4">
+                            <div className="flex items-start gap-4">
+                                <Skeleton className="size-10 rounded-sm shrink-0" />
+                                <div className="space-y-2 flex-1">
+                                    <Skeleton className="h-4 w-40" />
+                                    <Skeleton className="h-3 w-56" />
                                 </div>
+                                <Skeleton className="h-8 w-16 shrink-0" />
                             </div>
-                        ))}
-                    </>
+                        </div>
+                    ))
                 ) : sessions.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4">No active sessions found</p>
                 ) : (

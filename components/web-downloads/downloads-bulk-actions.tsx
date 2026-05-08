@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { WebDownload } from "@/lib/types";
-import { useWebDownloads } from "./web-downloads-provider";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Copy, Trash2, X, Loader2, Download } from "lucide-react";
+import { Copy, Download, Loader2, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import type { WebDownload } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { useWebDownloads } from "./web-downloads-provider";
 
 interface DownloadsBulkActionsProps {
     selectedDownloads: WebDownload[];

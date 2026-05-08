@@ -1,6 +1,6 @@
+import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { createTMDBClient, type TMDBEpisodeGroupDetails, type TMDBEpisodeGroupsResponse } from "@/lib/tmdb";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
 const CACHE_DURATION = {
     SHORT: 5 * 60 * 1000, // 5 minutes
@@ -8,7 +8,7 @@ const CACHE_DURATION = {
     LONG: 24 * 60 * 60 * 1000, // 24 hours
 } as const;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: rest tuple type erases call-site inference; replace when a typed alternative emerges
 function createTMDBHook<T extends any[], R>(
     keyParts: string[],
     fn: (client: NonNullable<ReturnType<typeof createTMDBClient>>, ...args: T) => Promise<R>,
