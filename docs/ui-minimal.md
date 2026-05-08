@@ -255,9 +255,9 @@
 
 ```tsx
 <div className="group cursor-pointer">
-    <div className="aspect-[3/4] relative overflow-hidden bg-muted/30 rounded-sm">
+    <div className="aspect-3/4 relative overflow-hidden bg-muted/30 rounded-sm">
         <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
             <h4 className="font-light text-sm text-white">{title}</h4>
             <span className="text-xs text-white/70">{subtitle}</span>
@@ -321,7 +321,7 @@
 "translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300"
 
 // Ken Burns (slow zoom)
-"transition-transform duration-[8000ms] ease-out"
+"transition-transform duration-8000 ease-out"
 isActive ? "scale-105" : "scale-100"
 ```
 

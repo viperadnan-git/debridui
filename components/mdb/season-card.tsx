@@ -61,7 +61,7 @@ export const SeasonCard = memo(function SeasonCard({
                 />
 
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
                 {/* Season number - editorial style */}
                 <div className="absolute top-2.5 left-2.5">

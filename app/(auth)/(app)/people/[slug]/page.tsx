@@ -94,8 +94,8 @@ const PersonHeader = memo(function PersonHeader({
                             decoding="async"
                         />
                     </div>
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/60 to-transparent -mt-6" />
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/80 via-transparent to-background/80 -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-t from-background via-background/60 to-transparent -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-r from-background/80 via-transparent to-background/80 -mt-6" />
                 </>
             ) : headshotUrl ? (
                 <>
@@ -108,8 +108,8 @@ const PersonHeader = memo(function PersonHeader({
                             decoding="async"
                         />
                     </div>
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/70 to-background/40 -mt-6" />
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/70 via-transparent to-background/70 -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-t from-background via-background/70 to-background/40 -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-r from-background/70 via-transparent to-background/70 -mt-6" />
                 </>
             ) : null}
 
@@ -352,7 +352,7 @@ const CreditCard = memo(function CreditCard({
                     </span>
 
                     {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                     {/* Content on hover */}
                     <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">

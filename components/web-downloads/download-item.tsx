@@ -117,7 +117,7 @@ export const DownloadItem = memo(function DownloadItem({
             <div className="flex-1 min-w-0 space-y-1">
                 {/* Name + Badge */}
                 <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
-                    <span className="text-sm font-medium leading-tight break-words min-w-0 flex-1">
+                    <span className="text-sm font-medium leading-tight wrap-break-word min-w-0 flex-1">
                         {download.name}
                     </span>
                     <WebDownloadStatusBadge status={download.status} />

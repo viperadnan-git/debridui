@@ -17,7 +17,7 @@ const SourceContent = memo(function SourceContent({ result }: { result: TorBoxSe
     return (
         <div className="flex-1 min-w-0">
             {/* Title */}
-            <div className="font-medium text-sm mb-1.5 leading-tight break-words">{result.raw_title}</div>
+            <div className="font-medium text-sm mb-1.5 leading-tight wrap-break-word">{result.raw_title}</div>
 
             <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">

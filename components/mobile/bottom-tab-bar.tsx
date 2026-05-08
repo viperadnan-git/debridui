@@ -40,7 +40,7 @@ export function BottomTabBar() {
         <>
             <nav
                 aria-label="Primary"
-                className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-border/50 bg-background/85 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/75 pb-safe">
+                className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-border/50 bg-background/85 backdrop-blur-xl backdrop-saturate-150 supports-backdrop-filter:bg-background/75 pb-safe">
                 <ul className="grid grid-cols-5 h-14">
                     {TABS.map((tab) => {
                         const Icon = tab.icon;

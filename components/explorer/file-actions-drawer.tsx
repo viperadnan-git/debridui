@@ -98,7 +98,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                             "flex items-center h-12 gap-1 px-1.5",
                             "bg-background/95 backdrop-blur-md backdrop-saturate-150",
                             "border border-border/60 rounded-sm shadow-lg",
-                            "supports-[backdrop-filter]:bg-background/80"
+                            "supports-backdrop-filter:bg-background/80"
                         )}>
                         {/* Selection summary — single source of truth for counts */}
                         {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-label is intentional to announce the count region to screen readers */}

@@ -101,10 +101,10 @@ export function Gallery({ items, className }: GalleryProps) {
                 className="relative rounded-sm sm:rounded-lg border border-border/50 bg-muted/20 overflow-hidden touch-pan-y"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}>
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none z-10" />
+                <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none z-10" />
 
                 {/* Desktop: 16:9 landscape */}
-                <div className="relative aspect-[16/9] hidden sm:block">
+                <div className="relative aspect-video hidden sm:block">
                     {items.map((item, index) => (
                         <img
                             key={item.id}
@@ -121,8 +121,7 @@ export function Gallery({ items, className }: GalleryProps) {
                 </div>
 
                 {/* Mobile: 9:16 portrait (falls back to default if no mobile) */}
-                <div
-                    className={cn("relative sm:hidden", items[active]?.src.mobile ? "aspect-[9/16]" : "aspect-[16/9]")}>
+                <div className={cn("relative sm:hidden", items[active]?.src.mobile ? "aspect-9/16" : "aspect-video")}>
                     {items.map((item, index) => (
                         <img
                             key={item.id}
@@ -138,7 +137,7 @@ export function Gallery({ items, className }: GalleryProps) {
                     ))}
                 </div>
 
-                <div className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-linear-to-t from-background to-transparent pointer-events-none" />
 
                 {/* Progress Indicators - touch-optimized on mobile */}
                 <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-1.5 z-20">

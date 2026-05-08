@@ -7,12 +7,12 @@ export const HeroCarouselSkeleton = memo(function HeroCarouselSkeleton() {
     return (
         <div className="-mx-4 -mt-6 lg:-mx-6 relative">
             {/* Desktop skeleton */}
-            <div className="hidden md:block relative w-full aspect-[2/1] overflow-hidden">
+            <div className="hidden md:block relative w-full aspect-2/1 overflow-hidden">
                 <Skeleton className="absolute inset-0 rounded-none" />
 
                 {/* Gradient overlays for depth */}
-                <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+                <div className="absolute inset-0 bg-linear-to-r from-background via-background/70 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-background/30" />
 
                 {/* Content skeleton */}
                 <div className="absolute inset-0 flex items-center">
@@ -55,12 +55,12 @@ export const HeroCarouselSkeleton = memo(function HeroCarouselSkeleton() {
             </div>
 
             {/* Mobile skeleton */}
-            <div className="md:hidden relative w-full aspect-[9/14] overflow-hidden">
+            <div className="md:hidden relative w-full aspect-9/14 overflow-hidden">
                 <Skeleton className="absolute inset-0 rounded-none" />
 
                 {/* Gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-b from-background/60 via-transparent to-transparent" />
 
                 {/* Top indicator */}
                 <div className="absolute top-4 left-4 right-4 flex items-center justify-between">

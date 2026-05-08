@@ -637,7 +637,7 @@ Use these templates as starting points for common section types:
         </span>
 
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Content revealed on hover */}
         <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
@@ -1012,7 +1012,7 @@ Displays vertical aspect ratio images with hover interactions.
         )}
 
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Content on hover */}
         <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
@@ -1063,12 +1063,12 @@ Hero section for detail pages with backdrop imagery.
 {
     /* Vertical gradient */
 }
-<div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />;
+<div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-background/20" />;
 
 {
     /* Horizontal vignette */
 }
-<div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80" />;
+<div className="absolute inset-0 bg-linear-to-r from-background/80 via-transparent to-background/80" />;
 ```
 
 **Typography Hierarchy:**
@@ -1174,7 +1174,7 @@ Card with selection state indicator, useful for multi-select interfaces.
         <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-hover" />
 
         {/* Always-visible gradient for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Label badge - changes style when selected */}
         <span
@@ -1214,7 +1214,7 @@ Collapsible horizontal card with thumbnail and metadata, useful for list items.
                     {/* Thumbnail */}
                     <div className="relative w-full sm:w-48 md:w-56 shrink-0 aspect-video bg-muted/30 overflow-hidden">
                         <img className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-hover" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
 
                         {/* Label badge */}
                         <span className="absolute top-2.5 left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
@@ -1431,12 +1431,12 @@ Loading placeholders with pulse animation. Match skeleton dimensions to actual c
 
 ```tsx
 <div className="flex items-center gap-4 py-2">
-    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/50 to-border/50" />
+    <div className="h-px flex-1 bg-linear-to-r from-transparent via-border/50 to-border/50" />
     <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-border/50 bg-card/50 backdrop-blur-sm">
         <Icon className="size-3.5 text-primary" />
         <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
     </div>
-    <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border/50 to-border/50" />
+    <div className="h-px flex-1 bg-linear-to-l from-transparent via-border/50 to-border/50" />
 </div>
 ```
 
@@ -1614,7 +1614,7 @@ Subtle zoom animation for hero carousel images.
 ```tsx
 <div
     className={cn(
-        "absolute inset-0 transition-transform duration-[8000ms] ease-out",
+        "absolute inset-0 transition-transform duration-8000 ease-out",
         isActive ? "scale-105" : "scale-100"
     )}>
     <img src={image} className="w-full h-full object-cover" />

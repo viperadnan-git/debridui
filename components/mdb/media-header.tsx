@@ -34,8 +34,8 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                             decoding="async"
                         />
                     </div>
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/40 to-transparent -mt-6" />
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/60 via-transparent to-background/60 -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-t from-background via-background/40 to-transparent -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-r from-background/60 via-transparent to-background/60 -mt-6" />
                 </>
             ) : (
                 <>
@@ -48,8 +48,8 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                             decoding="async"
                         />
                     </div>
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-t from-background via-background/70 to-background/40 -mt-6" />
-                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-gradient-to-r from-background/70 via-transparent to-background/70 -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-t from-background via-background/70 to-background/40 -mt-6" />
+                    <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-screen bg-linear-to-r from-background/70 via-transparent to-background/70 -mt-6" />
                 </>
             )}
 

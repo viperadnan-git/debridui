@@ -2,7 +2,7 @@
 
 import { Calendar, Film, Puzzle, SearchIcon, Sparkles, Ticket, TrendingUp, Tv } from "lucide-react";
 import dynamic from "next/dynamic";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { ContinueWatching } from "@/components/mdb/continue-watching";
 import { HeroCarouselSkeleton } from "@/components/mdb/hero-carousel-skeleton";
 import { MdbFooter } from "@/components/mdb/mdb-footer";
@@ -138,12 +138,12 @@ const ContentSection = memo(function ContentSection({ label, icon, children, del
             }}>
             {/* Section divider with animated accent */}
             <div className="flex items-center gap-4 py-2">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/50 to-border/50" />
+                <div className="h-px flex-1 bg-linear-to-r from-transparent via-border/50 to-border/50" />
                 <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-border/50 bg-card/50 backdrop-blur-sm">
                     {icon && <span className="text-primary">{icon}</span>}
                     <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
                 </div>
-                <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border/50 to-border/50" />
+                <div className="h-px flex-1 bg-linear-to-l from-transparent via-border/50 to-border/50" />
             </div>
             {children}
         </div>
@@ -159,8 +159,7 @@ const AddonCatalogRow = memo(function AddonCatalogRow({
     isVisible: boolean;
 }) {
     const { data, error } = useAddonCatalog(catalog, isVisible);
-    // rerender-memo: stable sliced ref so MediaSection memo is effective
-    const items = useMemo(() => data?.items.slice(0, 10), [data]);
+    const items = data?.items;
 
     return (
         <MediaSection

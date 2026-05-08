@@ -63,7 +63,7 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
                 <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="group/delete hover:!bg-destructive/10"
+                    className="group/delete hover:bg-destructive/10!"
                     onClick={() => handleRemove()}>
                     <Trash2Icon className="size-4 text-destructive/70 group-hover/delete:text-destructive" />
                 </Button>
@@ -81,7 +81,7 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
                 <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="group/delete hover:!bg-destructive/10"
+                    className="group/delete hover:bg-destructive/10!"
                     onClick={() => handleRemove()}>
                     <Trash2Icon className="size-4 text-destructive/70 group-hover/delete:text-destructive" />
                 </Button>
@@ -123,11 +123,11 @@ export const SourceRow = memo(function SourceRow({
     return (
         <div className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">
             {/* Title */}
-            <div className="text-sm leading-tight break-words">{source.title}</div>
+            <div className="text-sm leading-tight wrap-break-word">{source.title}</div>
 
             {/* Description */}
             {source.description && (
-                <div className="text-xs text-muted-foreground whitespace-pre-wrap break-words">
+                <div className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
                     {source.description}
                 </div>
             )}

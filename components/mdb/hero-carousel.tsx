@@ -41,11 +41,11 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
     return (
         <div className="relative w-full">
             {/* Desktop Layout */}
-            <div className="hidden md:block relative w-full aspect-[2/1] overflow-hidden">
+            <div className="hidden md:block relative w-full aspect-2/1 overflow-hidden">
                 {/* Background Image with Ken Burns effect */}
                 <div
                     className={cn(
-                        "absolute inset-0 transition-transform duration-[8000ms] ease-out",
+                        "absolute inset-0 transition-transform duration-8000 ease-out",
                         isActive ? "scale-105" : "scale-100"
                     )}>
                     <img
@@ -58,9 +58,9 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
                 </div>
 
                 {/* Cinematic gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
-                <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-r from-background via-background/70 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-background/30" />
+                <div className="absolute inset-0 bg-linear-to-b from-background/40 via-transparent to-transparent" />
 
                 {/* Film grain texture overlay */}
                 <div
@@ -173,11 +173,11 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
             </div>
 
             {/* Mobile Layout */}
-            <div className="md:hidden relative w-full aspect-[9/14] overflow-hidden">
+            <div className="md:hidden relative w-full aspect-9/14 overflow-hidden">
                 {/* Background */}
                 <div
                     className={cn(
-                        "absolute inset-0 transition-transform duration-[8000ms] ease-out",
+                        "absolute inset-0 transition-transform duration-8000 ease-out",
                         isActive ? "scale-105" : "scale-100"
                     )}>
                     <img
@@ -190,8 +190,8 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
                 </div>
 
                 {/* Gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-b from-background/60 via-transparent to-transparent" />
 
                 {/* Film grain */}
                 <div
@@ -352,7 +352,7 @@ export const HeroCarousel = memo(function HeroCarousel({ autoFocus = false }: He
                     loop: true,
                 }}
                 plugins={[autoplay, WheelGesturesPlugin()]}>
-                <CarouselContent className="-ml-0">
+                <CarouselContent className="ml-0">
                     {mixed.map((item: TraktMediaItem, index: number) => (
                         <CarouselItem key={(item.movie ?? item.show)?.ids?.trakt ?? `hero-${index}`} className="pl-0">
                             <HeroSlide item={item} index={index} total={mixed.length} isActive={index === current} />

@@ -60,7 +60,11 @@ export const MediaSection = memo(function MediaSection({
 
     if (error) {
         return (
-            <section className={cn("space-y-2 sm:space-y-4", className)}>
+            <section
+                className={cn(
+                    "space-y-2 sm:space-y-4 [content-visibility:auto] [contain-intrinsic-size:auto_320px]",
+                    className
+                )}>
                 <div className="flex items-center justify-between gap-4">
                     <h2 className="flex items-center gap-1.5 text-[11px] sm:text-sm leading-none tracking-widest uppercase text-muted-foreground">
                         {TitleIcon && <TitleIcon className="size-3 sm:size-4 shrink-0 -mt-1" />}
@@ -76,7 +80,11 @@ export const MediaSection = memo(function MediaSection({
     }
 
     return (
-        <section className={cn("space-y-2 sm:space-y-4", className)}>
+        <section
+            className={cn(
+                "space-y-2 sm:space-y-4 [content-visibility:auto] [contain-intrinsic-size:auto_320px]",
+                className
+            )}>
             {/* Section Header */}
             <div className="flex items-center justify-between gap-4">
                 <h2 className="flex items-center gap-1.5 text-[11px] sm:text-sm leading-none tracking-widest uppercase text-muted-foreground">
@@ -109,16 +117,12 @@ export const MediaSection = memo(function MediaSection({
                             const type = item.movie ? "movie" : "show";
 
                             return (
-                                <div
+                                <MediaCard
                                     key={`${type}-${media.ids?.imdb || media.ids?.slug || index}`}
-                                    className="animate-in fade-in-0 slide-in-from-bottom-2"
-                                    style={{
-                                        animationDelay: `${Math.min(index * 30, 300)}ms`,
-                                        animationDuration: "400ms",
-                                        animationFillMode: "backwards",
-                                    }}>
-                                    <MediaCard media={media} type={type} rank={showRank ? index + 1 : undefined} />
-                                </div>
+                                    media={media}
+                                    type={type}
+                                    rank={showRank ? index + 1 : undefined}
+                                />
                             );
                         })}
                     </div>

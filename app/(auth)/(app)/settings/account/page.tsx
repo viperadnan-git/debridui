@@ -443,7 +443,7 @@ function SessionsSection({ currentToken }: { currentToken?: string }) {
                             return (
                                 <div
                                     key={sessionItem.id}
-                                    className={`rounded-sm border p-3 sm:p-4 transition-colors ${isCurrent ? "border-primary/30 bg-primary/[0.03]" : "border-border/50 hover:border-border"}`}>
+                                    className={`rounded-sm border p-3 sm:p-4 transition-colors ${isCurrent ? "border-primary/30 bg-primary/3" : "border-border/50 hover:border-border"}`}>
                                     <div className="flex items-center gap-3">
                                         <div
                                             className={`flex size-9 shrink-0 items-center justify-center rounded-sm ${isCurrent ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>

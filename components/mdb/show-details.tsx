@@ -94,7 +94,7 @@ const EpisodesSection = memo(function EpisodesSection({
                         // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                         <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
                             <div className="flex flex-row items-start">
-                                <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video rounded-none" />
+                                <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-5/3 sm:aspect-video rounded-none" />
                                 <div className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 space-y-1.5 sm:space-y-2">
                                     <Skeleton className="h-4 sm:h-5 w-3/4" />
                                     <Skeleton className="h-3 w-1/3" />
@@ -249,7 +249,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                             // biome-ignore lint/suspicious/noArrayIndexKey: position-based key in static placeholder list
                             <div key={i} className="rounded-sm border border-border/50 overflow-hidden">
                                 <div className="flex flex-row items-start">
-                                    <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video rounded-none" />
+                                    <Skeleton className="w-36 sm:w-56 md:w-60 shrink-0 aspect-5/3 sm:aspect-video rounded-none" />
                                     <div className="flex-1 px-2.5 py-1.5 sm:p-3 md:p-4 space-y-1.5 sm:space-y-2">
                                         <Skeleton className="h-4 sm:h-5 w-3/4" />
                                         <Skeleton className="h-3 w-1/3" />

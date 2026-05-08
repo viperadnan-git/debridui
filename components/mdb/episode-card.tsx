@@ -35,7 +35,7 @@ const ThumbnailContent = memo(function ThumbnailContent({
                 )}
                 loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
             <span className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-sm">
                 E{episodeLabel}
             </span>
@@ -78,7 +78,7 @@ export const EpisodeCard = memo(function EpisodeCard({ episode, className, imdbI
         : undefined;
 
     const thumbnailClass =
-        "relative w-36 sm:w-56 md:w-60 shrink-0 aspect-[5/3] sm:aspect-video bg-muted/30 overflow-hidden";
+        "relative w-36 sm:w-56 md:w-60 shrink-0 aspect-5/3 sm:aspect-video bg-muted/30 overflow-hidden";
 
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn("group", className)}>
