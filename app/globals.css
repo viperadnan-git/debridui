@@ -239,4 +239,21 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
+
+    /* Mobile bottom tab bar height incl. iOS safe-area inset */
+    .mobile-tabbar-h {
+        --mobile-tabbar-h: calc(56px + env(safe-area-inset-bottom));
+    }
+    .pb-mobile-tabbar {
+        padding-bottom: calc(56px + env(safe-area-inset-bottom));
+    }
+    .bottom-mobile-tabbar {
+        bottom: calc(56px + env(safe-area-inset-bottom));
+    }
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .pt-safe {
+        padding-top: env(safe-area-inset-top);
+    }
 }

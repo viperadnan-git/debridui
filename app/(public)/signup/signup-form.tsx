@@ -72,7 +72,7 @@ export default function SignupForm() {
     const isDisabled = form.formState.isSubmitting || isRedirecting;
 
     return (
-        <div className="bg-background grid grid-rows-[1fr_auto] min-h-svh p-6 md:p-10">
+        <div className="bg-background grid grid-rows-[1fr_auto] min-h-svh p-6 md:p-10 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
             <div className="flex items-center justify-center">
                 <div className="w-full max-w-sm">
                     <div className="flex flex-col items-center gap-2 mb-6">

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "./providers";
 import { cn } from "@/lib/utils";
@@ -76,6 +76,12 @@ export const metadata: Metadata = {
         icon: "/icon.svg",
         apple: "/icon.svg",
     },
+};
+
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
 };
 
 export default function RootLayout({

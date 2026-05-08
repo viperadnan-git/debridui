@@ -108,7 +108,7 @@ export default function Home() {
 
                 {/* ── Navigation bar ── */}
                 <nav
-                    className="relative z-10 px-6 py-5 md:px-12 lg:px-20 flex items-center justify-between animate-in fade-in-0"
+                    className="relative z-10 px-6 py-5 pt-[max(env(safe-area-inset-top),1.25rem)] md:px-12 lg:px-20 flex items-center justify-between animate-in fade-in-0"
                     style={{ animationDuration: "600ms" }}>
                     <div
                         className="animate-in fade-in-0 slide-in-from-left-4"
@@ -524,7 +524,7 @@ export default function Home() {
             </section>
 
             {/* ─── FOOTER ─── */}
-            <footer className="px-6 py-6 md:px-12 lg:px-20 border-t border-border/50">
+            <footer className="px-6 py-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] md:px-12 lg:px-20 border-t border-border/50">
                 <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <Image

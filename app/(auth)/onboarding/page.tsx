@@ -12,7 +12,7 @@ export default function OnboardingPage() {
     const { logout, isLoggingOut } = useAuth();
 
     return (
-        <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+        <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
             <div className="w-full max-w-sm">
                 <div className="flex flex-col items-center gap-2 mb-6">
                     <Link href="/" className="flex flex-col items-center gap-2 font-medium">
