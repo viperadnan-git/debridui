@@ -15,11 +15,10 @@ export function hydrateSettingsFromServer(settings: ServerSettings | null) {
     if (settings.tmdb_api_key !== undefined) set("tmdbApiKey", settings.tmdb_api_key);
 }
 
-export function useUserSettings(enabled = true) {
+export function useUserSettings() {
     return useQuery({
         queryKey: USER_SETTINGS_KEY,
         queryFn: () => getUserSettings(),
-        enabled,
         staleTime: 1 * 60 * 60 * 1000, // 1 hour
         refetchOnWindowFocus: false,
     });

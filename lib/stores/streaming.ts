@@ -125,32 +125,27 @@ export const useStreamingStore = create<StreamingState>()((set, get) => ({
         const fileName = metaLabel ? `${title} [${metaLabel}]` : title;
 
         if (mediaPlayer === MediaPlayer.BROWSER) {
-            usePreviewStore
-                .getState()
-                .openSinglePreview({ url: source.url, title: fileName, fileType: FileType.VIDEO });
+            usePreviewStore.getState().openSinglePreview({
+                url: source.url,
+                title: fileName,
+                fileType: FileType.VIDEO,
+            });
         } else {
             openInPlayer({ url: source.url, fileName, player: mediaPlayer });
         }
-
-        // Record playback history
-        recordPlayback({
-            imdbId: request.imdbId,
-            type: request.type,
-            media: request.media,
-            tvParams: request.tvParams,
-        })
-            .then(() => {
-                // Invalidate query to refetch and update continue watching
-                queryClient.invalidateQueries({ queryKey: ["playback-history"] });
-            })
-            .catch((error) => {
-                console.error("Failed to record playback:", error);
-            });
     },
 
     play: async (request, addons) => {
         const { imdbId, type, tvParams, media } = request;
         const title = formatTitle(request);
+
+        recordPlayback({ imdbId, type, media, tvParams })
+            .then(() =>
+                queryClient.invalidateQueries({
+                    queryKey: ["playback-history"],
+                })
+            )
+            .catch((error) => console.error("Failed to record playback:", error));
 
         // Filter to enabled addons, then to stream-capable via manifest check (cache-first)
         const enabled = addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order);

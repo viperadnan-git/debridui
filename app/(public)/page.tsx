@@ -1,8 +1,11 @@
 import { ArrowRightIcon, ArrowUpRightIcon, ChevronDownIcon } from "lucide-react";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Gallery } from "@/components/gallery";
 import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
 import { ACCOUNT_TYPE_ICONS, ACCOUNT_TYPE_LABELS, DISCORD_URL, EXTENSION_TO_FILE_TYPE } from "@/lib/constants";
 import { AccountType, MediaPlayer } from "@/lib/types";
 
@@ -88,7 +91,10 @@ const techStack = [
     { name: "PostgreSQL", icon: "postgresql" },
 ];
 
-export default function Home() {
+export default async function Home() {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (session) redirect("/dashboard");
+
     return (
         <div className="min-h-screen">
             {/* ─── HERO ─── */}

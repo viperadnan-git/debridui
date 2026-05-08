@@ -57,9 +57,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const router = useRouter();
     const pathname = usePathname();
     const { data: session, isPending: isSessionPending, error: sessionError } = authClient.useSession();
-    // Only fetch accounts when session exists
-    const { data: userAccounts = [], isLoading: isAccountsLoading, refetch } = useUserAccounts(!!session);
-    const { data: serverSettings } = useUserSettings(!!session);
+    const { data: userAccounts = [], isLoading: isAccountsLoading, refetch } = useUserAccounts();
+    const { data: serverSettings } = useUserSettings();
 
     const accountsLength = userAccounts.length;
 
@@ -97,46 +96,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Mutation for removing accounts (used in error recovery)
     const { mutate: removeAccount } = useRemoveUserAccount();
 
-    // Centralized redirect logic - single source of truth for all auth redirects
+    // Server layout enforces a valid session before this provider mounts.
+    // If the session is invalidated mid-app (revoked/expired), bounce to /login.
     useEffect(() => {
-        if (isSessionPending || isAccountsLoading) return;
+        if (!isSessionPending && !session) router.push("/login");
+    }, [isSessionPending, session, router]);
 
-        // No session → login with callbackUrl
-        if (!session) {
-            const callbackUrl = pathname !== "/login" && pathname !== "/signup" ? pathname : null;
-            const loginUrl = callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login";
-            router.push(loginUrl);
-            return;
-        }
-
+    // Route between onboarding and the app based on whether the user has accounts.
+    useEffect(() => {
+        if (!session || isAccountsLoading) return;
         const hasAccounts = userAccounts.length > 0;
         const isOnboarding = pathname === "/onboarding";
-
-        // Has accounts + on onboarding → redirect to callbackUrl or dashboard
-        if (hasAccounts && isOnboarding) {
-            const params = new URLSearchParams(window.location.search);
-            const callbackUrl = params.get("callbackUrl");
-            router.push(callbackUrl || "/dashboard");
-            return;
-        }
-
-        // No accounts + not on onboarding → onboarding (preserve callbackUrl)
-        if (!hasAccounts && !isOnboarding) {
-            const params = new URLSearchParams(window.location.search);
-            const callbackUrl = params.get("callbackUrl");
-            const onboardingUrl = callbackUrl
-                ? `/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`
-                : "/onboarding";
-            router.push(onboardingUrl);
-        }
-    }, [session, isSessionPending, isAccountsLoading, userAccounts.length, pathname, router]);
+        if (hasAccounts === !isOnboarding) return;
+        router.push(hasAccounts ? "/dashboard" : "/onboarding");
+    }, [session, isAccountsLoading, userAccounts.length, pathname, router]);
 
     // Hydrate settings from server (once on load, non-blocking)
     const hasHydrated = useRef(false);
-    if (serverSettings && !hasHydrated.current) {
-        hasHydrated.current = true;
-        hydrateSettingsFromServer(serverSettings);
-    }
+    useEffect(() => {
+        if (serverSettings && !hasHydrated.current) {
+            hasHydrated.current = true;
+            hydrateSettingsFromServer(serverSettings);
+        }
+    }, [serverSettings]);
 
     // Sync currentAccountId to localStorage when it changes
     useEffect(() => {
@@ -215,8 +197,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         );
     }
 
-    // Show splash during: session check, no session (redirect), accounts loading
-    if (isSessionPending || !session || isAccountsLoading) {
+    // Server layout has already validated the session; only block on missing accounts data.
+    if (isAccountsLoading) {
         return <SplashScreen />;
     }
 

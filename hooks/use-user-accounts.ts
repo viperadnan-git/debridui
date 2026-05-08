@@ -7,13 +7,11 @@ import { useToastMutation } from "@/lib/utils/mutation-factory";
 
 const USER_ACCOUNTS_KEY = ["user-accounts"];
 
-// Fetch all user accounts
-// `client-swr-dedup` - No need to check session here, called from AuthProvider context
-export function useUserAccounts(enabled = true) {
+// Server layout gates access; the action re-validates session and redirects on miss.
+export function useUserAccounts() {
     return useQuery({
         queryKey: USER_ACCOUNTS_KEY,
         queryFn: () => getUserAccounts(),
-        enabled,
         staleTime: 1 * 60 * 60 * 1000, // 1 hour
     });
 }

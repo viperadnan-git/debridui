@@ -26,6 +26,7 @@ const ThumbnailContent = memo(function ThumbnailContent({
     return (
         <>
             <img
+                key={screenshotUrl}
                 src={screenshotUrl}
                 alt={title}
                 className={cn(
