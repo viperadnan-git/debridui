@@ -60,11 +60,7 @@ export const MediaSection = memo(function MediaSection({
 
     if (error) {
         return (
-            <section
-                className={cn(
-                    "space-y-2 sm:space-y-4 [content-visibility:auto] [contain-intrinsic-size:auto_320px]",
-                    className
-                )}>
+            <section className={cn("space-y-2 sm:space-y-4", className)}>
                 <div className="flex items-center justify-between gap-4">
                     <h2 className="flex items-center gap-1.5 text-[11px] sm:text-sm leading-none tracking-widest uppercase text-muted-foreground">
                         {TitleIcon && <TitleIcon className="size-3 sm:size-4 shrink-0 -mt-1" />}
@@ -82,11 +78,11 @@ export const MediaSection = memo(function MediaSection({
     return (
         <section
             className={cn(
-                "space-y-2 sm:space-y-4 [content-visibility:auto] [contain-intrinsic-size:auto_320px]",
+                "space-y-2 sm:space-y-4 max-lg:-mx-4 [content-visibility:auto] [contain-intrinsic-size:auto_320px]",
                 className
             )}>
             {/* Section Header */}
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 max-lg:px-4">
                 <h2 className="flex items-center gap-1.5 text-[11px] sm:text-sm leading-none tracking-widest uppercase text-muted-foreground">
                     {TitleIcon && <TitleIcon className="size-3 sm:size-4 shrink-0 -mt-1" />}
                     {title}
@@ -102,7 +98,7 @@ export const MediaSection = memo(function MediaSection({
             </div>
 
             {/* Content Grid */}
-            <ScrollCarousel className="-mx-4 lg:mx-0">
+            <ScrollCarousel>
                 {isLoading ? (
                     <MediaSectionSkeleton rows={rows} />
                 ) : (
