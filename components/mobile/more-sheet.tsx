@@ -57,7 +57,7 @@ export function MoreSheet({ open, onOpenChange }: { open: boolean; onOpenChange:
                                 <button
                                     type="button"
                                     onClick={() => setTheme(isDark ? "light" : "dark")}
-                                    className="w-full flex items-center gap-4 px-3 py-3 rounded-sm hover:bg-muted/40 active:bg-muted/50 transition-colors">
+                                    className="w-full flex items-center gap-4 px-3 py-3 rounded-sm cursor-pointer hover:bg-muted/40 active:bg-muted/50 transition-colors">
                                     <span className="flex size-9 items-center justify-center bg-muted/40 rounded-sm shrink-0">
                                         {isDark ? (
                                             <Sun className="size-4" strokeWidth={1.5} />
@@ -86,8 +86,8 @@ export function MoreSheet({ open, onOpenChange }: { open: boolean; onOpenChange:
                                         setConfirmLogout(true);
                                     }}
                                     className={cn(
-                                        "w-full flex items-center gap-4 px-3 py-3 rounded-sm transition-colors",
-                                        "hover:bg-destructive/10 active:bg-destructive/15 text-destructive"
+                                        "w-full flex items-center gap-4 px-3 py-3 rounded-sm cursor-pointer transition-colors",
+                                        "hover:bg-destructive/10 active:bg-destructive/15 text-destructive disabled:cursor-not-allowed disabled:opacity-60"
                                     )}>
                                     <span className="flex size-9 items-center justify-center bg-destructive/10 rounded-sm shrink-0">
                                         <LogOut className="size-4" strokeWidth={1.5} />

@@ -34,7 +34,7 @@ export function AccountQuickSwitch() {
                 type="button"
                 onClick={() => setOpen(true)}
                 aria-label={`Account: ${currentAccount.name}. Tap to switch.`}
-                className="relative size-9 rounded-sm hover:bg-muted/40 active:bg-muted/50 transition-colors flex items-center justify-center">
+                className="relative size-9 rounded-sm cursor-pointer hover:bg-muted/40 active:bg-muted/50 transition-colors flex items-center justify-center">
                 <Avatar className="size-8 rounded-sm border border-border/50">
                     <AvatarImage src={userImage} alt={userName} />
                     <AvatarFallback className="text-[10px] font-light tracking-wider uppercase">
@@ -99,7 +99,7 @@ export function AccountQuickSwitch() {
                                                 setOpen(false);
                                             }}
                                             className={cn(
-                                                "w-full flex items-center gap-3 px-3 py-3 rounded-sm transition-colors",
+                                                "w-full flex items-center gap-3 px-3 py-3 rounded-sm cursor-pointer transition-colors",
                                                 "hover:bg-muted/40 active:bg-muted/50",
                                                 isCurrent && "bg-muted/30"
                                             )}>

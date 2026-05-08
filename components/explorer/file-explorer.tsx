@@ -111,7 +111,7 @@ export const FileExplorer = memo(function FileExplorer() {
                     <AddContent />
 
                     {/* Search and Sort Controls */}
-                    <div className="flex flex-col items-end md:flex-row md:items-center gap-2 sm:gap-4 mb-2 sm:mb-4">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
                         <SearchSection onSearchResults={handleSearchResults} />
                         <SortControls />
                     </div>

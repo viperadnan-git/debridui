@@ -76,7 +76,7 @@ export function BottomTabBar() {
                                         onClick={() => setMoreOpen(true)}
                                         aria-expanded={moreOpen}
                                         aria-label="More options"
-                                        className="w-full h-full flex flex-col items-center justify-center gap-1 active:bg-muted/40 transition-colors">
+                                        className="w-full h-full flex flex-col items-center justify-center gap-1 cursor-pointer active:bg-muted/40 transition-colors">
                                         {iconWrap}
                                         <span className={labelClass}>{tab.label}</span>
                                     </button>

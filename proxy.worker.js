@@ -12,7 +12,6 @@ https://cdn.corsfix.workers.dev/?url=https://api.example.com/endpoint
 
 // ─── Config ──────────────────────────────────────────────────
 // Supports: "*" (all), "*.domain.com" (wildcard), exact strings
-// eslint-disable-next-line import/no-anonymous-default-export
 const ORIGINS = [
     // "*",
     "http://localhost:3000", // Local development
@@ -68,6 +67,7 @@ function extractTargetUrl(requestUrl) {
     return decodeURIComponent(requestUrl.substring(start, end));
 }
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default {
     async fetch(request) {
         const method = request.method;
