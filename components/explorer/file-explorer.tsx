@@ -75,13 +75,9 @@ export const FileExplorer = memo(function FileExplorer() {
         return false;
     }, [activeData, selectedFileIds]);
 
-    // Wrapped page change handlers that scroll to top
     const handlePageChange = useCallback(
         (page: number) => {
-            // Don't do anything if clicking the same page
             if (page === currentPage) return;
-
-            // Scroll to top first for immediate feedback
             window.scrollTo(0, 0);
             setPage(page);
         },
@@ -90,10 +86,7 @@ export const FileExplorer = memo(function FileExplorer() {
 
     const handleSearchPageChange = useCallback(
         (page: number) => {
-            // Don't do anything if clicking the same page
             if (page === searchPage) return;
-
-            // Scroll to top first for immediate feedback
             window.scrollTo(0, 0);
             setSearchPage(page);
         },
@@ -121,6 +114,7 @@ export const FileExplorer = memo(function FileExplorer() {
                             isAllSelected={headerCheckboxState}
                             onSelectAll={handleSelectAll}
                             selectedCount={selectedFileIds.size}
+                            currentPage={queryParam ? searchPage : currentPage}
                         />
                         <FileListBody>
                             {activeData.length > 0 && !isSearching && (

@@ -33,6 +33,7 @@ export function SortControls() {
             const params = new URLSearchParams(searchParamsString);
             params.set("sort_by", newSortBy);
             params.set("sort_order", newSortOrder);
+            params.delete("page");
             router.push(`${pathname}?${params.toString()}`);
         },
         [searchParamsString, pathname, router]

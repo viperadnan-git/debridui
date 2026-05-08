@@ -146,17 +146,13 @@ const FileActionButton = memo(function FileActionButton({
         await handleAction(linkInfo);
     };
 
-    const icon = useMemo(() => {
-        if (isButtonLoading) {
-            return <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />;
-        }
-
-        return {
-            copy: <Copy className="h-3 w-3 sm:h-3.5 sm:w-3.5" />,
-            download: <Download className="h-3 w-3 sm:h-3.5 sm:w-3.5" />,
-            play: <CirclePlay className="h-3 w-3 sm:h-3.5 sm:w-3.5" />,
-        }[action];
-    }, [action, isButtonLoading]);
+    const ActionIcon = isButtonLoading
+        ? Loader2
+        : action === "copy"
+          ? Copy
+          : action === "download"
+            ? Download
+            : CirclePlay;
 
     return (
         <Button
@@ -165,7 +161,7 @@ const FileActionButton = memo(function FileActionButton({
             className="size-4 sm:size-6 cursor-pointer"
             onClick={handleClick}
             disabled={isButtonLoading || !node.id}>
-            {icon}
+            <ActionIcon className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", isButtonLoading && "animate-spin")} />
         </Button>
     );
 });

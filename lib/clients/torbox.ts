@@ -128,7 +128,6 @@ interface TorBoxWebDownload {
 }
 
 export default class TorBoxClient extends BaseClient {
-    private readonly baseUrl = getProxyUrl("https://api.torbox.app/v1/api");
     private readonly apiBaseUrl = "https://api.torbox.app/v1/api";
 
     // TorBox downloads on server, needs refresh for progress
@@ -159,7 +158,7 @@ export default class TorBoxClient extends BaseClient {
     ): Promise<T> {
         await this.rateLimiter.acquire();
         const { apiKey } = this.account;
-        const url = `${this.baseUrl}${path}`;
+        const url = getProxyUrl(`${this.apiBaseUrl}${path}`);
 
         const response = await fetch(url, {
             ...options,
@@ -678,6 +677,7 @@ export default class TorBoxClient extends BaseClient {
                 return "waiting";
             case "processing":
                 return "processing";
+            case "incomplete":
             case "expired":
                 return "inactive";
             default:

@@ -9,10 +9,18 @@ interface FileListHeaderProps {
     isAllSelected: boolean | "indeterminate";
     onSelectAll: (checked: boolean | "indeterminate") => void;
     selectedCount?: number;
+    currentPage?: number;
     className?: string;
 }
 
-export function FileListHeader({ isAllSelected, onSelectAll, selectedCount = 0, className }: FileListHeaderProps) {
+export function FileListHeader({
+    isAllSelected,
+    onSelectAll,
+    selectedCount = 0,
+    currentPage = 1,
+    className,
+}: FileListHeaderProps) {
+    const title = currentPage > 1 ? `Page ${currentPage}` : "Files";
     return (
         <div
             className={cn(
@@ -34,7 +42,7 @@ export function FileListHeader({ isAllSelected, onSelectAll, selectedCount = 0, 
 
             <div className="flex flex-1 items-center min-w-0 justify-between pr-2">
                 <span>
-                    {selectedCount > 0 ? <span className="text-foreground">{selectedCount} Selected</span> : "Files"}
+                    {selectedCount > 0 ? <span className="text-foreground">{selectedCount} Selected</span> : title}
                 </span>
                 <QuickSettings />
             </div>

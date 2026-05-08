@@ -1,6 +1,5 @@
 "use client";
 
-import React, { Fragment } from "react";
 import { Copy, Download, RotateCw, Trash2, List, Loader2 } from "lucide-react";
 import {
     ContextMenu,
@@ -36,7 +35,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
             </ContextMenuTrigger>
             <ContextMenuContent className="w-56">
                 {file.status === "completed" && (
-                    <Fragment>
+                    <>
                         <ContextMenuItem
                             className="cursor-pointer"
                             onClick={(e) => {
@@ -80,7 +79,7 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                             Download Playlist
                         </ContextMenuItem>
                         <ContextMenuSeparator />
-                    </Fragment>
+                    </>
                 )}
                 {file.status === "failed" && (
                     <ContextMenuItem

@@ -47,6 +47,7 @@ export const SearchSection = memo(function SearchSection({ onSearchResults }: Se
             } else {
                 params.delete("q");
             }
+            params.delete("page");
             router.replace(`?${params.toString()}`, { scroll: false });
         }, 750);
         return () => clearTimeout(timer);
