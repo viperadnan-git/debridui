@@ -124,17 +124,23 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
     const seasonParam = searchParams.get("season");
     const groupParam = searchParams.get("group");
     const partParam = searchParams.get("part");
-    const [selectedSeason, setSelectedSeason] = useState<number>(seasonParam ? parseInt(seasonParam, 10) : 1);
     const [selectedGroup, setSelectedGroup] = useState<string>(groupParam || "default");
     const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(partParam ? parseInt(partParam, 10) : 0);
     const { data: seasons, isLoading: seasonsLoading } = useTraktShowSeasons(mediaId);
+
+    // Derived from URL + seasons. `?season=latest` resolves to the highest non-Specials season once data loads.
+    const selectedSeason = useMemo<number>(() => {
+        if (seasonParam === "latest") {
+            return seasons?.length ? seasons.reduce((max, s) => (s.number > max ? s.number : max), 0) || 1 : 1;
+        }
+        return seasonParam ? parseInt(seasonParam, 10) : 1;
+    }, [seasonParam, seasons]);
 
     const { data: episodeGroups } = useTMDBSeriesEpisodeGroups(media.ids?.tmdb ?? 0);
     const { data: groupDetails } = useTMDBEpisodeGroupDetails(selectedGroup !== "default" ? selectedGroup : "");
 
     const handleSeasonChange = useCallback(
         (season: number) => {
-            setSelectedSeason(season);
             const params = new URLSearchParams(searchParams.toString());
             params.set("season", season.toString());
             router.replace(`?${params.toString()}`, { scroll: false });

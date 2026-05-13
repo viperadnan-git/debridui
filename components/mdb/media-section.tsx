@@ -76,11 +76,7 @@ export const MediaSection = memo(function MediaSection({
     }
 
     return (
-        <section
-            className={cn(
-                "space-y-2 sm:space-y-4 max-lg:-mx-4 [content-visibility:auto] [contain-intrinsic-size:auto_320px]",
-                className
-            )}>
+        <section className={cn("space-y-2 sm:space-y-4 max-lg:-mx-4", className)}>
             {/* Section Header */}
             <div className="flex items-center justify-between gap-4 max-lg:px-4">
                 <h2 className="flex items-center gap-1.5 text-[11px] sm:text-sm leading-none tracking-widest uppercase text-muted-foreground">
@@ -104,7 +100,7 @@ export const MediaSection = memo(function MediaSection({
                 ) : (
                     <div
                         className={cn(
-                            "grid grid-flow-col auto-cols-[120px] sm:auto-cols-[140px] md:auto-cols-[160px] gap-3 pt-1 sm:pt-2 pb-4 max-lg:px-4 w-max",
+                            "grid grid-flow-col auto-cols-[120px] sm:auto-cols-[140px] md:auto-cols-[160px] gap-3 pt-1 sm:pt-2 pb-4 max-lg:px-4 w-max [content-visibility:auto] [contain-intrinsic-size:auto_320px]",
                             GRID_ROWS[rows] ?? "grid-rows-2"
                         )}>
                         {displayItems.map((item, index) => {

@@ -150,7 +150,7 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
                                         </Button>
                                     </WatchButton>
                                 ) : (
-                                    <Link href={`${linkHref}#seasons`}>
+                                    <Link href={`${linkHref}?season=latest#seasons`}>
                                         <Button size="lg" className="h-11 px-6 gap-2.5">
                                             <Play className="size-4 fill-current" />
                                             Browse Episodes
@@ -259,7 +259,7 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
                                     </Button>
                                 </WatchButton>
                             ) : (
-                                <Link href={`${linkHref}#seasons`} className="flex-1">
+                                <Link href={`${linkHref}?season=latest#seasons`} className="flex-1">
                                     <Button className="w-full h-10 gap-2">
                                         <Play className="size-4 fill-current" />
                                         Browse Episodes

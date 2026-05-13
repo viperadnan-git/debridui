@@ -166,9 +166,6 @@ export function SearchResults({
         <div className={cn("space-y-8", className)}>
             {isSearching && (
                 <>
-                    {/* Loading indicator */}
-                    {(isFileSearching || isTraktSearching || isSourceSearching) && <LoadingIndicator />}
-
                     {/* File results section */}
                     {hasFileResults && (
                         <section className="space-y-4">

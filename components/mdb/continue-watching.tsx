@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Play, SkipForward, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { ScrollCarousel } from "@/components/common/scroll-carousel";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUserAddons } from "@/hooks/use-addons";
@@ -260,6 +261,7 @@ export const ContinueWatching = memo(function ContinueWatching() {
     const { data: addons = [], isPending: isAddonsLoading } = useUserAddons();
     const { mutate: removeEntry } = useRemoveFromPlaybackHistory();
     const { mutate: clearAll } = useClearPlaybackHistory();
+    const [confirmOpen, setConfirmOpen] = useState(false);
     const handleRemove = useCallback((imdbId: string) => removeEntry({ imdbId }), [removeEntry]);
 
     if (isHistoryLoading || entries.length === 0) return null;
@@ -272,10 +274,19 @@ export const ContinueWatching = memo(function ContinueWatching() {
                 <h2 className="text-xs tracking-widest uppercase text-muted-foreground">Continue Watching</h2>
                 <button
                     type="button"
-                    onClick={() => clearAll()}
+                    onClick={() => setConfirmOpen(true)}
                     className="ml-auto cursor-pointer text-[10px] tracking-widest uppercase text-muted-foreground/40 hover:text-destructive lg:text-muted-foreground/0 lg:group-hover/section:text-muted-foreground/40 lg:hover:text-destructive transition-colors duration-300">
                     Clear all
                 </button>
+                <ConfirmDialog
+                    open={confirmOpen}
+                    onOpenChange={setConfirmOpen}
+                    title="Clear watch history?"
+                    description="This will remove every title from Continue Watching. This action cannot be undone."
+                    confirmText="Clear all"
+                    variant="destructive"
+                    onConfirm={() => clearAll()}
+                />
             </div>
 
             {/* Edge-to-edge Scroll Carousel */}

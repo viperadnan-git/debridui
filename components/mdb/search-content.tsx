@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "@bprogress/next/app";
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CommandInput, CommandList } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
@@ -122,8 +122,15 @@ export function SearchContent({
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     autoFocus={autoFocus}
-                    className="pl-11 h-12 text-base border-border/50 bg-transparent"
+                    className="pl-11 pr-11 h-12 text-base border-border/50 bg-transparent"
                 />
+                {query.trim() !== "" &&
+                    (query.trim() !== debouncedQuery || isFileSearching || isTraktSearching || isSourceSearching) && (
+                        <Loader2
+                            aria-label="Searching"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground animate-spin"
+                        />
+                    )}
             </form>
 
             <SearchResults
