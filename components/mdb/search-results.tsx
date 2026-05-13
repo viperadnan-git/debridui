@@ -6,6 +6,7 @@ import type { TraktSearchResult } from "@/lib/trakt";
 import type { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SearchFileItem } from "./search-file-item";
+import { SearchHistorySection } from "./search-history-section";
 import { SearchMediaItem } from "./search-media-item";
 import { SearchSourceItem } from "./search-source-item";
 
@@ -19,6 +20,7 @@ interface SearchResultsProps {
     isSourceSearching: boolean;
     onFileSelect: (file: DebridFile) => void;
     onMediaSelect: (result: TraktSearchResult) => void;
+    onHistoryItemClick?: () => void;
     variant?: "modal" | "page";
     className?: string;
 }
@@ -65,11 +67,13 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
     return (
         <div className="divide-y divide-border/30">
             {Array.from({ length: rows }, (_, i) => `skeleton-${i}`).map((id) => (
-                <div key={id} className="flex items-center gap-3 px-4 lg:px-5 py-3.5 lg:py-4">
-                    <div className="size-16 sm:size-20 shrink-0 bg-muted/40 rounded-sm animate-pulse" />
-                    <div className="flex-1 min-w-0 space-y-2">
-                        <div className="h-3 bg-muted/40 rounded-sm w-2/3 animate-pulse" />
-                        <div className="h-2.5 bg-muted/30 rounded-sm w-1/3 animate-pulse" />
+                <div key={id} className="flex items-start gap-3 sm:gap-4 px-4 lg:px-5 py-3.5 lg:py-4">
+                    <div className="w-16 h-24 sm:w-20 sm:h-28 shrink-0 bg-muted/40 rounded-sm animate-pulse" />
+                    <div className="flex-1 min-w-0 space-y-2 pt-1">
+                        <div className="h-4 sm:h-5 bg-muted/40 rounded-sm w-3/4 animate-pulse" />
+                        <div className="h-3 bg-muted/30 rounded-sm w-1/3 animate-pulse" />
+                        <div className="h-3 bg-muted/30 rounded-sm w-full animate-pulse" />
+                        <div className="h-3 bg-muted/30 rounded-sm w-2/3 animate-pulse" />
                     </div>
                 </div>
             ))}
@@ -87,6 +91,7 @@ export function SearchResults({
     isSourceSearching,
     onFileSelect,
     onMediaSelect,
+    onHistoryItemClick,
     variant = "modal",
     className,
 }: SearchResultsProps) {
@@ -100,8 +105,16 @@ export function SearchResults({
 
     if (trimmedQuery.length <= 2) {
         return (
-            <div className={cn("", className)}>
-                <EmptyState title="Start searching" subtitle="Type at least 3 characters to see results" />
+            <div className={cn(variant === "modal" ? "py-4 space-y-6" : "space-y-8", className)}>
+                <SearchHistorySection variant={variant} onItemClick={onHistoryItemClick} />
+                <EmptyState
+                    title="Start searching"
+                    subtitle={
+                        trimmedQuery.length > 0
+                            ? "Type at least 3 characters"
+                            : "Type to discover movies, TV shows, and your files"
+                    }
+                />
             </div>
         );
     }

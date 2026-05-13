@@ -6,10 +6,12 @@ import { Loader2, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CommandList } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
+import { useRecordSearchPick } from "@/hooks/use-search-history";
 import { useSearchLogic } from "@/hooks/use-search-logic";
 import type { TraktSearchResult } from "@/lib/trakt";
 import type { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { getPosterUrl } from "@/lib/utils/media";
 import { SearchResults } from "./search-results";
 
 interface SearchContentProps {
@@ -32,6 +34,7 @@ export function SearchContent({
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState(defaultQuery);
     const [debouncedQuery, setDebouncedQuery] = useState(defaultQuery);
+    const { mutate: recordPick } = useRecordSearchPick();
 
     // Debounce the query and (page variant only) mirror it to the URL's `?q=` param.
     // Uses history.replaceState directly so the global progress bar (hooked into
@@ -76,17 +79,38 @@ export function SearchContent({
         (result: TraktSearchResult) => {
             const media = result.movie || result.show;
             const slug = media?.ids?.slug || media?.ids?.imdb;
-            if (!slug) return;
+            if (!slug || !media) return;
 
             const type = result.movie ? "movie" : "show";
             router.push(`/${type}s/${slug}`);
+
+            // Fire-and-forget: record the pick to search history
+            if (media.ids?.trakt) {
+                recordPick({
+                    provider: "trakt",
+                    providerId: String(media.ids.trakt),
+                    title: media.title,
+                    metadata: {
+                        kind: "trakt",
+                        type,
+                        slug: media.ids.slug,
+                        imdbId: media.ids.imdb,
+                        year: media.year,
+                        rating: media.rating,
+                        subtitle: media.overview ?? undefined,
+                        posterUrl:
+                            getPosterUrl(media.images) ||
+                            `https://placehold.co/300x450/1a1a1a/3e3e3e?text=${encodeURIComponent(media.title)}`,
+                    },
+                });
+            }
 
             if (variant === "modal" && onClose) {
                 onClose();
                 setQuery("");
             }
         },
-        [router, onClose, variant]
+        [router, onClose, variant, recordPick]
     );
 
     const modalIsBusy =
@@ -130,6 +154,7 @@ export function SearchContent({
                         isSourceSearching={isSourceSearching}
                         onFileSelect={handleFileSelect}
                         onMediaSelect={handleMediaSelect}
+                        onHistoryItemClick={onClose}
                         variant="modal"
                     />
                 </CommandList>

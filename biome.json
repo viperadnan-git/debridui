@@ -11,7 +11,8 @@
             "!next-env.d.ts",
             "!**/*.openapi.json",
             "!proxy.worker.js",
-            "!app/globals.css"
+            "!app/globals.css",
+            "!drizzle"
         ]
     },
     "formatter": {

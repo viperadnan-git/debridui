@@ -84,12 +84,59 @@ export const playbackHistory = pgTable(
     ]
 );
 
+// Trakt-specific metadata for a search-history entry.
+// Future providers slot in here as new members of the union (kind: "file", "query", etc.)
+export type TraktSearchMetadata = {
+    kind: "trakt";
+    type: "movie" | "show";
+    slug?: string;
+    imdbId?: string;
+    year?: number;
+    rating?: number;
+    posterUrl?: string;
+    /** Short description / overview of the picked item. */
+    subtitle?: string;
+};
+
+export type SearchHistoryMetadata = TraktSearchMetadata;
+
+// Search history table — provider-agnostic. Stores items the user clicked through
+// from a search result so they can be re-surfaced as recent picks.
+export const searchHistory = pgTable(
+    "search_history",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        userId: uuid("user_id")
+            .notNull()
+            .references(() => user.id, { onDelete: "cascade" }),
+
+        // Polymorphic identity — uniqueness is (user, provider, providerId)
+        provider: text("provider").notNull(), // "trakt" | future: "file" | "source" | "query"
+        providerId: text("provider_id").notNull(), // stringified id within provider
+
+        // Generic display field shared by every provider
+        title: text("title").notNull(),
+
+        // Provider-specific structured data (discriminated by metadata.kind)
+        metadata: jsonb("metadata").$type<SearchHistoryMetadata>().notNull(),
+
+        updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    },
+    (table) => [
+        // Fast user lookups sorted by most recent
+        index("search_history_user_updated_idx").on(table.userId, table.updatedAt.desc()),
+        // Upsert key — same item picked twice updates the existing row
+        uniqueIndex("search_history_user_provider_id_idx").on(table.userId, table.provider, table.providerId),
+    ]
+);
+
 // Relations
 export const userRelations = relations(user, ({ many, one }) => ({
     userAccounts: many(userAccounts),
     addons: many(addons),
     userSettings: one(userSettings),
     playbackHistory: many(playbackHistory),
+    searchHistory: many(searchHistory),
 }));
 
 export const userAccountsRelations = relations(userAccounts, ({ one }) => ({
@@ -120,6 +167,13 @@ export const playbackHistoryRelations = relations(playbackHistory, ({ one }) => 
     }),
 }));
 
+export const searchHistoryRelations = relations(searchHistory, ({ one }) => ({
+    user: one(user, {
+        fields: [searchHistory.userId],
+        references: [user.id],
+    }),
+}));
+
 // Type exports for TypeScript
 export type UserAccount = typeof userAccounts.$inferSelect;
 export type NewUserAccount = typeof userAccounts.$inferInsert;
@@ -129,3 +183,5 @@ export type UserSetting = typeof userSettings.$inferSelect;
 export type NewUserSetting = typeof userSettings.$inferInsert;
 export type PlaybackHistory = typeof playbackHistory.$inferSelect;
 export type NewPlaybackHistory = typeof playbackHistory.$inferInsert;
+export type SearchHistory = typeof searchHistory.$inferSelect;
+export type NewSearchHistory = typeof searchHistory.$inferInsert;

@@ -4,9 +4,10 @@ import { format, formatDistanceToNow } from "date-fns";
 import { del } from "idb-keyval";
 import { Clock, Info, Key, Loader2, Monitor, Moon, Play, Settings, Sliders, Sun, Trash2, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useClearPlaybackHistory } from "@/hooks/use-playback-history";
+import { useClearSearchHistory } from "@/hooks/use-search-history";
 import { useSaveUserSettings } from "@/hooks/use-user-settings";
 import { RESOLUTIONS, SOURCE_QUALITIES } from "@/lib/addons/parser";
 import { Resolution, type SourceQuality } from "@/lib/addons/types";
@@ -59,6 +62,10 @@ export default function SettingsPage() {
     const streaming = get("streaming");
     const tmdbApiKey = get("tmdbApiKey");
     const { mutate: saveSettings, isPending: isSaving } = useSaveUserSettings();
+    const { mutate: clearPlayback } = useClearPlaybackHistory();
+    const { mutate: clearSearch } = useClearSearchHistory();
+    const [confirmClearPlayback, setConfirmClearPlayback] = useState(false);
+    const [confirmClearSearch, setConfirmClearSearch] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
     const handleTmdbApiKeyChange = useCallback(
@@ -513,6 +520,56 @@ export default function SettingsPage() {
                     </div>
                 </div>
             </section>
+
+            {/* Data Section */}
+            <section className="space-y-4">
+                <SectionDivider label="Data" />
+
+                <div className="space-y-2">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-sm border border-border/50 p-3">
+                        <div>
+                            <p className="text-sm">Playback History</p>
+                            <p className="text-xs text-muted-foreground">
+                                Remove every entry from your Continue Watching list
+                            </p>
+                        </div>
+                        <Button variant="outline" onClick={() => setConfirmClearPlayback(true)}>
+                            Clear History
+                        </Button>
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-sm border border-border/50 p-3">
+                        <div>
+                            <p className="text-sm">Search History</p>
+                            <p className="text-xs text-muted-foreground">
+                                Remove every recent pick from your search history
+                            </p>
+                        </div>
+                        <Button variant="outline" onClick={() => setConfirmClearSearch(true)}>
+                            Clear History
+                        </Button>
+                    </div>
+                </div>
+            </section>
+
+            <ConfirmDialog
+                open={confirmClearPlayback}
+                onOpenChange={setConfirmClearPlayback}
+                title="Clear playback history?"
+                description="This will remove every title from Continue Watching. This action cannot be undone."
+                confirmText="Clear all"
+                variant="destructive"
+                onConfirm={() => clearPlayback()}
+            />
+            <ConfirmDialog
+                open={confirmClearSearch}
+                onOpenChange={setConfirmClearSearch}
+                title="Clear search history?"
+                description="This will remove every entry from your recent searches. This action cannot be undone."
+                confirmText="Clear all"
+                variant="destructive"
+                onConfirm={() => clearSearch({})}
+            />
 
             {/* About Section */}
             <section className="space-y-4">

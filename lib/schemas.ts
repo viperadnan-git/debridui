@@ -69,6 +69,35 @@ export const removePlaybackSchema = z.object({
     imdbId: z.string().regex(/^tt\d+$/, "Invalid IMDb ID format"),
 });
 
+// Search history schemas — polymorphic by provider via a discriminated union.
+// Adding a new provider (e.g. "file") is a new entry in the union below.
+const traktSearchPickSchema = z.object({
+    provider: z.literal("trakt"),
+    providerId: z.string().min(1),
+    title: z.string().min(1),
+    metadata: z.object({
+        kind: z.literal("trakt"),
+        type: z.enum(["movie", "show"]),
+        slug: z.string().optional(),
+        imdbId: z.string().optional(),
+        year: z.number().int().optional(),
+        rating: z.number().optional(),
+        posterUrl: z.string().optional(),
+        subtitle: z.string().optional(),
+    }),
+});
+
+export const recordSearchPickSchema = z.discriminatedUnion("provider", [traktSearchPickSchema]);
+
+export const removeSearchPickSchema = z.object({
+    provider: z.string().min(1),
+    providerId: z.string().min(1),
+});
+
+export const clearSearchHistorySchema = z.object({
+    provider: z.string().min(1).optional(),
+});
+
 // User settings schema (snake_case for DB storage)
 export const serverSettingsSchema = z.object({
     tmdb_api_key: z.string().max(256).optional(),
