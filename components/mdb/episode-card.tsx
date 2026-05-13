@@ -39,9 +39,9 @@ const ThumbnailContent = memo(function ThumbnailContent({
             <span className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 text-xs font-medium tracking-wider text-white/90 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-sm">
                 E{episodeLabel}
             </span>
-            {rating && (
+            {!!rating && (
                 <span className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 hidden sm:inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
-                    <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
+                    <Star className="size-3 fill-[#F5C518] text-[#F5C518] -translate-y-px" />
                     {rating.toFixed(1)}
                 </span>
             )}

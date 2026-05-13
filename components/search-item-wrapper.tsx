@@ -29,31 +29,40 @@ function SearchItemWrapperComponent<T>({
         }
     }, [data, onSelect]);
 
+    const rowClasses =
+        "group/row flex items-center gap-3 sm:gap-4 px-4 lg:px-5 py-3.5 lg:py-4 rounded-none hover:bg-muted/30 focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-primary/50 data-[selected=true]:bg-muted/50 data-[selected=true]:ring-1 data-[selected=true]:ring-inset data-[selected=true]:ring-primary/50 transition-colors";
+
     if (variant === "modal") {
         return (
             <CommandItem
                 value={commandValue}
                 keywords={commandKeywords}
                 onSelect={onSelect ? handleSelect : undefined}
-                className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-none border-b border-border/50 last:border-0 data-[selected=true]:bg-muted/30",
-                    onSelect && "cursor-pointer",
-                    className
-                )}>
+                className={cn(rowClasses, onSelect && "cursor-pointer", className)}>
                 {children}
             </CommandItem>
         );
     }
 
+    const interactive = !!onSelect;
+
     return (
-        // biome-ignore lint/a11y/noStaticElementInteractions: search row activates on click; keyboard navigation handled by Command parent
+        // biome-ignore lint/a11y/noStaticElementInteractions: row may be informational (no onSelect); when interactive it gets role=button, tabIndex, and key handlers
         <div
-            onClick={onSelect ? handleSelect : undefined}
-            className={cn(
-                "flex items-center gap-3 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors",
-                onSelect && "cursor-pointer",
-                className
-            )}>
+            onClick={interactive ? handleSelect : undefined}
+            onKeyDown={
+                interactive
+                    ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleSelect();
+                          }
+                      }
+                    : undefined
+            }
+            role={interactive ? "button" : undefined}
+            tabIndex={interactive ? 0 : undefined}
+            className={cn(rowClasses, interactive && "cursor-pointer", className)}>
             {children}
         </div>
     );

@@ -99,11 +99,11 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                                     {media.year && <span className="font-medium text-foreground">{media.year}</span>}
-                                    {media.rating && (
+                                    {!!media.rating && (
                                         <>
                                             <span className="text-border">·</span>
                                             <span className="flex items-center gap-1.5">
-                                                <Star className="size-4 fill-primary text-primary" />
+                                                <Star className="size-4 fill-primary text-primary -translate-y-px" />
                                                 <span className="font-medium text-foreground">
                                                     {media.rating.toFixed(1)}
                                                 </span>
@@ -225,11 +225,11 @@ const HeroSlide = memo(function HeroSlide({ item, index, total, isActive }: Hero
                         {/* Meta */}
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             {media.year && <span className="font-medium text-foreground">{media.year}</span>}
-                            {media.rating && (
+                            {!!media.rating && (
                                 <>
                                     <span className="text-border">·</span>
                                     <span className="flex items-center gap-1">
-                                        <Star className="size-3.5 fill-primary text-primary" />
+                                        <Star className="size-3.5 fill-primary text-primary -translate-y-px" />
                                         <span className="font-medium text-foreground">{media.rating.toFixed(1)}</span>
                                     </span>
                                 </>

@@ -61,11 +61,11 @@ export const MediaCard = memo(function MediaCard({ media, type, rank, className 
 
                         <div className="flex items-center gap-2 text-xs text-white/70">
                             {media.year && <span>{media.year}</span>}
-                            {media.rating && (
+                            {!!media.rating && (
                                 <>
                                     <span className="text-white/30">·</span>
                                     <span className="flex items-center gap-1">
-                                        <Star className="size-3 fill-[#F5C518] text-[#F5C518] -mt-0.5" />
+                                        <Star className="size-3 fill-[#F5C518] text-[#F5C518] -translate-y-px" />
                                         {media.rating.toFixed(1)}
                                     </span>
                                 </>

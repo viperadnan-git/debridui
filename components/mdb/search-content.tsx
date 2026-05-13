@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "@bprogress/next/app";
-import { Loader2, Search } from "lucide-react";
+import { Command as CommandPrimitive } from "cmdk";
+import { Loader2, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CommandInput, CommandList } from "@/components/ui/command";
+import { CommandList } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { useSearchLogic } from "@/hooks/use-search-logic";
 import type { TraktSearchResult } from "@/lib/trakt";
@@ -77,18 +78,38 @@ export function SearchContent({
         [router, onClose, variant]
     );
 
+    const modalIsBusy =
+        query.trim() !== "" &&
+        (query.trim() !== debouncedQuery || isFileSearching || isTraktSearching || isSourceSearching);
+
     if (variant === "modal") {
         return (
             <>
-                <CommandInput
-                    placeholder="Search movies, TV shows, and files..."
-                    value={query}
-                    onValueChange={setQuery}
-                    autoFocus={autoFocus}
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-11 sm:h-12 text-sm sm:text-base"
-                />
+                <div className="relative border-b border-border/50">
+                    {modalIsBusy ? (
+                        <Loader2
+                            aria-label="Searching"
+                            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 size-4 text-primary animate-spin"
+                        />
+                    ) : (
+                        <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    )}
+                    <CommandPrimitive.Input
+                        data-slot="command-input"
+                        ref={inputRef}
+                        placeholder="Movies, TV shows, files..."
+                        value={query}
+                        onValueChange={setQuery}
+                        autoFocus={autoFocus}
+                        className="w-full h-11 sm:h-12 lg:h-13 pl-10 sm:pl-11 pr-10 sm:pr-11 bg-transparent text-sm sm:text-base font-light outline-none placeholder:text-muted-foreground/70 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
+                    />
+                </div>
                 <CommandList className={cn("h-[70vh] sm:h-[75vh] overflow-y-auto", className)}>
                     <SearchResults
+                        // Remount whenever the result-set composition changes so cmdk re-registers items in DOM order.
+                        // Without this, items registered earlier (e.g. trakt) keep "first" status even after files
+                        // mount above them — and cmdk navigates by registration order, not DOM order.
+                        key={`${debouncedQuery}:${!!fileResults?.length}:${!!traktResults?.length}:${!!sourceResults?.length}`}
                         query={debouncedQuery}
                         fileResults={fileResults}
                         traktResults={traktResults}
@@ -106,31 +127,49 @@ export function SearchContent({
     }
 
     // Page variant
+    const isBusy =
+        query.trim() !== "" &&
+        (query.trim() !== debouncedQuery || isFileSearching || isTraktSearching || isSourceSearching);
+
     return (
         <div className={cn("space-y-8", className)}>
             <form
-                className="relative"
+                className="sticky top-12 z-20 -mx-4 lg:mx-0 px-4 lg:px-0 py-3 bg-background/85 backdrop-blur-md"
                 onSubmit={(e) => {
                     e.preventDefault();
                     inputRef.current?.blur();
                 }}>
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                    ref={inputRef}
-                    type="search"
-                    placeholder="Search movies, TV shows, and files..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    autoFocus={autoFocus}
-                    className="pl-11 pr-11 h-12 text-base border-border/50 bg-transparent"
-                />
-                {query.trim() !== "" &&
-                    (query.trim() !== debouncedQuery || isFileSearching || isTraktSearching || isSourceSearching) && (
+                <div className="relative">
+                    {isBusy ? (
                         <Loader2
                             aria-label="Searching"
-                            className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground animate-spin"
+                            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 size-4 text-primary animate-spin"
                         />
+                    ) : (
+                        <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     )}
+                    <Input
+                        ref={inputRef}
+                        type="search"
+                        placeholder="Movies, TV shows, files..."
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        autoFocus={autoFocus}
+                        className="pl-10 pr-10 sm:pl-11 sm:pr-11 h-10 sm:h-12 lg:h-13 text-sm sm:text-base lg:text-base font-light border-border/50 bg-card/40 focus-visible:bg-card/60 focus-visible:ring-primary/20 transition-colors [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
+                    />
+                    {query !== "" && (
+                        <button
+                            type="button"
+                            aria-label="Clear search"
+                            onClick={() => {
+                                setQuery("");
+                                inputRef.current?.focus();
+                            }}
+                            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 size-6 sm:size-7 inline-flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer">
+                            <X className="size-4" />
+                        </button>
+                    )}
+                </div>
             </form>
 
             <SearchResults

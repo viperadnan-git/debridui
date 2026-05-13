@@ -72,11 +72,11 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                             </h1>
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                                 {media.year && <span>{media.year}</span>}
-                                {media.rating && (
+                                {!!media.rating && (
                                     <>
                                         <span className="text-border">·</span>
                                         <span className="inline-flex items-center gap-1">
-                                            <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
+                                            <Star className="size-3 fill-[#F5C518] text-[#F5C518] -translate-y-px" />
                                             <span className="text-foreground font-medium">
                                                 {media.rating.toFixed(1)}
                                             </span>
@@ -149,11 +149,11 @@ export const MediaHeader = memo(function MediaHeader({ media, type }: MediaHeade
                         {/* Desktop metadata line */}
                         <div className="hidden md:flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
                             {media.year && <span>{media.year}</span>}
-                            {media.rating && (
+                            {!!media.rating && (
                                 <>
                                     <span className="text-border">·</span>
                                     <span className="flex items-center gap-1.5">
-                                        <Star className="size-4 fill-[#F5C518] text-[#F5C518]" />
+                                        <Star className="size-4 fill-[#F5C518] text-[#F5C518] -translate-y-px" />
                                         <span className="text-foreground font-medium">{media.rating.toFixed(1)}</span>
                                         <span className="text-muted-foreground/60">/10</span>
                                     </span>

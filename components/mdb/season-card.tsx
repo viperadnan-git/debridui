@@ -75,10 +75,10 @@ export const SeasonCard = memo(function SeasonCard({
                 </div>
 
                 {/* Rating - minimal style */}
-                {season.rating && (
+                {!!season.rating && (
                     <div className="absolute top-2.5 right-2.5">
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-white/90 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm">
-                            <Star className="size-3 fill-[#F5C518] text-[#F5C518]" />
+                            <Star className="size-3 fill-[#F5C518] text-[#F5C518] -translate-y-px" />
                             {season.rating.toFixed(1)}
                         </span>
                     </div>

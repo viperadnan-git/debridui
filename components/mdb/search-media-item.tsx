@@ -1,6 +1,6 @@
 "use client";
 
-import { Film, Star, Tv } from "lucide-react";
+import { ArrowUpRight, Film, Star, Tv } from "lucide-react";
 import { memo } from "react";
 import { SearchItemWrapper } from "@/components/search-item-wrapper";
 import type { TraktSearchResult } from "@/lib/trakt";
@@ -26,6 +26,7 @@ export const SearchMediaItem = memo(function SearchMediaItem({
     const type = result.movie ? "movie" : "show";
     const Icon = type === "movie" ? Film : Tv;
     const posterImage = getPosterUrl(media.images);
+    const kicker = type === "movie" ? "Film" : "Series";
 
     return (
         <SearchItemWrapper
@@ -35,10 +36,16 @@ export const SearchMediaItem = memo(function SearchMediaItem({
             commandValue={`${type}-${media.ids?.trakt}-${media.title}`}
             commandKeywords={[media.title, type, media.year?.toString() || ""]}
             className={className}>
-            {/* Poster thumbnail or icon */}
-            <div className="shrink-0 w-10 h-14 sm:w-11 sm:h-16 bg-muted/50 rounded-sm overflow-hidden">
+            {/* Poster */}
+            <div className="shrink-0 overflow-hidden rounded-sm bg-muted/50 ring-1 ring-border/30 w-16 h-24 sm:w-20 sm:h-28">
                 {posterImage ? (
-                    <img src={posterImage} alt={media.title} className="w-full h-full object-cover" />
+                    <img
+                        src={posterImage}
+                        alt={media.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                    />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
                         <Icon className="size-4 text-muted-foreground" />
@@ -47,35 +54,53 @@ export const SearchMediaItem = memo(function SearchMediaItem({
             </div>
 
             <div className="flex-1 min-w-0">
-                {/* Title and type indicator */}
-                <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-medium truncate text-sm">{media.title}</span>
-                    <span
-                        className={cn(
-                            "text-xs tracking-wide uppercase shrink-0",
-                            type === "movie" ? "text-blue-500" : "text-purple-500"
-                        )}>
-                        {type === "movie" ? "Film" : "Series"}
-                    </span>
+                {/* Title row */}
+                <div className="flex items-baseline gap-2">
+                    <h4 className="font-light truncate text-sm sm:text-base lg:text-lg">{media.title}</h4>
+                    <ArrowUpRight className="hidden sm:block size-3.5 text-muted-foreground/40 -translate-x-1 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-0 transition-all" />
                 </div>
 
-                {/* Metadata with editorial separators */}
-                <div className="flex items-center text-xs text-muted-foreground">
-                    {media.year && <span>{media.year}</span>}
-                    {media.rating && (
+                {/* Metadata */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-1">
+                    <span
+                        className={cn(
+                            "text-[10px] tracking-[0.2em] uppercase",
+                            type === "movie" ? "text-amber-400/90" : "text-sky-400/90"
+                        )}>
+                        {kicker}
+                    </span>
+                    {media.year && (
                         <>
-                            {media.year && <span className="text-border mx-1.5">·</span>}
-                            <span className="flex items-center gap-1">
-                                <Star className="size-2.5 fill-yellow-400 text-yellow-400" />
-                                {media.rating.toFixed(1)}
+                            <span className="text-border">·</span>
+                            <span className="tabular-nums">{media.year}</span>
+                        </>
+                    )}
+                    {!!media.rating && (
+                        <>
+                            <span className="text-border">·</span>
+                            <span className="inline-flex items-center gap-1">
+                                <Star className="size-3 fill-[#F5C518] text-[#F5C518] shrink-0 -translate-y-px" />
+                                <span className="tabular-nums">{media.rating.toFixed(1)}</span>
                             </span>
+                        </>
+                    )}
+                    {media.runtime && (
+                        <>
+                            <span className="text-border">·</span>
+                            <span>{media.runtime}m</span>
+                        </>
+                    )}
+                    {media.genres?.[0] && (
+                        <>
+                            <span className="text-border">·</span>
+                            <span className="truncate">{media.genres.slice(0, 2).join(" / ")}</span>
                         </>
                     )}
                 </div>
 
                 {/* Overview */}
                 {media.overview && (
-                    <p className="text-xs text-muted-foreground/80 line-clamp-2 leading-relaxed mt-1.5">
+                    <p className="text-xs text-muted-foreground/80 leading-relaxed mt-2 line-clamp-2 lg:line-clamp-3 max-w-2xl">
                         {media.overview}
                     </p>
                 )}
