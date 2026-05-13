@@ -33,7 +33,9 @@ export function SearchContent({
     const [query, setQuery] = useState(defaultQuery);
     const [debouncedQuery, setDebouncedQuery] = useState(defaultQuery);
 
-    // Debounce the query and (optionally) mirror it to the URL's `?q=` param
+    // Debounce the query and (page variant only) mirror it to the URL's `?q=` param.
+    // Uses history.replaceState directly so the global progress bar (hooked into
+    // next/navigation transitions) doesn't fire on every keystroke.
     useEffect(() => {
         const timer = setTimeout(() => {
             const trimmed = query.trim();
@@ -44,10 +46,11 @@ export function SearchContent({
             if (trimmed) params.set("q", trimmed);
             else params.delete("q");
             const qs = params.toString();
-            router.replace(qs ? `?${qs}` : window.location.pathname, { scroll: false });
+            const url = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
+            window.history.replaceState(window.history.state, "", url);
         }, 300);
         return () => clearTimeout(timer);
-    }, [query, syncQueryParam, router]);
+    }, [query, syncQueryParam]);
 
     const { fileResults, traktResults, sourceResults, isFileSearching, isTraktSearching, isSourceSearching } =
         useSearchLogic({
