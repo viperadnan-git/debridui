@@ -300,6 +300,12 @@ export function Sources({ request, className }: SourcesProps) {
             </div>
 
             <div className={cn("border border-border/40 rounded-sm overflow-hidden", className)}>
+                {/* Results first */}
+                {filtered?.map((source, index) => (
+                    <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} request={request} />
+                ))}
+
+                {/* Skeleton rows at the bottom while any addon is still fetching */}
                 {isLoading && (
                     <>
                         <SourceRowSkeleton />
@@ -316,10 +322,6 @@ export function Sources({ request, className }: SourcesProps) {
                         </p>
                     </div>
                 )}
-
-                {filtered?.map((source, index) => (
-                    <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} request={request} />
-                ))}
 
                 {!isLoading && failedAddons.length > 0 && (
                     <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-destructive/[0.04] border-t border-destructive/20">
