@@ -1,11 +1,20 @@
 "use client";
 
-import { AlertTriangle, DownloadIcon, HardDriveDownloadIcon, Loader2, PlayIcon, Plus, Trash2Icon } from "lucide-react";
+import {
+    AlertTriangle,
+    DownloadIcon,
+    HardDriveDownloadIcon,
+    LayersIcon,
+    Loader2,
+    PlayIcon,
+    Plus,
+    Trash2Icon,
+    Zap,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { CachedBadge } from "@/components/display";
 import { Button } from "@/components/ui/button";
 import { useAddonSources } from "@/hooks/use-addons";
 import type { AddonSource } from "@/lib/addons/types";
@@ -46,26 +55,30 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
         setStatus(null);
     };
 
+    const compact = "h-7 sm:h-8 px-2.5 sm:px-3 text-xs gap-1.5 [&_svg]:size-3.5";
+    const compactIcon = "size-7 sm:size-8 [&_svg]:size-3.5";
+
     if (status === "cached") {
         return (
             <div className="flex items-center gap-1.5">
                 <Button
                     variant="outline"
                     size="sm"
+                    className={compact}
                     onClick={() => {
                         if (torrentId) {
                             router.push(`/files?q=id:${torrentId}`);
                         }
                     }}>
-                    <DownloadIcon className="size-4" />
+                    <DownloadIcon />
                     View
                 </Button>
                 <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="group/delete hover:bg-destructive/10!"
+                    className={cn(compactIcon, "group/delete hover:bg-destructive/10!")}
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-4 text-destructive/70 group-hover/delete:text-destructive" />
+                    <Trash2Icon className="text-destructive/70 group-hover/delete:text-destructive" />
                 </Button>
             </div>
         );
@@ -74,36 +87,49 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
     if (status === "added") {
         return (
             <div className="flex items-center gap-1.5">
-                <div className="flex items-center h-8 gap-1.5 px-2.5 rounded-sm bg-primary/10 text-primary">
-                    <HardDriveDownloadIcon className="size-4 animate-pulse" />
+                <div className="flex items-center h-7 sm:h-8 gap-1.5 px-2.5 rounded-sm bg-primary/10 text-primary">
+                    <HardDriveDownloadIcon className="size-3.5 animate-pulse" />
                     <span className="text-xs">Processing</span>
                 </div>
                 <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="group/delete hover:bg-destructive/10!"
+                    className={cn(compactIcon, "group/delete hover:bg-destructive/10!")}
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="size-4 text-destructive/70 group-hover/delete:text-destructive" />
+                    <Trash2Icon className="text-destructive/70 group-hover/delete:text-destructive" />
                 </Button>
             </div>
         );
     }
 
     return (
-        <Button variant="outline" size="sm" onClick={() => handleAdd()} disabled={status === "loading"}>
+        <Button
+            variant="outline"
+            size="sm"
+            className={compact}
+            onClick={() => handleAdd()}
+            disabled={status === "loading"}>
             {status === "loading" ? (
                 <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="animate-spin" />
                     Adding
                 </>
             ) : (
                 <>
-                    <Plus className="size-4" />
+                    <Plus />
                     Add
                 </>
             )}
         </Button>
     );
+}
+
+function resolutionTier(res?: string): "uhd" | "fhd" | "hd" | "sd" {
+    const r = (res || "").toLowerCase();
+    if (r.includes("2160") || r.includes("4k") || r.includes("uhd")) return "uhd";
+    if (r.includes("1080")) return "fhd";
+    if (r.includes("720")) return "hd";
+    return "sd";
 }
 
 export const SourceRow = memo(function SourceRow({
@@ -113,50 +139,62 @@ export const SourceRow = memo(function SourceRow({
     source: AddonSource;
     request: StreamingRequest;
 }) {
-    // Build metadata string with editorial separators
-    const metaParts: string[] = [];
-    if (source.resolution) metaParts.push(source.resolution);
-    if (source.quality) metaParts.push(source.quality);
-    if (source.size) metaParts.push(source.size);
-    metaParts.push(source.addonName);
+    const tier = resolutionTier(source.resolution);
+    const resolutionLabel = source.resolution || "SD";
+    const resolutionTone = tier === "uhd" ? "text-primary" : "text-foreground";
 
     return (
-        <div className="flex flex-col gap-2 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">
+        <div className="group/source flex flex-col gap-2 px-3 sm:px-4 lg:px-5 py-3 sm:py-3.5 transition-colors border-b border-border/40 last:border-0 hover:bg-muted/20">
+            {/* Status line — cached · resolution · quality · size */}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs tracking-wider uppercase">
+                {source.isCached && (
+                    <>
+                        <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-500">
+                            <Zap className="size-3 fill-current -translate-y-px" />
+                            <span className="hidden sm:inline">Cached</span>
+                        </span>
+                        <span className="text-border">·</span>
+                    </>
+                )}
+                <span className={cn("font-medium tabular-nums", resolutionTone)}>{resolutionLabel}</span>
+                {source.quality && (
+                    <>
+                        <span className="text-border">·</span>
+                        <span className="text-foreground/80">{source.quality}</span>
+                    </>
+                )}
+                {source.size && (
+                    <>
+                        <span className="text-border">·</span>
+                        <span className="text-foreground/80 tabular-nums tracking-normal normal-case">
+                            {source.size}
+                        </span>
+                    </>
+                )}
+            </div>
+
             {/* Title */}
-            <div className="text-sm leading-tight wrap-break-word">{source.title}</div>
+            <div className="text-sm leading-snug wrap-break-word">{source.title}</div>
 
             {/* Description */}
             {source.description && (
-                <div className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
+                <p className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word leading-relaxed">
                     {source.description}
-                </div>
+                </p>
             )}
 
-            {/* Metadata & Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                {/* Metadata with editorial separators */}
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-1 text-xs text-muted-foreground">
-                    {source.isCached && (
-                        <>
-                            <CachedBadge />
-                            <span className="text-border">·</span>
-                        </>
-                    )}
-                    {metaParts.map((part, i) => (
-                        <span key={part} className="flex items-center">
-                            {part}
-                            {i < metaParts.length - 1 && <span className="text-border ml-2">·</span>}
-                        </span>
-                    ))}
-                </div>
-
-                {/* Action Buttons */}
+            {/* Controls row — addon kicker (left) + actions (right) */}
+            <div className="flex items-center justify-between gap-3 flex-wrap pt-0.5">
+                <div className="text-xs tracking-wider uppercase text-muted-foreground/70">{source.addonName}</div>
                 {(source.url || source.magnet) && (
-                    <div className="flex items-center gap-2 justify-end sm:shrink-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
                         {source.magnet && <AddSourceButton magnet={source.magnet} />}
                         {source.url && (
-                            <Button size="sm" onClick={() => useStreamingStore.getState().playSource(source, request)}>
-                                <PlayIcon className="size-4 fill-current" />
+                            <Button
+                                size="sm"
+                                className="h-7 sm:h-8 px-2.5 sm:px-3 text-xs gap-1.5 [&_svg]:size-3.5"
+                                onClick={() => useStreamingStore.getState().playSource(source, request)}>
+                                <PlayIcon className="fill-current" />
                                 Play
                             </Button>
                         )}
@@ -166,6 +204,19 @@ export const SourceRow = memo(function SourceRow({
         </div>
     );
 });
+
+function SourceRowSkeleton() {
+    return (
+        <div className="flex items-stretch gap-3 sm:gap-4 px-3 sm:px-4 py-3 border-b border-border/40 last:border-0">
+            <div className="flex-1 space-y-2 py-0.5">
+                <div className="h-2.5 bg-muted/30 rounded-sm w-1/3 animate-pulse" />
+                <div className="h-3.5 bg-muted/40 rounded-sm w-4/5 animate-pulse" />
+                <div className="h-2.5 bg-muted/30 rounded-sm w-1/4 animate-pulse" />
+            </div>
+            <div className="hidden sm:block w-24 h-8 bg-muted/30 rounded-sm animate-pulse self-center" />
+        </div>
+    );
+}
 
 export function Sources({ request, className }: SourcesProps) {
     const {
@@ -180,7 +231,6 @@ export function Sources({ request, className }: SourcesProps) {
 
     const [addonFilter, setAddonFilter] = useState("all");
 
-    // rerender-derived-state-no-effect: derive addon list + filtered sources from data
     const addonNames = useMemo(() => {
         if (!sources?.length) return [];
         const seen = new Map<string, string>();
@@ -195,11 +245,44 @@ export function Sources({ request, className }: SourcesProps) {
         [sources, addonFilter]
     );
 
+    const cachedCount = useMemo(() => filtered?.filter((s) => s.isCached).length ?? 0, [filtered]);
+    const total = filtered?.length ?? 0;
+
     return (
         <div className="space-y-2">
-            {/* Addon filter — outside card, no background */}
-            {addonNames.length > 1 && (
-                <div className="flex justify-end pt-2">
+            {/* Editorial header — count summary + addon filter */}
+            <div className="flex items-center justify-between gap-3 px-3 sm:px-4 lg:px-5 pt-2">
+                <div className="inline-flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs lg:text-xs tracking-[0.2em] sm:tracking-[0.25em] uppercase text-muted-foreground/80">
+                    {isLoading ? (
+                        <span className="inline-flex items-center gap-1.5">
+                            <Loader2 className="size-3 animate-spin" />
+                            <span className="hidden sm:inline">Loading sources</span>
+                        </span>
+                    ) : total > 0 ? (
+                        <>
+                            <span className="inline-flex items-center gap-1.5">
+                                <LayersIcon className="size-3 text-muted-foreground/70 sm:hidden" />
+                                <span className="tabular-nums text-foreground/80">
+                                    {String(total).padStart(2, "0")}
+                                </span>
+                                <span className="hidden sm:inline">Sources</span>
+                            </span>
+                            {cachedCount > 0 && (
+                                <>
+                                    <span className="text-border hidden sm:inline">·</span>
+                                    <span className="inline-flex items-center gap-1.5 text-green-600 dark:text-green-500">
+                                        <Zap className="size-3 fill-current -translate-y-px sm:hidden" />
+                                        <span className="tabular-nums">{String(cachedCount).padStart(2, "0")}</span>
+                                        <span className="hidden sm:inline">Cached</span>
+                                    </span>
+                                </>
+                            )}
+                        </>
+                    ) : (
+                        "No Sources"
+                    )}
+                </div>
+                {addonNames.length > 1 && (
                     <Select value={addonFilter} onValueChange={setAddonFilter}>
                         <SelectTrigger size="sm" className="w-32 sm:w-40 text-xs sm:text-sm">
                             <SelectValue />
@@ -213,22 +296,24 @@ export function Sources({ request, className }: SourcesProps) {
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
-            )}
+                )}
+            </div>
 
-            <div className={cn("border border-border/50 rounded-sm overflow-hidden", className)}>
-                {/* Loading indicator */}
+            <div className={cn("border border-border/40 rounded-sm overflow-hidden", className)}>
                 {isLoading && (
-                    <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/20">
-                        <Loader2 className="size-4.5 animate-spin text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">Loading sources...</span>
-                    </div>
+                    <>
+                        <SourceRowSkeleton />
+                        <SourceRowSkeleton />
+                        <SourceRowSkeleton />
+                    </>
                 )}
 
                 {!isLoading && filtered?.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                        <p className="text-sm text-muted-foreground">No sources available</p>
-                        <p className="text-xs text-muted-foreground/70 mt-1">Configure addons to fetch sources</p>
+                        <p className="text-sm font-light text-foreground/80">No sources available</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1.5">
+                            Configure stream-capable addons in settings
+                        </p>
                     </div>
                 )}
 
@@ -236,11 +321,13 @@ export function Sources({ request, className }: SourcesProps) {
                     <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} request={request} />
                 ))}
 
-                {/* Failed addons warning */}
                 {!isLoading && failedAddons.length > 0 && (
-                    <div className="flex items-center justify-center gap-2 px-4 py-3 bg-yellow-500/10 border-t border-border/50">
-                        <AlertTriangle className="size-4.5 text-yellow-600" />
-                        <span className="text-xs text-yellow-600">Failed: {failedAddons.join(", ")}</span>
+                    <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-destructive/[0.04] border-t border-destructive/20">
+                        <AlertTriangle className="size-3.5 text-destructive/70" />
+                        <span className="text-[11px] tracking-wide text-destructive/80">
+                            <span className="tracking-[0.2em] uppercase text-[10px] mr-2">Unreachable</span>
+                            {failedAddons.join(", ")}
+                        </span>
                     </div>
                 )}
             </div>

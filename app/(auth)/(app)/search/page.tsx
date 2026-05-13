@@ -1,8 +1,12 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { SearchContent } from "@/components/mdb/search-content";
 
 export default function SearchPage() {
+    const searchParams = useSearchParams();
+    const initialQuery = searchParams.get("q") ?? "";
+
     return (
         <div className="mx-auto w-full lg:max-w-5xl pb-16">
             {/* Editorial header */}
@@ -18,7 +22,7 @@ export default function SearchPage() {
                 </p>
             </header>
 
-            <SearchContent variant="page" autoFocus className="space-y-8 sm:space-y-10" />
+            <SearchContent variant="page" autoFocus defaultQuery={initialQuery} className="space-y-8 sm:space-y-10" />
         </div>
     );
 }

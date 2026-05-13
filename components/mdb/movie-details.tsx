@@ -20,8 +20,11 @@ export const MovieDetails = memo(function MovieDetails({ media, mediaId }: Movie
             {media.ids?.imdb && (
                 <section className="space-y-6">
                     <SectionDivider label="Available Sources" />
-                    <div id="sources">
-                        <Sources request={{ imdbId: media.ids?.imdb || "", type: "movie", media }} />
+                    <div id="sources" className="-mx-4 sm:mx-0">
+                        <Sources
+                            request={{ imdbId: media.ids?.imdb || "", type: "movie", media }}
+                            className="border-x-0 sm:border-x rounded-none sm:rounded-sm"
+                        />
                     </div>
                 </section>
             )}

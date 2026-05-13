@@ -27,19 +27,27 @@ export function SearchContent({
     className,
     autoFocus = false,
 }: SearchContentProps) {
+    const syncQueryParam = variant === "page";
     const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState(defaultQuery);
     const [debouncedQuery, setDebouncedQuery] = useState(defaultQuery);
 
-    // Debounce the search query
+    // Debounce the query and (optionally) mirror it to the URL's `?q=` param
     useEffect(() => {
         const timer = setTimeout(() => {
-            setDebouncedQuery(query.trim());
+            const trimmed = query.trim();
+            setDebouncedQuery(trimmed);
+            if (!syncQueryParam) return;
+            const params = new URLSearchParams(window.location.search);
+            if ((params.get("q") ?? "") === trimmed) return;
+            if (trimmed) params.set("q", trimmed);
+            else params.delete("q");
+            const qs = params.toString();
+            router.replace(qs ? `?${qs}` : window.location.pathname, { scroll: false });
         }, 300);
-
         return () => clearTimeout(timer);
-    }, [query]);
+    }, [query, syncQueryParam, router]);
 
     const { fileResults, traktResults, sourceResults, isFileSearching, isTraktSearching, isSourceSearching } =
         useSearchLogic({

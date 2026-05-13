@@ -34,12 +34,12 @@ function EpisodeList({
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-light text-muted-foreground">{label}</h3>
+                <h3 className="text-xs tracking-wider uppercase text-muted-foreground">{label}</h3>
                 <span className="text-xs tracking-wider uppercase text-muted-foreground">
                     {episodes.length} Episodes
                 </span>
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="-mx-4 sm:mx-0 flex flex-col gap-3">
                 {episodes.map((episode) => (
                     <EpisodeCard key={episode.number} episode={episode} imdbId={imdbId} showMedia={showMedia} />
                 ))}
@@ -87,7 +87,7 @@ const EpisodesSection = memo(function EpisodesSection({
         return (
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-light text-muted-foreground">{seasonLabel}</h3>
+                    <h3 className="text-xs tracking-wider uppercase text-muted-foreground">{seasonLabel}</h3>
                 </div>
                 <div className="flex flex-col gap-3">
                     {Array.from({ length: skeletonCount }).map((_, i) => (

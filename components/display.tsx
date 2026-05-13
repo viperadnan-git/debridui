@@ -75,8 +75,8 @@ export const StatusBadge = memo(function StatusBadge({
 
 export const CachedBadge = memo(function CachedBadge() {
     return (
-        <span className="inline-flex items-center gap-1 text-xs tracking-wide text-green-600 dark:text-green-500">
-            <Zap className="size-3" />
+        <span className="inline-flex items-center gap-1 text-xs tracking-wider uppercase text-green-600 dark:text-green-500">
+            <Zap className="size-3 fill-current -translate-y-px" />
             <span>Cached</span>
         </span>
     );
