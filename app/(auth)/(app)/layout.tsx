@@ -33,7 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <header className="sticky top-0 z-50 shrink-0 pt-safe bg-background border-b border-border/30">
                         <div className="flex h-12 items-center justify-between gap-4 px-4">
                             <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-                                <SidebarTrigger className="-ml-1 shrink-0 hidden md:inline-flex" />
+                                <SidebarTrigger className="-ml-1 shrink-0 hidden lg:inline-flex" />
                                 <Link
                                     href="/dashboard"
                                     aria-label="DebridUI home"

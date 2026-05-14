@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import SignupForm from "./signup-form";
 
@@ -7,5 +8,9 @@ export default async function SignupPage() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (session) redirect("/dashboard");
 
-    return <SignupForm />;
+    return (
+        <Suspense fallback={null}>
+            <SignupForm />
+        </Suspense>
+    );
 }

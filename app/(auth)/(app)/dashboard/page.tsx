@@ -122,12 +122,12 @@ const WelcomeSection = memo(function WelcomeSection({ onSearchClick }: { onSearc
 // Content section with modern divider
 interface ContentSectionProps {
     label: string;
-    icon?: React.ReactNode;
+    icon?: React.ComponentType<{ className?: string }>;
     children: React.ReactNode;
     delay?: number;
 }
 
-const ContentSection = memo(function ContentSection({ label, icon, children, delay = 0 }: ContentSectionProps) {
+const ContentSection = memo(function ContentSection({ label, icon: Icon, children, delay = 0 }: ContentSectionProps) {
     return (
         <div
             className="space-y-8 animate-in fade-in-0 slide-in-from-bottom-4"
@@ -140,7 +140,11 @@ const ContentSection = memo(function ContentSection({ label, icon, children, del
             <div className="flex items-center gap-4 py-2">
                 <div className="h-px flex-1 bg-linear-to-r from-transparent via-border/50 to-border/50" />
                 <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-border/50 bg-card/50 backdrop-blur-sm">
-                    {icon && <span className="text-primary">{icon}</span>}
+                    {Icon && (
+                        <span className="text-primary">
+                            <Icon className="size-3.5" />
+                        </span>
+                    )}
                     <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
                 </div>
                 <div className="h-px flex-1 bg-linear-to-l from-transparent via-border/50 to-border/50" />
@@ -221,7 +225,7 @@ const AddonCatalogs = memo(function AddonCatalogs() {
     if (isLoading || catalogs.length === 0) return null;
 
     return (
-        <ContentSection label="From Your Addons" icon={<Puzzle className="size-3.5" />}>
+        <ContentSection label="From Your Addons" icon={Puzzle}>
             <div className="space-y-1 md:space-y-3">
                 {catalogs.map((catalog) => {
                     const key = `${catalog.addonId}-${catalog.type}-${catalog.id}`;
@@ -238,6 +242,7 @@ const AddonCatalogs = memo(function AddonCatalogs() {
 
 const DashboardPage = memo(function DashboardPage() {
     const [searchOpen, setSearchOpen] = useState(false);
+    const openSearch = useCallback(() => setSearchOpen(true), []);
 
     const trendingMovies = useTraktTrendingMovies(20);
     const trendingShows = useTraktTrendingShows(20);
@@ -258,7 +263,7 @@ const DashboardPage = memo(function DashboardPage() {
             <ContinueWatching />
 
             {/* Welcome Section */}
-            <WelcomeSection onSearchClick={() => setSearchOpen(true)} />
+            <WelcomeSection onSearchClick={openSearch} />
 
             <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
 
@@ -268,7 +273,7 @@ const DashboardPage = memo(function DashboardPage() {
                 <AddonCatalogs />
 
                 {/* Trending */}
-                <ContentSection label="Trending Now" icon={<TrendingUp className="size-3.5" />} delay={0}>
+                <ContentSection label="Trending Now" icon={TrendingUp} delay={0}>
                     <MediaSection
                         title="Movies"
                         items={trendingMovies.data}
@@ -286,7 +291,7 @@ const DashboardPage = memo(function DashboardPage() {
                 </ContentSection>
 
                 {/* Popular */}
-                <ContentSection label="Popular" icon={<Sparkles className="size-3.5" />} delay={100}>
+                <ContentSection label="Popular" icon={Sparkles} delay={100}>
                     <MediaSection
                         title="Movies"
                         items={popularMovies.data}
@@ -302,7 +307,7 @@ const DashboardPage = memo(function DashboardPage() {
                 </ContentSection>
 
                 {/* Box Office */}
-                <ContentSection label="Box Office" icon={<Ticket className="size-3.5" />} delay={200}>
+                <ContentSection label="Box Office" icon={Ticket} delay={200}>
                     <MediaSection
                         title="Top Grossing"
                         items={boxOffice.data}
@@ -312,7 +317,7 @@ const DashboardPage = memo(function DashboardPage() {
                 </ContentSection>
 
                 {/* Most Watched */}
-                <ContentSection label="Most Watched This Week" icon={<Film className="size-3.5" />} delay={300}>
+                <ContentSection label="Most Watched This Week" icon={Film} delay={300}>
                     <MediaSection
                         title="Movies"
                         items={mostWatchedMovies.data}
@@ -328,7 +333,7 @@ const DashboardPage = memo(function DashboardPage() {
                 </ContentSection>
 
                 {/* Coming Soon */}
-                <ContentSection label="Coming Soon" icon={<Calendar className="size-3.5" />} delay={400}>
+                <ContentSection label="Coming Soon" icon={Calendar} delay={400}>
                     <MediaSection
                         title="Movies"
                         items={anticipatedMovies.data}

@@ -374,7 +374,7 @@ const CreditCard = memo(function CreditCard({
                         </div>
 
                         {role && <p className="text-xs text-white/60 mt-1 line-clamp-1">{role}</p>}
-                        {episodeCount && (
+                        {!!episodeCount && (
                             <p className="text-xs text-white/50 mt-0.5">
                                 {episodeCount} episode{episodeCount !== 1 ? "s" : ""}
                             </p>

@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
@@ -54,6 +54,7 @@ function SidebarProvider({
     onOpenChange?: (open: boolean) => void;
 }) {
     const isMobile = useIsMobile();
+    const isTablet = useIsTablet();
     const [openMobile, setOpenMobile] = React.useState(false);
 
     // Get initial state from localStorage
@@ -98,8 +99,9 @@ function SidebarProvider({
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
+        if (isTablet) return;
         return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
-    }, [isMobile, setOpen]);
+    }, [isMobile, isTablet, setOpen]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
@@ -116,19 +118,21 @@ function SidebarProvider({
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
-    const state = open ? "expanded" : "collapsed";
+    // Force collapsed on tablet — sidebar stays in icon-only state on md..lg-1.
+    const effectiveOpen = isTablet ? false : open;
+    const state = effectiveOpen ? "expanded" : "collapsed";
 
     const contextValue = React.useMemo<SidebarContextProps>(
         () => ({
             state,
-            open,
+            open: effectiveOpen,
             setOpen,
             isMobile,
             openMobile,
             setOpenMobile,
             toggleSidebar,
         }),
-        [state, open, setOpen, isMobile, openMobile, toggleSidebar]
+        [state, effectiveOpen, setOpen, isMobile, openMobile, toggleSidebar]
     );
 
     return (
@@ -275,6 +279,9 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
 
 function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
     const { toggleSidebar } = useSidebar();
+    const isTablet = useIsTablet();
+
+    if (isTablet) return null;
 
     return (
         <button

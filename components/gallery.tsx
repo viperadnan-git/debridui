@@ -34,9 +34,9 @@ export function Gallery({ items, className }: GalleryProps) {
 
         if (Math.abs(diff) > threshold) {
             if (diff > 0 && active < items.length - 1) {
-                setActive(active + 1);
+                setActive((a) => a + 1);
             } else if (diff < 0 && active > 0) {
-                setActive(active - 1);
+                setActive((a) => a - 1);
             }
         }
         touchStartX.current = null;
@@ -67,7 +67,7 @@ export function Gallery({ items, className }: GalleryProps) {
             <div className="sm:hidden flex items-center justify-center gap-4 overflow-hidden">
                 <button
                     type="button"
-                    onClick={() => active > 0 && setActive(active - 1)}
+                    onClick={() => active > 0 && setActive((a) => a - 1)}
                     disabled={active === 0}
                     className={cn(
                         "text-xs tracking-wider uppercase w-20 text-right truncate transition-all duration-300",
@@ -84,7 +84,7 @@ export function Gallery({ items, className }: GalleryProps) {
                 </span>
                 <button
                     type="button"
-                    onClick={() => active < items.length - 1 && setActive(active + 1)}
+                    onClick={() => active < items.length - 1 && setActive((a) => a + 1)}
                     disabled={active === items.length - 1}
                     className={cn(
                         "text-xs tracking-wider uppercase w-20 text-left truncate transition-all duration-300",
