@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderOpen, HomeIcon, type LucideIcon, MoreHorizontal, SearchIcon, SettingsIcon } from "lucide-react";
+import { FolderOpen, HomeIcon, Link2, type LucideIcon, MoreHorizontal, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -16,14 +16,7 @@ const TABS: Tab[] = [
     { kind: "link", key: "home", label: "Home", href: "/dashboard", icon: HomeIcon, matchPrefix: "/dashboard" },
     { kind: "link", key: "files", label: "Files", href: "/files", icon: FolderOpen, matchPrefix: "/files" },
     { kind: "link", key: "search", label: "Search", href: "/search", icon: SearchIcon, matchPrefix: "/search" },
-    {
-        kind: "link",
-        key: "settings",
-        label: "Settings",
-        href: "/settings",
-        icon: SettingsIcon,
-        matchPrefix: "/settings",
-    },
+    { kind: "link", key: "links", label: "Links", href: "/links", icon: Link2, matchPrefix: "/links" },
     { kind: "more", key: "more", label: "More", icon: MoreHorizontal },
 ];
 

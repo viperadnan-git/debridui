@@ -1,6 +1,16 @@
 "use client";
 
-import { ChevronRight, HelpCircle, Link2, LogOut, type LucideIcon, Moon, Puzzle, Sun, UsersIcon } from "lucide-react";
+import {
+    ChevronRight,
+    HelpCircle,
+    LogOut,
+    type LucideIcon,
+    Moon,
+    Puzzle,
+    SettingsIcon,
+    Sun,
+    UsersIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useState } from "react";
@@ -12,7 +22,7 @@ import { cn } from "@/lib/utils";
 type Item = { label: string; href: string; icon: LucideIcon; description?: string };
 
 const PRIMARY: Item[] = [
-    { label: "Links", href: "/links", icon: Link2, description: "Unrestrict & manage links" },
+    { label: "Settings", href: "/settings", icon: SettingsIcon, description: "App preferences & account" },
     { label: "Addons", href: "/addons", icon: Puzzle, description: "Browse & install addons" },
     { label: "Accounts", href: "/accounts", icon: UsersIcon, description: "Manage debrid accounts" },
 ];
