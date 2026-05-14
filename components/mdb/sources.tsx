@@ -245,7 +245,6 @@ export function Sources({ request, className }: SourcesProps) {
         [sources, addonFilter]
     );
 
-    const cachedCount = useMemo(() => filtered?.filter((s) => s.isCached).length ?? 0, [filtered]);
     const total = filtered?.length ?? 0;
 
     return (
@@ -259,25 +258,11 @@ export function Sources({ request, className }: SourcesProps) {
                             <span className="hidden sm:inline">Loading sources</span>
                         </span>
                     ) : total > 0 ? (
-                        <>
-                            <span className="inline-flex items-center gap-1.5">
-                                <LayersIcon className="size-3 text-muted-foreground/70 sm:hidden" />
-                                <span className="tabular-nums text-foreground/80">
-                                    {String(total).padStart(2, "0")}
-                                </span>
-                                <span className="hidden sm:inline">Sources</span>
-                            </span>
-                            {cachedCount > 0 && (
-                                <>
-                                    <span className="text-border hidden sm:inline">·</span>
-                                    <span className="inline-flex items-center gap-1.5 text-green-600 dark:text-green-500">
-                                        <Zap className="size-3 fill-current -translate-y-px sm:hidden" />
-                                        <span className="tabular-nums">{String(cachedCount).padStart(2, "0")}</span>
-                                        <span className="hidden sm:inline">Cached</span>
-                                    </span>
-                                </>
-                            )}
-                        </>
+                        <span className="inline-flex items-center gap-1.5">
+                            <LayersIcon className="size-3 text-muted-foreground/70 sm:hidden" />
+                            <span className="tabular-nums text-foreground/80">{String(total).padStart(2, "0")}</span>
+                            <span className="hidden sm:inline">Sources</span>
+                        </span>
                     ) : (
                         "No Sources"
                     )}
