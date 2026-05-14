@@ -27,7 +27,13 @@ export function QuickSettings() {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Settings className="size-4 cursor-pointer text-muted-foreground hover:text-foreground hover:rotate-45 transition-all duration-300" />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Quick settings"
+                    className="size-8 sm:size-9 -mr-1.5 text-muted-foreground hover:text-foreground [&>svg]:transition-transform [&>svg]:duration-300 hover:[&>svg]:rotate-45">
+                    <Settings className="size-5 sm:size-[22px]" />
+                </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

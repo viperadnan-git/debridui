@@ -1,9 +1,10 @@
 "use client";
 
-import { AlertCircle, ArrowLeft, Film, Tv } from "lucide-react";
+import { AlertCircle, Film, Tv } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { memo, useCallback } from "react";
 import { MediaCard } from "@/components/mdb/media-card";
+import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type AddonCatalogDef, parseCatalogSlug, useAddonCatalog, useAddonCatalogDef } from "@/hooks/use-addons";
 
@@ -22,37 +23,27 @@ const DiscoverAddonPage = memo(function DiscoverAddonPage() {
 
     const isLoading = isDefLoading || (!data && !error && !!catalogDef);
 
+    const TypeIcon = type === "movie" ? Film : Tv;
+
     return (
-        <div className="lg:px-6 pb-12">
-            {/* Header */}
-            <div className="space-y-3 mb-8">
-                <button
-                    type="button"
-                    onClick={goBack}
-                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                    <ArrowLeft className="size-3" />
-                    <span>Back</span>
-                </button>
-                <div className="flex items-center gap-3">
-                    {type === "movie" ? (
-                        <Film className="size-5 text-primary shrink-0" strokeWidth={1.5} />
-                    ) : (
-                        <Tv className="size-5 text-primary shrink-0" strokeWidth={1.5} />
-                    )}
-                    {isDefLoading ? (
-                        <Skeleton className="h-8 w-48" />
-                    ) : (
-                        <h1 className="text-2xl md:text-3xl font-light truncate">{catalogDef?.name ?? id}</h1>
-                    )}
-                </div>
-                {isDefLoading ? (
-                    <Skeleton className="h-3 w-32" />
-                ) : catalogDef ? (
-                    <p className="text-xs text-muted-foreground">
-                        {catalogDef.addonName} <span className="text-border">·</span> {type}
-                    </p>
-                ) : null}
-            </div>
+        <div className="lg:px-6 pb-12 space-y-4 sm:space-y-6 lg:space-y-8">
+            <PageHeader
+                back={{ onClick: goBack }}
+                icon={TypeIcon}
+                title={isDefLoading ? <Skeleton className="h-7 sm:h-8 w-48" /> : (catalogDef?.name ?? id)}
+                meta={
+                    isDefLoading
+                        ? [<Skeleton key="m" className="h-3 w-32" />]
+                        : catalogDef
+                          ? [
+                                catalogDef.addonName,
+                                <span key="t" className="capitalize">
+                                    {type}
+                                </span>,
+                            ]
+                          : undefined
+                }
+            />
 
             {/* Error */}
             {error && (

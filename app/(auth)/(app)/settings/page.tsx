@@ -12,8 +12,8 @@ import { PageHeader } from "@/components/page-header";
 import { SectionDivider } from "@/components/section-divider";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useClearPlaybackHistory } from "@/hooks/use-playback-history";
@@ -130,14 +130,14 @@ export default function SettingsPage() {
     const isCustom = streaming.profileId === "custom";
 
     return (
-        <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
+        <div className="mx-auto w-full max-w-4xl space-y-4 sm:space-y-6 lg:space-y-8 pb-16">
             <PageHeader
                 icon={Settings}
                 title="Settings"
                 description="Manage your application preferences"
-                action={
+                primaryAction={
                     isSaving ? (
-                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1.5 pr-1 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
                             <Loader2 className="size-3 animate-spin" />
                             Saving
                         </span>
@@ -241,14 +241,14 @@ export default function SettingsPage() {
                             TMDB API Key
                         </Label>
                     </div>
-                    <Input
-                        id="tmdb-api-key"
-                        type="password"
-                        placeholder="Enter your TMDB API key"
-                        value={tmdbApiKey}
-                        onChange={(e) => handleTmdbApiKeyChange(e.target.value)}
-                        className="max-w-md"
-                    />
+                    <div className="max-w-md">
+                        <PasswordInput
+                            id="tmdb-api-key"
+                            placeholder="Enter your TMDB API key"
+                            value={tmdbApiKey}
+                            onChange={(e) => handleTmdbApiKeyChange(e.target.value)}
+                        />
+                    </div>
                     <p className="text-xs text-muted-foreground">
                         Needed for episode grouping and enhanced TV show metadata—particularly useful for anime.{" "}
                         <a

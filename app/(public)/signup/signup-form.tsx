@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 import { DISABLE_EMAIL_SIGNUP, GOOGLE_CLIENT_ID } from "@/lib/constants";
@@ -153,7 +154,7 @@ export default function SignupForm() {
                                             <FormItem>
                                                 <FormLabel>Password</FormLabel>
                                                 <FormControl>
-                                                    <Input type="password" placeholder="Create a password" {...field} />
+                                                    <PasswordInput placeholder="Create a password" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

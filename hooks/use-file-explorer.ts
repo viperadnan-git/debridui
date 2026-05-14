@@ -19,7 +19,7 @@ export function useFileExplorer() {
     const offset = (currentPage - 1) * PAGE_SIZE;
     const limit = PAGE_SIZE;
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, refetch, isRefetching } = useQuery({
         queryKey: [currentAccount.id, "getTorrentList", currentPage, sortBy, sortOrder],
         queryFn: () => client.getTorrentList({ offset, limit }),
         refetchInterval: 3000,
@@ -61,6 +61,8 @@ export function useFileExplorer() {
     return {
         files: sortedFiles,
         isLoading,
+        isRefetching,
+        refetch,
         currentPage,
         totalPages,
         setPage,

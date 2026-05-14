@@ -4,6 +4,7 @@ import { FolderOpen } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { memo, useCallback, useMemo, useState } from "react";
 import { ListPagination } from "@/components/common/pagination";
+import { PageHeader } from "@/components/page-header";
 import { useFileExplorer } from "@/hooks/use-file-explorer";
 import { PAGE_SIZE } from "@/lib/constants";
 import { useSelectionStore } from "@/lib/stores/selection";
@@ -13,11 +14,12 @@ import { FileActionsDrawer } from "./file-actions-drawer";
 import { FileList, FileListBody, FileListEmpty, FileListLoading } from "./file-list";
 import { FileListHeader } from "./file-list-header";
 import { FileListRow } from "./file-list-row";
+import { QuickSettings } from "./quick-settings";
 import { SearchSection } from "./search-section";
 import { SortControls } from "./sort-controls";
 
 export const FileExplorer = memo(function FileExplorer() {
-    const { files, isLoading, currentPage, totalPages, setPage } = useFileExplorer();
+    const { files, isLoading, isRefetching, refetch, currentPage, totalPages, setPage } = useFileExplorer();
     const searchParams = useSearchParams();
     const queryParam = searchParams.get("q") || "";
     const isIdSearch = queryParam.trim().startsWith("id:");
@@ -96,10 +98,7 @@ export const FileExplorer = memo(function FileExplorer() {
     return (
         <div className="md:mx-auto md:w-full md:max-w-4xl pb-24">
             <div className="flex flex-col gap-4">
-                <h1 className="text-2xl sm:text-3xl font-light flex items-center gap-3">
-                    <FolderOpen className="size-6 text-primary" strokeWidth={1.5} />
-                    File Explorer
-                </h1>
+                <PageHeader icon={FolderOpen} title="File Explorer" primaryAction={<QuickSettings />} />
                 <AddContent />
 
                 {/* Search and Sort Controls */}
@@ -114,6 +113,8 @@ export const FileExplorer = memo(function FileExplorer() {
                         onSelectAll={handleSelectAll}
                         selectedCount={selectedFileIds.size}
                         currentPage={queryParam ? searchPage : currentPage}
+                        onRefresh={() => refetch()}
+                        isRefreshing={isRefetching}
                     />
                     <FileListBody>
                         {activeData.length > 0 &&

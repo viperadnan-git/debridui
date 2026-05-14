@@ -12,6 +12,7 @@ import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 import { GOOGLE_CLIENT_ID } from "@/lib/constants";
@@ -119,7 +120,7 @@ export default function LoginForm() {
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="Enter your password" {...field} />
+                                            <PasswordInput placeholder="Enter your password" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

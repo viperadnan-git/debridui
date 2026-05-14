@@ -126,15 +126,20 @@ export default function AddonsPage() {
     };
 
     return (
-        <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
+        <div className="mx-auto w-full max-w-4xl space-y-4 sm:space-y-6 lg:space-y-8 pb-16">
             <PageHeader
                 icon={Puzzle}
                 title="Stremio Addons"
                 description="Manage your Stremio addons to fetch sources from multiple providers"
-                action={
-                    <Button onClick={handleRefresh} disabled={isRefreshing || isLoading} variant="outline">
-                        <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                        Refresh
+                primaryAction={
+                    <Button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing || isLoading}
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Refresh"
+                        className="size-8 sm:size-9 -mr-1.5 text-muted-foreground hover:text-foreground">
+                        <RefreshCw className={`!size-5 sm:!size-[22px] ${isRefreshing ? "animate-spin" : ""}`} />
                     </Button>
                 }
             />

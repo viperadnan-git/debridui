@@ -7,6 +7,7 @@ import { AccountCard } from "@/components/accounts/account-card";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AccountsPage() {
     const router = useRouter();
@@ -26,23 +27,37 @@ export default function AccountsPage() {
     }, [refetchAccounts]);
 
     return (
-        <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
+        <div className="mx-auto w-full max-w-4xl space-y-4 sm:space-y-6 lg:space-y-8 pb-16">
             <PageHeader
                 icon={KeyRound}
                 title="Accounts"
                 description="Manage your debrid service accounts"
                 divider
-                action={
-                    <div className="flex gap-2 w-full sm:w-auto">
-                        <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
-                            <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                            Refresh
+                primaryAction={
+                    <>
+                        <Button
+                            onClick={handleRefresh}
+                            disabled={isRefreshing}
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Refresh"
+                            className="size-8 sm:size-9 text-muted-foreground hover:text-foreground">
+                            <RefreshCw className={`!size-5 sm:!size-[22px] ${isRefreshing ? "animate-spin" : ""}`} />
                         </Button>
-                        <Button onClick={handleAddAccount}>
-                            <Plus className="size-4" />
-                            Add Account
-                        </Button>
-                    </div>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    onClick={handleAddAccount}
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label="Add account"
+                                    className="size-8 sm:size-9 -mr-1.5 text-muted-foreground hover:text-foreground">
+                                    <Plus className="!size-5 sm:!size-[22px]" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Add account</TooltipContent>
+                        </Tooltip>
+                    </>
                 }
             />
 

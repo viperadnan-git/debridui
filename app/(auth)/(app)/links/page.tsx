@@ -12,23 +12,25 @@ function LinksContent() {
     const { refetch, isRefetching, isLoading } = useWebDownloads();
 
     return (
-        <div className="mx-auto w-full max-w-4xl space-y-8 pb-16">
+        <div className="mx-auto w-full max-w-4xl space-y-4 sm:space-y-6 lg:space-y-8 pb-16">
             <PageHeader
                 icon={Link2}
                 title="Links"
                 description="Unlock and download files from supported hosters"
-                action={
-                    <Button onClick={() => refetch()} disabled={isRefetching || isLoading} variant="outline">
-                        <RefreshCw className={`size-4 ${isRefetching ? "animate-spin" : ""}`} />
-                        Refresh
+                primaryAction={
+                    <Button
+                        onClick={() => refetch()}
+                        disabled={isRefetching || isLoading}
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Refresh"
+                        className="size-8 sm:size-9 -mr-1.5 text-muted-foreground hover:text-foreground">
+                        <RefreshCw className={`size-5 sm:size-[22px] ${isRefetching ? "animate-spin" : ""}`} />
                     </Button>
                 }
             />
 
-            <section className="space-y-4">
-                <SectionDivider label="Add Links" />
-                <AddLinksForm />
-            </section>
+            <AddLinksForm />
 
             <section className="space-y-4">
                 <SectionDivider label="Downloads" />

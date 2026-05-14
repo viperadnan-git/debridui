@@ -1,14 +1,17 @@
 "use client";
 
+import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { QuickSettings } from "./quick-settings";
 
 interface FileListHeaderProps {
     isAllSelected: boolean | "indeterminate";
     onSelectAll: (checked: boolean | "indeterminate") => void;
     selectedCount?: number;
     currentPage?: number;
+    onRefresh?: () => void;
+    isRefreshing?: boolean;
     className?: string;
 }
 
@@ -17,6 +20,8 @@ export function FileListHeader({
     onSelectAll,
     selectedCount = 0,
     currentPage = 1,
+    onRefresh,
+    isRefreshing = false,
     className,
 }: FileListHeaderProps) {
     const title = currentPage > 1 ? `Page ${currentPage}` : "Files";
@@ -39,11 +44,21 @@ export function FileListHeader({
                 />
             </div>
 
-            <div className="flex flex-1 items-center min-w-0 justify-between pr-2">
+            <div className="flex flex-1 items-center min-w-0 justify-between gap-2 pr-1 sm:pr-2">
                 <span>
                     {selectedCount > 0 ? <span className="text-foreground">{selectedCount} Selected</span> : title}
                 </span>
-                <QuickSettings />
+                {onRefresh && (
+                    <Button
+                        onClick={onRefresh}
+                        disabled={isRefreshing}
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Refresh"
+                        className="size-5 -mr-1 text-muted-foreground hover:text-muted-foreground">
+                        <RefreshCw className={cn("!size-3.5", isRefreshing && "animate-spin")} />
+                    </Button>
+                )}
             </div>
         </div>
     );

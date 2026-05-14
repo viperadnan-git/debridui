@@ -125,15 +125,21 @@ export function AddContent() {
 
     return (
         <section
-            aria-labelledby="add-content-label"
-            className="max-sm:-mx-4 sm:rounded-sm sm:border sm:border-border/50 sm:bg-background">
-            <div className="px-4 py-3 sm:px-6 sm:py-5 space-y-3 sm:space-y-4">
-                {/* Editorial label */}
-                <div className="flex items-center gap-3">
+            aria-label="Add Content"
+            className="relative max-sm:-mx-4 sm:mt-3 sm:rounded-sm sm:border sm:border-border/50 sm:bg-background">
+            {/* Editorial label — pinned to top border on sm+ (fieldset legend style) */}
+            <div className="hidden sm:flex absolute -top-2.5 left-5 items-center gap-2 px-2 bg-background">
+                <Plus className="size-3.5 text-primary" strokeWidth={1.5} />
+                <span className="text-[11px] tracking-widest uppercase text-muted-foreground font-light">
+                    Add Content
+                </span>
+            </div>
+
+            <div className="px-4 py-3 sm:px-6 sm:py-5 sm:pt-6 space-y-3 sm:space-y-4">
+                {/* Inline editorial label — mobile only */}
+                <div className="flex items-center gap-3 sm:hidden">
                     <Plus className="size-4 text-primary" strokeWidth={1.5} />
-                    <span
-                        id="add-content-label"
-                        className="text-xs tracking-widest uppercase text-muted-foreground font-light">
+                    <span className="text-xs tracking-widest uppercase text-muted-foreground font-light">
                         Add Content
                     </span>
                     <div className="h-px flex-1 bg-border/50" />
