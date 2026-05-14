@@ -16,7 +16,7 @@ interface MediaDetailsProps {
 
 const MediaSkeleton = memo(function MediaSkeleton() {
     return (
-        <div className="relative">
+        <div className="relative min-h-svh">
             {/* Backdrop — matches MediaHeader heights */}
             <div className="absolute inset-x-0 top-0 -mt-6 h-[42vh] sm:h-[50vh] md:h-[60vh] lg:h-[85vh] overflow-hidden left-1/2 -translate-x-1/2 w-screen">
                 <Skeleton className="w-full h-full rounded-none opacity-60" />
