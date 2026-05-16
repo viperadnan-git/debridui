@@ -1,3 +1,5 @@
+import { getProxyUrl } from "@/lib/utils";
+
 // Base types for media display (shared by Trakt, Stremio addons, etc.)
 export interface MediaIds {
     slug?: string;
@@ -401,7 +403,7 @@ export class TraktClient {
         }
 
         try {
-            const response = await fetch(url, {
+            const response = await fetch(getProxyUrl(url), {
                 ...options,
                 cache: "no-store",
                 headers: {
