@@ -1,4 +1,8 @@
+import { TRAKT_USE_CORS_PROXY } from "@/lib/constants";
 import { getProxyUrl } from "@/lib/utils";
+
+// Resolved once at module load — TRAKT_USE_CORS_PROXY is sed-injected at container startup (see Dockerfile)
+const TRAKT_PROXY_ENABLED = TRAKT_USE_CORS_PROXY.toLowerCase() === "true";
 
 // Base types for media display (shared by Trakt, Stremio addons, etc.)
 export interface MediaIds {
@@ -403,7 +407,7 @@ export class TraktClient {
         }
 
         try {
-            const response = await fetch(getProxyUrl(url), {
+            const response = await fetch(TRAKT_PROXY_ENABLED ? getProxyUrl(url) : url, {
                 ...options,
                 cache: "no-store",
                 headers: {

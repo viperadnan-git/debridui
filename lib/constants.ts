@@ -102,6 +102,7 @@ export const USER_AGENT = "DebridUI";
 // External links
 export const DISCORD_URL = process.env.NEXT_PUBLIC_DISCORD_URL;
 export const CORS_PROXY_URL = process.env.NEXT_PUBLIC_CORS_PROXY_URL || "https://corsproxy.io/?url=";
+export const TRAKT_USE_CORS_PROXY = process.env.NEXT_PUBLIC_TRAKT_USE_CORS_PROXY || "false";
 
 // Storage keys
 export const STREAMING_STORAGE_KEY = "debridui-streaming";
