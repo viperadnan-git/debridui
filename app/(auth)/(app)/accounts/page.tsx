@@ -42,7 +42,7 @@ export default function AccountsPage() {
                             size="icon"
                             aria-label="Refresh"
                             className="size-8 sm:size-9 text-muted-foreground hover:text-foreground">
-                            <RefreshCw className={`!size-5 sm:!size-[22px] ${isRefreshing ? "animate-spin" : ""}`} />
+                            <RefreshCw className={`size-5! sm:size-[22px]! ${isRefreshing ? "animate-spin" : ""}`} />
                         </Button>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -52,7 +52,7 @@ export default function AccountsPage() {
                                     size="icon"
                                     aria-label="Add account"
                                     className="size-8 sm:size-9 -mr-1.5 text-muted-foreground hover:text-foreground">
-                                    <Plus className="!size-5 sm:!size-[22px]" />
+                                    <Plus className="size-5! sm:size-[22px]!" />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>Add account</TooltipContent>

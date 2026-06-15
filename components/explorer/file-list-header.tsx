@@ -56,7 +56,7 @@ export function FileListHeader({
                         size="icon"
                         aria-label="Refresh"
                         className="size-5 -mr-1 text-muted-foreground hover:text-muted-foreground">
-                        <RefreshCw className={cn("!size-3.5", isRefreshing && "animate-spin")} />
+                        <RefreshCw className={cn("size-3.5!", isRefreshing && "animate-spin")} />
                     </Button>
                 )}
             </div>

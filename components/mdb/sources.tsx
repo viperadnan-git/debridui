@@ -309,7 +309,7 @@ export function Sources({ request, className }: SourcesProps) {
                 )}
 
                 {!isLoading && failedAddons.length > 0 && (
-                    <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-destructive/[0.04] border-t border-destructive/20">
+                    <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-destructive/4 border-t border-destructive/20">
                         <AlertTriangle className="size-3.5 text-destructive/70" />
                         <span className="text-[11px] tracking-wide text-destructive/80">
                             <span className="tracking-[0.2em] uppercase text-[10px] mr-2">Unreachable</span>

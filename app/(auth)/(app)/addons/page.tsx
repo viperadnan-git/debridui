@@ -139,7 +139,7 @@ export default function AddonsPage() {
                         size="icon"
                         aria-label="Refresh"
                         className="size-8 sm:size-9 -mr-1.5 text-muted-foreground hover:text-foreground">
-                        <RefreshCw className={`!size-5 sm:!size-[22px] ${isRefreshing ? "animate-spin" : ""}`} />
+                        <RefreshCw className={`size-5! sm:size-[22px]! ${isRefreshing ? "animate-spin" : ""}`} />
                     </Button>
                 }
             />
