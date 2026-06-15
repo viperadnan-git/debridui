@@ -167,12 +167,14 @@ export const SearchHistorySection = memo(function SearchHistorySection({
 
     const handleSelect = (entry: SearchHistory) => {
         router.push(deriveHref(entry));
-        recordPick({
-            provider: entry.provider,
-            providerId: entry.providerId,
-            title: entry.title,
-            metadata: entry.metadata,
-        });
+        if (entry.metadata.kind === "trakt") {
+            recordPick({
+                provider: "trakt",
+                providerId: entry.providerId,
+                title: entry.title,
+                metadata: entry.metadata,
+            });
+        }
         onItemClick?.();
     };
 
