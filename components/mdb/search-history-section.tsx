@@ -5,7 +5,12 @@ import { Clock, Film, Star, Tv, X } from "lucide-react";
 import { memo, useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SearchItemWrapper } from "@/components/search-item-wrapper";
-import { useClearSearchHistory, useRemoveFromSearchHistory, useSearchHistory } from "@/hooks/use-search-history";
+import {
+    useClearSearchHistory,
+    useRecordSearchPick,
+    useRemoveFromSearchHistory,
+    useSearchHistory,
+} from "@/hooks/use-search-history";
 import type { SearchHistory } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 
@@ -152,6 +157,7 @@ export const SearchHistorySection = memo(function SearchHistorySection({
     const { data: history = [] } = useSearchHistory();
     const { mutate: removeEntry } = useRemoveFromSearchHistory();
     const { mutate: clearAll } = useClearSearchHistory();
+    const { mutate: recordPick } = useRecordSearchPick();
     const [confirmOpen, setConfirmOpen] = useState(false);
 
     if (history.length === 0) return null;
@@ -161,6 +167,12 @@ export const SearchHistorySection = memo(function SearchHistorySection({
 
     const handleSelect = (entry: SearchHistory) => {
         router.push(deriveHref(entry));
+        recordPick({
+            provider: entry.provider,
+            providerId: entry.providerId,
+            title: entry.title,
+            metadata: entry.metadata,
+        });
         onItemClick?.();
     };
 
