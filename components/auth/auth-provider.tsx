@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useIsRestoring } from "@tanstack/react-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { SplashErrorScreen } from "@/components/splash-error-screen";
@@ -56,8 +57,10 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { data: session, isPending: isSessionPending, error: sessionError } = authClient.useSession();
     const { data: userAccounts = [], isLoading: isAccountsLoading, refetch } = useUserAccounts();
+    const isRestoring = useIsRestoring();
     const { data: serverSettings } = useUserSettings();
 
     const accountsLength = userAccounts.length;
@@ -96,20 +99,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Mutation for removing accounts (used in error recovery)
     const { mutate: removeAccount } = useRemoveUserAccount();
 
-    // Server layout enforces a valid session before this provider mounts.
-    // If the session is invalidated mid-app (revoked/expired), bounce to /login.
+    // Session gone mid-app: bounce to /login, preserving location. Skip on sessionError —
+    // that's a failed fetch (e.g. cold network on tab wake), not logout; reconnect recovers.
     useEffect(() => {
-        if (!isSessionPending && !session) router.push("/login");
-    }, [isSessionPending, session, router]);
+        if (isSessionPending || session || sessionError) return;
+        const query = searchParams.toString();
+        const target = `${pathname}${query ? `?${query}` : ""}`;
+        router.push(`/login?callbackUrl=${encodeURIComponent(target)}`);
+    }, [isSessionPending, session, sessionError, pathname, searchParams, router]);
+
+    // While the persisted cache restores from IndexedDB the accounts query is paused
+    // (empty data, not "loading"), so it must not drive routing until truly ready.
+    const accountsNotReady = isRestoring || isAccountsLoading;
+    const hasAccounts = userAccounts.length > 0;
+    const needsRouting = hasAccounts === (pathname === "/onboarding");
 
     // Route between onboarding and the app based on whether the user has accounts.
     useEffect(() => {
-        if (!session || isAccountsLoading) return;
-        const hasAccounts = userAccounts.length > 0;
-        const isOnboarding = pathname === "/onboarding";
-        if (hasAccounts === !isOnboarding) return;
-        router.push(hasAccounts ? "/dashboard" : "/onboarding");
-    }, [session, isAccountsLoading, userAccounts.length, pathname, router]);
+        if (!session || accountsNotReady || !needsRouting) return;
+        const dest = searchParams.get("callbackUrl") || "/dashboard";
+        router.push(hasAccounts ? dest : "/onboarding");
+    }, [session, accountsNotReady, needsRouting, hasAccounts, searchParams, router]);
 
     // Hydrate settings from server (once on load, non-blocking)
     const hasHydrated = useRef(false);
@@ -197,8 +207,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         );
     }
 
-    // Server layout has already validated the session; only block on missing accounts data.
-    if (isAccountsLoading) {
+    // Block while accounts load or a routing redirect is pending, to avoid flashing the wrong page.
+    if (accountsNotReady || needsRouting) {
         return <SplashScreen />;
     }
 
