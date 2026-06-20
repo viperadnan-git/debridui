@@ -204,6 +204,13 @@ export interface TraktSearchResult {
     show?: TraktMedia;
 }
 
+// External id types accepted by Trakt's /search/{id_type}/{id} lookup
+export type TraktIdType = "trakt" | "imdb" | "tmdb" | "tvdb";
+
+// A search/lookup result is usable only when its type matches a populated media field.
+const isMovieOrShow = (result: TraktSearchResult) =>
+    (result.type === "movie" && !!result.movie) || (result.type === "show" && !!result.show);
+
 export interface TraktUserProfile {
     username: string;
     private: boolean;
@@ -451,9 +458,16 @@ export class TraktClient {
 
         const results = await this.makeRequest<TraktSearchResult[]>(endpoint, {}, false, extended);
 
-        return results
-            .filter((result) => (result.type === "movie" && result.movie) || (result.type === "show" && result.show))
-            .sort((a, b) => b.score - a.score);
+        return results.filter(isMovieOrShow).sort((a, b) => b.score - a.score);
+    }
+
+    /**
+     * Resolve a movie/show by external id (imdb, tmdb, tvdb, trakt).
+     * Returns type + full media in a single call.
+     */
+    public async idLookup(idType: TraktIdType, id: string, extended = "full,images"): Promise<TraktSearchResult[]> {
+        const results = await this.makeRequest<TraktSearchResult[]>(`/search/${idType}/${id}`, {}, false, extended);
+        return results.filter(isMovieOrShow);
     }
 
     // Convenience Methods

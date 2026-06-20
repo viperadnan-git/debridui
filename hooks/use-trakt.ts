@@ -1,5 +1,5 @@
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
-import { traktClient } from "@/lib/trakt";
+import { type TraktIdType, traktClient } from "@/lib/trakt";
 
 // Cache duration constants
 const CACHE_DURATION = {
@@ -113,12 +113,46 @@ export function useTraktTrendingMixed(limit = 20) {
     });
 }
 
-export function useTraktMedia(slug: string, type: "movie" | "show") {
-    return useQuery({
-        queryKey: ["trakt", "media", slug, type],
-        queryFn: () => (type === "movie" ? traktClient.getMovie(slug) : traktClient.getShow(slug)),
+// Fetch media by id. When `type` is known (slug routes) it hits the type-specific
+// endpoint directly; when omitted (external-id routes) a single id-lookup resolves
+// both the type and the media. `idType` selects the external id namespace.
+export function useTraktMedia({
+    id,
+    type,
+    idType = "imdb",
+}: {
+    id: string;
+    type?: "movie" | "show";
+    idType?: TraktIdType;
+}) {
+    const direct = useQuery({
+        queryKey: ["trakt", "media", id, type],
+        queryFn: () => (type === "movie" ? traktClient.getMovie(id) : traktClient.getShow(id)),
         staleTime: CACHE_DURATION.LONG,
+        enabled: !!id && !!type,
     });
+
+    const lookup = useQuery({
+        queryKey: ["trakt", "lookup", idType, id],
+        queryFn: () => traktClient.idLookup(idType, id),
+        staleTime: CACHE_DURATION.LONG,
+        enabled: !!id && !type,
+    });
+
+    if (type) {
+        return { media: direct.data, type, isLoading: direct.isLoading, error: direct.error };
+    }
+
+    const result = lookup.data?.[0];
+    const resolvedType = result?.type as "movie" | "show" | undefined;
+    const media = result?.movie ?? result?.show;
+    const notFound = lookup.isSuccess && !media;
+    return {
+        media,
+        type: resolvedType,
+        isLoading: lookup.isLoading,
+        error: lookup.error ?? (notFound ? new Error("Title not found") : null),
+    };
 }
 
 export const useTraktShowEpisodes = useTraktSeasonEpisodes;

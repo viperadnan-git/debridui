@@ -11,12 +11,12 @@ import { useTraktShowEpisodes, useTraktShowSeasons } from "@/hooks/use-trakt";
 import type { TMDBEpisodeGroupEpisode } from "@/lib/tmdb";
 import type { TraktEpisode, TraktImages, TraktMedia, TraktSeason } from "@/lib/trakt";
 import { EpisodeCard } from "./episode-card";
-import { MediaHeader } from "./media-header";
+import { MediaHeader, MediaHeaderSkeleton } from "./media-header";
 import { PeopleSection } from "./people-section";
 import { SeasonCard } from "./season-card";
 
 interface ShowDetailsProps {
-    media: TraktMedia;
+    media?: TraktMedia;
     mediaId: string;
 }
 
@@ -128,15 +128,22 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
     const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(partParam ? parseInt(partParam, 10) : 0);
     const { data: seasons, isLoading: seasonsLoading } = useTraktShowSeasons(mediaId);
 
-    // Derived from URL + seasons. `?season=latest` resolves to the highest non-Specials season once data loads.
+    // Derived from URL + seasons. `?season=latest` resolves to the latest season that has
+    // already aired — excludes Specials and announced-but-unaired future seasons (no/future
+    // first_aired). Falls back to the highest real season if none have aired yet.
     const selectedSeason = useMemo<number>(() => {
-        if (seasonParam === "latest") {
-            return seasons?.length ? seasons.reduce((max, s) => (s.number > max ? s.number : max), 0) || 1 : 1;
+        if (seasonParam !== "latest") {
+            const parsed = parseInt(seasonParam ?? "", 10);
+            return Number.isNaN(parsed) ? 1 : parsed;
         }
-        return seasonParam ? parseInt(seasonParam, 10) : 1;
+        if (!seasons?.length) return 1;
+        const now = Date.now();
+        const aired = seasons.filter((s) => s.number > 0 && s.first_aired && new Date(s.first_aired).getTime() <= now);
+        const pool = aired.length ? aired : seasons.filter((s) => s.number > 0);
+        return pool.reduce((max, s) => Math.max(max, s.number), 0) || 1;
     }, [seasonParam, seasons]);
 
-    const { data: episodeGroups } = useTMDBSeriesEpisodeGroups(media.ids?.tmdb ?? 0);
+    const { data: episodeGroups } = useTMDBSeriesEpisodeGroups(media?.ids?.tmdb ?? 0);
     const { data: groupDetails } = useTMDBEpisodeGroupDetails(selectedGroup !== "default" ? selectedGroup : "");
 
     const handleSeasonChange = useCallback(
@@ -186,12 +193,12 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
             (g): TraktSeason => ({
                 number: g.order,
                 ids: { trakt: 0, slug: "", tmdb: 0 },
-                images: media.images,
+                images: media?.images,
                 title: g.name,
                 episode_count: g.episodes.length,
             })
         );
-    }, [groupDetails, media.images]);
+    }, [groupDetails, media?.images]);
 
     // Pre-map TMDB episodes to TraktEpisode format for the selected group
     const groupEpisodes = useMemo(() => {
@@ -203,7 +210,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
 
     return (
         <div className="space-y-12">
-            <MediaHeader media={media} mediaId={mediaId} type="show" />
+            {media ? <MediaHeader media={media} mediaId={mediaId} type="show" /> : <MediaHeaderSkeleton />}
 
             <section id="seasons" className="space-y-6 scroll-mt-16">
                 <SectionDivider label="Seasons & Episodes" />
@@ -234,12 +241,14 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                             </ScrollCarousel>
                         )}
 
-                        <EpisodesSection
-                            selectedSeason={selectedSeason}
-                            episodeCount={episodeCount}
-                            mediaId={mediaId}
-                            media={media}
-                        />
+                        {media && (
+                            <EpisodesSection
+                                selectedSeason={selectedSeason}
+                                episodeCount={episodeCount}
+                                mediaId={mediaId}
+                                media={media}
+                            />
+                        )}
                     </>
                 ) : !groupDetails ? (
                     <div className="space-y-4">
@@ -283,7 +292,7 @@ export const ShowDetails = memo(function ShowDetails({ media, mediaId }: ShowDet
                                 </ScrollCarousel>
                             )}
 
-                            {groupEpisodes && (
+                            {media && groupEpisodes && (
                                 <EpisodeList
                                     label={filteredGroups[selectedGroupIndex]?.title ?? "Episodes"}
                                     episodes={groupEpisodes}
