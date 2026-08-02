@@ -11,10 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { openInPlayer } from "@/lib/media/player";
 import { useFileSelectedNodes, useSelectionStore } from "@/lib/stores/selection";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { type DebridFileNode, type DebridLinkInfo, type DebridNode, FileType, MediaPlayer } from "@/lib/types";
-import { cn, copyLinksToClipboard, downloadLinks, formatSize, getFileType, openInPlayer } from "@/lib/utils";
+import { cn, copyLinksToClipboard, downloadLinks, formatSize, getFileType } from "@/lib/utils";
 import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
 import { collectFileNodes, collectNodeIds } from "@/lib/utils/file";
 

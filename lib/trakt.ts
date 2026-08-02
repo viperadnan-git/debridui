@@ -465,8 +465,20 @@ export class TraktClient {
      * Resolve a movie/show by external id (imdb, tmdb, tvdb, trakt).
      * Returns type + full media in a single call.
      */
-    public async idLookup(idType: TraktIdType, id: string, extended = "full,images"): Promise<TraktSearchResult[]> {
-        const results = await this.makeRequest<TraktSearchResult[]>(`/search/${idType}/${id}`, {}, false, extended);
+    public async idLookup(
+        idType: TraktIdType,
+        id: string,
+        type?: "movie" | "show",
+        extended = "full,images"
+    ): Promise<TraktSearchResult[]> {
+        // tmdb ids are namespaced per type — movie/550 and tv/550 are different titles
+        const query = type ? `?type=${type}` : "";
+        const results = await this.makeRequest<TraktSearchResult[]>(
+            `/search/${idType}/${id}${query}`,
+            {},
+            false,
+            extended
+        );
         return results.filter(isMovieOrShow);
     }
 

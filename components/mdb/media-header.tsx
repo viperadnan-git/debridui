@@ -5,8 +5,8 @@ import { WatchButton } from "@/components/common/watch-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getBackdropUrl, getPosterUrl } from "@/lib/media/images";
 import type { TraktMedia } from "@/lib/trakt";
-import { getBackdropUrl, getPosterUrl } from "@/lib/utils/media";
 import { MediaOverview } from "./media-overview";
 import { MediaStats } from "./media-stats";
 

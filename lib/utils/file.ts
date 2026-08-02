@@ -154,7 +154,7 @@ export const sortTorrentFiles = (files: DebridFile[], criteria: string, directio
     });
 };
 
-const getTorrentFilesWithCache = async (
+export const getTorrentFilesWithCache = async (
     fileId: string,
     client: DebridClient,
     accountId: string,

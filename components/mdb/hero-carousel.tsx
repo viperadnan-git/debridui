@@ -9,9 +9,9 @@ import { WatchButton } from "@/components/common/watch-button";
 import { Button } from "@/components/ui/button";
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { useTraktTrendingMixed } from "@/hooks/use-trakt";
+import { getBackdropUrl, getPosterUrl } from "@/lib/media/images";
 import type { TraktMediaItem } from "@/lib/trakt";
 import { cn } from "@/lib/utils";
-import { getBackdropUrl, getPosterUrl } from "@/lib/utils/media";
 import { HeroCarouselSkeleton } from "./hero-carousel-skeleton";
 
 interface HeroSlideProps {

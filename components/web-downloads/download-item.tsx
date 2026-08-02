@@ -7,11 +7,12 @@ import { WebDownloadStatusBadge } from "@/components/display";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { openInPlayer } from "@/lib/media/player";
 import { canPreviewFile } from "@/lib/preview/registry";
 import { usePreviewStore } from "@/lib/stores/preview";
 import { useSettingsStore } from "@/lib/stores/settings";
 import { FileType, MediaPlayer, type WebDownload } from "@/lib/types";
-import { cn, formatSize, getFileType, openInPlayer } from "@/lib/utils";
+import { cn, formatSize, getFileType } from "@/lib/utils";
 
 interface DownloadItemProps {
     download: WebDownload;
@@ -33,13 +34,12 @@ export const DownloadItem = memo(function DownloadItem({
     const [loading, setLoading] = useState<"copy" | "download" | "preview" | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [airlocking, setAirlocking] = useState(false);
-    const { get } = useSettingsStore();
     const openSinglePreview = usePreviewStore((s) => s.openSinglePreview);
 
     const fileType = useMemo(() => getFileType(download.name), [download.name]);
     const isPreviewable = useMemo(() => canPreviewFile(fileType), [fileType]);
     const isVideo = fileType === FileType.VIDEO;
-    const mediaPlayer = get("mediaPlayer");
+    const mediaPlayer = useSettingsStore((s) => s.settings.mediaPlayer);
     const usesExternalPlayer = isVideo && mediaPlayer !== MediaPlayer.BROWSER;
 
     const getLink = async (action: "copy" | "download" | "preview") => {

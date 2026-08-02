@@ -26,9 +26,8 @@ interface ExpandedRowProps {
 
 export function ExpandedRow({ file }: ExpandedRowProps) {
     const { client, currentAccount } = useAuthGuaranteed();
-    const { get } = useSettingsStore();
-    const hideTrash = get("hideTrash");
-    const smartOrder = get("smartOrder");
+    const hideTrash = useSettingsStore((s) => s.settings.hideTrash);
+    const smartOrder = useSettingsStore((s) => s.settings.smartOrder);
     const registerFileNodes = useSelectionStore((state) => state.registerFileNodes);
 
     // Use files from DebridFile if available, otherwise fetch them
@@ -39,7 +38,8 @@ export function ExpandedRow({ file }: ExpandedRowProps) {
     } = useQuery<DebridNode[]>({
         queryKey: [currentAccount.id, "getTorrentFiles", file.id],
         queryFn: () => client.getTorrentFiles(file.id),
-        enabled: file.status === "completed" && !file.files, // Only fetch if files not already available
+        // Must match canExpand in FileListRow, or an expandable row can have no way to load files
+        enabled: (file.status === "completed" || file.status === "seeding") && !file.files,
     });
 
     // Use files from DebridFile or fetched nodes

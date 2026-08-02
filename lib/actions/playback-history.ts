@@ -9,8 +9,8 @@ import type { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { playbackHistory } from "@/lib/db/schema";
+import { getPosterUrl } from "@/lib/media/images";
 import { recordPlaybackSchema, removePlaybackSchema } from "@/lib/schemas";
-import { getPosterUrl } from "@/lib/utils/media";
 
 /**
  * Record a playback in user's history

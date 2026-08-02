@@ -10,9 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTraktPerson, useTraktPersonMovies, useTraktPersonShows } from "@/hooks/use-trakt";
+import { getPosterUrl } from "@/lib/media/images";
 import type { TraktMedia, TraktPersonFull, TraktPersonMovieCredit, TraktPersonShowCredit } from "@/lib/trakt";
 import { calculateAge, formatLocalizedDate } from "@/lib/utils";
-import { getPosterUrl } from "@/lib/utils/media";
 
 // Person Header Component
 const PersonHeader = memo(function PersonHeader({

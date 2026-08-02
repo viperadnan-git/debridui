@@ -1,7 +1,7 @@
 "use client";
 
-import { Clapperboard, FolderClosed, Loader2, type LucideIcon, Magnet, Search } from "lucide-react";
-import type { TorBoxSearchResult } from "@/lib/clients/torbox";
+import { Clapperboard, FolderClosed, Link2, Loader2, type LucideIcon, Magnet, Search } from "lucide-react";
+import type { SearchState } from "@/hooks/use-search-logic";
 import type { TraktSearchResult } from "@/lib/trakt";
 import type { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -12,12 +12,7 @@ import { SearchSourceItem } from "./search-source-item";
 
 interface SearchResultsProps {
     query: string;
-    fileResults?: DebridFile[];
-    traktResults?: TraktSearchResult[];
-    sourceResults?: TorBoxSearchResult[];
-    isFileSearching: boolean;
-    isTraktSearching: boolean;
-    isSourceSearching: boolean;
+    search: SearchState;
     onFileSelect: (file: DebridFile) => void;
     onMediaSelect: (result: TraktSearchResult) => void;
     onHistoryItemClick?: () => void;
@@ -39,12 +34,14 @@ function PageSectionHeader({
     icon: Icon,
     label,
     count,
+    detail,
     loading,
     className,
 }: {
     icon: LucideIcon;
     label: string;
     count?: number;
+    detail?: string;
     loading?: boolean;
     className?: string;
 }) {
@@ -52,6 +49,11 @@ function PageSectionHeader({
         <div className={cn("flex items-center gap-2", className)}>
             <Icon className="size-3.5 text-muted-foreground/70 shrink-0" />
             <h3 className="text-[10px] sm:text-xs tracking-[0.25em] uppercase text-muted-foreground">{label}</h3>
+            {detail ? (
+                <span className="text-[10px] sm:text-xs tracking-[0.15em] uppercase text-muted-foreground/60">
+                    · {detail}
+                </span>
+            ) : null}
             {loading ? (
                 <Loader2 className="size-3 text-muted-foreground/60 animate-spin" />
             ) : count !== undefined ? (
@@ -83,25 +85,29 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
 
 export function SearchResults({
     query,
-    fileResults,
-    traktResults,
-    sourceResults,
-    isFileSearching,
-    isTraktSearching,
-    isSourceSearching,
+    search,
     onFileSelect,
     onMediaSelect,
     onHistoryItemClick,
     variant = "modal",
     className,
 }: SearchResultsProps) {
+    const {
+        linkedResult,
+        linkedSource,
+        fileResults = [],
+        traktResults = [],
+        sourceResults = [],
+        isTraktSearching,
+        isSettled,
+        hasFileResults,
+        hasTraktResults,
+        hasSourceResults,
+        hasAnyResults,
+        totalCount,
+    } = search;
     const trimmedQuery = query.trim();
-    const hasFileResults = !!fileResults?.length;
-    const hasTraktResults = !!traktResults?.length;
-    const hasSourceResults = !!sourceResults?.length;
     const isSearching = trimmedQuery.length > 2;
-    const bothLoaded = !isFileSearching && !isTraktSearching && !isSourceSearching;
-    const hasAnyResults = hasFileResults || hasTraktResults || hasSourceResults;
 
     if (trimmedQuery.length <= 2) {
         return (
@@ -128,10 +134,18 @@ export function SearchResults({
     const sectionsWrap = cn(isModal ? "py-4 space-y-8" : "space-y-10 sm:space-y-12", className);
     // In modal there's no outer page padding — align header with the row's image position (row uses px-4 lg:px-5)
     const headerPadding = isModal ? "px-4 lg:px-5" : undefined;
-    const totalCount = (fileResults?.length || 0) + (traktResults?.length || 0) + (sourceResults?.length || 0);
 
     return (
         <div className={sectionsWrap}>
+            {linkedResult && (
+                <section className="space-y-4 sm:space-y-5">
+                    <PageSectionHeader icon={Link2} label="From link" detail={linkedSource} className={headerPadding} />
+                    <div className={listClass}>
+                        <SearchMediaItem result={linkedResult} onSelect={onMediaSelect} variant={variant} />
+                    </div>
+                </section>
+            )}
+
             {/* Your Files */}
             {hasFileResults && (
                 <section className="space-y-4 sm:space-y-5">
@@ -200,7 +214,7 @@ export function SearchResults({
             )}
 
             {/* Summary footer */}
-            {bothLoaded && hasAnyResults && (
+            {isSettled && hasAnyResults && (
                 <div className="flex items-center justify-center gap-3 pt-2">
                     <span className="h-px w-12 bg-border/40" />
                     <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground tabular-nums">
@@ -210,7 +224,7 @@ export function SearchResults({
                 </div>
             )}
 
-            {bothLoaded && !hasAnyResults && (
+            {isSettled && !hasAnyResults && (
                 <EmptyState title="No results found" subtitle="Try different keywords or check your spelling" />
             )}
         </div>

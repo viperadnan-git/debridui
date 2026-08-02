@@ -8,8 +8,6 @@ import { queryClient } from "../query-client";
 import type { AccountType } from "../schemas";
 import { type DebridLinkInfo, FileType } from "../types";
 
-export * from "./media-player";
-
 export const clearAppCache = async () => {
     await del("DEBRIDUI_CACHE");
     queryClient.clear();

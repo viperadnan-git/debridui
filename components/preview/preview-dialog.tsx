@@ -17,8 +17,7 @@ import { PreviewContent } from "./preview-content";
 
 export function PreviewDialog() {
     const { client, currentAccount } = useAuthGuaranteed();
-    const { get } = useSettingsStore();
-    const downloadLinkMaxAge = get("downloadLinkMaxAge");
+    const downloadLinkMaxAge = useSettingsStore((s) => s.settings.downloadLinkMaxAge);
 
     const previousButtonRef = useRef<HTMLButtonElement>(null);
     const nextButtonRef = useRef<HTMLButtonElement>(null);

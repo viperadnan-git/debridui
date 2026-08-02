@@ -21,6 +21,7 @@ import { useClearSearchHistory } from "@/hooks/use-search-history";
 import { useSaveUserSettings } from "@/hooks/use-user-settings";
 import { RESOLUTIONS, SOURCE_QUALITIES } from "@/lib/addons/parser";
 import { Resolution, type SourceQuality } from "@/lib/addons/types";
+import { detectPlatform, isSupportedPlayer, PLAYER_PLATFORM_SUPPORT } from "@/lib/media/player";
 import { queryClient } from "@/lib/query-client";
 import {
     QUALITY_PROFILES,
@@ -32,7 +33,6 @@ import {
 } from "@/lib/stores/settings";
 import type { MediaPlayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { detectPlatform, isSupportedPlayer, PLAYER_PLATFORM_SUPPORT } from "@/lib/utils/media-player";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
@@ -54,13 +54,14 @@ export default function SettingsPage() {
     const buildDate = new Date(BUILD_TIME);
     const buildTimeFormatted = format(buildDate, "PPpp");
     const buildTimeRelative = formatDistanceToNow(buildDate, { addSuffix: true });
-    const { get, set, getPresets } = useSettingsStore();
-    const mediaPlayer = get("mediaPlayer");
+    const set = useSettingsStore((s) => s.set);
+    const getPresets = useSettingsStore((s) => s.getPresets);
+    const mediaPlayer = useSettingsStore((s) => s.settings.mediaPlayer);
     const mediaPlayerPresets = getPresets("mediaPlayer") || [];
-    const downloadLinkMaxAge = get("downloadLinkMaxAge");
+    const downloadLinkMaxAge = useSettingsStore((s) => s.settings.downloadLinkMaxAge);
     const downloadLinkMaxAgePresets = getPresets("downloadLinkMaxAge") || [];
-    const streaming = get("streaming");
-    const tmdbApiKey = get("tmdbApiKey");
+    const streaming = useSettingsStore((s) => s.settings.streaming);
+    const tmdbApiKey = useSettingsStore((s) => s.settings.tmdbApiKey);
     const { mutate: saveSettings, isPending: isSaving } = useSaveUserSettings();
     const { mutate: clearPlayback } = useClearPlaybackHistory();
     const { mutate: clearSearch } = useClearSearchHistory();

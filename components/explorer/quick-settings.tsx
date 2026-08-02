@@ -15,9 +15,10 @@ import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 
 export function QuickSettings() {
-    const { get, set, resetKey } = useSettingsStore();
-    const smartOrder = get("smartOrder");
-    const hideTrash = get("hideTrash");
+    const set = useSettingsStore((s) => s.set);
+    const resetKey = useSettingsStore((s) => s.resetKey);
+    const smartOrder = useSettingsStore((s) => s.settings.smartOrder);
+    const hideTrash = useSettingsStore((s) => s.settings.hideTrash);
 
     const handleReset = () => {
         resetKey("smartOrder");
