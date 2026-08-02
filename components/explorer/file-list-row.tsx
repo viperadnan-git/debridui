@@ -37,11 +37,13 @@ export function FileListRow({ file, autoExpand = false }: FileListRowProps) {
                 file={file}
                 isSelected={isSelected}
                 canExpand={file.status === "completed" || file.status === "seeding"}
+                isExpanded={isExpanded}
                 onToggleSelect={handleSelectFile}
-                onToggleExpand={() => setIsExpanded(!isExpanded)}
+                onToggleExpand={() => setIsExpanded((expanded) => !expanded)}
+                className="[content-visibility:auto] [contain-intrinsic-size:auto_56px]"
             />
             {isExpanded && (
-                <div className="border-b border-border/50 bg-muted/10">
+                <div id={`files-${file.id}`} className="border-b border-border/50 bg-muted/10">
                     <ExpandedRow file={file} />
                 </div>
             )}

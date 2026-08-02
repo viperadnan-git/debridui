@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { queryClient } from "@/lib/query-client";
+import { invalidateTorrentQueries } from "@/hooks/use-file-actions";
 import type { OperationResult } from "@/lib/types";
 import { cn, getTextFromClipboard } from "@/lib/utils";
 
@@ -48,9 +48,7 @@ export function AddContent() {
         toastfn(message, { id: toastId });
 
         if (successCount > 0) {
-            queryClient.invalidateQueries({
-                queryKey: [currentAccount.id, "getTorrentList"],
-            });
+            invalidateTorrentQueries(currentAccount.id);
         }
 
         return successCount > 0;

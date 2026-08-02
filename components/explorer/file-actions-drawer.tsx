@@ -26,37 +26,30 @@ interface FileActionsDrawerProps {
 }
 
 export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
-    const { selectedFileIds, selectedNodesByFile, totalNodesByFile, clearAll } = useSelectionStore(
+    const { selectedFileIds, selectedNodesByFile, registeredNodesByFile, clearAll } = useSelectionStore(
         useShallow((state) => ({
             selectedFileIds: state.selectedFileIds,
             selectedNodesByFile: state.selectedNodesByFile,
-            totalNodesByFile: state.totalNodesByFile,
+            registeredNodesByFile: state.registeredNodesByFile,
             clearAll: state.clearAll,
         }))
     );
 
-    const selectedNodeIds = useMemo(() => {
-        const allNodes = new Set<string>();
-        for (const nodeSet of selectedNodesByFile.values()) {
-            for (const id of nodeSet) {
-                allNodes.add(id);
-            }
-        }
-        return allNodes;
-    }, [selectedNodesByFile]);
-
-    const selectedNodeIdsArray = useMemo(() => Array.from(selectedNodeIds), [selectedNodeIds]);
+    // Scoped to the visible page; the store spans pages
+    const selectedNodeIdsArray = useMemo(
+        () => files.flatMap((file) => Array.from(selectedNodesByFile.get(file.id) ?? [])),
+        [files, selectedNodesByFile]
+    );
 
     const fullySelectedFileIds = useMemo(() => {
         return Array.from(selectedFileIds).filter((fileId) => {
             const selectedNodes = selectedNodesByFile.get(fileId);
-            const totalNodes = totalNodesByFile.get(fileId) || 0;
+            const totalNodes = registeredNodesByFile.get(fileId)?.length || 0;
             return totalNodes === 0 || (selectedNodes && selectedNodes.size === totalNodes);
         });
-    }, [selectedFileIds, selectedNodesByFile, totalNodesByFile]);
+    }, [selectedFileIds, selectedNodesByFile, registeredNodesByFile]);
 
-    const hasAnySelection = selectedFileIds.size > 0 || selectedNodeIds.size > 0;
-    const hasNodes = selectedNodeIds.size > 0;
+    const hasNodes = selectedNodeIdsArray.length > 0;
 
     const { fullySelectedFiles, canRetry } = useMemo(() => {
         const fullySelectedFiles = files.filter((file) => fullySelectedFileIds.includes(file.id));
@@ -80,8 +73,9 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
     const isUnairlocking = airlockTargets.length > 0 && airlockTargets.every((file) => file.airlocked);
 
     const hasFileActions = canRetry.length > 0 || fullySelectedFiles.length > 0;
+    const hasAnySelection = hasNodes || hasFileActions;
     const summaryParts: { count: number; unit: string }[] = [];
-    if (hasNodes) summaryParts.push({ count: selectedNodeIds.size, unit: "link" });
+    if (hasNodes) summaryParts.push({ count: selectedNodeIdsArray.length, unit: "link" });
     if (fullySelectedFiles.length > 0) summaryParts.push({ count: fullySelectedFiles.length, unit: "file" });
     const summaryAria = `${summaryParts.map((p) => `${p.count} ${p.unit}${p.count === 1 ? "" : "s"}`).join(" and ")} selected`;
 
@@ -98,6 +92,7 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                 <div
                     role="region"
                     aria-label="Selection actions"
+                    inert={!hasAnySelection}
                     className={cn(
                         "fixed left-1/2 z-40",
                         // Float above the mobile tab bar; small inset on desktop
@@ -119,9 +114,10 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                             "supports-backdrop-filter:bg-background/80"
                         )}>
                         {/* Selection summary — single source of truth for counts */}
-                        {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-label is intentional to announce the count region to screen readers */}
+                        <p className="sr-only" aria-live="polite">
+                            {summaryAria}
+                        </p>
                         <div
-                            aria-label={summaryAria}
                             title={summaryAria}
                             className="flex items-center gap-1.5 pl-2.5 pr-2 sm:gap-2 sm:pr-3 min-w-0 whitespace-nowrap">
                             {summaryParts.map((part, i) => {

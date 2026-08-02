@@ -2,8 +2,11 @@ import type {
     Account,
     DebridFile,
     DebridFileAddStatus,
+    DebridFileList,
     DebridFileNode,
     DebridLinkInfo,
+    DebridNode,
+    OperationResult,
     WebDownloadAddResult,
     WebDownloadList,
 } from "@/lib/types";
@@ -92,10 +95,21 @@ export default abstract class BaseClient {
             magnetUris.length > 0 ? this.addMagnetLinks(magnetUris) : Promise.resolve({}),
         ]);
 
-        const httpData = httpResults.status === "fulfilled" ? httpResults.value : {};
-        const magnetData = magnetResults.status === "fulfilled" ? magnetResults.value : {};
+        const settle = (uris: string[], result: PromiseSettledResult<Record<string, DebridFileAddStatus>>) =>
+            result.status === "fulfilled"
+                ? result.value
+                : Object.fromEntries(
+                      uris.map((uri) => [
+                          uri,
+                          {
+                              success: false,
+                              message: result.reason instanceof Error ? result.reason.message : "Failed to add",
+                              is_cached: false,
+                          },
+                      ])
+                  );
 
-        return { ...httpData, ...magnetData };
+        return { ...settle(httpUris, httpResults), ...settle(magnetUris, magnetResults) };
     }
 
     protected async addHttpDownloads(httpUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
@@ -128,8 +142,13 @@ export default abstract class BaseClient {
     abstract addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>>;
     abstract uploadTorrentFiles(files: File[]): Promise<Record<string, DebridFileAddStatus>>;
     abstract findTorrents(searchQuery: string): Promise<DebridFile[]>;
-    abstract findTorrentById?(torrentId: string): Promise<DebridFile | null>;
+    abstract findTorrentById(torrentId: string): Promise<DebridFile | null>;
     abstract getDownloadLink(params: { fileNode: DebridFileNode; resolve?: boolean }): Promise<DebridLinkInfo>;
+
+    abstract getTorrentList(params?: { offset?: number; limit?: number }): Promise<DebridFileList>;
+    abstract getTorrentFiles(torrentId: string): Promise<DebridNode[]>;
+    abstract removeTorrent(torrentId: string): Promise<string>;
+    abstract restartTorrents(torrentIds: string[]): Promise<Record<string, OperationResult>>;
 
     // Web download methods
     abstract addWebDownloads(links: string[]): Promise<WebDownloadAddResult[]>;
@@ -139,6 +158,6 @@ export default abstract class BaseClient {
     // Optional: Save links (AllDebrid only)
     saveWebDownloadLinks?(links: string[]): Promise<void>;
 
-    // Optional: Airlock (TorBox only) - exempts a cached item from inactivity cleanup
+    // Optional: Airlock (TorBox only)
     setAirlocked?(params: { id: string; target: "torrent" | "webdl"; airlocked: boolean }): Promise<void>;
 }

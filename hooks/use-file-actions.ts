@@ -5,12 +5,16 @@ import { queryClient } from "@/lib/query-client";
 import { useSelectionStore } from "@/lib/stores/selection";
 import type { DebridFile } from "@/lib/types";
 import { copyLinksToClipboard, downloadLinks } from "@/lib/utils";
+import { getTorrentFilesCacheKey } from "@/lib/utils/cache-keys";
 import { downloadM3UPlaylist, fetchSelectedDownloadLinks, fetchTorrentDownloadLinks } from "@/lib/utils/file";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
 
-/**
- * Remove torrent and cleanup caches
- */
+export function invalidateTorrentQueries(accountId: string) {
+    for (const key of ["getTorrentList", "findTorrents", "findTorrentById"]) {
+        queryClient.invalidateQueries({ queryKey: [accountId, key] });
+    }
+}
+
 export async function removeTorrentWithCleanup(
     client: DebridClient,
     accountId: string,
@@ -18,24 +22,17 @@ export async function removeTorrentWithCleanup(
 ): Promise<string> {
     const message = await client.removeTorrent(fileId);
     useSelectionStore.getState().removeFileSelection(fileId);
-    queryClient.invalidateQueries({ queryKey: [accountId, "getTorrentList"] });
-    queryClient.invalidateQueries({ queryKey: [accountId, "findTorrents"] });
+    queryClient.removeQueries({ queryKey: getTorrentFilesCacheKey(accountId, fileId) });
+    invalidateTorrentQueries(accountId);
     return message;
 }
 
-/**
- * Retry failed torrents and cleanup caches
- */
 export async function retryTorrentsWithCleanup(client: DebridClient, accountId: string, fileIds: string[]) {
     const results = await client.restartTorrents(fileIds);
-    queryClient.invalidateQueries({ queryKey: [accountId, "getTorrentList"] });
-    queryClient.invalidateQueries({ queryKey: [accountId, "findTorrents"] });
+    invalidateTorrentQueries(accountId);
     return results;
 }
 
-/**
- * Hook for file link actions (copy, download, playlist)
- */
 export function useFileLinkActions(fileIds: string | string[], options?: { fileName?: string }) {
     const { client, currentAccount } = useAuthGuaranteed();
     const ids = Array.isArray(fileIds) ? fileIds : [fileIds];
@@ -89,9 +86,6 @@ export function useFileLinkActions(fileIds: string | string[], options?: { fileN
     return { copyMutation, downloadMutation, playlistMutation };
 }
 
-/**
- * Hook for file mutation actions (delete, retry)
- */
 export function useFileMutationActions() {
     const { client, currentAccount } = useAuthGuaranteed();
 
@@ -135,8 +129,7 @@ export function useFileMutationActions() {
                     result.error++;
                 }
             }
-            queryClient.invalidateQueries({ queryKey: [currentAccount.id, "getTorrentList"] });
-            queryClient.invalidateQueries({ queryKey: [currentAccount.id, "findTorrents"] });
+            invalidateTorrentQueries(currentAccount.id);
             return result;
         },
         {

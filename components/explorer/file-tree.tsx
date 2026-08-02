@@ -16,7 +16,7 @@ import { useSettingsStore } from "@/lib/stores/settings";
 import { type DebridFileNode, type DebridLinkInfo, type DebridNode, FileType, MediaPlayer } from "@/lib/types";
 import { cn, copyLinksToClipboard, downloadLinks, formatSize, getFileType, openInPlayer } from "@/lib/utils";
 import { getDownloadLinkCacheKey } from "@/lib/utils/cache-keys";
-import { collectNodeIds } from "@/lib/utils/file";
+import { collectFileNodes, collectNodeIds } from "@/lib/utils/file";
 
 interface FileTreeProps {
     nodes: DebridNode[];
@@ -30,12 +30,12 @@ interface FlatNode {
     path: string;
 }
 
-// Helper to flatten tree for virtualization
-function flattenNodes(nodes: DebridNode[], expandedPaths: Set<string>, depth = 0): FlatNode[] {
+function flattenNodes(nodes: DebridNode[], expandedPaths: Set<string>, depth = 0, parentPath = ""): FlatNode[] {
     const flat: FlatNode[] = [];
 
-    for (const node of nodes) {
-        const path = `${depth}-${node.id || node.name}`;
+    // Keyed by parent path + index: folders have no id, so same-named siblings collided
+    nodes.forEach((node, index) => {
+        const path = `${parentPath}/${index}-${node.name}`;
         flat.push({
             node,
             depth,
@@ -43,16 +43,14 @@ function flattenNodes(nodes: DebridNode[], expandedPaths: Set<string>, depth = 0
             path,
         });
 
-        // Add children if expanded
         if (node.type === "folder" && node.children.length > 0 && expandedPaths.has(path)) {
-            flat.push(...flattenNodes(node.children, expandedPaths, depth + 1));
+            flat.push(...flattenNodes(node.children, expandedPaths, depth + 1, path));
         }
-    }
+    });
 
     return flat;
 }
 
-// Count total nodes recursively
 function countTotalNodes(nodes: DebridNode[]): number {
     let count = 0;
     const stack = [...nodes];
@@ -66,29 +64,6 @@ function countTotalNodes(nodes: DebridNode[]): number {
     }
 
     return count;
-}
-
-// Helper to collect all file nodes (not folders) from the tree in display order
-function collectAllFileNodes(nodes: DebridNode[]): DebridFileNode[] {
-    const files: DebridFileNode[] = [];
-    const stack: DebridNode[] = [...nodes].reverse();
-
-    while (stack.length > 0) {
-        const node = stack.pop()!;
-        if (node.type === "file") {
-            files.push(node);
-        } else if (node.children) {
-            const childrenLen = node.children.length;
-            if (childrenLen > 0) {
-                // Push children in reverse order to maintain display order when popped
-                for (let i = childrenLen - 1; i >= 0; i--) {
-                    stack.push(node.children[i]);
-                }
-            }
-        }
-    }
-
-    return files;
 }
 
 const FileActionButton = memo(function FileActionButton({
@@ -213,7 +188,7 @@ const VirtualizedNode = memo(function VirtualizedNode({
     const isVideoWithBrowserPlayer = fileType === FileType.VIDEO && mediaPlayer === MediaPlayer.BROWSER;
 
     return (
-        // biome-ignore lint/a11y/noStaticElementInteractions: tree row toggles expansion; nested Checkbox handles keyboard activation
+        // biome-ignore lint/a11y/noStaticElementInteractions: row click is a mouse convenience; the expand button and Checkbox are the keyboard targets
         <div
             className={cn(
                 "flex items-center gap-1 sm:gap-2 py-1 rounded-sm transition-colors duration-300 hover:bg-muted/50",
@@ -223,18 +198,29 @@ const VirtualizedNode = memo(function VirtualizedNode({
             style={{ paddingLeft: `${(depth - 1) * 12 + 8}px` }}
             onClick={() => hasChildren && onToggleExpand(path)}>
             {hasChildren && (
-                <ChevronRight
-                    className={cn(
-                        "h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground transition-transform duration-300 shrink-0",
-                        isExpanded && "rotate-90"
-                    )}
-                />
+                <button
+                    type="button"
+                    aria-expanded={isExpanded}
+                    aria-label={`${isExpanded ? "Collapse" : "Expand"} ${node.name}`}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleExpand(path);
+                    }}
+                    className="shrink-0 cursor-pointer">
+                    <ChevronRight
+                        className={cn(
+                            "h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground transition-transform duration-300",
+                            isExpanded && "rotate-90"
+                        )}
+                    />
+                </button>
             )}
 
             <Checkbox
                 checked={isIndeterminate ? "indeterminate" : isSelected}
                 onCheckedChange={(checked) => handleCheckboxChange(checked === true)}
                 onClick={(e) => e.stopPropagation()}
+                aria-label={`Select ${node.name}`}
                 className="size-3 sm:size-4"
             />
 
@@ -290,7 +276,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
     const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => {
         // Auto-expand first folder if it's the only top-level item
         if (nodes.length === 1 && nodes[0].type === "folder") {
-            return new Set([`0-${nodes[0].id || nodes[0].name}`]);
+            return new Set([`/0-${nodes[0].name}`]);
         }
         return new Set();
     });
@@ -308,7 +294,7 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
 
     // Collect all file nodes for preview navigation
     const allFileNodes = useMemo(() => {
-        return collectAllFileNodes(nodes);
+        return collectFileNodes(nodes);
     }, [nodes]);
 
     const toggleExpanded = useCallback((path: string) => {

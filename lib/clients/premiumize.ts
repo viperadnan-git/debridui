@@ -21,7 +21,6 @@ import { getProxyUrl } from "@/lib/utils";
 import { USER_AGENT } from "../constants";
 import BaseClient from "./base";
 
-// Premiumize API Response types
 interface PremiumizeApiResponse {
     status: "success" | "error";
     message?: string;
@@ -135,6 +134,18 @@ interface PremiumizeCacheCheckResponse extends PremiumizeApiResponse {
     transcoded: boolean[];
     filename: string[];
     filesize: string[];
+}
+
+// Transfers carry no timestamp; `new Date()` per poll made date sort jump on every refetch
+const transferFirstSeen = new Map<string, Date>();
+
+function firstSeenAt(transferId: string): Date {
+    let seen = transferFirstSeen.get(transferId);
+    if (!seen) {
+        seen = new Date();
+        transferFirstSeen.set(transferId, seen);
+    }
+    return seen;
 }
 
 export default class PremiumizeClient extends BaseClient {
@@ -258,8 +269,7 @@ export default class PremiumizeClient extends BaseClient {
         offset?: number;
         limit?: number;
     } = {}): Promise<DebridFileList> {
-        // Fetch both transfers (active) and ALL files (completed) in parallel
-        // Using /item/listall to get files from all folders, not just root
+        // listall covers every folder, not just root
         const [transfersResponse, itemsResponse] = await Promise.all([
             this.makeRequest<PremiumizeTransferListResponse>("/transfer/list"),
             this.makeRequest<PremiumizeItemListAllResponse>("/item/listall"),
@@ -267,7 +277,6 @@ export default class PremiumizeClient extends BaseClient {
 
         const files: DebridFile[] = [];
 
-        // Map active transfers first (downloading, queued, etc.)
         const activeTransfers = (transfersResponse.transfers || []).filter(
             (t) => t.status !== "finished" && t.status !== "deleted"
         );
@@ -276,14 +285,12 @@ export default class PremiumizeClient extends BaseClient {
             files.push(this.mapTransferToDebridFile(transfer));
         }
 
-        // Map ALL files from cloud storage (from all folders)
         const allFiles = itemsResponse.files || [];
 
         for (const file of allFiles) {
             files.push(this.mapListAllFileToDebridFile(file));
         }
 
-        // Apply pagination
         const paginatedFiles = files.slice(offset, offset + limit);
 
         return {
@@ -300,7 +307,6 @@ export default class PremiumizeClient extends BaseClient {
             return (await this.getTorrentList({ limit: 100 })).files;
         }
 
-        // Use Premiumize's folder search
         const response = await this.makeRequest<PremiumizeFolderListResponse>(
             `/folder/search?q=${encodeURIComponent(searchQuery)}`
         );
@@ -318,7 +324,6 @@ export default class PremiumizeClient extends BaseClient {
 
     async findTorrentById(torrentId: string): Promise<DebridFile | null> {
         try {
-            // First check if it's a transfer
             const transfersResponse = await this.makeRequest<PremiumizeTransferListResponse>("/transfer/list");
             const transfer = transfersResponse.transfers?.find((t) => t.id === torrentId);
 
@@ -326,7 +331,6 @@ export default class PremiumizeClient extends BaseClient {
                 return this.mapTransferToDebridFile(transfer);
             }
 
-            // Otherwise try to get item details
             const itemResponse = await this.makeRequest<PremiumizeItemDetails>(`/item/details?id=${torrentId}`);
 
             return this.mapItemDetailsToDebridFile(itemResponse);
@@ -336,8 +340,7 @@ export default class PremiumizeClient extends BaseClient {
     }
 
     async getDownloadLink({ fileNode }: { fileNode: DebridFileNode; resolve?: boolean }): Promise<DebridLinkInfo> {
-        // For Premiumize, the fileNode.id could be an item ID or a direct link
-        // First, try to get item details to get the download link
+        // id may be an item id, a magnet, or a direct link
         try {
             const itemResponse = await this.makeRequest<PremiumizeItemDetails>(`/item/details?id=${fileNode.id}`);
 
@@ -348,9 +351,7 @@ export default class PremiumizeClient extends BaseClient {
                     size: itemResponse.size || fileNode.size || 0,
                 };
             }
-        } catch {
-            // If item details fails, the ID might be a magnet/link for directdl
-        }
+        } catch {}
 
         // Fall back to directdl for magnets or external links
         if (fileNode.id.startsWith("magnet:") || fileNode.id.startsWith("http")) {
@@ -366,7 +367,6 @@ export default class PremiumizeClient extends BaseClient {
             });
 
             if (response.content && response.content.length > 0) {
-                // Return the first file's link
                 const firstFile = response.content[0];
                 return {
                     link: firstFile.link,
@@ -388,7 +388,6 @@ export default class PremiumizeClient extends BaseClient {
     }
 
     async getTorrentFiles(torrentId: string): Promise<DebridNode[]> {
-        // First check if this is a transfer ID (from /transfer/create)
         try {
             const transfersResponse = await this.makeRequest<PremiumizeTransferListResponse>("/transfer/list");
             const transfer = transfersResponse.transfers?.find((t) => t.id === torrentId);
@@ -423,12 +422,10 @@ export default class PremiumizeClient extends BaseClient {
             // Not a transfer or error fetching transfers, continue with existing logic
         }
 
-        // Existing logic: try as folder
         try {
             const folderResponse = await this.makeRequest<PremiumizeFolderListResponse>(`/folder/list?id=${torrentId}`);
             return this.convertItemsToNodes(folderResponse.content || []);
         } catch {
-            // If not a folder, try to get item details (single file)
             try {
                 const itemResponse = await this.makeRequest<PremiumizeItemDetails>(`/item/details?id=${torrentId}`);
                 return [
@@ -489,7 +486,6 @@ export default class PremiumizeClient extends BaseClient {
     }
 
     async addMagnetLinks(magnetUris: string[]): Promise<Record<string, DebridFileAddStatus>> {
-        // Parallelize magnet link additions
         const promises = magnetUris.map(async (magnet) => {
             try {
                 const formData = new FormData();
@@ -593,9 +589,6 @@ export default class PremiumizeClient extends BaseClient {
         );
     }
 
-    /**
-     * Check if items (magnets, links) are cached on Premiumize
-     */
     async checkCache(items: string[]): Promise<{ cached: boolean; filename: string; filesize: string }[]> {
         const params = new URLSearchParams();
         for (const item of items) params.append("items[]", item);
@@ -609,9 +602,6 @@ export default class PremiumizeClient extends BaseClient {
         }));
     }
 
-    /**
-     * Clear all finished transfers
-     */
     async clearFinishedTransfers(): Promise<void> {
         await this.makeRequest<PremiumizeApiResponse>("/transfer/clearfinished", {
             method: "POST",
@@ -627,7 +617,7 @@ export default class PremiumizeClient extends BaseClient {
             size: 0, // Transfers don't include size in list
             status,
             progress: (transfer.progress || 0) * 100,
-            createdAt: new Date(),
+            createdAt: firstSeenAt(transfer.id),
             error: transfer.message && status === "failed" ? transfer.message : undefined,
             files: undefined,
         };
@@ -679,7 +669,6 @@ export default class PremiumizeClient extends BaseClient {
     }
 
     private mapListAllFileToDebridFile(file: PremiumizeItemListAllFile): DebridFile {
-        // Use path for display name to show folder context, or just name if no path
         const displayName = file.path || file.name;
 
         return {
@@ -739,7 +728,6 @@ export default class PremiumizeClient extends BaseClient {
         });
     }
 
-    // Web download methods - uses /transfer/create to add links as transfers
     async addWebDownloads(links: string[]): Promise<WebDownloadAddResult[]> {
         const results: WebDownloadAddResult[] = [];
 
@@ -774,7 +762,6 @@ export default class PremiumizeClient extends BaseClient {
     async getWebDownloadList({ offset, limit }: { offset: number; limit: number }): Promise<WebDownloadList> {
         const response = await this.makeRequest<PremiumizeTransferListResponse>("/transfer/list");
 
-        // Filter transfers that are HTTP downloads (not magnets)
         const httpTransfers = (response.transfers || []).filter(
             (t) => t.src?.startsWith("http") && !t.src.startsWith("magnet:")
         );
@@ -782,7 +769,6 @@ export default class PremiumizeClient extends BaseClient {
         const total = httpTransfers.length;
         const paginated = httpTransfers.slice(offset, offset + limit);
 
-        // Fetch download links for finished transfers with file_id
         const finishedWithFileId = paginated.filter(
             (t) => (t.status === "finished" || t.status === "seeding") && t.file_id
         );
@@ -809,7 +795,7 @@ export default class PremiumizeClient extends BaseClient {
                 originalLink: t.src || "",
                 status: this.mapTransferToWebDownloadStatus(t.status),
                 progress: (t.progress || 0) * 100,
-                createdAt: new Date(),
+                createdAt: firstSeenAt(t.id),
                 error: t.message && t.status === "error" ? t.message : undefined,
                 downloadLink: downloadLinks.get(t.id),
             })),

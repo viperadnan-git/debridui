@@ -38,11 +38,9 @@ const PRESERVED_FILE_TYPES = new Set([
 /** Sorts file nodes: folders first, videos second, then alphabetically */
 const sortFileNodesByPriority = (fileNodes: DebridNode[]): DebridNode[] => {
     return [...fileNodes].sort((a, b) => {
-        // Folders first
         if (a.type === "folder" && b.type !== "folder") return -1;
         if (a.type !== "folder" && b.type === "folder") return 1;
 
-        // Videos second (only for files)
         if (a.type === "file" && b.type === "file") {
             const aIsVideo = getFileType(a.name) === FileType.VIDEO;
             const bIsVideo = getFileType(b.name) === FileType.VIDEO;
@@ -50,21 +48,19 @@ const sortFileNodesByPriority = (fileNodes: DebridNode[]): DebridNode[] => {
             if (!aIsVideo && bIsVideo) return 1;
         }
 
-        // Alphabetical
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     });
 };
 
-/** Filters out small/trash files while preserving folders and media files */
+/** Filters out small/trash files. Folders are kept only if something survived inside them. */
 const filterTrashFiles = (fileNodes: DebridNode[]): DebridNode[] => {
     return fileNodes.filter((node) => {
-        if (node.type === "folder") return true;
+        if (node.type === "folder") return node.children.length > 0;
         if (!node.size || node.size >= TRASH_SIZE_THRESHOLD) return true;
         return PRESERVED_FILE_TYPES.has(getFileType(node.name));
     });
 };
 
-/** Processes file nodes with optional smart ordering and trash filtering */
 export const processFileNodes = ({
     fileNodes,
     hideTrash,
@@ -74,26 +70,27 @@ export const processFileNodes = ({
     hideTrash?: boolean;
     smartOrder?: boolean;
 }): DebridNode[] => {
-    // Only read store if params not explicitly provided
     const settings = useSettingsStore.getState();
     const shouldHideTrash = hideTrash ?? settings.get("hideTrash");
     const shouldSmartOrder = smartOrder ?? settings.get("smartOrder");
 
     if (!shouldHideTrash && !shouldSmartOrder) return fileNodes;
-
-    let result = fileNodes;
-    if (shouldHideTrash) result = filterTrashFiles(result);
-    if (shouldSmartOrder) result = sortFileNodesByPriority(result);
-
-    // Recursively process children
-    return result.map((node) =>
-        node.type === "folder" && node.children?.length
-            ? { ...node, children: processFileNodes({ fileNodes: node.children, hideTrash, smartOrder }) }
-            : node
-    );
+    return processNodes(fileNodes, shouldHideTrash, shouldSmartOrder);
 };
 
-/** Recursively collect all file node IDs from a tree in depth-first order */
+/** Depth-first so a folder emptied by the trash filter is dropped too */
+function processNodes(nodes: DebridNode[], hideTrash: boolean, smartOrder: boolean): DebridNode[] {
+    let result = nodes.map((node) =>
+        node.type === "folder" && node.children.length
+            ? { ...node, children: processNodes(node.children, hideTrash, smartOrder) }
+            : node
+    );
+
+    if (hideTrash) result = filterTrashFiles(result);
+    if (smartOrder) result = sortFileNodesByPriority(result);
+    return result;
+}
+
 export function collectNodeIds(nodes: DebridNode | DebridNode[]): string[] {
     const result: string[] = [];
     const collect = (list: DebridNode[]) => {
@@ -106,7 +103,18 @@ export function collectNodeIds(nodes: DebridNode | DebridNode[]): string[] {
     return result;
 }
 
-/** Downloads an M3U8 playlist file (video files only) */
+export function collectFileNodes(nodes: DebridNode | DebridNode[]): DebridFileNode[] {
+    const result: DebridFileNode[] = [];
+    const collect = (list: DebridNode[]) => {
+        for (const node of list) {
+            if (node.type === "file" && node.id) result.push(node);
+            if (node.children?.length) collect(node.children);
+        }
+    };
+    collect(Array.isArray(nodes) ? nodes : [nodes]);
+    return result;
+}
+
 export const downloadM3UPlaylist = (linkNodes: DebridLinkInfo[], playlistName?: string): void => {
     const videoLinks = linkNodes.filter((n) => getFileType(n.name) === FileType.VIDEO);
     if (videoLinks.length === 0) {
@@ -124,7 +132,6 @@ export const downloadM3UPlaylist = (linkNodes: DebridLinkInfo[], playlistName?: 
     URL.revokeObjectURL(url);
 };
 
-/** Sorts torrents based on specified criteria and order */
 export const sortTorrentFiles = (files: DebridFile[], criteria: string, direction: "asc" | "desc"): DebridFile[] => {
     const option = SORT_OPTIONS.find((o) => o.value === criteria);
     if (!option) {
@@ -147,7 +154,6 @@ export const sortTorrentFiles = (files: DebridFile[], criteria: string, directio
     });
 };
 
-/** Gets torrent files from cache or fetches them */
 const getTorrentFilesWithCache = async (
     fileId: string,
     client: DebridClient,
@@ -169,7 +175,6 @@ const getTorrentFilesWithCache = async (
     return cached;
 };
 
-/** Gets download link from cache or fetches it */
 const getDownloadLinkWithCache = async (
     fileNode: DebridFileNode,
     client: DebridClient,
@@ -185,37 +190,23 @@ const getDownloadLinkWithCache = async (
     return cached;
 };
 
-/** Recursively collects download links from file nodes with caching */
+/** Flattened first so chunking is only a concurrency cap; each client's RateLimiter is the throttle */
 async function collectDownloadLinks(
     fileNodes: DebridNode[],
     client: DebridClient,
     accountId: string
 ): Promise<DebridLinkInfo[]> {
-    const links: DebridLinkInfo[] = [];
-
-    const collect = async (node: DebridNode): Promise<void> => {
-        if (node.type === "file") {
-            links.push(await getDownloadLinkWithCache(node, client, accountId));
-        }
-        if (node.children?.length) {
-            await chunkedPromise({
-                promises: node.children.map((child) => () => collect(child)),
-                chunkSize: 10,
-                delay: 1500,
-            });
-        }
-    };
-
-    await chunkedPromise({
-        promises: fileNodes.map((node) => () => collect(node)),
+    const results = await chunkedPromise({
+        promises: collectFileNodes(fileNodes).map(
+            (node) => () => getDownloadLinkWithCache(node, client, accountId).catch(() => null)
+        ),
         chunkSize: 10,
-        delay: 1500,
+        delay: 0,
     });
 
-    return links;
+    return results.filter((link) => link !== null);
 }
 
-/** Fetches all download links for a torrent */
 export async function fetchTorrentDownloadLinks(
     torrentFileId: string,
     client: DebridClient,
@@ -231,7 +222,6 @@ export async function fetchTorrentDownloadLinks(
     return links;
 }
 
-/** Fetches download links for selected file IDs using metadata lookup */
 export async function fetchSelectedDownloadLinks(
     selectedFileIds: string[],
     client: DebridClient,
@@ -245,13 +235,19 @@ export async function fetchSelectedDownloadLinks(
     const results = await chunkedPromise({
         promises: selectedFileIds.map((fileId) => async () => {
             const metadata = getNodeMetadata(fileId);
-            if (!metadata) throw new Error(`No metadata found for file ID: ${fileId}`);
+            if (!metadata) return null;
 
-            return getDownloadLinkWithCache({ ...metadata, type: "file", children: [] }, client, accountId);
+            return getDownloadLinkWithCache({ ...metadata, type: "file", children: [] }, client, accountId).catch(
+                () => null
+            );
         }),
         chunkSize: 10,
-        delay: 1500,
+        delay: 0,
     });
 
-    return results.filter(Boolean);
+    const links = results.filter((link) => link !== null);
+    if (links.length === 0) {
+        throw new Error("Could not resolve any download links");
+    }
+    return links;
 }

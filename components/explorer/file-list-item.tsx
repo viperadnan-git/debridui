@@ -14,6 +14,7 @@ interface FileListItemProps {
     file: DebridFile;
     isSelected: boolean | "indeterminate";
     canExpand: boolean;
+    isExpanded: boolean;
     onToggleSelect: (checked: boolean | "indeterminate") => void;
     onToggleExpand: () => void;
     className?: string;
@@ -134,6 +135,7 @@ export const FileListItem = memo(function FileListItem({
     file,
     isSelected,
     canExpand,
+    isExpanded,
     onToggleSelect,
     onToggleExpand,
     className,
@@ -142,7 +144,7 @@ export const FileListItem = memo(function FileListItem({
 
     return (
         <FileItemContextMenu file={file}>
-            {/* biome-ignore lint/a11y/noStaticElementInteractions: row-level click is a UX convenience; child Checkbox/Buttons remain the keyboard targets */}
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: row click is a mouse convenience; the expand button below is the keyboard target */}
             <div
                 className={cn(
                     "flex items-center gap-1 sm:gap-2 md:gap-3 px-1 sm:px-2 md:px-4 py-1.5 sm:py-2 md:py-3 border-b border-border/50 transition-colors duration-300 bg-card max-md:select-none",
@@ -155,19 +157,28 @@ export const FileListItem = memo(function FileListItem({
                         checked={isSelected}
                         onCheckedChange={onToggleSelect}
                         onClick={(e) => e.stopPropagation()}
+                        aria-label={`Select ${file.name}`}
                     />
                 </div>
 
                 <div className="flex-1 min-w-0 pe-2">
                     <div className="flex flex-col gap-0.5">
                         <div className="flex justify-between gap-1">
-                            <div
-                                className={cn(
-                                    "text-sm font-medium truncate",
-                                    file.status === "completed" && "cursor-pointer"
-                                )}>
-                                {file.name}
-                            </div>
+                            {canExpand ? (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onToggleExpand();
+                                    }}
+                                    aria-expanded={isExpanded}
+                                    aria-controls={`files-${file.id}`}
+                                    className="text-sm font-medium truncate text-start cursor-pointer">
+                                    {file.name}
+                                </button>
+                            ) : (
+                                <div className="text-sm font-medium truncate">{file.name}</div>
+                            )}
                             <div className="flex items-center gap-2">
                                 {file.airlocked && (
                                     <Tooltip>

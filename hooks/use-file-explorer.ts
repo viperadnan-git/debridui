@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
-import { PAGE_SIZE } from "@/lib/constants";
+import { ACTIVE_REFETCH_INTERVAL, IDLE_REFETCH_INTERVAL, PAGE_SIZE } from "@/lib/constants";
 import { sortTorrentFiles } from "@/lib/utils/file";
 
 export function useFileExplorer() {
@@ -22,8 +22,10 @@ export function useFileExplorer() {
     const { data, isLoading, refetch, isRefetching } = useQuery({
         queryKey: [currentAccount.id, "getTorrentList", currentPage, sortBy, sortOrder],
         queryFn: () => client.getTorrentList({ offset, limit }),
-        refetchInterval: 3000,
-        refetchIntervalInBackground: false,
+        refetchInterval: (query) => {
+            const busy = query.state.data?.files.some((f) => f.status !== "completed" && f.status !== "seeding");
+            return busy ? ACTIVE_REFETCH_INTERVAL : IDLE_REFETCH_INTERVAL;
+        },
     });
 
     const totalPages = useMemo(() => {

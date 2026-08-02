@@ -64,7 +64,7 @@ export function SortControls() {
                 <DropdownMenuContent align="end" sideOffset={6} className="w-44">
                     <DropdownMenuGroup>
                         <DropdownMenuLabel className="py-1 text-[10px] tracking-widest uppercase text-muted-foreground font-light">
-                            Sort by
+                            Sort this page by
                         </DropdownMenuLabel>
                         <DropdownMenuRadioGroup value={sortBy} onValueChange={handleSortChange}>
                             {SORT_OPTIONS.map((option) => (
@@ -105,6 +105,9 @@ export function SortControls() {
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                        <div className="px-2 py-1.5 text-[10px] tracking-widest uppercase text-muted-foreground font-light">
+                            Sort this page
+                        </div>
                         {SORT_OPTIONS.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                                 {option.label}

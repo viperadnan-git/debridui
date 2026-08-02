@@ -33,6 +33,7 @@ export function FileListHeader({
             )}>
             <div className="shrink-0 px-1">
                 <Checkbox
+                    aria-label="Select all files on this page"
                     checked={isAllSelected}
                     onCheckedChange={(checked) => {
                         if (isAllSelected === "indeterminate" || isAllSelected === true) {

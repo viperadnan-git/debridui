@@ -12,6 +12,7 @@ import { authClient } from "@/lib/auth-client";
 import type { DebridClient } from "@/lib/clients";
 import { getClientInstance } from "@/lib/clients";
 import type { UserAccount } from "@/lib/db";
+import { useSelectionStore } from "@/lib/stores/selection";
 import type { AccountType } from "@/lib/types";
 import { clearAppCache } from "@/lib/utils";
 
@@ -65,7 +66,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const accountsLength = userAccounts.length;
 
-    // State for account switching (forces re-render when changed)
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -86,7 +86,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return userAccounts[0].id;
     }, [accountsLength, selectedAccountId, userAccounts]);
 
-    // Memoize current account lookup
     const currentAccount = useMemo(
         () => userAccounts.find((acc) => acc.id === currentAccountId) || null,
         [userAccounts, currentAccountId]
@@ -96,7 +95,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Shows error screen if API key is invalid, allowing user to delete/retry
     const { isError: isUserError, error: userError, refetch: refetchUser } = useDebridUserInfo(currentAccount);
 
-    // Mutation for removing accounts (used in error recovery)
     const { mutate: removeAccount } = useRemoveUserAccount();
 
     // Session gone mid-app: bounce to /login, preserving location. Skip on sessionError —
@@ -130,7 +128,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     }, [serverSettings]);
 
-    // Sync currentAccountId to localStorage when it changes
     useEffect(() => {
         if (currentAccountId) {
             localStorage.setItem("selected-account-id", currentAccountId);
@@ -146,12 +143,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // `rerender-defer-reads` - Stable callback for switching accounts
     const switchAccount = useCallback((accountId: string) => {
         localStorage.setItem("selected-account-id", accountId);
+        // Node ids are account-scoped
+        useSelectionStore.getState().clearAll();
         startTransition(() => {
             setSelectedAccountId(accountId);
         });
     }, []);
 
-    // Logout function
     const logout = useCallback(async () => {
         setIsLoggingOut(true);
         const toastId = toast.loading("Logging out...");
@@ -196,7 +194,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         ]
     );
 
-    // Show error screen when session check fails
     if (sessionError) {
         return (
             <SplashErrorScreen
@@ -212,7 +209,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return <SplashScreen />;
     }
 
-    // Show error screen when account fetch fails
     if (isUserError && currentAccount) {
         return (
             <SplashErrorScreen

@@ -20,8 +20,8 @@ import { getProxyUrl } from "@/lib/utils";
 import { USER_AGENT } from "../constants";
 import { queryClient } from "../query-client";
 import BaseClient from "./base";
+import { buildTree } from "./tree";
 
-// Real-Debrid API response types
 type TorrentStatus =
     | "magnet_error"
     | "magnet_conversion"
@@ -159,7 +159,6 @@ export default class RealDebridClient extends BaseClient {
             throw new DebridError("Invalid JSON response", AccountType.REALDEBRID);
         }
 
-        // Check for error response
         if (data && typeof data === "object" && "error" in data) {
             const errorData = data as RDApiError;
             const errorCode = errorData.error_code;
@@ -216,7 +215,6 @@ export default class RealDebridClient extends BaseClient {
         check: string;
         redirect_url: string;
     }> {
-        // Real-Debrid uses direct API token authentication
         return {
             pin: "REALDEBRID_API_KEY",
             check: "direct_api_key",
@@ -267,8 +265,9 @@ export default class RealDebridClient extends BaseClient {
         const limit = 100;
         const maxResults = 100;
         const query = searchQuery.toLowerCase();
+        const maxPages = 10;
 
-        while (results.length < maxResults) {
+        for (let page = 0; page < maxPages && results.length < maxResults; page++) {
             const { files, hasMore } = await this.getTorrentList({ offset, limit });
             const matches = files.filter((f) => f.name.toLowerCase().includes(query));
             results.push(...matches);
@@ -338,7 +337,8 @@ export default class RealDebridClient extends BaseClient {
                     success: true,
                     id: result.id,
                     message: `Successfully added torrent`,
-                    is_cached: true,
+                    // addMagnet says nothing about cache state
+                    is_cached: false,
                 };
             } catch (error) {
                 results[magnet] = {
@@ -385,16 +385,13 @@ export default class RealDebridClient extends BaseClient {
         return results;
     }
 
-    // Web download methods
     async addWebDownloads(links: string[]): Promise<WebDownloadAddResult[]> {
         const results: WebDownloadAddResult[] = [];
 
         for (const link of links) {
             try {
-                // Try to expand folder links first
                 const expandedLinks = await this.tryExpandFolder(link);
 
-                // Unrestrict each link (single link or expanded folder contents)
                 for (const singleLink of expandedLinks) {
                     try {
                         const result = await this.unrestrictLink(singleLink);
@@ -429,10 +426,7 @@ export default class RealDebridClient extends BaseClient {
     private static readonly FOLDER_PATTERNS_KEY = ["realdebrid", "folderPatterns"] as const;
     private static compiledPatterns: RegExp[] | null = null;
 
-    /**
-     * Fetch and cache folder regex patterns from Real-Debrid API.
-     * Pattern strings persist in IDB; compiled RegExp cached in memory.
-     */
+    /** Pattern strings persist in IDB; compiled RegExp is memory-only */
     private static async getFolderPatterns(): Promise<RegExp[]> {
         if (RealDebridClient.compiledPatterns) {
             return RealDebridClient.compiledPatterns;
@@ -454,7 +448,6 @@ export default class RealDebridClient extends BaseClient {
                 staleTime: 24 * 60 * 60 * 1000, // 24 hours
             });
 
-            // Compile and cache RegExp objects in memory
             RealDebridClient.compiledPatterns = patterns
                 .map((p) => {
                     try {
@@ -472,11 +465,7 @@ export default class RealDebridClient extends BaseClient {
         return RealDebridClient.compiledPatterns;
     }
 
-    /**
-     * Try to expand a folder link into individual file links.
-     * Only calls the API if the link matches known folder patterns.
-     * Returns [link] if not a folder or expansion fails.
-     */
+    /** Returns [link] unchanged if it is not a folder or expansion fails */
     private async tryExpandFolder(link: string): Promise<string[]> {
         const patterns = await RealDebridClient.getFolderPatterns();
         const isFolder = patterns.some((p) => p.test(link));
@@ -513,7 +502,6 @@ export default class RealDebridClient extends BaseClient {
     }
 
     async getWebDownloadList({ offset, limit }: { offset: number; limit: number }): Promise<WebDownloadList> {
-        // Real-Debrid uses page-based pagination
         const page = Math.floor(offset / limit) + 1;
         const downloads = await this.makeRequest<RDDownload[]>(`/downloads?page=${page}&limit=${limit}`);
 
@@ -596,17 +584,11 @@ export default class RealDebridClient extends BaseClient {
         }
     }
 
-    /**
-     * Build a nested file tree from Real-Debrid's flat file paths.
-     * Files have paths like "/folder/subfolder/file.ext".
-     * Links array corresponds to selected files in order.
-     * Uses Map for O(1) folder lookups instead of Array.find.
-     */
+    /** `links` corresponds to selected files in order */
     private buildFileTree(files: RDTorrentFile[], links: string[], torrentName: string): DebridNode[] {
         const selectedFiles = files.filter((f) => f.selected === 1);
 
-        // RD may bundle many files into fewer links (compressed archives)
-        // When links don't map 1:1, show compressed entries instead of individual files
+        // RD bundles many files into fewer links for compressed archives
         if (links.length > 0 && links.length < selectedFiles.length) {
             const totalSize = selectedFiles.reduce((sum, f) => sum + f.bytes, 0);
 
@@ -633,48 +615,12 @@ export default class RealDebridClient extends BaseClient {
             }));
         }
 
-        // Normal 1:1 mapping — build full file tree
-        const root: DebridNode[] = [];
-        const folderMap = new Map<string, DebridNode>();
-
-        for (let i = 0; i < selectedFiles.length; i++) {
-            const file = selectedFiles[i];
-            const link = links[i] || "";
-            const segments = file.path.replace(/^\//, "").split("/");
-
-            let currentLevel = root;
-            let pathKey = "";
-
-            for (let j = 0; j < segments.length; j++) {
-                const segment = segments[j];
-                const isFile = j === segments.length - 1;
-
-                if (isFile) {
-                    currentLevel.push({
-                        id: link,
-                        name: segment,
-                        size: file.bytes,
-                        type: "file",
-                        children: [],
-                    });
-                } else {
-                    pathKey += `/${segment}`;
-                    let folder = folderMap.get(pathKey);
-                    if (!folder) {
-                        folder = {
-                            name: segment,
-                            size: undefined,
-                            type: "folder",
-                            children: [],
-                        };
-                        folderMap.set(pathKey, folder);
-                        currentLevel.push(folder);
-                    }
-                    currentLevel = folder.children;
-                }
-            }
-        }
-
-        return root;
+        return buildTree(
+            selectedFiles.map((file, i) => ({
+                path: file.path,
+                id: links[i] || "",
+                size: file.bytes,
+            }))
+        );
     }
 }

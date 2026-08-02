@@ -26,13 +26,13 @@ export const SearchSection = memo(function SearchSection({ onSearchResults }: Se
     const { data: searchResults, isLoading: isSearching } = useQuery<DebridFile[]>({
         queryKey: [currentAccount.id, isIdSearch ? "findTorrentById" : "findTorrents", queryParam],
         queryFn: async () => {
-            if (isIdSearch && torrentId && client.findTorrentById) {
+            if (isIdSearch && torrentId) {
                 const result = await client.findTorrentById(torrentId);
                 return result ? [result] : [];
             }
             return client.findTorrents(queryParam);
         },
-        enabled: !!queryParam && (isIdSearch ? !!client.findTorrentById : true),
+        enabled: !!queryParam,
         staleTime: 5_000,
     });
 

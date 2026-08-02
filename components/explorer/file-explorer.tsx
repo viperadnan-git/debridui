@@ -32,31 +32,26 @@ export const FileExplorer = memo(function FileExplorer() {
     const selectAll = useSelectionStore((state) => state.selectAll);
     const clearAll = useSelectionStore((state) => state.clearAll);
 
-    // Handle search results from SearchSection
     const handleSearchResults = useCallback((results: DebridFile[] | null, searching: boolean) => {
         setSearchResults(results);
         setIsSearching(searching);
         setSearchPage(1); // Reset to first page on new search
     }, []);
 
-    // Determine active data based on search state with pagination
     const activeData = useMemo((): DebridFile[] => {
         if (!queryParam) return files;
         if (!searchResults) return [];
 
-        // Apply pagination to search results
         const startIndex = (searchPage - 1) * PAGE_SIZE;
         const endIndex = startIndex + PAGE_SIZE;
         return searchResults.slice(startIndex, endIndex);
     }, [queryParam, searchResults, files, searchPage]);
 
-    // Calculate total pages for search results
     const searchTotalPages = useMemo(() => {
         if (!searchResults) return 0;
         return Math.ceil(searchResults.length / PAGE_SIZE);
     }, [searchResults]);
 
-    // Selection handling
     const handleSelectAll = useCallback(
         (checked: boolean | "indeterminate") => {
             if (checked) {
@@ -68,14 +63,15 @@ export const FileExplorer = memo(function FileExplorer() {
         [activeData, selectAll, clearAll]
     );
 
+    const selectedCount = useMemo(
+        () => activeData.reduce((n, file) => n + (selectedFileIds.has(file.id) ? 1 : 0), 0),
+        [activeData, selectedFileIds]
+    );
+
     const headerCheckboxState = useMemo(() => {
-        if (activeData.length === 0) return false;
-        const allFilesSelected = activeData.every((file) => selectedFileIds.has(file.id));
-        const someFilesSelected = activeData.some((file) => selectedFileIds.has(file.id));
-        if (allFilesSelected) return true;
-        if (someFilesSelected) return "indeterminate";
-        return false;
-    }, [activeData, selectedFileIds]);
+        if (activeData.length === 0 || selectedCount === 0) return false;
+        return selectedCount === activeData.length ? true : "indeterminate";
+    }, [activeData, selectedCount]);
 
     const handlePageChange = useCallback(
         (page: number) => {
@@ -101,7 +97,6 @@ export const FileExplorer = memo(function FileExplorer() {
                 <PageHeader icon={FolderOpen} title="File Explorer" primaryAction={<QuickSettings />} />
                 <AddContent />
 
-                {/* Search and Sort Controls */}
                 <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
                     <SearchSection onSearchResults={handleSearchResults} />
                     <SortControls />
@@ -111,7 +106,7 @@ export const FileExplorer = memo(function FileExplorer() {
                     <FileListHeader
                         isAllSelected={headerCheckboxState}
                         onSelectAll={handleSelectAll}
-                        selectedCount={selectedFileIds.size}
+                        selectedCount={selectedCount}
                         currentPage={queryParam ? searchPage : currentPage}
                         onRefresh={() => refetch()}
                         isRefreshing={isRefetching}
@@ -124,7 +119,6 @@ export const FileExplorer = memo(function FileExplorer() {
                     </FileListBody>
                 </FileList>
 
-                {/* Pagination */}
                 {!isSearching && (
                     <>
                         {queryParam && searchTotalPages > 1 && (
