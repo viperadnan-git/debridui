@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Download, List, Loader2, RotateCw, Trash2 } from "lucide-react";
+import { Copy, Download, List, Loader2, Lock, LockOpen, RotateCw, Trash2 } from "lucide-react";
 import {
     ContextMenu,
     ContextMenuContent,
@@ -8,7 +8,7 @@ import {
     ContextMenuSeparator,
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { useFileLinkActions, useFileMutationActions } from "@/hooks/use-file-actions";
+import { canAirlock, useFileLinkActions, useFileMutationActions } from "@/hooks/use-file-actions";
 import type { DebridFile } from "@/lib/types";
 
 interface FileItemContextMenuProps {
@@ -19,14 +19,17 @@ interface FileItemContextMenuProps {
 
 export function FileItemContextMenu({ file, children, className }: FileItemContextMenuProps) {
     const { copyMutation, downloadMutation, playlistMutation } = useFileLinkActions(file.id, { fileName: file.name });
-    const { deleteMutation, retryMutation } = useFileMutationActions();
+    const { deleteMutation, retryMutation, airlockMutation, supportsAirlock } = useFileMutationActions();
 
     const isAnyActionPending =
         copyMutation.isPending ||
         downloadMutation.isPending ||
         playlistMutation.isPending ||
         deleteMutation.isPending ||
-        retryMutation.isPending;
+        retryMutation.isPending ||
+        airlockMutation.isPending;
+
+    const showAirlock = supportsAirlock && canAirlock(file);
 
     return (
         <ContextMenu>
@@ -96,6 +99,27 @@ export function FileItemContextMenu({ file, children, className }: FileItemConte
                         )}
                         Retry
                     </ContextMenuItem>
+                )}
+                {showAirlock && (
+                    <>
+                        <ContextMenuItem
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                airlockMutation.mutate({ fileIds: [file.id], airlocked: !file.airlocked });
+                            }}
+                            disabled={isAnyActionPending}>
+                            {airlockMutation.isPending ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : file.airlocked ? (
+                                <LockOpen className="mr-2 h-4 w-4" />
+                            ) : (
+                                <Lock className="mr-2 h-4 w-4" />
+                            )}
+                            {file.airlocked ? "Remove from Airlock" : "Add to Airlock"}
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                    </>
                 )}
                 <ContextMenuItem
                     onClick={(e) => {

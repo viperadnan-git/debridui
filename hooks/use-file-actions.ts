@@ -3,6 +3,7 @@ import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import type { DebridClient } from "@/lib/clients";
 import { queryClient } from "@/lib/query-client";
 import { useSelectionStore } from "@/lib/stores/selection";
+import type { DebridFile } from "@/lib/types";
 import { copyLinksToClipboard, downloadLinks } from "@/lib/utils";
 import { downloadM3UPlaylist, fetchSelectedDownloadLinks, fetchTorrentDownloadLinks } from "@/lib/utils/file";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
@@ -120,6 +121,34 @@ export function useFileMutationActions() {
         }
     );
 
+    const airlockMutation = useToastMutation(
+        async ({ fileIds, airlocked }: { fileIds: string[]; airlocked: boolean }) => {
+            const result = { success: 0, error: 0, airlocked };
+            for (const id of fileIds) {
+                try {
+                    await client.setAirlocked?.({ id, target: "torrent", airlocked });
+                    result.success++;
+                } catch (error) {
+                    toast.error(
+                        `Failed to update Airlock for ${id}: ${error instanceof Error ? error.message : "Unknown error"}`
+                    );
+                    result.error++;
+                }
+            }
+            queryClient.invalidateQueries({ queryKey: [currentAccount.id, "getTorrentList"] });
+            queryClient.invalidateQueries({ queryKey: [currentAccount.id, "findTorrents"] });
+            return result;
+        },
+        {
+            loading: "Updating Airlock...",
+            success: (result) =>
+                result.success === 0
+                    ? ""
+                    : `${result.airlocked ? "Added" : "Removed"} ${result.success} file(s) ${result.airlocked ? "to" : "from"} Airlock`,
+            error: "Failed to update Airlock",
+        }
+    );
+
     const retryMutation = useToastMutation(
         async (fileIds: string[]) => {
             const results = await retryTorrentsWithCleanup(client, currentAccount.id, fileIds);
@@ -137,5 +166,10 @@ export function useFileMutationActions() {
         }
     );
 
-    return { deleteMutation, retryMutation };
+    return { deleteMutation, retryMutation, airlockMutation, supportsAirlock: !!client.setAirlocked };
+}
+
+/** Airlock requires the item to be cached on the provider */
+export function canAirlock(file: DebridFile): boolean {
+    return file.status === "completed" || file.status === "seeding";
 }

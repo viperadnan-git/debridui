@@ -18,6 +18,7 @@ interface WebDownloadsContextValue {
     saveLinks: ((links: string[]) => Promise<void>) | null;
     isSaving: boolean;
     deleteDownload: (id: string) => Promise<unknown>;
+    setAirlocked: ((params: { id: string; airlocked: boolean }) => Promise<unknown>) | null;
     getDownloadLink: (download: WebDownload) => Promise<string>;
     refetch: () => void;
 }
@@ -123,6 +124,13 @@ export function WebDownloadsProvider({ children }: { children: ReactNode }) {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: [currentAccount.id, "webDownloads", "list"] }),
     });
 
+    // Airlock (TorBox only) - keeps a cached download from being removed for inactivity
+    const airlockMutation = useMutation({
+        mutationFn: ({ id, airlocked }: { id: string; airlocked: boolean }) =>
+            client.setAirlocked?.({ id, target: "webdl", airlocked }) ?? Promise.resolve(),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: [currentAccount.id, "webDownloads", "list"] }),
+    });
+
     const value = useMemo(
         () => ({
             downloads,
@@ -136,6 +144,7 @@ export function WebDownloadsProvider({ children }: { children: ReactNode }) {
             saveLinks: client.saveWebDownloadLinks ? saveMutation.mutateAsync : null,
             isSaving: saveMutation.isPending,
             deleteDownload: deleteMutation.mutateAsync,
+            setAirlocked: client.setAirlocked ? airlockMutation.mutateAsync : null,
             getDownloadLink: async (download: WebDownload): Promise<string> => {
                 // Use cached downloadLink if available
                 if (download.downloadLink) {
@@ -155,7 +164,18 @@ export function WebDownloadsProvider({ children }: { children: ReactNode }) {
             },
             refetch: listQuery.refetch,
         }),
-        [downloads, listQuery, currentPage, totalPages, setPage, addMutation, saveMutation, deleteMutation, client]
+        [
+            downloads,
+            listQuery,
+            currentPage,
+            totalPages,
+            setPage,
+            addMutation,
+            saveMutation,
+            deleteMutation,
+            airlockMutation,
+            client,
+        ]
     );
 
     return <WebDownloadsContext.Provider value={value}>{children}</WebDownloadsContext.Provider>;

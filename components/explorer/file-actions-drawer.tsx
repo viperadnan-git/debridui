@@ -1,11 +1,22 @@
 "use client";
 
-import { Copy, Download, ListMusic, Loader2, type LucideIcon, RotateCcw, Trash2, X } from "lucide-react";
+import {
+    Copy,
+    Download,
+    ListMusic,
+    Loader2,
+    Lock,
+    LockOpen,
+    type LucideIcon,
+    RotateCcw,
+    Trash2,
+    X,
+} from "lucide-react";
 import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useFileLinkActions, useFileMutationActions } from "@/hooks/use-file-actions";
+import { canAirlock, useFileLinkActions, useFileMutationActions } from "@/hooks/use-file-actions";
 import { useSelectionStore } from "@/lib/stores/selection";
 import type { DebridFile } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -58,8 +69,15 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
         };
     }, [files, fullySelectedFileIds]);
 
-    const { deleteMutation, retryMutation } = useFileMutationActions();
+    const { deleteMutation, retryMutation, airlockMutation, supportsAirlock } = useFileMutationActions();
     const { copyMutation, downloadMutation, playlistMutation } = useFileLinkActions(selectedNodeIdsArray);
+
+    // Toggle direction follows the selection: unlock only when every eligible file is already airlocked
+    const airlockTargets = useMemo(
+        () => (supportsAirlock ? fullySelectedFiles.filter(canAirlock) : []),
+        [supportsAirlock, fullySelectedFiles]
+    );
+    const isUnairlocking = airlockTargets.length > 0 && airlockTargets.every((file) => file.airlocked);
 
     const hasFileActions = canRetry.length > 0 || fullySelectedFiles.length > 0;
     const summaryParts: { count: number; unit: string }[] = [];
@@ -169,6 +187,19 @@ export function FileActionsDrawer({ files }: FileActionsDrawerProps) {
                                         icon={RotateCcw}
                                         isPending={retryMutation.isPending}
                                         onClick={() => retryMutation.mutate(canRetry.map((f) => f.id))}
+                                    />
+                                )}
+                                {airlockTargets.length > 0 && (
+                                    <ActionButton
+                                        label={isUnairlocking ? "Remove from Airlock" : "Add to Airlock"}
+                                        icon={isUnairlocking ? LockOpen : Lock}
+                                        isPending={airlockMutation.isPending}
+                                        onClick={() =>
+                                            airlockMutation.mutate({
+                                                fileIds: airlockTargets.map((f) => f.id),
+                                                airlocked: !isUnairlocking,
+                                            })
+                                        }
                                     />
                                 )}
                                 {fullySelectedFiles.length > 0 && (

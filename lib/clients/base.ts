@@ -138,4 +138,7 @@ export default abstract class BaseClient {
 
     // Optional: Save links (AllDebrid only)
     saveWebDownloadLinks?(links: string[]): Promise<void>;
+
+    // Optional: Airlock (TorBox only) - exempts a cached item from inactivity cleanup
+    setAirlocked?(params: { id: string; target: "torrent" | "webdl"; airlocked: boolean }): Promise<void>;
 }

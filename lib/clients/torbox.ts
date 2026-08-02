@@ -88,6 +88,7 @@ interface TorBoxTorrent {
     auth_id: string;
     files?: TorBoxFile[];
     cached_at?: string;
+    airlocked?: boolean;
 }
 
 interface TorBoxFile {
@@ -125,6 +126,7 @@ interface TorBoxWebDownload {
     original_url: string;
     auth_id: string;
     error?: string;
+    airlocked?: boolean;
 }
 
 export default class TorBoxClient extends BaseClient {
@@ -591,6 +593,29 @@ export default class TorBoxClient extends BaseClient {
         });
     }
 
+    /**
+     * Airlocked items are never removed for inactivity. Item must be cached.
+     * https://support.torbox.app/en/articles/15417147-torbox-airlock
+     */
+    async setAirlocked({
+        id,
+        target,
+        airlocked,
+    }: {
+        id: string;
+        target: "torrent" | "webdl";
+        airlocked: boolean;
+    }): Promise<void> {
+        const isTorrent = target === "torrent";
+        await this.makeRequest(isTorrent ? "/torrents/edittorrent" : "/webdl/editwebdownload", {
+            method: "PUT",
+            body: JSON.stringify({ [isTorrent ? "torrent_id" : "webdl_id"]: parseInt(id, 10), airlocked }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    }
+
     private mapToWebDownload(dl: TorBoxWebDownload): WebDownload {
         const isReady = dl.download_finished && dl.download_present;
         const downloadLink = isReady ? this.buildDownloadUrl("webdl", dl.id, 0) : undefined;
@@ -605,6 +630,7 @@ export default class TorBoxClient extends BaseClient {
             progress: dl.progress * 100,
             createdAt: new Date(dl.created_at),
             error: dl.error || undefined,
+            airlocked: dl.airlocked ?? false,
         };
     }
 
@@ -646,6 +672,7 @@ export default class TorBoxClient extends BaseClient {
             createdAt: new Date(torrent.created_at),
             completedAt: torrent.cached_at ? new Date(torrent.cached_at) : undefined,
             files,
+            airlocked: torrent.airlocked ?? false,
         };
     }
 

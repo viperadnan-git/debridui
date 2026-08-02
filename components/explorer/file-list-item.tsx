@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { memo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -168,6 +169,14 @@ export const FileListItem = memo(function FileListItem({
                                 {file.name}
                             </div>
                             <div className="flex items-center gap-2">
+                                {file.airlocked && (
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Lock className="size-3.5 shrink-0 text-muted-foreground" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>In Airlock — never removed for inactivity</TooltipContent>
+                                    </Tooltip>
+                                )}
                                 {showProgress && (
                                     <Badge className="px-1 md:px-1.5 pb-0 border-0 rounded-sm text-xs md:text-sm bg-blue-500/10 text-blue-500">
                                         {file.progress?.toFixed(2)}%

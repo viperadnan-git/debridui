@@ -87,6 +87,9 @@ export type DebridFile = {
 
     error?: string;
     files?: DebridNode[];
+
+    // TorBox Airlock: item is exempt from inactivity cleanup
+    airlocked?: boolean;
 };
 
 export type DebridFileList = {
@@ -164,6 +167,7 @@ export type WebDownload = {
     createdAt: Date;
     host?: string;
     error?: string;
+    airlocked?: boolean;
 };
 
 export type WebDownloadStatus = "pending" | "processing" | "completed" | "failed" | "cached";
