@@ -1,5 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
-import { differenceInYears, formatDistanceToNow } from "date-fns";
+import { differenceInYears, formatDistanceToNow, formatDuration } from "date-fns";
 import { del } from "idb-keyval";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
@@ -51,6 +51,25 @@ export const formatLocalizedDate = (dateString?: string): string | null => {
         day: "numeric",
         year: "numeric",
     });
+};
+
+/**
+ * Time left in a single unit, days at the coarsest: "400 days", "5 hours", "20 minutes".
+ * Null once the date has passed — the caller words that.
+ */
+export const formatTimeRemaining = (date: Date | string): string | null => {
+    const remainingMs = new Date(date).getTime() - Date.now();
+    if (remainingMs <= 0) return null;
+
+    // Rounding cascades up so 23h59m reads "1 day" rather than "24 hours"
+    const minutes = Math.round(remainingMs / 60_000);
+    if (minutes < 1) return "less than a minute";
+    if (minutes < 60) return formatDuration({ minutes });
+
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return formatDuration({ hours });
+
+    return formatDuration({ days: Math.round(hours / 24) });
 };
 
 export const calculateAge = (birthDate?: string, endDate?: string): number | null => {

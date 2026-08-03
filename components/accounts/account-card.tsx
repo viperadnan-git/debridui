@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDebridUserInfo, useRemoveUserAccount } from "@/hooks/use-user-accounts";
 import type { UserAccount } from "@/lib/db";
 import type { AccountType } from "@/lib/types";
-import { cn, formatAccountType } from "@/lib/utils";
+import { cn, formatAccountType, formatTimeRemaining } from "@/lib/utils";
 import { ServiceIcon } from "./service-icon";
 
 interface AccountCardProps {
@@ -26,6 +26,7 @@ export const AccountCard = React.memo(function AccountCard({ account, isCurrentA
     const removeAccount = useRemoveUserAccount();
 
     const { data: userInfo } = useDebridUserInfo(account);
+    const timeLeft = userInfo?.premiumExpiresAt ? formatTimeRemaining(userInfo.premiumExpiresAt) : null;
 
     // `rerender-defer-reads` - Use callbacks to avoid subscribing to switchAccount identity
     const handleSwitch = useCallback(() => {
@@ -107,37 +108,51 @@ export const AccountCard = React.memo(function AccountCard({ account, isCurrentA
 
                 {/* Stats Grid - 3 blocks: Email, Plan, Expires */}
                 {userInfo ? (
-                    <div className="grid grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6">
-                        <div className="col-span-3 sm:col-span-1 pl-2.5 sm:pl-3 border-l border-border/50">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6">
+                        <div className="col-span-2 sm:col-span-1 min-w-0 pl-2.5 sm:pl-3 border-l border-border/50">
                             <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-0.5">
                                 Email
                             </div>
                             <div className="text-xs sm:text-sm break-all sm:break-normal">{userInfo.email}</div>
                         </div>
-                        <div className="pl-2.5 sm:pl-3 border-l border-border/50">
+                        <div className="min-w-0 pl-2.5 sm:pl-3 border-l border-border/50">
                             <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-0.5">
                                 Plan
                             </div>
                             <div
                                 className={cn(
-                                    "text-xs sm:text-sm",
+                                    "text-xs sm:text-sm truncate",
                                     userInfo.isPremium && "text-green-600 dark:text-green-500"
                                 )}>
                                 {userInfo.isPremium ? "Premium" : "Free"}
                             </div>
                         </div>
-                        <div className="pl-2.5 sm:pl-3 border-l border-border/50">
+                        <div className="min-w-0 pl-2.5 sm:pl-3 border-l border-border/50">
                             <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-0.5">
-                                Expires
+                                {timeLeft ? "Expires in" : "Expires"}
                             </div>
-                            <div className="text-xs sm:text-sm">
-                                {userInfo.premiumExpiresAt ? format(userInfo.premiumExpiresAt, "PP") : "—"}
-                            </div>
+                            {userInfo.premiumExpiresAt ? (
+                                <>
+                                    <div
+                                        className={cn(
+                                            "text-xs sm:text-sm truncate tabular-nums",
+                                            !timeLeft && "text-destructive"
+                                        )}>
+                                        {timeLeft ?? "Expired"}
+                                    </div>
+                                    {/* Shown rather than tooltipped: a tooltip is unreachable on touch */}
+                                    <div className="text-[10px] text-muted-foreground truncate tabular-nums">
+                                        {format(userInfo.premiumExpiresAt, "PP")}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-xs sm:text-sm">—</div>
+                            )}
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6">
-                        <div className="col-span-3 sm:col-span-1 pl-2.5 sm:pl-3 border-l border-border/50">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6">
+                        <div className="col-span-2 sm:col-span-1 pl-2.5 sm:pl-3 border-l border-border/50">
                             <Skeleton className="h-2.5 w-12 mb-1.5" />
                             <Skeleton className="h-3.5 sm:h-4 w-48 sm:w-32" />
                         </div>
