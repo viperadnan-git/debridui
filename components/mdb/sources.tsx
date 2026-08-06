@@ -2,7 +2,8 @@
 
 import {
     AlertTriangle,
-    DownloadIcon,
+    CheckIcon,
+    FolderOpenIcon,
     HardDriveDownloadIcon,
     LayersIcon,
     Loader2,
@@ -27,7 +28,9 @@ interface SourcesProps {
     className?: string;
 }
 
-export function AddSourceButton({ magnet }: { magnet: string }) {
+const ACTION = "h-8 px-3 gap-1.5";
+
+export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string }) {
     const { client } = useAuthGuaranteed();
     const router = useRouter();
     const [status, setStatus] = useState<"added" | "cached" | "loading" | null>(null);
@@ -36,6 +39,14 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
     const handleAdd = async () => {
         setStatus("loading");
         try {
+            if (!magnet) {
+                // No hash to add directly — hitting the play url makes the addon resolve it into the account
+                const controller = new AbortController();
+                await fetch(url as string, { mode: "no-cors", signal: controller.signal });
+                controller.abort(); // headers are in, drop the body
+                setStatus("cached");
+                return;
+            }
             const result = await client.addTorrent([magnet]);
             const sourceStatus = result[magnet];
             if (!sourceStatus.success) {
@@ -55,48 +66,42 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
         setStatus(null);
     };
 
-    const compact = "h-7 sm:h-8 px-2.5 sm:px-3 text-xs gap-1.5 [&_svg]:size-3.5";
-    const compactIcon = "size-7 sm:size-8 [&_svg]:size-3.5";
-
-    if (status === "cached") {
+    if (status && status !== "loading" && !torrentId) {
         return (
-            <div className="flex items-center gap-1.5">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className={compact}
-                    onClick={() => {
-                        if (torrentId) {
-                            router.push(`/files?q=id:${torrentId}`);
-                        }
-                    }}>
-                    <DownloadIcon />
-                    View
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className={cn(compactIcon, "group/delete hover:bg-destructive/10!")}
-                    onClick={() => handleRemove()}>
-                    <Trash2Icon className="text-destructive/70 group-hover/delete:text-destructive" />
-                </Button>
-            </div>
+            <span
+                className="inline-flex items-center h-8 px-2 text-green-600 dark:text-green-500"
+                title="Added to your files">
+                <CheckIcon className="size-4" />
+            </span>
         );
     }
 
-    if (status === "added") {
+    if (status === "cached" || status === "added") {
         return (
-            <div className="flex items-center gap-1.5">
-                <div className="flex items-center h-7 sm:h-8 gap-1.5 px-2.5 rounded-sm bg-primary/10 text-primary">
-                    <HardDriveDownloadIcon className="size-3.5 animate-pulse" />
-                    <span className="text-xs">Processing</span>
-                </div>
+            <div className="flex items-center rounded-sm border border-border/70 overflow-hidden">
+                {status === "cached" ? (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(ACTION, "rounded-none")}
+                        onClick={() => router.push(`/files?q=id:${torrentId}`)}>
+                        <FolderOpenIcon />
+                        View
+                    </Button>
+                ) : (
+                    <span className={cn(ACTION, "inline-flex items-center text-primary")}>
+                        <HardDriveDownloadIcon className="size-4 animate-pulse" />
+                        Processing
+                    </span>
+                )}
+                <span className="w-px self-stretch bg-border/70" />
                 <Button
                     variant="ghost"
-                    size="icon-sm"
-                    className={cn(compactIcon, "group/delete hover:bg-destructive/10!")}
+                    size="icon"
+                    className="size-8 rounded-none text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                    aria-label="Remove from files"
                     onClick={() => handleRemove()}>
-                    <Trash2Icon className="text-destructive/70 group-hover/delete:text-destructive" />
+                    <Trash2Icon />
                 </Button>
             </div>
         );
@@ -106,7 +111,7 @@ export function AddSourceButton({ magnet }: { magnet: string }) {
         <Button
             variant="outline"
             size="sm"
-            className={compact}
+            className={ACTION}
             onClick={() => handleAdd()}
             disabled={status === "loading"}>
             {status === "loading" ? (
@@ -187,14 +192,11 @@ export const SourceRow = memo(function SourceRow({
             <div className="flex items-center justify-between gap-3 flex-wrap pt-0.5">
                 <div className="text-xs tracking-wider uppercase text-muted-foreground/70">{source.addonName}</div>
                 {(source.url || source.magnet) && (
-                    <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
-                        {source.magnet && <AddSourceButton magnet={source.magnet} />}
+                    <div className="flex items-center gap-2 ml-auto shrink-0">
+                        <AddSourceButton magnet={source.magnet} url={source.url} />
                         {source.url && (
-                            <Button
-                                size="sm"
-                                className="h-7 sm:h-8 px-2.5 sm:px-3 text-xs gap-1.5 [&_svg]:size-3.5"
-                                onClick={() => useStreamingStore.getState().playSource(source, request)}>
-                                <PlayIcon className="fill-current" />
+                            <Button size="sm" onClick={() => useStreamingStore.getState().playSource(source, request)}>
+                                <PlayIcon className="size-4 fill-current" />
                                 Play
                             </Button>
                         )}

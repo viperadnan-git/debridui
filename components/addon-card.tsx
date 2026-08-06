@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Puzzle, Share2, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Puzzle, Settings, Share2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -105,12 +105,12 @@ export function AddonCard({ addon, onToggle, onRemove, onMoveUp, onMoveDown, isF
             )}
 
             {/* Row 3: Actions */}
-            <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/50 flex-wrap">
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-border/50">
                 <div className="flex items-center gap-2">
                     <Switch id={`toggle-${addon.id}`} checked={addon.enabled} onCheckedChange={() => onToggle(addon)} />
                     <Label
                         htmlFor={`toggle-${addon.id}`}
-                        className="text-xs cursor-pointer whitespace-nowrap text-muted-foreground">
+                        className="hidden sm:flex text-xs cursor-pointer whitespace-nowrap text-muted-foreground">
                         {addon.enabled ? "Enabled" : "Disabled"}
                     </Label>
                 </div>
@@ -135,6 +135,17 @@ export function AddonCard({ addon, onToggle, onRemove, onMoveUp, onMoveDown, isF
                             aria-label={`Move ${addon.name} down`}
                             title="Move down">
                             <ArrowDown className="size-4" />
+                        </Button>
+                    )}
+                    {manifest?.behaviorHints?.configurable && (
+                        <Button variant="ghost" size="icon" asChild title="Configure addon">
+                            <a
+                                href={`${addon.url.replace(/\/manifest\.json$/, "").replace(/\/$/, "")}/configure`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`Configure ${addon.name}`}>
+                                <Settings className="size-4" />
+                            </a>
                         </Button>
                     )}
                     <Button
