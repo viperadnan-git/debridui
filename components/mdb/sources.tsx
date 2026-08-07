@@ -6,20 +6,27 @@ import {
     FolderOpenIcon,
     HardDriveDownloadIcon,
     LayersIcon,
+    ListIcon,
     Loader2,
     PlayIcon,
     Plus,
     Trash2Icon,
+    Wand2,
     Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, useMemo, useState } from "react";
+import { memo, type ReactNode, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAddonSources } from "@/hooks/use-addons";
+import { getSourceQualityIndex } from "@/lib/addons/parser";
 import type { AddonSource } from "@/lib/addons/types";
+import { useSettingsStore } from "@/lib/stores/settings";
 import { type StreamingRequest, useStreamingStore } from "@/lib/stores/streaming";
+import { selectBestSource } from "@/lib/streaming/source-selector";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
@@ -28,12 +35,13 @@ interface SourcesProps {
     className?: string;
 }
 
-const ACTION = "h-8 px-3 gap-1.5";
+const ACTION = "h-8 px-3 gap-1.5 leading-none";
+const SLOT = "h-8 w-28 shrink-0";
 
 export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string }) {
     const { client } = useAuthGuaranteed();
     const router = useRouter();
-    const [status, setStatus] = useState<"added" | "cached" | "loading" | null>(null);
+    const [status, setStatus] = useState<"added" | "cached" | "loading" | "removing" | null>(null);
     const [torrentId, setTorrentId] = useState<number | string | null>(null);
 
     const handleAdd = async () => {
@@ -62,46 +70,59 @@ export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string
 
     const handleRemove = async () => {
         if (!torrentId) return;
-        await client.removeTorrent(torrentId.toString());
-        setStatus(null);
+        const previous = status;
+        setStatus("removing");
+        try {
+            await client.removeTorrent(torrentId.toString());
+            setStatus(null);
+            setTorrentId(null);
+        } catch (error) {
+            toast.error(`Failed to remove source: ${error instanceof Error ? error.message : "Unknown error"}`);
+            setStatus(previous);
+        }
     };
 
     if (status && status !== "loading" && !torrentId) {
         return (
             <span
-                className="inline-flex items-center h-8 px-2 text-green-600 dark:text-green-500"
+                className={cn(SLOT, "inline-flex items-center justify-center text-green-600 dark:text-green-500")}
                 title="Added to your files">
                 <CheckIcon className="size-4" />
             </span>
         );
     }
 
-    if (status === "cached" || status === "added") {
+    if (status === "cached" || status === "added" || status === "removing") {
         return (
-            <div className="flex items-center rounded-sm border border-border/70 overflow-hidden">
-                {status === "cached" ? (
+            <div
+                className={cn(
+                    SLOT,
+                    "flex w-auto min-w-28 items-center overflow-hidden rounded-sm border border-border/70"
+                )}>
+                {status === "added" ? (
+                    <span className={cn(ACTION, "inline-flex h-full items-center whitespace-nowrap text-primary")}>
+                        <HardDriveDownloadIcon className="size-4 animate-pulse" />
+                        Downloading
+                    </span>
+                ) : (
                     <Button
                         variant="ghost"
                         size="sm"
-                        className={cn(ACTION, "rounded-none")}
+                        className={cn(ACTION, "h-full min-w-0 flex-1 rounded-none")}
                         onClick={() => router.push(`/files?q=id:${torrentId}`)}>
                         <FolderOpenIcon />
                         View
                     </Button>
-                ) : (
-                    <span className={cn(ACTION, "inline-flex items-center text-primary")}>
-                        <HardDriveDownloadIcon className="size-4 animate-pulse" />
-                        Processing
-                    </span>
                 )}
                 <span className="w-px self-stretch bg-border/70" />
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="size-8 rounded-none text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                    className="h-full w-8 rounded-none text-destructive/70 hover:text-destructive hover:bg-destructive/10"
                     aria-label="Remove from files"
+                    disabled={status === "removing"}
                     onClick={() => handleRemove()}>
-                    <Trash2Icon />
+                    {status === "removing" ? <Loader2 className="animate-spin" /> : <Trash2Icon />}
                 </Button>
             </div>
         );
@@ -111,7 +132,8 @@ export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string
         <Button
             variant="outline"
             size="sm"
-            className={ACTION}
+            className={cn(ACTION, SLOT)}
+            title="Add to your files"
             onClick={() => handleAdd()}
             disabled={status === "loading"}>
             {status === "loading" ? (
@@ -129,12 +151,205 @@ export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string
     );
 }
 
-function resolutionTier(res?: string): "uhd" | "fhd" | "hd" | "sd" {
-    const r = (res || "").toLowerCase();
+export type Tier = "uhd" | "fhd" | "hd" | "sd" | "other";
+
+export function resolutionTier(res?: string): Tier {
+    if (!res) return "other";
+    const r = res.toLowerCase();
     if (r.includes("2160") || r.includes("4k") || r.includes("uhd")) return "uhd";
     if (r.includes("1080")) return "fhd";
     if (r.includes("720")) return "hd";
     return "sd";
+}
+
+const TIERS: { key: Tier; label: string; note: string }[] = [
+    { key: "uhd", label: "4K", note: "Ultra HD" },
+    { key: "fhd", label: "1080p", note: "Full HD" },
+    { key: "hd", label: "720p", note: "HD" },
+    { key: "sd", label: "SD", note: "Standard" },
+    { key: "other", label: "Other", note: "Unlabelled" },
+];
+
+/** Cached first, then the better release, then the bigger file */
+function bestFirst(a: AddonSource, b: AddonSource) {
+    if (a.isCached !== b.isCached) return a.isCached ? -1 : 1;
+    const byQuality = getSourceQualityIndex(a.quality) - getSourceQualityIndex(b.quality);
+    if (byQuality !== 0) return byQuality;
+    return parseSize(b.size) - parseSize(a.size);
+}
+
+const SIZE_UNITS: Record<string, number> = { KB: 1e-6, MB: 1e-3, GB: 1, TB: 1e3 };
+
+function parseSize(size?: string): number {
+    const match = size?.match(/([\d.]+)\s*([KMGT]i?B)/i);
+    if (!match) return 0;
+    return Number(match[1]) * (SIZE_UNITS[match[2].replace("i", "").toUpperCase()] ?? 0);
+}
+
+const sourceKey = (source: AddonSource) => `${source.addonId}-${source.url}`;
+
+/** Releases that agree on these are the same choice, whichever addon served them */
+const variantKey = (source: AddonSource) => `${source.quality ?? ""}-${source.size ?? ""}-${source.isCached}`;
+
+function QuickPlayFrame({ controls, detail }: { controls: ReactNode; detail: ReactNode }) {
+    return (
+        <div className="p-3 sm:p-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">{controls}</div>
+            <div className="flex flex-col sm:flex-row sm:items-start gap-3 pt-3 border-t border-border/40">
+                {detail}
+            </div>
+        </div>
+    );
+}
+
+export function QuickPlaySkeleton() {
+    return (
+        <QuickPlayFrame
+            controls={
+                <>
+                    <Skeleton className="h-9 w-44 rounded-sm" />
+                    <Skeleton className="h-8 w-52 sm:w-64 rounded-sm" />
+                </>
+            }
+            detail={
+                <>
+                    <div className="min-w-0 flex-1 space-y-2">
+                        <Skeleton className="h-2.5 w-20" />
+                        <Skeleton className="h-3 w-4/5" />
+                        <Skeleton className="h-3 w-2/5" />
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto sm:ml-auto">
+                        <Skeleton className="h-8 w-28 rounded-sm" />
+                        <Skeleton className="h-8 w-20 rounded-sm" />
+                    </div>
+                </>
+            }
+        />
+    );
+}
+
+export function SimpleSources({ sources, request }: { sources: AddonSource[]; request: StreamingRequest }) {
+    const [pickedTier, setPickedTier] = useState<Tier | null>(null);
+    const [pickedKey, setPickedKey] = useState<string | null>(null);
+    const streamingSettings = useSettingsStore((s) => s.settings.streaming);
+
+    const preferred = useMemo(() => selectBestSource(sources, streamingSettings).source, [sources, streamingSettings]);
+
+    const tiers = useMemo(() => {
+        const byTier = new Map<Tier, AddonSource[]>();
+        for (const source of sources) {
+            if (!source.url) continue;
+            const tier = resolutionTier(source.resolution);
+            byTier.set(tier, [...(byTier.get(tier) ?? []), source]);
+        }
+        return TIERS.filter((t) => byTier.has(t.key)).map((t) => {
+            const seen = new Map<string, AddonSource>();
+            for (const source of (byTier.get(t.key) as AddonSource[]).sort(bestFirst)) {
+                const variant = variantKey(source);
+                if (!seen.has(variant)) seen.set(variant, source);
+            }
+            return { ...t, releases: Array.from(seen.values()) };
+        });
+    }, [sources]);
+
+    const preferredTier = preferred && resolutionTier(preferred.resolution);
+    const tier =
+        tiers.find((t) => t.key === pickedTier) ??
+        tiers.find((t) => t.key === preferredTier) ??
+        tiers.find((t) => t.releases[0].isCached) ??
+        tiers[0];
+
+    const preferredRelease =
+        preferred && tier?.key === preferredTier
+            ? tier.releases.find((r) => variantKey(r) === variantKey(preferred))
+            : undefined;
+    const active = tier?.releases.find((r) => variantKey(r) === pickedKey) ?? preferredRelease ?? tier?.releases[0];
+
+    if (!tier || !active) return null;
+
+    return (
+        <QuickPlayFrame
+            controls={
+                <>
+                    <div className="flex items-center gap-2 min-w-0">
+                        <p className="hidden sm:block text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60">
+                            Quality
+                        </p>
+                        <div className="max-w-full overflow-x-auto">
+                            <ToggleGroup
+                                type="single"
+                                variant="outline"
+                                size="sm"
+                                value={tier.key}
+                                onValueChange={(value) => {
+                                    if (!value) return;
+                                    setPickedTier(value as Tier);
+                                    setPickedKey(null);
+                                }}>
+                                {tiers.map(({ key, label, releases }) => (
+                                    <ToggleGroupItem key={key} value={key} aria-label={label} className="text-xs">
+                                        {releases[0].isCached && <Zap className="size-3 fill-current text-green-600" />}
+                                        <span className="tabular-nums">{label}</span>
+                                    </ToggleGroupItem>
+                                ))}
+                            </ToggleGroup>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 min-w-0">
+                        <p className="hidden sm:block text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60">
+                            Version
+                        </p>
+                        <Select value={variantKey(active)} onValueChange={setPickedKey}>
+                            <SelectTrigger size="sm" className="w-52 sm:w-64 text-xs">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-80 w-(--radix-select-trigger-width)">
+                                {tier.releases.map((release) => (
+                                    <SelectItem
+                                        key={variantKey(release)}
+                                        value={variantKey(release)}
+                                        className="text-xs">
+                                        <span className="flex items-center gap-1.5">
+                                            {release.isCached && <Zap className="size-3 fill-current text-green-600" />}
+                                            <span>{release.quality ?? "Standard"}</span>
+                                            {release.size && (
+                                                <span className="tabular-nums text-muted-foreground">
+                                                    {release.size}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </>
+            }
+            detail={
+                <>
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                        <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60 wrap-break-word">
+                            {active.addonName}
+                        </p>
+                        <p className="text-xs leading-snug wrap-break-word">{active.title}</p>
+                        {active.description && (
+                            <p className="text-[11px] leading-relaxed text-muted-foreground whitespace-pre-wrap wrap-break-word">
+                                {active.description}
+                            </p>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto sm:ml-auto">
+                        <AddSourceButton key={sourceKey(active)} magnet={active.magnet} url={active.url} />
+                        <Button size="sm" onClick={() => useStreamingStore.getState().playSource(active, request)}>
+                            <PlayIcon className="size-4 fill-current" />
+                            Play
+                        </Button>
+                    </div>
+                </>
+            }
+        />
+    );
 }
 
 export const SourceRow = memo(function SourceRow({
@@ -231,6 +446,9 @@ export function Sources({ request, className }: SourcesProps) {
         tvParams: request.tvParams,
     });
 
+    const quickPlay = useSettingsStore((s) => s.settings.quickPlay);
+    const setSetting = useSettingsStore((s) => s.set);
+
     const [addonFilter, setAddonFilter] = useState("all");
 
     const addonNames = useMemo(() => {
@@ -243,22 +461,25 @@ export function Sources({ request, className }: SourcesProps) {
     }, [sources]);
 
     const filtered = useMemo(
-        () => (addonFilter === "all" ? sources : sources?.filter((s) => s.addonId === addonFilter)),
-        [sources, addonFilter]
+        () => (quickPlay || addonFilter === "all" ? sources : sources?.filter((s) => s.addonId === addonFilter)),
+        [sources, addonFilter, quickPlay]
     );
 
     const total = filtered?.length ?? 0;
+    const hasPlayable = !!filtered?.some((s) => s.url);
 
     return (
         <div className="space-y-2">
             {/* Editorial header — count summary + addon filter */}
-            <div className="flex items-center justify-between gap-3 px-3 sm:px-4 lg:px-5 pt-2">
+            <div className="flex items-center justify-between gap-3 px-3 sm:px-4 lg:px-5 pt-2 h-9">
                 <div className="inline-flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs lg:text-xs tracking-[0.2em] sm:tracking-[0.25em] uppercase text-muted-foreground/80">
                     {isLoading ? (
                         <span className="inline-flex items-center gap-1.5">
                             <Loader2 className="size-3 animate-spin" />
                             <span className="hidden sm:inline">Loading sources</span>
                         </span>
+                    ) : quickPlay ? (
+                        "Choose quality"
                     ) : total > 0 ? (
                         <span className="inline-flex items-center gap-1.5">
                             <LayersIcon className="size-3 text-muted-foreground/70 sm:hidden" />
@@ -269,43 +490,68 @@ export function Sources({ request, className }: SourcesProps) {
                         "No Sources"
                     )}
                 </div>
-                {addonNames.length > 1 && (
-                    <Select value={addonFilter} onValueChange={setAddonFilter}>
-                        <SelectTrigger size="sm" className="w-32 sm:w-40 text-xs sm:text-sm">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All addons</SelectItem>
-                            {addonNames.map((a) => (
-                                <SelectItem key={a.id} value={a.id}>
-                                    {a.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                )}
+                <div className="flex items-center gap-2 ml-auto shrink-0">
+                    {!quickPlay && addonNames.length > 1 && (
+                        <Select value={addonFilter} onValueChange={setAddonFilter}>
+                            <SelectTrigger size="sm" className="w-32 sm:w-40 text-xs sm:text-sm">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All addons</SelectItem>
+                                {addonNames.map((a) => (
+                                    <SelectItem key={a.id} value={a.id}>
+                                        {a.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                    <ToggleGroup
+                        type="single"
+                        variant="outline"
+                        size="sm"
+                        value={quickPlay ? "quick" : "all"}
+                        onValueChange={(value) => value && setSetting("quickPlay", value === "quick")}
+                        className="opacity-50 transition-opacity hover:opacity-100 has-[:focus-visible]:opacity-100">
+                        <ToggleGroupItem value="quick" aria-label="Quick play picker" title="Quick play picker">
+                            <Wand2 className="size-3.5" />
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="all" aria-label="Every source" title="Every source">
+                            <ListIcon className="size-3.5" />
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                </div>
             </div>
 
             <div className={cn("border border-border/40 rounded-sm overflow-hidden", className)}>
-                {/* Results first */}
-                {filtered?.map((source, index) => (
-                    <SourceRow key={`${source.addonId}-${source.url || index}`} source={source} request={request} />
-                ))}
+                {quickPlay
+                    ? hasPlayable && <SimpleSources sources={filtered ?? []} request={request} />
+                    : filtered?.map((source, index) => (
+                          <SourceRow
+                              key={`${source.addonId}-${source.url || index}`}
+                              source={source}
+                              request={request}
+                          />
+                      ))}
 
-                {/* Skeleton rows at the bottom while any addon is still fetching */}
-                {isLoading && (
-                    <>
-                        <SourceRowSkeleton />
-                        <SourceRowSkeleton />
-                        <SourceRowSkeleton />
-                    </>
-                )}
+                {isLoading &&
+                    (quickPlay ? (
+                        !hasPlayable && <QuickPlaySkeleton />
+                    ) : (
+                        <>
+                            <SourceRowSkeleton />
+                            <SourceRowSkeleton />
+                            <SourceRowSkeleton />
+                        </>
+                    ))}
 
-                {!isLoading && filtered?.length === 0 && (
+                {!isLoading && (quickPlay ? !hasPlayable : filtered?.length === 0) && (
                     <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                        <p className="text-sm font-light text-foreground/80">No sources available</p>
+                        <p className="text-sm font-light text-foreground/80">Nothing to play yet</p>
                         <p className="text-xs text-muted-foreground/70 mt-1.5">
-                            Configure stream-capable addons in settings
+                            {quickPlay
+                                ? "Try again in a moment, or add addons in settings"
+                                : "Configure stream-capable addons in settings"}
                         </p>
                     </div>
                 )}
