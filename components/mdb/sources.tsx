@@ -152,23 +152,22 @@ export function AddSourceButton({ magnet, url, className }: { magnet?: string; u
     );
 }
 
-export type Tier = "uhd" | "fhd" | "hd" | "sd" | "other";
+export type Tier = "uhd" | "fhd" | "hd" | "other";
 
 export function resolutionTier(res?: string): Tier {
-    if (!res) return "other";
-    const r = res.toLowerCase();
-    if (r.includes("2160") || r.includes("4k") || r.includes("uhd")) return "uhd";
+    const r = (res || "").toLowerCase();
+    if (r.includes("2160") || r.includes("4320") || r.includes("4k") || r.includes("8k") || r.includes("uhd"))
+        return "uhd";
     if (r.includes("1080")) return "fhd";
     if (r.includes("720")) return "hd";
-    return "sd";
+    return "other";
 }
 
 const TIERS: { key: Tier; label: string; note: string }[] = [
     { key: "uhd", label: "4K", note: "Ultra HD" },
     { key: "fhd", label: "1080p", note: "Full HD" },
     { key: "hd", label: "720p", note: "HD" },
-    { key: "sd", label: "SD", note: "Standard" },
-    { key: "other", label: "Other", note: "Unlabelled" },
+    { key: "other", label: "Other", note: "Everything else" },
 ];
 
 /** Cached first, then the better release, then the bigger file */
@@ -374,7 +373,7 @@ export const SourceRow = memo(function SourceRow({
     request: StreamingRequest;
 }) {
     const tier = resolutionTier(source.resolution);
-    const resolutionLabel = source.resolution || TIERS.find((t) => t.key === tier)?.label || "SD";
+    const resolutionLabel = source.resolution || TIERS.find((t) => t.key === tier)?.label;
     const resolutionTone = tier === "uhd" ? "text-primary" : "text-foreground";
 
     return (
