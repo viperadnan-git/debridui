@@ -15,7 +15,7 @@ import {
     Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, type ReactNode, useMemo, useState } from "react";
+import { memo, type ReactNode, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuthGuaranteed } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -36,9 +36,9 @@ interface SourcesProps {
 }
 
 const ACTION = "h-8 px-3 gap-1.5 leading-none";
-const SLOT = "h-8 w-28 shrink-0";
+const SLOT = "h-8 min-w-24 shrink-0";
 
-export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string }) {
+export function AddSourceButton({ magnet, url, className }: { magnet?: string; url?: string; className?: string }) {
     const { client } = useAuthGuaranteed();
     const router = useRouter();
     const [status, setStatus] = useState<"added" | "cached" | "loading" | "removing" | null>(null);
@@ -85,7 +85,11 @@ export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string
     if (status && status !== "loading" && !torrentId) {
         return (
             <span
-                className={cn(SLOT, "inline-flex items-center justify-center text-green-600 dark:text-green-500")}
+                className={cn(
+                    SLOT,
+                    "inline-flex items-center justify-center text-green-600 dark:text-green-500",
+                    className
+                )}
                 title="Added to your files">
                 <CheckIcon className="size-4" />
             </span>
@@ -95,10 +99,7 @@ export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string
     if (status === "cached" || status === "added" || status === "removing") {
         return (
             <div
-                className={cn(
-                    SLOT,
-                    "flex w-auto min-w-28 items-center overflow-hidden rounded-sm border border-border/70"
-                )}>
+                className={cn(SLOT, "flex items-center overflow-hidden rounded-sm border border-border/70", className)}>
                 {status === "added" ? (
                     <span className={cn(ACTION, "inline-flex h-full items-center whitespace-nowrap text-primary")}>
                         <HardDriveDownloadIcon className="size-4 animate-pulse" />
@@ -132,7 +133,7 @@ export function AddSourceButton({ magnet, url }: { magnet?: string; url?: string
         <Button
             variant="outline"
             size="sm"
-            className={cn(ACTION, SLOT)}
+            className={cn(ACTION, SLOT, className)}
             title="Add to your files"
             onClick={() => handleAdd()}
             disabled={status === "loading"}>
@@ -172,7 +173,8 @@ const TIERS: { key: Tier; label: string; note: string }[] = [
 
 /** Cached first, then the better release, then the bigger file */
 function bestFirst(a: AddonSource, b: AddonSource) {
-    if (a.isCached !== b.isCached) return a.isCached ? -1 : 1;
+    const cachedDiff = Number(!!b.isCached) - Number(!!a.isCached);
+    if (cachedDiff !== 0) return cachedDiff;
     const byQuality = getSourceQualityIndex(a.quality) - getSourceQualityIndex(b.quality);
     if (byQuality !== 0) return byQuality;
     return parseSize(b.size) - parseSize(a.size);
@@ -189,14 +191,21 @@ function parseSize(size?: string): number {
 const sourceKey = (source: AddonSource) => `${source.addonId}-${source.url}`;
 
 /** Releases that agree on these are the same choice, whichever addon served them */
-const variantKey = (source: AddonSource) => `${source.quality ?? ""}-${source.size ?? ""}-${source.isCached}`;
+const variantKey = (source: AddonSource) =>
+    source.quality || source.size
+        ? `${source.quality ?? ""}-${source.size ?? ""}-${Number(!!source.isCached)}`
+        : source.title;
 
-function QuickPlayFrame({ controls, detail }: { controls: ReactNode; detail: ReactNode }) {
+function QuickPlayFrame({ controls, action, detail }: { controls: ReactNode; action: ReactNode; detail: ReactNode }) {
     return (
-        <div className="p-3 sm:p-4 space-y-3">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">{controls}</div>
-            <div className="flex flex-col sm:flex-row sm:items-start gap-3 pt-3 border-t border-border/40">
-                {detail}
+        <div className="flex flex-col gap-3 p-3 sm:gap-4 sm:p-4 md:p-5">
+            <div className="flex flex-wrap items-center justify-center gap-2">{controls}</div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <div className="order-1 flex shrink-0 flex-col gap-2 sm:order-2 sm:w-56">{action}</div>
+                <div className="order-2 min-w-0 flex-1 space-y-1 border-t border-border/40 pt-3 sm:order-1 sm:border-t-0 sm:pt-0">
+                    {detail}
+                </div>
             </div>
         </div>
     );
@@ -207,21 +216,20 @@ export function QuickPlaySkeleton() {
         <QuickPlayFrame
             controls={
                 <>
-                    <Skeleton className="h-9 w-44 rounded-sm" />
-                    <Skeleton className="h-8 w-52 sm:w-64 rounded-sm" />
+                    <Skeleton className="h-8 w-44 rounded-sm" />
+                    <Skeleton className="h-8 w-full max-w-72 sm:w-80 rounded-sm" />
+                </>
+            }
+            action={
+                <>
+                    <Skeleton className="h-11 w-full sm:h-10 rounded-sm" />
+                    <Skeleton className="h-9 w-full sm:h-8 rounded-sm" />
                 </>
             }
             detail={
                 <>
-                    <div className="min-w-0 flex-1 space-y-2">
-                        <Skeleton className="h-2.5 w-20" />
-                        <Skeleton className="h-3 w-4/5" />
-                        <Skeleton className="h-3 w-2/5" />
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto sm:ml-auto">
-                        <Skeleton className="h-8 w-28 rounded-sm" />
-                        <Skeleton className="h-8 w-20 rounded-sm" />
-                    </div>
+                    <Skeleton className="h-2.5 w-24" />
+                    <Skeleton className="h-3 w-3/5" />
                 </>
             }
         />
@@ -233,12 +241,16 @@ export function SimpleSources({ sources, request }: { sources: AddonSource[]; re
     const [pickedKey, setPickedKey] = useState<string | null>(null);
     const streamingSettings = useSettingsStore((s) => s.settings.streaming);
 
-    const preferred = useMemo(() => selectBestSource(sources, streamingSettings).source, [sources, streamingSettings]);
+    const pinned = useRef<AddonSource | null>(null);
+    const best = useMemo(() => selectBestSource(sources, streamingSettings).source, [sources, streamingSettings]);
+    // Pinned so a late-arriving addon cannot re-point Play at a source the user never read
+    if (best && !pinned.current) pinned.current = best;
+    const preferred = pinned.current;
 
     const tiers = useMemo(() => {
         const byTier = new Map<Tier, AddonSource[]>();
         for (const source of sources) {
-            if (!source.url) continue;
+            if (!source.url && !source.magnet) continue;
             const tier = resolutionTier(source.resolution);
             byTier.set(tier, [...(byTier.get(tier) ?? []), source]);
         }
@@ -271,81 +283,83 @@ export function SimpleSources({ sources, request }: { sources: AddonSource[]; re
         <QuickPlayFrame
             controls={
                 <>
-                    <div className="flex items-center gap-2 min-w-0">
-                        <p className="hidden sm:block text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60">
-                            Quality
-                        </p>
-                        <div className="max-w-full overflow-x-auto">
-                            <ToggleGroup
-                                type="single"
-                                variant="outline"
-                                size="sm"
-                                value={tier.key}
-                                onValueChange={(value) => {
-                                    if (!value) return;
-                                    setPickedTier(value as Tier);
-                                    setPickedKey(null);
-                                }}>
-                                {tiers.map(({ key, label, releases }) => (
-                                    <ToggleGroupItem key={key} value={key} aria-label={label} className="text-xs">
-                                        {releases[0].isCached && <Zap className="size-3 fill-current text-green-600" />}
-                                        <span className="tabular-nums">{label}</span>
-                                    </ToggleGroupItem>
-                                ))}
-                            </ToggleGroup>
-                        </div>
+                    <div className="min-w-0 overflow-x-auto">
+                        <ToggleGroup
+                            type="single"
+                            variant="outline"
+                            size="sm"
+                            value={tier.key}
+                            onValueChange={(value) => {
+                                if (!value) return;
+                                setPickedTier(value as Tier);
+                                setPickedKey(null);
+                            }}>
+                            {tiers.map(({ key, label, releases }) => (
+                                <ToggleGroupItem key={key} value={key} aria-label={label} className="h-8 text-xs">
+                                    {releases[0].isCached && <Zap className="size-3 fill-current text-green-600" />}
+                                    <span className="tabular-nums">{label}</span>
+                                </ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
                     </div>
 
-                    <div className="flex items-center gap-2 min-w-0">
-                        <p className="hidden sm:block text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60">
-                            Version
-                        </p>
-                        <Select value={variantKey(active)} onValueChange={setPickedKey}>
-                            <SelectTrigger size="sm" className="w-52 sm:w-64 text-xs">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-80 w-(--radix-select-trigger-width)">
-                                {tier.releases.map((release) => (
-                                    <SelectItem
-                                        key={variantKey(release)}
-                                        value={variantKey(release)}
-                                        className="text-xs">
-                                        <span className="flex items-center gap-1.5">
-                                            {release.isCached && <Zap className="size-3 fill-current text-green-600" />}
-                                            <span>{release.quality ?? "Standard"}</span>
-                                            {release.size && (
-                                                <span className="tabular-nums text-muted-foreground">
-                                                    {release.size}
-                                                </span>
-                                            )}
-                                        </span>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <Select value={variantKey(active)} onValueChange={setPickedKey}>
+                        <SelectTrigger
+                            size="sm"
+                            className="w-full max-w-72 sm:w-80 text-xs *:data-[slot=select-value]:truncate">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent
+                            position="popper"
+                            className="max-h-[min(20rem,var(--radix-select-content-available-height))] min-w-(--radix-select-trigger-width) max-w-[calc(100vw-1.5rem)]">
+                            {tier.releases.map((release) => (
+                                <SelectItem
+                                    key={variantKey(release)}
+                                    value={variantKey(release)}
+                                    className="text-xs whitespace-nowrap">
+                                    <span className="flex items-center gap-1.5">
+                                        {release.isCached && <Zap className="size-3 fill-current text-green-600" />}
+                                        <span>{release.quality ?? "Standard"}</span>
+                                        {release.size && (
+                                            <span className="tabular-nums text-muted-foreground">{release.size}</span>
+                                        )}
+                                    </span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </>
+            }
+            action={
+                <>
+                    {active.url && (
+                        <Button
+                            size="lg"
+                            className="h-11 w-full sm:h-10"
+                            onClick={() => useStreamingStore.getState().playSource(active, request)}>
+                            <PlayIcon className="size-4 fill-current" />
+                            Play {active.size ? `(${active.size})` : `(${tier.label})`}
+                        </Button>
+                    )}
+                    <AddSourceButton
+                        key={sourceKey(active)}
+                        magnet={active.magnet}
+                        url={active.url}
+                        className="h-9 w-full sm:h-8"
+                    />
                 </>
             }
             detail={
                 <>
-                    <div className="min-w-0 flex-1 space-y-0.5">
-                        <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60 wrap-break-word">
-                            {active.addonName}
+                    <p className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-muted-foreground/60">
+                        {active.addonName}
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-snug wrap-break-word">{active.title}</p>
+                    {active.description && (
+                        <p className="text-[11px] leading-relaxed text-muted-foreground/70 whitespace-pre-wrap wrap-break-word">
+                            {active.description}
                         </p>
-                        <p className="text-xs leading-snug wrap-break-word">{active.title}</p>
-                        {active.description && (
-                            <p className="text-[11px] leading-relaxed text-muted-foreground whitespace-pre-wrap wrap-break-word">
-                                {active.description}
-                            </p>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto sm:ml-auto">
-                        <AddSourceButton key={sourceKey(active)} magnet={active.magnet} url={active.url} />
-                        <Button size="sm" onClick={() => useStreamingStore.getState().playSource(active, request)}>
-                            <PlayIcon className="size-4 fill-current" />
-                            Play
-                        </Button>
-                    </div>
+                    )}
                 </>
             }
         />
@@ -360,13 +374,13 @@ export const SourceRow = memo(function SourceRow({
     request: StreamingRequest;
 }) {
     const tier = resolutionTier(source.resolution);
-    const resolutionLabel = source.resolution || "SD";
+    const resolutionLabel = source.resolution || TIERS.find((t) => t.key === tier)?.label || "SD";
     const resolutionTone = tier === "uhd" ? "text-primary" : "text-foreground";
 
     return (
-        <div className="group/source flex flex-col gap-2 px-3 sm:px-4 lg:px-5 py-3 sm:py-3.5 transition-colors border-b border-border/40 last:border-0 hover:bg-muted/20">
+        <div className="group/source flex flex-col gap-2 px-3 sm:px-4 md:px-5 py-3 sm:py-3.5 transition-colors border-b border-border/40 last:border-0 hover:bg-muted/20">
             {/* Status line — cached · resolution · quality · size */}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs tracking-wider uppercase">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs tracking-wider uppercase">
                 {source.isCached && (
                     <>
                         <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-500">
@@ -394,20 +408,22 @@ export const SourceRow = memo(function SourceRow({
             </div>
 
             {/* Title */}
-            <div className="text-sm leading-snug wrap-break-word">{source.title}</div>
+            <div className="text-sm sm:text-base font-light leading-snug wrap-break-word">{source.title}</div>
 
             {/* Description */}
             {source.description && (
-                <p className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word leading-relaxed">
+                <p className="text-[11px] sm:text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word leading-relaxed">
                     {source.description}
                 </p>
             )}
 
             {/* Controls row — addon kicker (left) + actions (right) */}
             <div className="flex items-center justify-between gap-3 flex-wrap pt-0.5">
-                <div className="text-xs tracking-wider uppercase text-muted-foreground/70">{source.addonName}</div>
+                <div className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-muted-foreground/70">
+                    {source.addonName}
+                </div>
                 {(source.url || source.magnet) && (
-                    <div className="flex items-center gap-2 ml-auto shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                         <AddSourceButton magnet={source.magnet} url={source.url} />
                         {source.url && (
                             <Button size="sm" onClick={() => useStreamingStore.getState().playSource(source, request)}>
@@ -424,13 +440,13 @@ export const SourceRow = memo(function SourceRow({
 
 function SourceRowSkeleton() {
     return (
-        <div className="flex items-stretch gap-3 sm:gap-4 px-3 sm:px-4 py-3 border-b border-border/40 last:border-0">
+        <div className="flex items-stretch gap-3 sm:gap-4 px-3 sm:px-4 md:px-5 py-3 sm:py-3.5 border-b border-border/40 last:border-0">
             <div className="flex-1 space-y-2 py-0.5">
-                <div className="h-2.5 bg-muted/30 rounded-sm w-1/3 animate-pulse" />
-                <div className="h-3.5 bg-muted/40 rounded-sm w-4/5 animate-pulse" />
-                <div className="h-2.5 bg-muted/30 rounded-sm w-1/4 animate-pulse" />
+                <Skeleton className="h-2.5 w-1/3" />
+                <Skeleton className="h-3.5 w-4/5" />
+                <Skeleton className="h-2.5 w-1/4" />
             </div>
-            <div className="hidden sm:block w-24 h-8 bg-muted/30 rounded-sm animate-pulse self-center" />
+            <Skeleton className="hidden sm:block w-24 h-8 self-center" />
         </div>
     );
 }
@@ -466,7 +482,7 @@ export function Sources({ request, className }: SourcesProps) {
     );
 
     const total = filtered?.length ?? 0;
-    const hasPlayable = !!filtered?.some((s) => s.url);
+    const hasPickable = !!filtered?.some((s) => s.url || s.magnet);
 
     return (
         <div className="space-y-2">
@@ -490,7 +506,7 @@ export function Sources({ request, className }: SourcesProps) {
                         "No Sources"
                     )}
                 </div>
-                <div className="flex items-center gap-2 ml-auto shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                     {!quickPlay && addonNames.length > 1 && (
                         <Select value={addonFilter} onValueChange={setAddonFilter}>
                             <SelectTrigger size="sm" className="w-32 sm:w-40 text-xs sm:text-sm">
@@ -525,7 +541,7 @@ export function Sources({ request, className }: SourcesProps) {
 
             <div className={cn("border border-border/40 rounded-sm overflow-hidden", className)}>
                 {quickPlay
-                    ? hasPlayable && <SimpleSources sources={filtered ?? []} request={request} />
+                    ? hasPickable && <SimpleSources sources={filtered ?? []} request={request} />
                     : filtered?.map((source, index) => (
                           <SourceRow
                               key={`${source.addonId}-${source.url || index}`}
@@ -536,7 +552,7 @@ export function Sources({ request, className }: SourcesProps) {
 
                 {isLoading &&
                     (quickPlay ? (
-                        !hasPlayable && <QuickPlaySkeleton />
+                        !hasPickable && <QuickPlaySkeleton />
                     ) : (
                         <>
                             <SourceRowSkeleton />
@@ -545,7 +561,7 @@ export function Sources({ request, className }: SourcesProps) {
                         </>
                     ))}
 
-                {!isLoading && (quickPlay ? !hasPlayable : filtered?.length === 0) && (
+                {!isLoading && (quickPlay ? !hasPickable : filtered?.length === 0) && (
                     <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                         <p className="text-sm font-light text-foreground/80">Nothing to play yet</p>
                         <p className="text-xs text-muted-foreground/70 mt-1.5">

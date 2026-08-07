@@ -1,5 +1,5 @@
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { type UseQueryResult, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 import { addAddon, getUserAddons, removeAddon, toggleAddon, updateAddonOrders } from "@/lib/actions/addons";
 import { AddonClient } from "@/lib/addons/client";
 import { catalogMetasToMediaItems, parseStreams } from "@/lib/addons/parser";
@@ -191,24 +191,26 @@ export function useStreamAddons() {
 
     const enabledAddons = useMemo(() => addons.filter((a) => a.enabled).sort((a, b) => a.order - b.order), [addons]);
 
-    const manifests = useQueries({
+    // Combine inside useQueries — a useMemo over its results array recomputes every render
+    const combine = useCallback(
+        (results: UseQueryResult<AddonManifest>[]) => ({
+            addons: enabledAddons.filter((_, i) => {
+                const manifest = results[i]?.data;
+                return !!manifest && hasStreams(manifest);
+            }),
+            isLoading: results.some((result) => result.isPending),
+        }),
+        [enabledAddons]
+    );
+
+    const { addons: streamAddons, isLoading } = useQueries({
         queries: enabledAddons.map((addon) => manifestQueryOptions(addon)),
+        combine,
     });
-
-    // rerender-dependencies: stable primitive key
-    const _manifestDataKey = manifests.map((q) => q.dataUpdatedAt).join(",");
-
-    const streamAddons = useMemo(() => {
-        return enabledAddons.filter((_, i) => {
-            const manifest = manifests[i].data;
-            return manifest && hasStreams(manifest);
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [enabledAddons, manifests]);
 
     return {
         addons: streamAddons,
-        isLoading: isAddonsLoading || manifests.some((q) => q.isPending),
+        isLoading: isAddonsLoading || isLoading,
     };
 }
 
@@ -260,8 +262,22 @@ async function fetchAddonSources(
 export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSourcesOptions) {
     const { addons: enabledAddons, isLoading: isAddonsLoading } = useStreamAddons();
 
+    // Combine inside useQueries — a useMemo over its results array recomputes every render
+    const combine = useCallback(
+        (results: UseQueryResult<AddonSource[]>[]) => ({
+            data: results
+                .flatMap((result) => result.data ?? [])
+                .sort((a, b) => Number(!!b.isCached) - Number(!!a.isCached)),
+            isLoading: results.some((result) => result.isLoading),
+            failedAddons: results
+                .map((result, index) => (result.isError ? enabledAddons[index]?.name : undefined))
+                .filter((name): name is string => !!name),
+        }),
+        [enabledAddons]
+    );
+
     // Individual query per addon for progressive loading
-    const queries = useQueries({
+    const { data, isLoading, failedAddons } = useQueries({
         queries: enabledAddons.map((addon) => ({
             queryKey: ["addon", addon.id, "sources", imdbId, mediaType, tvParams] as const,
             queryFn: () => fetchAddonSources(addon, imdbId, mediaType, tvParams),
@@ -272,43 +288,12 @@ export function useAddonSources({ imdbId, mediaType, tvParams }: UseAddonSources
             refetchOnWindowFocus: false,
             refetchOnReconnect: false,
         })),
+        combine,
     });
 
-    // Progressive data combination - updates as each addon responds
-    const combinedData = useMemo(() => {
-        const allSources: AddonSource[] = [];
-
-        for (const query of queries) {
-            if (query.data) {
-                allSources.push(...query.data);
-            }
-        }
-
-        // Sort: cached first
-        return allSources.sort((a, b) => {
-            if (a.isCached && !b.isCached) return -1;
-            if (!a.isCached && b.isCached) return 1;
-            return 0;
-        });
-    }, [queries]);
-
-    // Track failed addons
-    const failedAddons = useMemo(() => {
-        return queries
-            .map((query, index) => ({
-                query,
-                addon: enabledAddons[index],
-            }))
-            .filter(({ query }) => query.isError)
-            .map(({ addon }) => addon.name);
-    }, [queries, enabledAddons]);
-
-    // Loading state: true if addons or ANY source query is still loading
-    const isLoading = isAddonsLoading || queries.some((q) => q.isLoading);
-
     return {
-        data: combinedData,
-        isLoading,
+        data,
+        isLoading: isAddonsLoading || isLoading,
         failedAddons,
     };
 }
