@@ -14,7 +14,7 @@ import {
 import type { CreateAddon } from "@/lib/types";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
 
-const USER_ADDONS_KEY = ["user-addons"];
+export const USER_ADDONS_KEY = ["user-addons"];
 
 /**
  * Fetch all user addons from database

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Resolution, SourceQuality } from "./addons/types";
 
 export enum AccountType {
     REALDEBRID = "real-debrid",
@@ -6,6 +7,19 @@ export enum AccountType {
     ALLDEBRID = "alldebrid",
     PREMIUMIZE = "premiumize",
     DEBRIDLINK = "debrid-link",
+}
+
+// Here rather than in types.ts to avoid a circular import
+export enum MediaPlayer {
+    BROWSER = "Browser",
+    IINA = "IINA",
+    INFUSE = "Infuse",
+    VLC = "VLC",
+    MPV = "MPV",
+    POTPLAYER = "PotPlayer",
+    KODI = "Kodi",
+    MX_PLAYER = "MX Player",
+    MX_PLAYER_PRO = "MX Player Pro",
 }
 
 // Account schemas (base → inherited)
@@ -103,3 +117,45 @@ export const clearSearchHistorySchema = z.object({
 export const serverSettingsSchema = z.object({
     tmdb_api_key: z.string().max(256).optional(),
 });
+
+const streamingResolutionSchema = z.union([z.enum(Resolution), z.literal("any")]);
+const streamingSourceQualitySchema = z.union([z.enum(SourceQuality), z.literal("any")]);
+
+export const qualityRangeSchema = z.object({
+    minResolution: streamingResolutionSchema,
+    maxResolution: streamingResolutionSchema,
+    minSourceQuality: streamingSourceQualitySchema,
+    maxSourceQuality: streamingSourceQualitySchema,
+});
+
+export const streamingSettingsSchema = z.object({
+    profileId: z.enum(["max-quality", "high-quality", "balanced", "data-saver", "low-bandwidth", "custom"]),
+    customRange: qualityRangeSchema,
+    allowUncached: z.boolean(),
+    autoPlay: z.boolean(),
+});
+
+export const settingsSchema = z.object({
+    smartOrder: z.boolean(),
+    hideTrash: z.boolean(),
+    quickPlay: z.boolean(),
+    mediaPlayer: z.enum(MediaPlayer),
+    downloadLinkMaxAge: z.number().int().positive(),
+    streaming: streamingSettingsSchema,
+    tmdbApiKey: serverSettingsSchema.shape.tmdb_api_key.unwrap(),
+});
+
+export type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] };
+
+export function pickValid<T extends z.ZodObject>(schema: T, input: unknown): DeepPartial<z.infer<T>> {
+    if (!input || typeof input !== "object" || Array.isArray(input)) return {};
+    const out: Record<string, unknown> = {};
+    for (const [key, field] of Object.entries(schema.shape)) {
+        const value = (input as Record<string, unknown>)[key];
+        if (value === undefined) continue;
+        const result = field.safeParse(value);
+        if (result.success) out[key] = result.data;
+        else if (field instanceof z.ZodObject) out[key] = pickValid(field, value);
+    }
+    return out as DeepPartial<z.infer<T>>;
+}

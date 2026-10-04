@@ -5,7 +5,7 @@ import type { UserAccount } from "@/lib/db";
 import type { AccountType } from "@/lib/schemas";
 import { useToastMutation } from "@/lib/utils/mutation-factory";
 
-const USER_ACCOUNTS_KEY = ["user-accounts"];
+export const USER_ACCOUNTS_KEY = ["user-accounts"];
 
 // Server layout gates access; the action re-validates session and redirects on miss.
 export function useUserAccounts() {

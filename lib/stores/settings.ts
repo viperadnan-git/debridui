@@ -1,18 +1,20 @@
+import type { z } from "zod";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Resolution, SourceQuality } from "../addons/types";
+import {
+    type DeepPartial,
+    pickValid,
+    type qualityRangeSchema,
+    settingsSchema,
+    type streamingSettingsSchema,
+} from "../schemas";
 import { MediaPlayer } from "../types";
 
-export type StreamingResolution = Resolution | "any";
-
-export interface QualityRange {
-    minResolution: StreamingResolution;
-    maxResolution: StreamingResolution;
-    minSourceQuality: SourceQuality | "any";
-    maxSourceQuality: SourceQuality | "any";
-}
-
-export type QualityProfileId = "max-quality" | "high-quality" | "balanced" | "data-saver" | "low-bandwidth" | "custom";
+export type QualityRange = z.infer<typeof qualityRangeSchema>;
+export type StreamingResolution = QualityRange["minResolution"];
+export type StreamingSettings = z.infer<typeof streamingSettingsSchema>;
+export type QualityProfileId = StreamingSettings["profileId"];
 
 export interface QualityProfile {
     id: QualityProfileId;
@@ -79,13 +81,6 @@ export const QUALITY_PROFILES: QualityProfile[] = [
     },
 ];
 
-export interface StreamingSettings {
-    profileId: QualityProfileId;
-    customRange: QualityRange;
-    allowUncached: boolean;
-    autoPlay: boolean;
-}
-
 export function getActiveRange(settings: StreamingSettings): QualityRange {
     if (settings.profileId === "custom") {
         return settings.customRange;
@@ -94,28 +89,20 @@ export function getActiveRange(settings: StreamingSettings): QualityRange {
     return profile?.range ?? QUALITY_PROFILES[2].range; // fallback to balanced
 }
 
-type SettingValue = string | number | boolean | MediaPlayer | StreamingSettings;
-
-type SettingPreset<T extends SettingValue> = {
+type SettingPreset<T> = {
     value: T;
     label: string;
     description?: string;
 };
 
-type SettingConfig<T extends SettingValue = SettingValue> = {
+type SettingConfig<T> = {
     defaultValue: T;
     presets?: SettingPreset<T>[];
 };
 
-type SettingsConfig = {
-    smartOrder: SettingConfig<boolean>;
-    hideTrash: SettingConfig<boolean>;
-    quickPlay: SettingConfig<boolean>;
-    mediaPlayer: SettingConfig<MediaPlayer>;
-    downloadLinkMaxAge: SettingConfig<number>;
-    streaming: SettingConfig<StreamingSettings>;
-    tmdbApiKey: SettingConfig<string>;
-};
+export type SettingsData = z.infer<typeof settingsSchema>;
+
+type SettingsConfig = { [K in keyof SettingsData]: SettingConfig<SettingsData[K]> };
 
 const settingsConfig: SettingsConfig = {
     smartOrder: {
@@ -206,10 +193,6 @@ const settingsConfig: SettingsConfig = {
     },
 };
 
-export type SettingsData = {
-    [K in keyof SettingsConfig]: SettingsConfig[K]["defaultValue"];
-};
-
 interface SettingsStore {
     settings: SettingsData;
     get: <K extends keyof SettingsData>(key: K) => SettingsData[K];
@@ -232,6 +215,24 @@ const getDefaultSettings = (): SettingsData => {
         tmdbApiKey: settingsConfig.tmdbApiKey.defaultValue,
     };
 };
+
+const deepMerge = <T extends Record<string, unknown>>(target: T, source: DeepPartial<T>): T => {
+    const result = { ...target };
+    for (const key of Object.keys(source) as (keyof T)[]) {
+        const targetVal = target[key];
+        const sourceVal = source[key];
+        result[key] = (
+            targetVal && typeof targetVal === "object" && !Array.isArray(targetVal)
+                ? deepMerge(targetVal as Record<string, unknown>, sourceVal as DeepPartial<Record<string, unknown>>)
+                : sourceVal
+        ) as T[keyof T];
+    }
+    return result;
+};
+
+export function normalizeSettings(input: unknown, base: SettingsData = getDefaultSettings()): SettingsData {
+    return deepMerge(base, pickValid(settingsSchema, input));
+}
 
 export const useSettingsStore = create<SettingsStore>()(
     persist(
@@ -276,50 +277,10 @@ export const useSettingsStore = create<SettingsStore>()(
         {
             name: "debridui-settings",
             partialize: (state) => ({ settings: state.settings }),
-            merge: (persisted, current) => {
-                const persistedSettings = (persisted as { settings: Partial<SettingsData> })?.settings;
-                const defaults = getDefaultSettings();
-
-                // Deep merge that fills missing keys with defaults
-                const deepMerge = <T extends Record<string, unknown>>(target: T, source: Partial<T> | undefined): T => {
-                    if (!source) return target;
-                    const result = { ...target };
-                    for (const key of Object.keys(target) as (keyof T)[]) {
-                        const targetVal = target[key];
-                        const sourceVal = source[key];
-                        if (sourceVal === undefined) continue;
-                        if (
-                            targetVal &&
-                            typeof targetVal === "object" &&
-                            !Array.isArray(targetVal) &&
-                            sourceVal &&
-                            typeof sourceVal === "object" &&
-                            !Array.isArray(sourceVal)
-                        ) {
-                            result[key] = deepMerge(
-                                targetVal as Record<string, unknown>,
-                                sourceVal as Record<string, unknown>
-                            ) as T[keyof T];
-                        } else {
-                            result[key] = sourceVal as T[keyof T];
-                        }
-                    }
-                    return result;
-                };
-
-                const merged = deepMerge(defaults, persistedSettings);
-
-                // Reset invalid enum values to defaults
-                const validPlayers = Object.values(MediaPlayer) as string[];
-                if (!validPlayers.includes(merged.mediaPlayer)) {
-                    merged.mediaPlayer = defaults.mediaPlayer;
-                }
-
-                return {
-                    ...current,
-                    settings: merged,
-                };
-            },
+            merge: (persisted, current) => ({
+                ...current,
+                settings: normalizeSettings((persisted as { settings?: unknown })?.settings),
+            }),
         }
     )
 );

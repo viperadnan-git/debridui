@@ -1,10 +1,10 @@
 "use server";
 
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, upsertUserSettings } from "@/lib/db";
 import { userSettings } from "@/lib/db/schema";
 import { serverSettingsSchema } from "@/lib/schemas";
 import type { ServerSettings } from "@/lib/types";
@@ -46,19 +46,7 @@ export async function saveUserSettings(input: Partial<ServerSettings>) {
     const updates = serverSettingsSchema.partial().parse(input);
 
     try {
-        const jsonValue = JSON.stringify(updates);
-        await db
-            .insert(userSettings)
-            .values({
-                userId: session.user.id,
-                settings: updates,
-            })
-            .onConflictDoUpdate({
-                target: userSettings.userId,
-                set: {
-                    settings: sql`COALESCE(${userSettings.settings}, '{}'::jsonb) || ${jsonValue}::jsonb`,
-                },
-            });
+        await upsertUserSettings(db, session.user.id, updates);
 
         return { success: true };
     } catch (error) {

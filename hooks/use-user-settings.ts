@@ -3,7 +3,7 @@ import { getUserSettings, saveUserSettings } from "@/lib/actions/settings";
 import { useSettingsStore } from "@/lib/stores/settings";
 import type { ServerSettings } from "@/lib/types";
 
-const USER_SETTINGS_KEY = ["user-settings"];
+export const USER_SETTINGS_KEY = ["user-settings"];
 
 /**
  * Hydrate Zustand store from server settings.

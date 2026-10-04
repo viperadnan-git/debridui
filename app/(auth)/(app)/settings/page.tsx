@@ -33,6 +33,7 @@ import {
 } from "@/lib/stores/settings";
 import type { MediaPlayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { BackupSection } from "./backup-section";
 import { getPlayerSetupInstruction } from "./player-setup-instructions";
 
 // Build timestamp - injected at build time via next.config.ts, fallback to current time in dev
@@ -521,6 +522,8 @@ export default function SettingsPage() {
                     </div>
                 </div>
             </section>
+
+            <BackupSection />
 
             {/* Data Section */}
             <section className="space-y-4">

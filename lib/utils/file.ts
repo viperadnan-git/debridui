@@ -124,12 +124,16 @@ export const downloadM3UPlaylist = (linkNodes: DebridLinkInfo[], playlistName?: 
     const filename = playlistName || `Playlist-${format(new Date(), "yyyy-MM-dd-HH-mm-ss")}`;
     const content = ["#EXTM3U", "", ...videoLinks.map((n) => `#EXTINF:-1,${n.name}\n${n.link}`)].join("\n");
 
-    const url = URL.createObjectURL(new Blob([content], { type: "application/vnd.apple.mpegurl" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${filename}.m3u8`;
+    downloadBlob(new Blob([content], { type: "application/vnd.apple.mpegurl" }), `${filename}.m3u8`);
+};
+
+export const downloadBlob = (blob: Blob, filename: string) => {
+    const link = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: filename });
+    // Safari needs the anchor attached and the URL alive until the download starts
+    document.body.append(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 30_000);
 };
 
 export const sortTorrentFiles = (files: DebridFile[], criteria: string, direction: "asc" | "desc"): DebridFile[] => {

@@ -5,10 +5,11 @@ import {
     type addonSchema,
     type createAccountSchema,
     type fullAccountSchema,
+    MediaPlayer,
     type serverSettingsSchema,
 } from "./schemas";
 
-export { AccountType };
+export { AccountType, MediaPlayer };
 export type Account = z.infer<typeof accountSchema>;
 export type CreateAccount = z.infer<typeof createAccountSchema>;
 export type FullAccount = z.infer<typeof fullAccountSchema>;
@@ -23,18 +24,6 @@ export enum FileType {
     ARCHIVE = "archive",
     TEXT = "text",
     OTHER = "other",
-}
-
-export enum MediaPlayer {
-    BROWSER = "Browser",
-    IINA = "IINA",
-    INFUSE = "Infuse",
-    VLC = "VLC",
-    MPV = "MPV",
-    POTPLAYER = "PotPlayer",
-    KODI = "Kodi",
-    MX_PLAYER = "MX Player",
-    MX_PLAYER_PRO = "MX Player Pro",
 }
 
 export enum Platform {

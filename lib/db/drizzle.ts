@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as authSchema from "./auth-schema";
@@ -11,3 +12,18 @@ export const db = drizzle(client, {
         ...authSchema,
     },
 });
+
+export const upsertUserSettings = (
+    executor: Pick<typeof db, "insert">,
+    userId: string,
+    updates: Record<string, unknown>
+) =>
+    executor
+        .insert(schema.userSettings)
+        .values({ userId, settings: updates })
+        .onConflictDoUpdate({
+            target: schema.userSettings.userId,
+            set: {
+                settings: sql`COALESCE(${schema.userSettings.settings}, '{}'::jsonb) || ${JSON.stringify(updates)}::jsonb`,
+            },
+        });
