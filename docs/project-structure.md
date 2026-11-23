@@ -13,15 +13,15 @@ Based on:
 
 Application code lives in `src/` ([Next.js `src` folder](https://nextjs.org/docs/app/api-reference/file-conventions/src-folder)). Config files, `public/`, `docs/` and `drizzle/` (migrations) stay at the repo root. The `@/*` alias maps to `src/*`.
 
-| Folder            | Holds                                                                                          |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| `src/app`         | Routes, layouts and route-only code. Pages stay thin and compose features.                     |
-| `src/features`    | One folder per domain (e.g. files, links, media). Most code belongs here.                      |
-| `src/components`  | Shared UI used by more than one feature. `ui/` is shadcn, `layout/` is page chrome.            |
-| `src/hooks`       | Shared hooks with no domain knowledge.                                                         |
-| `src/lib`         | Preconfigured libraries and clients: debrid providers, db, auth, API clients, utils.           |
-| `src/stores`      | App-wide state used by many features.                                                          |
-| `src/types`       | App-wide types. Domain types live with their domain (feature or `lib/<library>`).              |
+| Folder           | Holds                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| `src/app`        | Routes, layouts and route-only code. Pages stay thin and compose features.           |
+| `src/features`   | One folder per domain (e.g. files, links, media). Most code belongs here.            |
+| `src/components` | Shared UI used by more than one feature. `ui/` is shadcn, `layout/` is page chrome.  |
+| `src/hooks`      | Shared hooks with no domain knowledge.                                               |
+| `src/lib`        | Preconfigured libraries and clients: debrid providers, db, auth, API clients, utils. |
+| `src/stores`     | App-wide state used by many features.                                                |
+| `src/types`      | App-wide types. Domain types live with their domain (feature or `lib/<library>`).    |
 
 ## Features
 
@@ -64,13 +64,13 @@ Code flows one way: shared (`components`, `hooks`, `lib`, `stores`, `types`) →
 
 ## Naming
 
-| Type           | Convention                  | Example                           |
-| -------------- | --------------------------- | --------------------------------- |
-| Files, folders | kebab-case                  | `link-row.tsx`, `use-link-actions.ts` |
-| Components     | PascalCase                  | `LinkRow`                         |
-| Hooks          | camelCase, `use` prefix     | `useLinkActions`                  |
-| Server actions | camelCase verbs             | `addUserAccount`                  |
-| Private folders| `_` prefix                  | `_components`                     |
+| Type            | Convention              | Example                               |
+| --------------- | ----------------------- | ------------------------------------- |
+| Files, folders  | kebab-case              | `link-row.tsx`, `use-link-actions.ts` |
+| Components      | PascalCase              | `LinkRow`                             |
+| Hooks           | camelCase, `use` prefix | `useLinkActions`                      |
+| Server actions  | camelCase verbs         | `addUserAccount`                      |
+| Private folders | `_` prefix              | `_components`                         |
 
 One component per file when it is exported; small private helpers can share the file with their only consumer. Merge thin wrappers that are only used together.
 

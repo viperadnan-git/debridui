@@ -2,8 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, CirclePlay, Copy, Download, Loader2 } from "lucide-react";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
-import { FixedSizeList as List, type ListChildComponentProps } from "react-window";
+import { memo, useCallback, useMemo, useState } from "react";
+import { List, type RowComponentProps } from "react-window";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -272,6 +272,16 @@ const VirtualizedNode = memo(function VirtualizedNode({
     );
 });
 
+type TreeRowProps = Omit<VirtualizedNodeProps, "flatNode"> & { flatNodes: FlatNode[] };
+
+function TreeRow({ index, style, ariaAttributes, flatNodes, ...nodeProps }: RowComponentProps<TreeRowProps>) {
+    return (
+        <div style={style} {...ariaAttributes} className="px-3 md:px-4">
+            <VirtualizedNode flatNode={flatNodes[index]} {...nodeProps} />
+        </div>
+    );
+}
+
 const VIRTUALIZATION_THRESHOLD = 200; // Use virtualization above this many nodes
 
 export function FileTree({ nodes, fileId }: FileTreeProps) {
@@ -283,8 +293,6 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
         }
         return new Set();
     });
-
-    const listRef = useRef<List>(null);
 
     // Count total nodes to decide if virtualization is needed
     const totalNodeCount = useMemo(() => countTotalNodes(nodes), [nodes]);
@@ -311,31 +319,6 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
             return newSet;
         });
     }, []);
-
-    // Row renderer for react-window
-    const rowRenderer = useCallback(
-        (props: ListChildComponentProps) => {
-            const flatNode = flatNodes[props.index];
-            if (!flatNode) return null;
-
-            // Type workaround for react-window style conflicts
-            const divStyle = props.style;
-
-            return (
-                <div style={divStyle} className="px-3 md:px-4">
-                    <VirtualizedNode
-                        flatNode={flatNode}
-                        fileId={fileId}
-                        expandedPaths={expandedPaths}
-                        onToggleExpand={toggleExpanded}
-                        allFileNodes={allFileNodes}
-                        allNodes={nodes}
-                    />
-                </div>
-            );
-        },
-        [flatNodes, fileId, expandedPaths, toggleExpanded, allFileNodes, nodes]
-    );
 
     // Regular rendering for small trees
     if (!useVirtualization) {
@@ -365,15 +348,21 @@ export function FileTree({ nodes, fileId }: FileTreeProps) {
     return (
         <div className="pt-2 md:pt-3">
             <List
-                ref={listRef}
-                height={listHeight}
-                itemCount={flatNodes.length}
-                itemSize={itemSize}
-                width="100%"
+                style={{ height: listHeight }}
+                rowCount={flatNodes.length}
+                rowHeight={itemSize}
+                rowComponent={TreeRow}
+                rowProps={{
+                    flatNodes,
+                    fileId,
+                    expandedPaths,
+                    onToggleExpand: toggleExpanded,
+                    allFileNodes,
+                    allNodes: nodes,
+                }}
                 overscanCount={10}
-                className="outline-none!">
-                {rowRenderer}
-            </List>
+                className="outline-none!"
+            />
         </div>
     );
 }

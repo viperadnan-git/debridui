@@ -24,7 +24,7 @@ const WILDCARD_REGEXES = []; // Pre-compiled regexes
 for (const p of ORIGINS) {
     if (p === "*") continue;
     if (p.includes("*")) {
-        WILDCARD_REGEXES.push(new RegExp("^" + p.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".+") + "$"));
+        WILDCARD_REGEXES.push(new RegExp(`^${p.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".+")}$`));
     } else {
         EXACT_ORIGINS.add(p);
     }

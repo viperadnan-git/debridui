@@ -118,7 +118,7 @@
         <h1 className="text-2xl sm:text-3xl font-light">{title}</h1>
     </div>
     <p className="text-sm text-muted-foreground">{description}</p>
-</div>
+</div>;
 ```
 
 ### Section Label (Editorial)
@@ -168,7 +168,7 @@
 // Prefer this over badges
 <span className="text-xs text-muted-foreground">
     {item1} <span className="text-border">·</span> {item2} <span className="text-border">·</span> {item3}
-</span>
+</span>;
 ```
 
 ### Stat Block
@@ -177,7 +177,7 @@
 <div className="pl-3 border-l border-border/50">
     <div className="text-xs tracking-wider uppercase text-muted-foreground mb-1">{label}</div>
     <div className="text-sm font-medium">{value}</div>
-</div>
+</div>;
 ```
 
 ### Selected State
@@ -196,7 +196,7 @@
 <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-start">
     <div className="space-y-4">{content}</div>
     <div className="flex flex-col gap-2">{actions}</div>
-</div>
+</div>;
 ```
 
 ### Sidebar + Content
@@ -205,7 +205,7 @@
 <div className="grid md:grid-cols-[200px_1fr] lg:grid-cols-[240px_1fr] gap-6 md:gap-8">
     <aside>{sidebar}</aside>
     <main>{content}</main>
-</div>
+</div>;
 ```
 
 ### Responsive Grid
@@ -215,7 +215,7 @@
     {items.map((item) => (
         <Card key={item.id} {...item} />
     ))}
-</div>
+</div>;
 ```
 
 ### Container
@@ -224,7 +224,7 @@
 // Page section
 <section className="px-4 py-12 md:px-6 md:py-20 lg:px-8">
     <div className="max-w-6xl mx-auto">{children}</div>
-</section>
+</section>;
 ```
 
 ---
@@ -249,7 +249,7 @@
         </div>
         <Button>{action}</Button>
     </div>
-</section>
+</section>;
 ```
 
 ### Card with Hover
@@ -264,7 +264,7 @@
             <span className="text-xs text-white/70">{subtitle}</span>
         </div>
     </div>
-</div>
+</div>;
 ```
 
 ### Horizontal Card
@@ -282,7 +282,7 @@
             </span>
         </div>
     </div>
-</div>
+</div>;
 ```
 
 ### List Item
@@ -300,7 +300,7 @@
             </Button>
         </div>
     </div>
-</div>
+</div>;
 ```
 
 ---

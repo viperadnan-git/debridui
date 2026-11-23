@@ -1,19 +1,9 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.6.8/schema.json",
     "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
     "files": {
         "ignoreUnknown": true,
-        "includes": [
-            "**",
-            "!.next",
-            "!out",
-            "!build",
-            "!next-env.d.ts",
-            "!**/*.openapi.json",
-            "!proxy.worker.js",
-            "!src/app/globals.css",
-            "!drizzle"
-        ]
+        "includes": ["**", "!.next", "!out", "!build", "!next-env.d.ts", "!drizzle"]
     },
     "formatter": {
         "enabled": true,
@@ -26,7 +16,7 @@
     "linter": {
         "enabled": true,
         "rules": {
-            "recommended": true,
+            "preset": "recommended",
             "performance": {
                 "noImgElement": "off"
             },
@@ -44,6 +34,7 @@
             }
         }
     },
+    "css": { "parser": { "tailwindDirectives": true } },
     "javascript": {
         "formatter": {
             "jsxQuoteStyle": "double",
