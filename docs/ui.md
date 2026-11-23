@@ -43,6 +43,8 @@ Before diving into specifics, follow these core principles to maintain consisten
 
 **Standard icon size in components:** `size-4` (16px)
 
+**Exception — one-time code input:** `InputOTPSlot` (`src/components/ui/input-otp.tsx`) is deliberately larger (`h-14`, `text-2xl` mono digits, separate boxes) so codes copied from an email are easy to read and tap on mobile. Keep that sizing in the ui component; call sites only set layout (e.g. `flex-1`).
+
 ### 1. Reuse Before Creating
 
 Always search existing components before creating new ones:

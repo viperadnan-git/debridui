@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -14,7 +13,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from "@/components/ui/separator";
+import { AuthShell } from "@/features/auth/components/auth-shell";
+import { EmailOTPForm } from "@/features/auth/components/email-otp-form";
 import { GoogleSignInButton } from "@/features/auth/components/google-signin-button";
+import { usePendingVerification } from "@/features/auth/hooks/use-pending-verification";
+import { getCallbackUrl } from "@/features/auth/utils/callback-url";
 import { authClient } from "@/lib/auth-client";
 import { DISABLE_EMAIL_SIGNUP, GOOGLE_CLIENT_ID } from "@/lib/constants";
 
@@ -27,8 +30,9 @@ const signupSchema = z.object({
 export default function SignupForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get("callbackUrl");
+    const callbackUrl = getCallbackUrl(searchParams);
     const [isRedirecting, setIsRedirecting] = useState(false);
+    const { pendingEmail, setPendingEmail, codeJustSent } = usePendingVerification();
 
     // Runtime comparisons for Docker env injection support
     // Placeholder strings are replaced at container startup, so comparisons must happen here
@@ -58,149 +62,143 @@ export default function SignupForm() {
             }
 
             if (data) {
-                setIsRedirecting(true);
-                toast.success("Account created successfully");
-                const onboardingUrl = callbackUrl
-                    ? `/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`
-                    : "/onboarding";
-                router.push(onboardingUrl);
+                // No session means email verification is required
+                if (!data.token) setPendingEmail(values.email);
+                else onSignedUp();
             }
         } catch {
             toast.error("An unexpected error occurred");
         }
     }
 
+    function onSignedUp() {
+        setIsRedirecting(true);
+        toast.success("Account created successfully");
+        router.push(callbackUrl ? `/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/onboarding");
+    }
+
     const isDisabled = form.formState.isSubmitting || isRedirecting;
 
     return (
-        <div className="bg-background grid grid-rows-[1fr_auto] min-h-svh p-6 md:p-10 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
-            <div className="flex items-center justify-center">
-                <div className="w-full max-w-sm">
-                    <div className="flex flex-col items-center gap-2 mb-6">
-                        <Link href="/" className="flex flex-col items-center gap-2 font-medium">
-                            <div className="flex size-12 items-center justify-center">
-                                <Image
-                                    src="/icon.svg"
-                                    alt="DebridUI"
-                                    width={48}
-                                    height={48}
-                                    className="invert dark:invert-0"
+        <AuthShell
+            title={pendingEmail ? "Check Your Email" : "Create an Account"}
+            description={pendingEmail ? undefined : "Sign up to get started"}
+            footer={<Disclaimer />}>
+            {pendingEmail ? (
+                <EmailOTPForm
+                    email={pendingEmail}
+                    codeJustSent={codeJustSent}
+                    onVerified={onSignedUp}
+                    onBack={() => setPendingEmail(null)}
+                />
+            ) : (
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+                        <GoogleSignInButton
+                            callbackURL={
+                                callbackUrl
+                                    ? `/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                                    : "/dashboard"
+                            }
+                            disabled={isDisabled}
+                        />
+
+                        {!isEmailSignupDisabled && isGoogleOAuthEnabled && (
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <Separator />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-background px-2 text-muted-foreground">
+                                        Or continue with email
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {!isEmailSignupDisabled && (
+                            <div className="flex flex-col gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Your name" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
                                 />
+
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Email</FormLabel>
+                                            <FormControl>
+                                                <Input type="email" placeholder="name@example.com" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="password"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Password</FormLabel>
+                                            <FormControl>
+                                                <PasswordInput placeholder="Create a password" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <Button type="submit" className="w-full" disabled={isDisabled}>
+                                    {isDisabled ? "Creating account..." : "Sign Up"}
+                                </Button>
                             </div>
-                            <span className="sr-only">DebridUI</span>
-                        </Link>
-                        <h1 className="text-xl font-bold">Create an Account</h1>
-                        <p className="text-sm text-muted-foreground text-center">Sign up to get started</p>
-                    </div>
+                        )}
+                        {isEmailSignupDisabled && !isGoogleOAuthEnabled && (
+                            <Alert variant="destructive">
+                                <AlertTitle>New signup is disabled</AlertTitle>
+                                <AlertDescription>
+                                    New signup is disabled. Please contact the administrator to create an account.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                        <div className="text-center text-sm">
+                            Already have an account?{" "}
+                            <Link
+                                href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}
+                                className="underline underline-offset-4 hover:text-primary">
+                                Sign in
+                            </Link>
+                        </div>
+                    </form>
+                </Form>
+            )}
+        </AuthShell>
+    );
+}
 
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                            <GoogleSignInButton
-                                callbackURL={
-                                    callbackUrl
-                                        ? `/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`
-                                        : "/dashboard"
-                                }
-                                disabled={isDisabled}
-                            />
-
-                            {!isEmailSignupDisabled && isGoogleOAuthEnabled && (
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <Separator />
-                                    </div>
-                                    <div className="relative flex justify-center text-xs uppercase">
-                                        <span className="bg-background px-2 text-muted-foreground">
-                                            Or continue with email
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {!isEmailSignupDisabled && (
-                                <div className="flex flex-col gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="name"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Name</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Your name" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="email"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Email</FormLabel>
-                                                <FormControl>
-                                                    <Input type="email" placeholder="name@example.com" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="password"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Password</FormLabel>
-                                                <FormControl>
-                                                    <PasswordInput placeholder="Create a password" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <Button type="submit" className="w-full" disabled={isDisabled}>
-                                        {isDisabled ? "Creating account..." : "Sign Up"}
-                                    </Button>
-                                </div>
-                            )}
-                            {isEmailSignupDisabled && !isGoogleOAuthEnabled && (
-                                <Alert variant="destructive">
-                                    <AlertTitle>New signup is disabled</AlertTitle>
-                                    <AlertDescription>
-                                        New signup is disabled. Please contact the administrator to create an account.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-                            <div className="text-center text-sm">
-                                Already have an account?{" "}
-                                <Link
-                                    href={
-                                        callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"
-                                    }
-                                    className="underline underline-offset-4 hover:text-primary">
-                                    Sign in
-                                </Link>
-                            </div>
-                        </form>
-                    </Form>
-                </div>
-            </div>
-
-            <footer className="flex items-center justify-center pb-6">
-                <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-                    By signing up, you acknowledge our{" "}
-                    <a
-                        href="https://github.com/viperadnan-git/debridui/blob/main/DISCLAIMER.md"
-                        target="_blank"
-                        rel="noopener noreferrer">
-                        disclaimer
-                    </a>
-                    .
-                </div>
-            </footer>
+function Disclaimer() {
+    return (
+        <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+            By signing up, you acknowledge our{" "}
+            <a
+                href="https://github.com/viperadnan-git/debridui/blob/main/DISCLAIMER.md"
+                target="_blank"
+                rel="noopener noreferrer">
+                disclaimer
+            </a>
+            .
         </div>
     );
 }

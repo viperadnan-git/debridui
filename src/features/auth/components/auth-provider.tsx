@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SplashScreen } from "@/components/splash-screen";
 import { useDebridUserInfo, useRemoveUserAccount, useUserAccounts } from "@/features/accounts/hooks/use-user-accounts";
+import { getCallbackUrl } from "@/features/auth/utils/callback-url";
 import { useSelectionStore } from "@/features/files/stores/selection";
 import { hydrateSettingsFromServer, useUserSettings } from "@/features/settings/hooks/use-user-settings";
 import { useLogout } from "@/hooks/use-logout";
@@ -114,7 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Route between onboarding and the app based on whether the user has accounts.
     useEffect(() => {
         if (!session || accountsNotReady || !needsRouting) return;
-        const dest = searchParams.get("callbackUrl") || "/dashboard";
+        const dest = getCallbackUrl(searchParams) ?? "/dashboard";
         router.push(hasAccounts ? dest : "/onboarding");
     }, [session, accountsNotReady, needsRouting, hasAccounts, searchParams, router]);
 

@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { auth } from "@/lib/auth";
+import { auth, isEmailEnabled } from "@/lib/auth";
 import LoginForm from "./_components/login-form";
 
 export default async function LoginPage() {
@@ -10,7 +10,7 @@ export default async function LoginPage() {
 
     return (
         <Suspense fallback={null}>
-            <LoginForm />
+            <LoginForm canResetPassword={isEmailEnabled} />
         </Suspense>
     );
 }

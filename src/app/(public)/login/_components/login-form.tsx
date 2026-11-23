@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -13,7 +12,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from "@/components/ui/separator";
+import { AuthShell } from "@/features/auth/components/auth-shell";
+import { EmailOTPForm } from "@/features/auth/components/email-otp-form";
 import { GoogleSignInButton } from "@/features/auth/components/google-signin-button";
+import { usePendingVerification } from "@/features/auth/hooks/use-pending-verification";
+import { getCallbackUrl } from "@/features/auth/utils/callback-url";
 import { authClient } from "@/lib/auth-client";
 import { GOOGLE_CLIENT_ID } from "@/lib/constants";
 
@@ -22,11 +25,12 @@ const loginSchema = z.object({
     password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-export default function LoginForm() {
+export default function LoginForm({ canResetPassword }: { canResetPassword: boolean }) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+    const callbackUrl = getCallbackUrl(searchParams) ?? "/dashboard";
     const [isRedirecting, setIsRedirecting] = useState(false);
+    const { pendingEmail, setPendingEmail, codeJustSent } = usePendingVerification();
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -44,42 +48,44 @@ export default function LoginForm() {
             });
 
             if (error) {
-                toast.error(error.message || "Failed to sign in");
+                // Server already sent a fresh code
+                if (error.code === "EMAIL_NOT_VERIFIED") setPendingEmail(values.email);
+                else toast.error(error.message || "Failed to sign in");
                 return;
             }
 
-            if (data) {
-                setIsRedirecting(true);
-                toast.success("Logged in successfully");
-                router.push(callbackUrl);
-            }
+            if (data) onLoggedIn();
         } catch {
             toast.error("An unexpected error occurred");
         }
     }
 
+    function onLoggedIn() {
+        setIsRedirecting(true);
+        toast.success("Logged in successfully");
+        router.push(callbackUrl);
+    }
+
     const isDisabled = form.formState.isSubmitting || isRedirecting;
+    const typedEmail = form.watch("email");
+    const resetParams = new URLSearchParams({
+        ...(typedEmail && { email: typedEmail }),
+        ...(callbackUrl !== "/dashboard" && { callbackUrl }),
+    });
+    const resetHref = `/forgot-password${resetParams.size ? `?${resetParams}` : ""}`;
 
     return (
-        <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col items-center gap-2 mb-6">
-                    <Link href="/" className="flex flex-col items-center gap-2 font-medium">
-                        <div className="flex size-12 items-center justify-center">
-                            <Image
-                                src="/icon.svg"
-                                alt="DebridUI"
-                                width={48}
-                                height={48}
-                                className="invert dark:invert-0"
-                            />
-                        </div>
-                        <span className="sr-only">DebridUI</span>
-                    </Link>
-                    <h1 className="text-xl font-bold">Welcome Back</h1>
-                    <p className="text-sm text-muted-foreground text-center">Sign in to your account</p>
-                </div>
-
+        <AuthShell
+            title={pendingEmail ? "Check Your Email" : "Welcome Back"}
+            description={pendingEmail ? undefined : "Sign in to your account"}>
+            {pendingEmail ? (
+                <EmailOTPForm
+                    email={pendingEmail}
+                    codeJustSent={codeJustSent}
+                    onVerified={onLoggedIn}
+                    onBack={() => setPendingEmail(null)}
+                />
+            ) : (
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
                         <GoogleSignInButton callbackURL={callbackUrl} disabled={isDisabled} />
@@ -118,7 +124,16 @@ export default function LoginForm() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <div className="flex items-center justify-between">
+                                            <FormLabel>Password</FormLabel>
+                                            {canResetPassword && (
+                                                <Link
+                                                    href={resetHref}
+                                                    className="text-sm text-muted-foreground underline-offset-4 hover:text-primary hover:underline">
+                                                    Forgot password?
+                                                </Link>
+                                            )}
+                                        </div>
                                         <FormControl>
                                             <PasswordInput placeholder="Enter your password" {...field} />
                                         </FormControl>
@@ -146,7 +161,7 @@ export default function LoginForm() {
                         </div>
                     </form>
                 </Form>
-            </div>
-        </div>
+            )}
+        </AuthShell>
     );
 }

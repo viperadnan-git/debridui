@@ -338,6 +338,7 @@ isActive ? "scale-105" : "scale-100"
 - Input/Select: `size="sm"` (h-8), `size="default"` (h-9)
 - Icon in buttons: `size-4` (16px)
 - **You can override styles** to match editorial minimalism (colors, borders, typography) but **never change sizes or Radix primitives**
+- Exception: `InputOTPSlot` is intentionally `h-14` with `text-2xl` mono digits for readable one-time codes (see `docs/ui.md`)
 
 ### Typography
 
