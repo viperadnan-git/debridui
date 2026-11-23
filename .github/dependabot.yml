@@ -1,0 +1,22 @@
+version: 2
+
+multi-ecosystem-groups:
+  all:
+    schedule:
+      interval: weekly
+
+updates:
+  - package-ecosystem: bun
+    directory: /
+    patterns: ["*"]
+    multi-ecosystem-group: all
+
+  - package-ecosystem: github-actions
+    directory: /
+    patterns: ["*"]
+    multi-ecosystem-group: all
+
+  - package-ecosystem: docker
+    directory: /
+    patterns: ["*"]
+    multi-ecosystem-group: all
