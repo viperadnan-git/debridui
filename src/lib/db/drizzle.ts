@@ -4,7 +4,14 @@ import postgres from "postgres";
 import * as authSchema from "./auth-schema";
 import * as schema from "./schema";
 
-export const client = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
+// Supabase transaction pooler supports neither prepared statements nor pipelining; query_timeout fails fast if it stops answering.
+// https://supabase.com/docs/guides/database/connecting-to-postgres#transaction-mode-limitations
+export const client = postgres(process.env.DATABASE_URL!, {
+    prepare: false,
+    max: 1,
+    max_pipeline: 1,
+    query_timeout: 10,
+});
 
 export const db = drizzle(client, {
     schema: {
