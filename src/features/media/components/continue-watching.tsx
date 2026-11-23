@@ -92,6 +92,7 @@ const ContinueWatchingCard = memo(function ContinueWatchingCard({
     onPlayNext,
     onRemove,
 }: ContinueWatchingCardProps) {
+    const [imgError, setImgError] = useState(false);
     const episodeLabel =
         entry.type === "show" && entry.season && entry.episode ? formatEpisodeLabel(entry.season, entry.episode) : null;
 
@@ -100,7 +101,7 @@ const ContinueWatchingCard = memo(function ContinueWatchingCard({
             ? `/${entry.type}s/${entry.imdbId}?season=${entry.season}#seasons`
             : `/${entry.type}s/${entry.imdbId}`;
     const placeholderUrl = `https://placehold.co/300x450/0f0f0f/1f1f1f?text=${encodeURIComponent(entry.title)}`;
-    const posterUrl = entry.posterUrl || placeholderUrl;
+    const posterUrl = imgError ? placeholderUrl : entry.posterUrl || placeholderUrl;
 
     return (
         <article className="group relative aspect-2/3 overflow-hidden rounded-sm bg-black/20 border border-border/40 transition-transform duration-300 ease-out hover:scale-hover">
@@ -120,6 +121,7 @@ const ContinueWatchingCard = memo(function ContinueWatchingCard({
                     src={posterUrl}
                     alt={entry.title}
                     fill
+                    onError={() => setImgError(true)}
                     sizes="(max-width: 640px) 160px, (max-width: 768px) 180px, 200px"
                     className="object-cover transition-opacity duration-300"
                     loading="lazy"

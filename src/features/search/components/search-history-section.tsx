@@ -73,6 +73,7 @@ const HistoryRow = memo(function HistoryRow({
     onSelect: (entry: SearchHistory) => void;
     onRemove: () => void;
 }) {
+    const [imgError, setImgError] = useState(false);
     const poster = derivePoster(entry);
     const kicker = deriveKicker(entry);
     const subtitle = deriveSubtitle(entry);
@@ -89,9 +90,10 @@ const HistoryRow = memo(function HistoryRow({
             commandValue={`history-${entry.provider}-${entry.providerId}`}
             commandKeywords={[entry.title, kicker, subtitle ?? ""]}>
             <div className="shrink-0 w-12 h-[72px] sm:w-14 sm:h-[84px] overflow-hidden rounded-sm bg-muted/50 ring-1 ring-border/30">
-                {poster ? (
+                {poster && !imgError ? (
                     <img
                         src={poster}
+                        onError={() => setImgError(true)}
                         alt={entry.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
