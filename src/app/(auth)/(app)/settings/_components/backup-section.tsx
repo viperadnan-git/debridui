@@ -176,9 +176,9 @@ export function BackupSection() {
     const prepareExport = useToastMutation(
         async (): Promise<BackupData> => {
             const [addons, accounts, serverSettings] = await Promise.all([
-                queryClient.ensureQueryData({ queryKey: USER_ADDONS_KEY, queryFn: getUserAddons }),
-                queryClient.ensureQueryData({ queryKey: USER_ACCOUNTS_KEY, queryFn: getUserAccounts }),
-                queryClient.ensureQueryData({ queryKey: USER_SETTINGS_KEY, queryFn: getUserSettings }),
+                queryClient.ensureQueryData({ queryKey: USER_ADDONS_KEY, queryFn: () => getUserAddons() }),
+                queryClient.ensureQueryData({ queryKey: USER_ACCOUNTS_KEY, queryFn: () => getUserAccounts() }),
+                queryClient.ensureQueryData({ queryKey: USER_SETTINGS_KEY, queryFn: () => getUserSettings() }),
             ]);
             const { tmdbApiKey: _, ...settings } = useSettingsStore.getState().settings;
             return {

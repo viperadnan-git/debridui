@@ -57,7 +57,7 @@ export const usePreviewStore = create<PreviewState>()((set, get) => ({
             isOpen: true,
             mode: "gallery",
             currentFile: file,
-            currentIndex: currentIndex >= 0 ? currentIndex : 0,
+            currentIndex: Math.max(currentIndex, 0),
             previewableFiles,
             fileId,
             directUrl: null,

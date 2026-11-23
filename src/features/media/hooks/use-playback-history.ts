@@ -17,7 +17,7 @@ const PLAYBACK_HISTORY_KEY = ["playback-history"];
 export function usePlaybackHistory() {
     return useQuery({
         queryKey: PLAYBACK_HISTORY_KEY,
-        queryFn: getPlaybackHistory,
+        queryFn: () => getPlaybackHistory(),
         staleTime: 1000 * 60, // 1 minute
         refetchOnWindowFocus: true,
     });

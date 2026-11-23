@@ -22,7 +22,7 @@ export const USER_ADDONS_KEY = ["user-addons"];
 export function useUserAddons(enabled = true) {
     return useQuery({
         queryKey: USER_ADDONS_KEY,
-        queryFn: getUserAddons,
+        queryFn: () => getUserAddons(),
         enabled,
         staleTime: 1 * 60 * 60 * 1000, // 1 hour
     });

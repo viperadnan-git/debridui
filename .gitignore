@@ -48,3 +48,5 @@ next-env.d.ts
 *.openapi.json
 *.openapi.yaml
 *.openapi.md
+# playwright mcp
+.playwright-mcp/

@@ -65,7 +65,7 @@ Build complex UIs by combining simpler components:
 <Card>
     <Header {...props} />
     <Stats {...props} />
-</Card>
+</Card>;
 
 // Don't copy markup from other components
 ```
@@ -80,7 +80,7 @@ If markup appears 3+ times, extract it into a component:
     <div className="h-px flex-1 bg-border/50" />
     <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
     <div className="h-px flex-1 bg-border/50" />
-</div>
+</div>;
 ```
 
 ### 4. Extend, Don't Modify
@@ -569,7 +569,7 @@ Use these templates as starting points for common section types:
         </div>
         <div className="flex flex-col sm:flex-row lg:flex-col gap-2">{/* Action buttons */}</div>
     </div>
-</section>
+</section>;
 ```
 
 **Template B: List Section (items with dividers)**
@@ -588,7 +588,7 @@ Use these templates as starting points for common section types:
             </div>
         ))}
     </div>
-</section>
+</section>;
 ```
 
 **Template C: Grid Section (cards)**
@@ -607,7 +607,7 @@ Use these templates as starting points for common section types:
             <Card key={item.id} {...item} />
         ))}
     </div>
-</section>
+</section>;
 ```
 
 **Template D: Stat/Info Section (bordered stats)**
@@ -624,7 +624,7 @@ Use these templates as starting points for common section types:
             </div>
         ))}
     </div>
-</section>
+</section>;
 ```
 
 ### 2.4 Card Templates
@@ -650,7 +650,7 @@ Use these templates as starting points for common section types:
             <span className="text-xs text-white/70">{subtitle}</span>
         </div>
     </div>
-</div>
+</div>;
 ```
 
 **Horizontal Card (thumbnail + content)**
@@ -672,7 +672,7 @@ Use these templates as starting points for common section types:
             {description && <p className="text-xs text-muted-foreground line-clamp-2">{description}</p>}
         </div>
     </div>
-</div>
+</div>;
 ```
 
 **Simple Card (bordered container)**
@@ -684,7 +684,7 @@ Use these templates as starting points for common section types:
         <h4 className="text-sm font-medium">{title}</h4>
     </div>
     <p className="text-xs text-muted-foreground">{description}</p>
-</div>
+</div>;
 ```
 
 ### 2.5 Interactive Element Patterns
@@ -733,7 +733,7 @@ Use these templates as starting points for common section types:
     <label className="text-xs tracking-wider uppercase text-muted-foreground">{label}</label>
     <Input placeholder={placeholder} />
     {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-</div>
+</div>;
 ```
 
 ### 2.6 Animation Recipes
@@ -771,7 +771,7 @@ Use these templates as starting points for common section types:
         style={{ animationDuration: "600ms", animationDelay: "100ms", animationFillMode: "backwards" }}>
         {secondaryText}
     </h1>
-</div>
+</div>;
 ```
 
 **Hover Slide-Up Reveal:**
@@ -785,7 +785,7 @@ Use these templates as starting points for common section types:
     <div className="absolute inset-x-0 bottom-0 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
         {revealContent}
     </div>
-</div>
+</div>;
 ```
 
 ### 2.7 Responsive Patterns
@@ -844,7 +844,7 @@ Page headers with icon accent for visual interest.
         {action && <div className="shrink-0">{action}</div>}
     </div>
     <div className="h-px bg-border/50" />
-</div>
+</div>;
 ```
 
 **Key Patterns:**
@@ -864,7 +864,7 @@ The signature layout pattern — centered label with horizontal lines.
     <div className="h-px flex-1 bg-border/50" />
     <span className="text-xs tracking-widest uppercase text-muted-foreground">Label Text</span>
     <div className="h-px flex-1 bg-border/50" />
-</div>
+</div>;
 ```
 
 **States:**
@@ -1025,7 +1025,7 @@ Displays vertical aspect ratio images with hover interactions.
             <span className="text-xs text-white/70">{subtitle}</span>
         </div>
     </div>
-</div>
+</div>;
 ```
 
 **States:**
@@ -1103,7 +1103,7 @@ Left-border accent pattern for displaying statistics or key-value pairs.
 <div className="pl-3 border-l border-border/50">
     <div className="text-xs tracking-wider uppercase text-muted-foreground mb-1">{label}</div>
     <div className="text-sm font-medium">{value}</div>
-</div>
+</div>;
 ```
 
 **Grid Layout:**
@@ -1116,7 +1116,7 @@ Left-border accent pattern for displaying statistics or key-value pairs.
             <div className="text-sm font-medium">{stat.value}</div>
         </div>
     ))}
-</div>
+</div>;
 ```
 
 ### 3.8 Tab Navigation
@@ -1196,7 +1196,7 @@ Card with selection state indicator, useful for multi-select interfaces.
             <p className="text-xs text-white/60">{secondaryInfo}</p>
         </div>
     </div>
-</div>
+</div>;
 ```
 
 **Key Patterns:**
@@ -1248,7 +1248,7 @@ Collapsible horizontal card with thumbnail and metadata, useful for list items.
 
         <CollapsibleContent>{/* Expandable content */}</CollapsibleContent>
     </div>
-</Collapsible>
+</Collapsible>;
 ```
 
 ### 3.12 List with Actions
@@ -1291,7 +1291,7 @@ Clean list pattern for items with metadata and action buttons.
             </div>
         </div>
     ))}
-</div>
+</div>;
 ```
 
 **Key Patterns:**
@@ -1359,7 +1359,7 @@ Loading placeholders with pulse animation. Match skeleton dimensions to actual c
             <Card {...item} />
         </div>
     ))}
-</div>
+</div>;
 ```
 
 **Responsive Grid:**
@@ -1383,7 +1383,7 @@ Loading placeholders with pulse animation. Match skeleton dimensions to actual c
 <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr] gap-6 md:gap-8">
     <aside>{/* Sidebar content */}</aside>
     <main>{/* Main content */}</main>
-</div>
+</div>;
 ```
 
 **Asymmetric Layout (Content + Actions):**
@@ -1393,7 +1393,7 @@ Loading placeholders with pulse animation. Match skeleton dimensions to actual c
 <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-start">
     <div className="space-y-4">{/* Main content */}</div>
     <div className="flex flex-col sm:flex-row lg:flex-col gap-2">{/* Action buttons */}</div>
-</div>
+</div>;
 ```
 
 ### 4.2 Section Patterns
@@ -1419,7 +1419,7 @@ Loading placeholders with pulse animation. Match skeleton dimensions to actual c
         </div>
         <Button>{action}</Button>
     </div>
-</section>
+</section>;
 ```
 
 **Centered Section Divider:**
@@ -1429,7 +1429,7 @@ Loading placeholders with pulse animation. Match skeleton dimensions to actual c
     <div className="h-px flex-1 bg-border/50" />
     <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
     <div className="h-px flex-1 bg-border/50" />
-</div>
+</div>;
 ```
 
 **Section Divider with Icon Pill:**
@@ -1442,7 +1442,7 @@ Loading placeholders with pulse animation. Match skeleton dimensions to actual c
         <span className="text-xs tracking-widest uppercase text-muted-foreground">{label}</span>
     </div>
     <div className="h-px flex-1 bg-linear-to-l from-transparent via-border/50 to-border/50" />
-</div>
+</div>;
 ```
 
 ### 4.3 Breakpoints
@@ -1623,7 +1623,7 @@ Subtle zoom animation for hero carousel images.
         isActive ? "scale-105" : "scale-100"
     )}>
     <img src={image} className="w-full h-full object-cover" />
-</div>
+</div>;
 ```
 
 ### 5.5 Focus States
